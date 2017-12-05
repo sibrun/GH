@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 import os
 
-class GraphVectorSpace(ABC):
+class GraphVectorSpace():
+    __metaclass__ = ABCMeta
     @abstractmethod
     def get_file_name(self):
         pass
