@@ -28,10 +28,6 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def get_dot(self, graph):
-        pass
-
-    @abstractmethod
     def get_work_estimate(self):
         pass
 
