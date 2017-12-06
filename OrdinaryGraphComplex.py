@@ -6,8 +6,8 @@ reload(GVS)
 
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
     dataDir = "./GHdata"
-    ordinaryDataDirOdd = dataDir + "/ordinarydata/oddedge/"
-    ordinaryDataDirEven = dataDir + "/ordinarydata/evenedge/"
+    dataDirOdd = dataDir + "/ordinarydata/oddedge/"
+    dataDirEven = dataDir + "/ordinarydata/evenedge/"
     imgBaseDir = "img/"
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
@@ -16,12 +16,12 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         self.evenEdges = evenEdges
 
     def get_file_name(self):
-        dataDir = OrdinaryGraphVectorSpace.ordinaryDataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.ordinaryDataDirOdd
+        dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
         s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, s)
 
     def get_svg_dir(self):
-        dataDir = OrdinaryGraphVectorSpace.ordinaryDataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.ordinaryDataDirOdd
+        dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
         s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, OrdinaryGraphVectorSpace.imgBaseDir, s)
 
