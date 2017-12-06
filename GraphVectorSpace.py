@@ -32,12 +32,12 @@ class GraphVectorSpace():
         pass
 
     def hasOddAutomorphisms(self, graph, automList):
-        for p in automList
+        for p in automList:
             if self.get_perm_sign(graph, p) == -1:
                 return True
         return False
 
-    def createListFile(self):
+    '''def createListFile(self):
 
         outPath = self.get_file_name()
         outDir = os.path.dirname(outPath)
@@ -58,7 +58,7 @@ class GraphVectorSpace():
         f = open(outPath, 'w')
         for g6 in graphSet:
             f.write(g6 + '\n')
-        f.close()
+        f.close()'''
 
     def getDimension(self):
         if not self.is_valid():
@@ -70,4 +70,5 @@ class GraphVectorSpace():
         dimension=0
         for line in f:
             dimension += 1
+        f.close()
         return dimension
