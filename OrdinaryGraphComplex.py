@@ -68,21 +68,21 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
             # The sign is (induced sign of the edge permutation)
             # we assume the edges are always lex ordered
             # for the computation we use that edges(G) returns the edges in lex ordering
-            pp = range(nEdges)
-            G2 = permuteGraph(G,p)
-            edge_idx2 = -ones(Int64, nVert, nVert)
-            for (j, e) = enumerate(edges(G2))
+            #pp = range(nEdges)
+            ##G2 = permuteGraph(G,p)
+
+            # we first label the edges on a copy of G lexicographically
+            G1 = copy(G)
+            for (j,e) in enumerate(G1.edges(label=False)):
                 u,v = e
-                edge_idx2[u,v] = j
-                edge_idx2[v,u] = j
-            end
-            for (j, e) = enumerate(edges(G))
-                u,v = e
-                pp[j] = edge_idx2[p[u],p[v]]
-            end
+                G1.set_edge_label(u,v,j)
+
+            # we permute the graph, and read of the new labels
+            G1.relabel(p,inplace=True)
+            pp = [j+1 for u,v,j in G1.edges()]
 
             #println(pp)
-            return permSign(pp)
+            return Permutation(pp).sign()
 
     def get_work_estimate(self):
         # give estimate of number of graphs
