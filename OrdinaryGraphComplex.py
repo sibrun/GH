@@ -38,7 +38,7 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         #graphList = slef._listGraphs(self.nVertices, self.nLoops, false)
         return graphList
 
-    def _listGraphs(nVertices, nLoops, onlyonevi=True):
+    def _listGraphs(self, nVertices, nLoops, onlyonevi=True):
         """
         creates a list of simple 1vi graphs with at least trivalent vertices
         """
@@ -50,17 +50,16 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
         return gL
 
-        def get_perm_sign(self, G, p):
-            nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
-            nEdges = nLoops + nVert - 1
-            if evenEdges:
-                # The sign is (induced sign on vertices) * (induced sign edge orientations)
-                sgn = p.signature()
-                for (u, v, ignored) in G.edges():
-                    # we assume the edge is always directed from the larger to smaller index
-                    if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
-                        sgn *= -1
-
+    def get_perm_sign(self, G, p):
+        nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
+        nEdges = nLoops + nVert - 1
+        if evenEdges:
+            # The sign is (induced sign on vertices) * (induced sign edge orientations)
+            sgn = p.signature()
+            for (u, v, ignored) in G.edges():
+                # we assume the edge is always directed from the larger to smaller index
+                if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
+                    sgn *= -1
             return sgn
         else:
             # The sign is (induced sign of the edge permutation)
@@ -87,12 +86,3 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         nEdges = self.nLoops + self.nVertices - 1
         n = self.nVertices
         return binomial((n*(n-1))/2, nEdges) / factorial(n)
-
-
-
-#"""Converts the graph to a graphviz dot format string.
-#   This method is used only for visualization, not for computation."""
-#function get_dot(self::OrdinaryGraphVectorSpace, G)
-#    return render_to_dot(G)
-#end
-
