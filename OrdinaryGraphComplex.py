@@ -2,6 +2,7 @@ import os
 from sage.all import *
 from GraphVectorSpace import GraphVectorSpace
 
+
 class OrdinaryGraphVectorSpace(GraphVectorSpace):
     dataDir = "./GHdata"
     ordinaryDataDirOdd = dataDir + "/ordinarydata/oddedge/"
@@ -23,6 +24,9 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, OrdinaryGraphVectorSpace.imgBaseDir, s)
 
+    def get_color_counts(self):
+        return None # no coloring
+
     def is_valid(self):
         nEdges = self.nLoops + self.nVertices -1
         # at least trivalent, and simple
@@ -34,8 +38,17 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         #graphList = slef._listGraphs(self.nVertices, self.nLoops, false)
         return graphList
 
-    def get_color_counts(self):
-        return None # no coloring
+    def _listGraphs(nVertices, nLoops, onlyonevi=True):
+        """
+        creates a list of simple 1vi graphs with at least trivalent vertices
+        """
+        nEdges = nLoops + nVertices - 1
+        if (3 * nVertices > 2 * nEdges) || (nEdges > nVertices * (nVertices - 1) / 2):
+            # impossible
+            return []
+
+        gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
+        return gL
 
         def get_perm_sign(self, G, p):
             nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
@@ -48,27 +61,26 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
                     if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
                         sgn *= -1
 
-                return sgn
-            else:
-                # The sign is (induced sign of the edge permutation)
-                # we assume the edges are always lex ordered
-                # for the computation we use that edges(G) returns the edges in lex ordering
-                # pp = range(nEdges)
-                ##G2 = permuteGraph(G,p)
+            return sgn
+        else:
+            # The sign is (induced sign of the edge permutation)
+            # we assume the edges are always lex ordered
+            # for the computation we use that edges(G) returns the edges in lex ordering
+            #pp = range(nEdges)
+            ##G2 = permuteGraph(G,p)
 
-                # we first label the edges on a copy of G lexicographically
-                G1 = copy(G)
-                for (j, e) in enumerate(G1.edges(label=False)):
-                    u, v = e
-                    G1.set_edge_label(u, v, j)
+            # we first label the edges on a copy of G lexicographically
+            G1 = copy(G)
+            for (j,e) in enumerate(G1.edges(label=False)):
+                u,v = e
+                G1.set_edge_label(u,v,j)
 
-                # we permute the graph, and read of the new labels
-                G1.relabel(p, inplace=True)
-                pp = [j + 1 for u, v, j in G1.edges()]
+            # we permute the graph, and read of the new labels
+            G1.relabel(p,inplace=True)
+            pp = [j+1 for u,v,j in G1.edges()]
 
-                # println(pp)
-
-    return Permutation(pp).sign()
+            #println(pp)
+            return Permutation(pp).sign()
 
     def get_work_estimate(self):
         # give estimate of number of graphs
@@ -76,13 +88,11 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         n = self.nVertices
         return binomial((n*(n-1))/2, nEdges) / factorial(n)
 
-    def _listGraphs(self, nVertices, nLoops, onlyonevi=True):
-        """
-        creates a list of simple 1vi graphs with at least trivalent vertices
-        """
-        nEdges = nLoops + nVertices - 1
-        if (3 * nVertices > 2 * nEdges) or (nEdges > nVertices * (nVertices - 1) / 2):
-            # impossible
-            return []
 
-        return list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
+
+#"""Converts the graph to a graphviz dot format string.
+#   This method is used only for visualization, not for computation."""
+#function get_dot(self::OrdinaryGraphVectorSpace, G)
+#    return render_to_dot(G)
+#end
+
