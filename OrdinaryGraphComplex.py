@@ -1,15 +1,16 @@
 import os
 from sage.all import *
-from GraphVectorSpace import GraphVectorSpace
+import GraphVectorSpace as GVS
 
+reload(GVS)
 
-class OrdinaryGraphVectorSpace(GraphVectorSpace):
+class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
     dataDir = "./GHdata"
     ordinaryDataDirOdd = dataDir + "/ordinarydata/oddedge/"
     ordinaryDataDirEven = dataDir + "/ordinarydata/evenedge/"
     imgBaseDir = "img/"
 
-    def __init__(self, nVertices=0, nLoops=0, evenEdges=True):
+    def __init__(self, nVertices, nLoops, evenEdges=True):
         self.nVertices = nVertices
         self.nLoops = nLoops
         self.evenEdges = evenEdges
@@ -43,10 +44,9 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         creates a list of simple 1vi graphs with at least trivalent vertices
         """
         nEdges = nLoops + nVertices - 1
-        if (3 * nVertices > 2 * nEdges) || (nEdges > nVertices * (nVertices - 1) / 2):
+        if (3 * nVertices > 2 * nEdges) or (nEdges > nVertices * (nVertices - 1) / 2):
             # impossible
             return []
-
         gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
         return gL
 
@@ -64,22 +64,20 @@ class OrdinaryGraphVectorSpace(GraphVectorSpace):
         else:
             # The sign is (induced sign of the edge permutation)
             # we assume the edges are always lex ordered
-            # for the computation we use that edges(G) returns the edges in lex ordering
-            #pp = range(nEdges)
-            ##G2 = permuteGraph(G,p)
+            # for the computation we use that G.edges() returns the edges in lex ordering
 
             # we first label the edges on a copy of G lexicographically
             G1 = copy(G)
-            for (j,e) in enumerate(G1.edges(label=False)):
+            for (j,e) in enumerate(G1.edges(labels=False)):
                 u,v = e
                 G1.set_edge_label(u,v,j)
 
             # we permute the graph, and read of the new labels
-            G1.relabel(p,inplace=True)
+            # first relabel the vertices starting form 1 instead of 0
+            G1.relabel(range(1,self.nVertices+1))
+            G1.relabel(perm=p,inplace=True)
             pp = [j+1 for u,v,j in G1.edges()]
-
-            #println(pp)
-            return Permutation(pp).sign()
+            return Permutation(pp).signature()
 
     def get_work_estimate(self):
         # give estimate of number of graphs
