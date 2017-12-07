@@ -32,12 +32,6 @@ class GraphVectorSpace():
     def get_work_estimate(self):
         pass
 
-    def hasOddAutomorphisms(self, G, automList):
-        for p in automList:
-            if self.get_perm_sign(G, p) == -1:
-                return True
-        return False
-
     def createListFile(self):
         outPath = self.get_file_name()
         outDir = os.path.dirname(outPath)
@@ -49,16 +43,23 @@ class GraphVectorSpace():
 
         gS = set()
         for G in gL:
-            canonG, automList = self.get_canon_and_automorphisms(G, colorData)
+            canonG = G.canonical_label()
+            automGroup = G.automorphism_group()
             canon6=canonG.graph6_string()
             if not canon6 in gS:
-                if not self.hasOddAutomorphisms(G, automList):
+                if not self._hasOddAutomorphisms(G, automGroup):
                     gS.add(canon6)
 
         f = open(outPath, 'w')
         for g6 in gS:
             f.write(g6 + '\n')
         f.close()
+
+    def _hasOddAutomorphisms(self, G, automGroup):
+        for g in automGroup:
+            if self.get_perm_sign(G, g.tuple()) == -1:
+               return True
+        return False
 
     def getDimension(self):
         if not self.is_valid():

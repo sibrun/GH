@@ -6,7 +6,7 @@ reload(OGC)
 nVertices=4
 nLoops=3
 print("----------------------------------------------------------------")
-ogc=OGC.OrdinaryGraphVectorSpace(nVertices, nLoops, evenEdges=False)
+ogc=OGC.OrdinaryGraphVectorSpace(nVertices, nLoops, evenEdges=True)
 
 #print(ogc.is_valid())
 if ogc.is_valid():
@@ -15,9 +15,10 @@ if ogc.is_valid():
     #print(ogc.get_work_estimate())
 
     graphList=ogc.get_generating_graphs()
-    set_random_seed(1)
-    p=Permutations(range(1,nVertices+1)).random_element()
-    p=Permutation([2,1,3,4])
-    for g in graphList:
-       print(ogc.get_perm_sign(g,p))
+    #set_random_seed(1)
+    #p=Permutations(range(1,nVertices+1)).random_element()
+    #p=Permutation([2,1,3,4])
+    ogc.createListFile()
+    print(ogc.getDimension())
+
 

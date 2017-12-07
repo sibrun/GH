@@ -6,8 +6,8 @@ reload(GVS)
 
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
     dataDir = "./GHdata"
-    dataDirOdd = dataDir + "/ordinarydata/oddedge/"
-    dataDirEven = dataDir + "/ordinarydata/evenedge/"
+    dataDirOdd = dataDir + "/ordinary/oddedge/"
+    dataDirEven = dataDir + "/ordinary/evenedge/"
     imgBaseDir = "img/"
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
@@ -55,7 +55,8 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         nEdges = nLoops + nVert - 1
         if evenEdges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            sgn = p.signature()
+            pp=[j+1 for j in p]
+            sgn = Permutation(pp).signature()
             for (u, v, ignored) in G.edges():
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -73,8 +74,6 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
                 G1.set_edge_label(u,v,j)
 
             # we permute the graph, and read of the new labels
-            # first relabel the vertices starting form 1 instead of 0
-            G1.relabel(range(1,self.nVertices+1))
             G1.relabel(perm=p,inplace=True)
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
