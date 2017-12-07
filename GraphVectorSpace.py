@@ -21,11 +21,15 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def _color_counts(self):
+    def color_counts(self):
         pass
 
     @abstractmethod
     def _perm_sign(self, graph, perm):
+        pass
+
+    @abstractmethod
+    def canonical(self, graph, colorData):
         pass
 
     @abstractmethod
@@ -70,7 +74,7 @@ class GraphVectorSpace():
             return 0
         fileName=self.file_name()
         if not os.path.isfile(fileName):
-            return None
+            raise NotBuiltError("Bsais ist not built yet")
         f = open(fileName, 'r')
         dimension=0
         for line in f:
@@ -80,13 +84,16 @@ class GraphVectorSpace():
 
     def basis(self):
         if not self.valid():
-            return None
+            return []
         fileName = self.file_name()
         if not os.path.isfile(fileName):
-            return None
+            raise NotBuiltError("Bsais ist not built yet")
         f = open(fileName, 'r')
         basisList=[]
         for line in f:
             basisList.append(Graph(line))
         f.close()
         return basisList
+
+class NotBuiltError(RuntimeError):
+    pass

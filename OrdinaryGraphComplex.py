@@ -25,7 +25,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, OrdinaryGraphVectorSpace.imgBaseDir, s)
 
-    def _color_counts(self):
+    def color_counts(self):
         return None # no coloring
 
     def valid(self):
@@ -77,6 +77,9 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
             G1.relabel(perm=p,inplace=True)
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
+
+    def canonical(self, graph, colorData=None):
+        return graph.canonical_label()
 
     def work_estimate(self):
         # give estimate of number of graphs

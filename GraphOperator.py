@@ -6,24 +6,18 @@ import GraphVectorSpace as GVS
 class GraphOperator():
     __metaclass__ = ABCMeta
     @abstractmethod
-    def get_file_name(self):
+    def file_name(self):
         """Retrieve the file name (and path) of the file storing the matrix."""
         pass
 
     @abstractmethod
-    def get_unique_file_name(self):
-        """Retrieve a unique file name for the matrix.
-           This filename is used when interchanging files with other computers."""
+    def domain(self):
+        """Returns the GraphVectorSpace on which the operator acts."""
         pass
 
     @abstractmethod
-    def get_source(self):
-        """Returns the GraphVectorSpace{S} on which the operator acts."""
-        pass
-
-    @abstractmethod
-    def et_target(self):
-        """Returns the GraphVectorSpace{T} in which the operator takes values."""
+    def target(self):
+        """Returns the GraphVectorSpace in which the operator takes values."""
         pass
 
     @abstractmethod
@@ -34,78 +28,58 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def get_work_estimate(self):
+    def work_estimate(self):
         """Provides a rough estimate of the amount of work needed to create the operator file.
           (In arbitrary units)"""
         pass
 
-    def is_valid(self):
-        vs = self.get_source()
-        tvs = self.get_target()
-        return vs.is_valid() and tvs.is_valid()
+    def valid(self):
+        return self.domain().valid() and self.target().valid()
 
-    def createOperatorFile(self):
+    def create_operator_matrix(self):
         """
         Creates the matrix file that holds the operator.
         The corresponding list files for source and target
         must exist when calling this function.
         """
-        outFile = self.get_file_name()
-        vs = self.get_source()
-        tvs = self.get_target()
+        fileName = self.file_name()
+        domain = self.domain()
+        target = self.target()
 
-        colorData = tvs.get_color_counts()
+        try:
+            domainBasis = domain.basis()
+        except GVS.NotBuiltError:
+            raise GVS.NotBuiltError("Cannot bild operator matrix: First build basis of the domain")
+        try:
+            targetBasis = target.basis()
+        except GVS.NotBuiltError:
+            raise GVS.NotBuiltError("Cannot bild operator matrix: First build basis of the target")
 
-        if not os.path.isfile(domainListFile):
-            print( "Cannot create operator file: First create list file $domainListFile")
-            return
+        domainDim = len(domainBasis)
+        targetDim = len(targetBasis)
 
-        if not os.path.isfile(targetListFile):
-            print("Cannot create operator file: First create list file $targetListFile")
-            return
-
-        print( "Creating File $outFile ..." )
-
-        sss = readAllLines(inListFile)
-        lst = [from_string(S, s) for s in sss] # list of source graphs
-
-        src_count = length(lst)
-        ll = readAllLines(tgtListFile)
-        tgt_count = length(ll)
-
-        println( "List files read ($src_count, $tgt_count graphs)..." )
-        #println("Test $(length(sss)) $(length(lst)) __ $(length(ll))")
-       # mat = op.computeEdgeMarkingDifferential(ggg, tgtListFile, nMarks, evenEdges)
-
-        count = 0 # counts current index in dummy file
-        entries = [[] for G in lst] # will hold matrix
-
-        if src_count == 0 || tgt_count == 0
+        if domainDim == 0 and targetDim == 0:
             # create empty file and return
-            open(outFile,"w") do f
-            end
-            println("Wrote empty file.")
+            open(fileName,"w").close()
             return
-        end
+
+        matrix = []
 
         # lookup g6 -> index in target vector space
         lookup = Dict{String,Int}( s => j for (j,s) in enumerate(ll))
 
-        open(outFile,"w") do f
-          for (i,G) in enumerate(lst)
-            the_image = operate_on(self, G)
-            for (GG,prefactor) in the_image
+        f = open(fileName,"w")
+        for (i,G) in enumerate(domainBasis):
+            image = self.operate_on(G)
+            for GG, prefactor in image:
                 # canonize and look up
-                GGcan, to_canonical_p = get_canon(GG, colorData)
+                GGcanon = domain.canonical(GG, domain.color_counts())
 
-                GGcang6 = to_string(GGcan)
+                GGcanon6 = to_string(GGcan)
                 #println("$GGcang6 <- $(to_string(GG)): $to_canonical_p  ___ $(invPermutation( to_canonical_p ))")
                 if haskey(lookup, GGcang6)
                   sgn = get_perm_sign(tvs, GGcan, to_canonical_p)
                   write(f, "$i $(lookup[GGcang6]) $(sgn * prefactor)\n" )
-                end
-            end
-          end
           # write matrix size
           write(f, "$(length(lst)) $tgt_count 0\n")
           write(f, "$(length(lst)) $tgt_count 0\n")

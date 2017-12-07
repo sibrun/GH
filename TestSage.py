@@ -20,4 +20,3 @@ if ogc.valid():
     #p=Permutation([2,1,3,4])
     ogc.create_basis()
     print(ogc.dimension())
-
