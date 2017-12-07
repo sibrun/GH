@@ -5,7 +5,7 @@ import GraphVectorSpace as GVS
 reload(GVS)
 
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
-    dataDir = "./GHdata"
+    dataDir = "./data"
     dataDirOdd = dataDir + "/ordinary/oddedge/"
     dataDirEven = dataDir + "/ordinary/evenedge/"
     imgBaseDir = "img/"
@@ -15,31 +15,31 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         self.nLoops = nLoops
         self.evenEdges = evenEdges
 
-    def get_file_name(self):
+    def file_name(self):
         dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
         s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, s)
 
-    def get_svg_dir(self):
+    def svg_dir(self):
         dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
         s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
         return os.path.join(dataDir, OrdinaryGraphVectorSpace.imgBaseDir, s)
 
-    def get_color_counts(self):
+    def _color_counts(self):
         return None # no coloring
 
-    def is_valid(self):
+    def valid(self):
         nEdges = self.nLoops + self.nVertices -1
         # at least trivalent, and simple
         return  (3*self.nVertices <= 2*nEdges) and self.nVertices > 0 and self.nLoops >= 0 and nEdges <= self.nVertices*(self.nVertices-1)/2
 
-    def get_generating_graphs(self):
+    def _generating_graphs(self):
         # generate List of unmarked graphs
-        graphList = self._listGraphs(self.nVertices, self.nLoops)
+        graphList = self._list_graphs(self.nVertices, self.nLoops)
         #graphList = slef._listGraphs(self.nVertices, self.nLoops, false)
         return graphList
 
-    def _listGraphs(self, nVertices, nLoops, onlyonevi=True):
+    def _list_graphs(self, nVertices, nLoops, onlyonevi=True):
         """
         creates a list of simple 1vi graphs with at least trivalent vertices
         """
@@ -50,7 +50,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
         return gL
 
-    def get_perm_sign(self, G, p):
+    def _perm_sign(self, G, p):
         nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
         nEdges = nLoops + nVert - 1
         if evenEdges:
@@ -78,8 +78,9 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
 
-    def get_work_estimate(self):
+    def work_estimate(self):
         # give estimate of number of graphs
         nEdges = self.nLoops + self.nVertices - 1
         n = self.nVertices
         return binomial((n*(n-1))/2, nEdges) / factorial(n)
+
