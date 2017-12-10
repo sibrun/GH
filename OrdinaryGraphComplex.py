@@ -78,9 +78,6 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
 
-    def canonical(self, graph, colorData=None):
-        return graph.canonical_label()
-
     def work_estimate(self):
         # give estimate of number of graphs
         nEdges = self.nLoops + self.nVertices - 1

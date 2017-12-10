@@ -29,10 +29,6 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def canonical(self, graph, colorData):
-        pass
-
-    @abstractmethod
     def work_estimate(self):
         pass
 
@@ -58,6 +54,11 @@ class GraphVectorSpace():
             f.write(g6 + '\n')
         f.close()
 
+    def canonical_g6(self, graph):
+        canonG, permDict = graph.canonical_label(certificate=True)
+        sgn = self._perm_sign(graph, [v+1 for k, v in permDict.items()])
+        return (canonG.graph6_string(),sgn)
+
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:
             if self._perm_sign(G, g.tuple()) == -1:
@@ -74,7 +75,7 @@ class GraphVectorSpace():
             return 0
         fileName=self.file_name()
         if not os.path.isfile(fileName):
-            raise NotBuiltError("Bsais ist not built yet")
+            raise NotBuiltError("Basis ist not built yet")
         f = open(fileName, 'r')
         dimension=0
         for line in f:
@@ -82,16 +83,20 @@ class GraphVectorSpace():
         f.close()
         return dimension
 
-    def basis(self):
+    def basis(self, g6=False):
         if not self.valid():
             return []
         fileName = self.file_name()
         if not os.path.isfile(fileName):
-            raise NotBuiltError("Bsais ist not built yet")
+            raise NotBuiltError("Basis ist not built yet")
         f = open(fileName, 'r')
         basisList=[]
-        for line in f:
-            basisList.append(Graph(line))
+        if g6:
+            for line in f:
+                basisList.append(Graph(line))
+        else:
+            for line in f:
+                basisList.append(line)
         f.close()
         return basisList
 

@@ -21,7 +21,7 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def operate_on(self):
+    def _operate_on(self):
         """For G::S a graph in the domain, returns a list of pairs (GG, x), GG::T graph
         in the target, x a number,
         such that (operator)(G) = sum x GG."""
@@ -49,42 +49,33 @@ class GraphOperator():
         try:
             domainBasis = domain.basis()
         except GVS.NotBuiltError:
-            raise GVS.NotBuiltError("Cannot bild operator matrix: First build basis of the domain")
+            raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the domain")
         try:
-            targetBasis = target.basis()
+            targetBasis6 = target.basis(g6=True)
         except GVS.NotBuiltError:
-            raise GVS.NotBuiltError("Cannot bild operator matrix: First build basis of the target")
+            raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the target")
 
         domainDim = len(domainBasis)
-        targetDim = len(targetBasis)
+        targetDim = len(targetBasis6)
 
         if domainDim == 0 and targetDim == 0:
             # create empty file and return
             open(fileName,"w").close()
             return
 
+        color_counts = domain.color_counts()
         matrix = []
 
         # lookup g6 -> index in target vector space
-        lookup = Dict{String,Int}( s => j for (j,s) in enumerate(ll))
+        lookup = {s: j for (j,s) in enumerate(targetBasis6)}
 
         f = open(fileName,"w")
-        for (i,G) in enumerate(domainBasis):
-            image = self.operate_on(G)
-            for GG, prefactor in image:
+        for (domainIndex,G) in enumerate(domainBasis):
+            imageList = self.operate_on(G)
+            for (GG, prefactor) in imageList:
                 # canonize and look up
-                GGcanon = domain.canonical(GG, domain.color_counts())
-
-                GGcanon6 = to_string(GGcan)
-                #println("$GGcang6 <- $(to_string(GG)): $to_canonical_p  ___ $(invPermutation( to_canonical_p ))")
-                if haskey(lookup, GGcang6)
-                  sgn = get_perm_sign(tvs, GGcan, to_canonical_p)
-                  write(f, "$i $(lookup[GGcang6]) $(sgn * prefactor)\n" )
+                GGcanon6, sgn = domain.canonical_g6(GG)
+                imageIndex = lookup.get(GGcanon6)
+                if imageIndex:
+                    f.write("%d %d %d\n" % (domainIndex, imageIndex, sgn * prefactor))
           # write matrix size
-          write(f, "$(length(lst)) $tgt_count 0\n")
-          write(f, "$(length(lst)) $tgt_count 0\n")
-        end
-
-        println("done")
-
-    def _read
