@@ -93,10 +93,10 @@ class GraphVectorSpace():
         basisList=[]
         if g6:
             for line in f:
-                basisList.append(Graph(line))
+                basisList.append(line)
         else:
             for line in f:
-                basisList.append(line)
+                basisList.append(Graph(line))
         f.close()
         return basisList
 
