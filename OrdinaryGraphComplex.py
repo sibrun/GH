@@ -52,7 +52,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
         return gL
 
-    def _perm_sign(self, G, p):
+    def perm_sign(self, G, p):
         nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
         nEdges = nLoops + nVert - 1
         if evenEdges:
@@ -97,55 +97,56 @@ class ContractDOrdinary(GO.GraphOperator):
         self.nLoops = nLoops
         self.evenEdges = evenEdges
 
+        super(ContractDOrdinary, self).__init__()
+
     def file_name(self):
         directory = directory = dataDirEven if self.evenEdges else dataDirOdd
         s = "contractD%d_%d.txt" % (self.nVertices, self.nLoops)
         return os.path.join(directory, s)
 
-    def domain(self):
+    def get_domain(self):
         return OrdinaryGraphVectorSpace(self.nVertices, self.nLoops, self.evenEdges)
 
-    def target(self):
+    def get_target(self):
         return OrdinaryGraphVectorSpace(self.nVertices-1, self.nLoops, self.evenEdges)
 
-    def _operate_on(self,graph):
+    def _operate_on(self,G):
 
         image=[]
-        for (u,v) = edges(G)
-        # permute u,v to position 1 and 2
-        p = collect(1:self.nVertices)
-        p[1] = u
-        p[2] = v
-        idx = 3
-        for j = 1:self.nVertices
-            if j == u || j== v
-                continue
-            else
-                p[idx] = j
-                idx +=1
+        for (u,v) in G.edges(labels=False):
+            # permute u,v to position 1,2
+            r = range(0,self.nVertices)
+            p = list(r)
+            p[0] = u
+            p[1] = v
+            idx = 2
+            for j in r:
+                if j == u or j== v:
+                    continue
+                else:
+                    p[idx] = j
+                    idx +=1
 
-        pp = invPermutation(p)
-        #println(pp)
-        sgn = get_perm_sign(vs,G, pp)
-        GG = permuteGraph(G,pp)
+            pp = Permutation([i+1 for i in p]).inverse()
+            sgn = super(ContractDOrdinary, self).domain.perm_sign(G, pp)
+            GG = G.relabel(perm=p)
 
-        # now delete the first edge
-        remove_edge!(GG,1,2) #.... done later
-        # ... and join 0 and 1 and fix labelings
-        p = vcat([1],collect(1:self.nVertices-1))
-        if !self.evenEdges
-          sgn *= get_perm_sign(vs,GG, p)  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
-        GG = permuteGraph(GG,p)
+            # now delete the first edge, join the vertices 0 and 1, and fix labeling
+            GG.merge_vertices([0,1])
+            p = vcat([1],collect(1:self.nVertices-1))
+            if not self.evenEdges:
+                sgn *= super(ContractDOrdinary, self).domain.perm_sign(GG, p)  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
+            GG = permuteGraph(GG,p)
 
-        # finally delete the last vertex
-        # remove_vertex(GG, nVert) ... by creating a new graph
-        GGG = small_graph(self.nVertices-1)
-        for (uu,vv) = edges(GG)
-          if uu != vv
-            add_edge!(GGG, uu, vv)
+            # finally delete the last vertex
+            # remove_vertex(GG, nVert) ... by creating a new graph
+            GGG = small_graph(self.nVertices-1)
+            for (uu,vv) = edges(GG):
+                if uu != vv:
+                    add_edge!(GGG, uu, vv)
 
-        push!(ret, (GGG, sgn))
-        return ret
+            image.append((GG, sgn))
+        return image
 
     def work_estimate(self):
         # give estimate of number of graphs

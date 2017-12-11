@@ -25,7 +25,7 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def _perm_sign(self, graph, perm):
+    def perm_sign(self, graph, perm):
         pass
 
     @abstractmethod

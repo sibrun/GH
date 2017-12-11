@@ -5,18 +5,23 @@ import GraphVectorSpace as GVS
 
 class GraphOperator():
     __metaclass__ = ABCMeta
+    def __init__(self):
+        self.file_name = self.file_name()
+        self.domain = self.get_domain()
+        self.target = self.get_target()
+
     @abstractmethod
     def file_name(self):
         """Retrieve the file name (and path) of the file storing the matrix."""
         pass
 
     @abstractmethod
-    def domain(self):
+    def get_domain(self):
         """Returns the GraphVectorSpace on which the operator acts."""
         pass
 
     @abstractmethod
-    def target(self):
+    def get_target(self):
         """Returns the GraphVectorSpace in which the operator takes values."""
         pass
 
