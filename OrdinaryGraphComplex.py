@@ -59,7 +59,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
             pp=[j+1 for j in p]
             sgn = Permutation(pp).signature()
-            for (u, v, ignored) in G.edges():
+            for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
                     sgn *= -1
@@ -88,7 +88,6 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 
 
 # -----  Contraction operator --------
-
 class ContractDOrdinary(GO.GraphOperator):
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
@@ -96,7 +95,6 @@ class ContractDOrdinary(GO.GraphOperator):
         self.nVertices = nVertices
         self.nLoops = nLoops
         self.evenEdges = evenEdges
-
         super(ContractDOrdinary, self).__init__()
 
     def file_name(self):
@@ -113,7 +111,8 @@ class ContractDOrdinary(GO.GraphOperator):
     def _operate_on(self,G):
 
         image=[]
-        for (u,v) in G.edges(labels=False):
+        for (i, e) in enumerate(G.edges(labels=False)):
+            u, v = e
             # permute u,v to position 1,2
             r = range(0,self.nVertices)
             p = list(r)
@@ -127,23 +126,18 @@ class ContractDOrdinary(GO.GraphOperator):
                     p[idx] = j
                     idx +=1
 
-            pp = Permutation([i+1 for i in p]).inverse()
+            pp = Permutation([j+1 for j in p]).inverse()
             sgn = super(ContractDOrdinary, self).domain.perm_sign(G, pp)
             GG = G.relabel(perm=p)
 
-            # now delete the first edge, join the vertices 0 and 1, and fix labeling
+            for (j, ee) in enumerate(GG.edges(labels=False)):
+                a, b = ee
+                GG.set_edge_label(a,b,j)
+            # now delete the first edge and join the vertices 0 and 1
             GG.merge_vertices([0,1])
-            p = vcat([1],collect(1:self.nVertices-1))
             if not self.evenEdges:
-                sgn *= super(ContractDOrdinary, self).domain.perm_sign(GG, p)  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
-            GG = permuteGraph(GG,p)
-
-            # finally delete the last vertex
-            # remove_vertex(GG, nVert) ... by creating a new graph
-            GGG = small_graph(self.nVertices-1)
-            for (uu,vv) = edges(GG):
-                if uu != vv:
-                    add_edge!(GGG, uu, vv)
+                p = [j for (a, b, j) in GG.edges()]
+                sgn *= super(ContractDOrdinary, self).Permutation(p).signature()  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
 
             image.append((GG, sgn))
         return image

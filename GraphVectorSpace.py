@@ -56,21 +56,22 @@ class GraphVectorSpace():
 
     def canonical_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
-        sgn = self._perm_sign(graph, [v+1 for k, v in permDict.items()])
+        sgn = self.perm_sign(graph, [v+1 for k, v in permDict.items()])
         return (canonG.graph6_string(),sgn)
 
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:
-            if self._perm_sign(G, g.tuple()) == -1:
+            if self.perm_sign(G, g.tuple()) == -1:
                return True
         return False
 
+
     def basis_built(self):
-        if os.path.isfile(self.file_ame()):
+        if os.path.isfile(self.file_name()):
             return True
         return False
 
-    def dimension(self):
+    def get_dimension(self):
         if not self.valid():
             return 0
         fileName=self.file_name()
@@ -83,7 +84,7 @@ class GraphVectorSpace():
         f.close()
         return dimension
 
-    def basis(self, g6=False):
+    def load_basis(self, g6=False):
         if not self.valid():
             return []
         fileName = self.file_name()

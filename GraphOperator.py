@@ -39,7 +39,7 @@ class GraphOperator():
         pass
 
     def valid(self):
-        return self.domain().valid() and self.target().valid()
+        return self.domain.valid() and self.target.valid()
 
     def create_operator_matrix(self):
         """
@@ -47,16 +47,13 @@ class GraphOperator():
         The corresponding list files for source and target
         must exist when calling this function.
         """
-        fileName = self.file_name()
-        domain = self.domain()
-        target = self.target()
 
         try:
-            domainBasis = domain.basis()
+            domainBasis = self.domain.load_basis()
         except GVS.NotBuiltError:
             raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the domain")
         try:
-            targetBasis6 = target.basis(g6=True)
+            targetBasis6 = self.target.load_basis(g6=True)
         except GVS.NotBuiltError:
             raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the target")
 
@@ -68,19 +65,22 @@ class GraphOperator():
             open(fileName,"w").close()
             return
 
-        color_counts = domain.color_counts()
-        matrix = []
-
         # lookup g6 -> index in target vector space
         lookup = {s: j for (j,s) in enumerate(targetBasis6)}
-
-        f = open(fileName,"w")
+        matrix = []
         for (domainIndex,G) in enumerate(domainBasis):
-            imageList = self.operate_on(G)
+            imageList = self._operate_on(G)
             for (GG, prefactor) in imageList:
                 # canonize and look up
                 GGcanon6, sgn = domain.canonical_g6(GG)
                 imageIndex = lookup.get(GGcanon6)
                 if imageIndex:
-                    f.write("%d %d %d\n" % (domainIndex, imageIndex, sgn * prefactor))
-          # write matrix size
+                    matrix.append("%d %d %d" % (domainIndex, imageIndex, sgn * prefactor))
+
+        f = open(fileName, "w")
+        for line in matrix:
+            f.write(line + '\n')
+        f.close()
+
+    def load_operator_matrix(self):
+        pass
