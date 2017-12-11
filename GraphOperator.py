@@ -21,10 +21,10 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def _operate_on(self):
-        """For G::S a graph in the domain, returns a list of pairs (GG, x), GG::T graph
-        in the target, x a number,
-        such that (operator)(G) = sum x GG."""
+    def _operate_on(self,graph):
+        """For G a graph returns a list of pairs (GG, x),
+           such that (operator)(G) = sum x GG.
+        """
         pass
 
     @abstractmethod

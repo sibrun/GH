@@ -1,14 +1,16 @@
 import os
 from sage.all import *
 import GraphVectorSpace as GVS
+import GraphOperator as GO
 
 reload(GVS)
 
+dataDir = "./data"
+dataDirOdd = dataDir + "/ordinary/oddedge/"
+dataDirEven = dataDir + "/ordinary/evenedge/"
+imgBaseDir = "img/"
+
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
-    dataDir = "./data"
-    dataDirOdd = dataDir + "/ordinary/oddedge/"
-    dataDirEven = dataDir + "/ordinary/evenedge/"
-    imgBaseDir = "img/"
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
         self.nVertices = nVertices
@@ -16,14 +18,14 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         self.evenEdges = evenEdges
 
     def file_name(self):
-        dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
+        directory = dataDirEven if self.evenEdges else dataDirOdd
         s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
-        return os.path.join(dataDir, s)
+        return os.path.join(directory, s)
 
     def svg_dir(self):
-        dataDir = OrdinaryGraphVectorSpace.dataDirEven if self.evenEdges else OrdinaryGraphVectorSpace.dataDirOdd
+        directory = dataDirEven if self.evenEdges else dataDirOdd
         s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
-        return os.path.join(dataDir, OrdinaryGraphVectorSpace.imgBaseDir, s)
+        return os.path.join(directory, imgBaseDir, s)
 
     def color_counts(self):
         return None # no coloring
@@ -84,3 +86,69 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         n = self.nVertices
         return binomial((n*(n-1))/2, nEdges) / factorial(n)
 
+
+# -----  Contraction operator --------
+
+class ContractDOrdinary(GO.GraphOperator):
+
+    def __init__(self, nVertices, nLoops, evenEdges=True):
+        # source vector space:
+        self.nVertices = nVertices
+        self.nLoops = nLoops
+        self.evenEdges = evenEdges
+
+    def file_name(self):
+        directory = directory = dataDirEven if self.evenEdges else dataDirOdd
+        s = "contractD%d_%d.txt" % (self.nVertices, self.nLoops)
+        return os.path.join(directory, s)
+
+    def domain(self):
+        return OrdinaryGraphVectorSpace(self.nVertices, self.nLoops, self.evenEdges)
+
+    def target(self):
+        return OrdinaryGraphVectorSpace(self.nVertices-1, self.nLoops, self.evenEdges)
+
+    def _operate_on(self,graph):
+
+        image=[]
+        for (u,v) = edges(G)
+        # permute u,v to position 1 and 2
+        p = collect(1:self.nVertices)
+        p[1] = u
+        p[2] = v
+        idx = 3
+        for j = 1:self.nVertices
+            if j == u || j== v
+                continue
+            else
+                p[idx] = j
+                idx +=1
+
+        pp = invPermutation(p)
+        #println(pp)
+        sgn = get_perm_sign(vs,G, pp)
+        GG = permuteGraph(G,pp)
+
+        # now delete the first edge
+        remove_edge!(GG,1,2) #.... done later
+        # ... and join 0 and 1 and fix labelings
+        p = vcat([1],collect(1:self.nVertices-1))
+        if !self.evenEdges
+          sgn *= get_perm_sign(vs,GG, p)  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
+        GG = permuteGraph(GG,p)
+
+        # finally delete the last vertex
+        # remove_vertex(GG, nVert) ... by creating a new graph
+        GGG = small_graph(self.nVertices-1)
+        for (uu,vv) = edges(GG)
+          if uu != vv
+            add_edge!(GGG, uu, vv)
+
+        push!(ret, (GGG, sgn))
+        return ret
+
+    def work_estimate(self):
+        # give estimate of number of graphs
+        domain = self.domain()
+        nEdges = domain.nLoops + domain.nVertices -1
+        return domain.work_estimate * nEdges
