@@ -16,8 +16,9 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         self.nVertices = nVertices
         self.nLoops = nLoops
         self.evenEdges = evenEdges
+        super(OrdinaryGraphVectorSpace,self).__init__()
 
-    def file_name(self):
+    def get_file_name(self):
         directory = dataDirEven if self.evenEdges else dataDirOdd
         s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
         return os.path.join(directory, s)
@@ -30,7 +31,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
     def color_counts(self):
         return None # no coloring
 
-    def valid(self):
+    def is_valid(self):
         nEdges = self.nLoops + self.nVertices -1
         # at least trivalent, and simple
         return  (3*self.nVertices <= 2*nEdges) and self.nVertices > 0 and self.nLoops >= 0 and nEdges <= self.nVertices*(self.nVertices-1)/2
@@ -57,7 +58,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
         nEdges = nLoops + nVert - 1
         if evenEdges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            pp=[j+1 for j in p]
+            pp = [j+1 for j in p]
             sgn = Permutation(pp).signature()
             for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
@@ -76,7 +77,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
                 G1.set_edge_label(u,v,j)
 
             # we permute the graph, and read of the new labels
-            G1.relabel(perm=p,inplace=True)
+            G1.relabel(p,inplace=True)
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
 
@@ -108,12 +109,11 @@ class ContractDOrdinary(GO.GraphOperator):
     def get_target(self):
         return OrdinaryGraphVectorSpace(self.nVertices-1, self.nLoops, self.evenEdges)
 
-    def _operate_on(self,G):
-
+    def operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             u, v = e
-            # permute u,v to position 1,2
+            # permute u,v to position 0,1
             r = range(0,self.nVertices)
             p = list(r)
             p[0] = u
@@ -127,17 +127,18 @@ class ContractDOrdinary(GO.GraphOperator):
                     idx +=1
 
             pp = Permutation([j+1 for j in p]).inverse()
-            sgn = super(ContractDOrdinary, self).domain.perm_sign(G, pp)
-            GG = G.relabel(perm=p)
+            sgn = super(ContractDOrdinary, self).domain.perm_sign(G, [j-1 for j in pp])
+            GG = G.relabel(p)
 
             for (j, ee) in enumerate(GG.edges(labels=False)):
                 a, b = ee
                 GG.set_edge_label(a,b,j)
             # now delete the first edge and join the vertices 0 and 1
             GG.merge_vertices([0,1])
+            GG.relabel(list(range(0,GG.order())), inplace = True)
             if not self.evenEdges:
                 p = [j for (a, b, j) in GG.edges()]
-                sgn *= super(ContractDOrdinary, self).Permutation(p).signature()  # TODO: no good to call get_perm_sign with non-permutation if evenEdges
+                sgn *= Permutation(p).signature()
 
             image.append((GG, sgn))
         return image

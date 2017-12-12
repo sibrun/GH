@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import os
+import scipy.sparse as sparse
 from sage.all import  *
 import GraphVectorSpace as GVS
 
@@ -9,9 +10,10 @@ class GraphOperator():
         self.file_name = self.file_name()
         self.domain = self.get_domain()
         self.target = self.get_target()
+        self.valid = self.is_valid()
 
     @abstractmethod
-    def file_name(self):
+    def get_file_name(self):
         """Retrieve the file name (and path) of the file storing the matrix."""
         pass
 
@@ -26,7 +28,7 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def _operate_on(self,graph):
+    def operate_on(self,graph):
         """For G a graph returns a list of pairs (GG, x),
            such that (operator)(G) = sum x GG.
         """
@@ -38,8 +40,8 @@ class GraphOperator():
           (In arbitrary units)"""
         pass
 
-    def valid(self):
-        return self.domain.valid() and self.target.valid()
+    def is_valid(self):
+        return self.domain.valid and self.target.valid
 
     def create_operator_matrix(self):
         """
@@ -47,7 +49,6 @@ class GraphOperator():
         The corresponding list files for source and target
         must exist when calling this function.
         """
-
         try:
             domainBasis = self.domain.load_basis()
         except GVS.NotBuiltError:
@@ -62,7 +63,7 @@ class GraphOperator():
 
         if domainDim == 0 and targetDim == 0:
             # create empty file and return
-            open(fileName,"w").close()
+            open(self.fileName,"w").close()
             return
 
         # lookup g6 -> index in target vector space
@@ -72,15 +73,39 @@ class GraphOperator():
             imageList = self._operate_on(G)
             for (GG, prefactor) in imageList:
                 # canonize and look up
-                GGcanon6, sgn = domain.canonical_g6(GG)
+                GGcanon6, sgn = self.domain.canonical_g6(GG)
                 imageIndex = lookup.get(GGcanon6)
-                if imageIndex:
-                    matrix.append("%d %d %d" % (domainIndex, imageIndex, sgn * prefactor))
+                matrix.append("%d %d %d" % (domainIndex, imageIndex, sgn * prefactor))
 
-        f = open(fileName, "w")
+        f = open(self.fileName, "w")
         for line in matrix:
             f.write(line + '\n')
         f.close()
 
+    def matrix_built(self):
+        if os.path.isfile(self.file_name):
+            return True
+        return False
+
     def load_operator_matrix(self):
-        pass
+        if (not self.domain.valid) or (not self.target.valid):
+            return []
+        if not self.matrix_built():
+            raise GVS.NotBuiltError("Cannot load matrix: No matrix file")
+
+        f = open(self.file_name, 'r')
+        matrixList = f.read().splitlines()
+        f.close()
+        if len(matrixList)==0:
+            return []
+        else:
+            row = []
+            column = []
+            data=[]
+            for line in matrixList:
+                (i, j, v) = map(int, line.split(" "))
+                row.append(i)
+                column.append(j)
+                data.append(v)
+            return sparse.csr_matrix(data,(row,column))
+

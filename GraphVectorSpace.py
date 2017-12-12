@@ -4,8 +4,13 @@ from sage.all import  *
 
 class GraphVectorSpace():
     __metaclass__ = ABCMeta
+
+    def __init__(self):
+        self.valid = self.is_valid()
+        self.file_name = self.get_file_name()
+
     @abstractmethod
-    def file_name(self):
+    def get_file_name(self):
         pass
 
     @abstractmethod
@@ -13,7 +18,7 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def valid(self):
+    def is_valid(self):
         pass
 
     @abstractmethod
@@ -33,7 +38,7 @@ class GraphVectorSpace():
         pass
 
     def create_basis(self):
-        outPath = self.file_name()
+        outPath = self.file_name
         outDir = os.path.dirname(outPath)
         if not os.path.exists(outDir):
             os.makedirs(outDir)
@@ -67,17 +72,16 @@ class GraphVectorSpace():
 
 
     def basis_built(self):
-        if os.path.isfile(self.file_name()):
+        if os.path.isfile(self.file_name):
             return True
         return False
 
     def get_dimension(self):
         if not self.valid():
             return 0
-        fileName=self.file_name()
-        if not os.path.isfile(fileName):
+        if not os.path.isfile(self.file_name):
             raise NotBuiltError("Basis ist not built yet")
-        f = open(fileName, 'r')
+        f = open(self.file_name, 'r')
         dimension=0
         for line in f:
             dimension += 1
@@ -87,18 +91,14 @@ class GraphVectorSpace():
     def load_basis(self, g6=False):
         if not self.valid():
             return []
-        fileName = self.file_name()
-        if not os.path.isfile(fileName):
+        if not os.path.isfile(self.file_name):
             raise NotBuiltError("Basis ist not built yet")
-        f = open(fileName, 'r')
-        basisList=[]
-        if g6:
-            for line in f:
-                basisList.append(line)
-        else:
-            for line in f:
-                basisList.append(Graph(line))
+        f = open(self.file_name, 'r')
+        basisList = f.read().splitlines()
         f.close()
+        if not g6:
+            for G in basisList:
+                G = Graph(G)
         return basisList
 
 class NotBuiltError(RuntimeError):
