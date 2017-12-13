@@ -5,28 +5,13 @@ from sage.all import  *
 class GraphVectorSpace():
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        self.valid = self.is_valid()
-        self.file_name = self.get_file_name()
-
-    @abstractmethod
-    def get_file_name(self):
-        pass
-
-    @abstractmethod
-    def svg_dir(self):
-        pass
-
-    @abstractmethod
-    def is_valid(self):
-        pass
+    def __init__(self, valid, file_name, color_counts=None):
+        self.valid = valid
+        self.file_name = file_name
+        self.color_counts = color_counts
 
     @abstractmethod
     def _generating_graphs(self):
-        pass
-
-    @abstractmethod
-    def color_counts(self):
         pass
 
     @abstractmethod
@@ -34,7 +19,7 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def work_estimate(self):
+    def get_work_estimate(self):
         pass
 
     def create_basis(self):
@@ -70,16 +55,15 @@ class GraphVectorSpace():
                return True
         return False
 
-
     def basis_built(self):
         if os.path.isfile(self.file_name):
             return True
         return False
 
     def get_dimension(self):
-        if not self.valid():
+        if not self.valid:
             return 0
-        if not os.path.isfile(self.file_name):
+        if not self.basis_built():
             raise NotBuiltError("Basis ist not built yet")
         f = open(self.file_name, 'r')
         dimension=0
@@ -89,9 +73,9 @@ class GraphVectorSpace():
         return dimension
 
     def load_basis(self, g6=False):
-        if not self.valid():
+        if not self.valid:
             return []
-        if not os.path.isfile(self.file_name):
+        if not self.basis_built():
             raise NotBuiltError("Basis ist not built yet")
         f = open(self.file_name, 'r')
         basisList = f.read().splitlines()

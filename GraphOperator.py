@@ -6,26 +6,12 @@ import GraphVectorSpace as GVS
 
 class GraphOperator():
     __metaclass__ = ABCMeta
-    def __init__(self):
-        self.file_name = self.file_name()
-        self.domain = self.get_domain()
-        self.target = self.get_target()
-        self.valid = self.is_valid()
 
-    @abstractmethod
-    def get_file_name(self):
-        """Retrieve the file name (and path) of the file storing the matrix."""
-        pass
-
-    @abstractmethod
-    def get_domain(self):
-        """Returns the GraphVectorSpace on which the operator acts."""
-        pass
-
-    @abstractmethod
-    def get_target(self):
-        """Returns the GraphVectorSpace in which the operator takes values."""
-        pass
+    def __init__(self, file_name, domain, target):
+        self.file_name = file_name
+        self.domain = domain
+        self.target = target
+        self.valid = self.domain.valid and self.target.valid
 
     @abstractmethod
     def operate_on(self,graph):
@@ -35,13 +21,10 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def work_estimate(self):
+    def get_work_estimate(self):
         """Provides a rough estimate of the amount of work needed to create the operator file.
           (In arbitrary units)"""
         pass
-
-    def is_valid(self):
-        return self.domain.valid and self.target.valid
 
     def create_operator_matrix(self):
         """
@@ -88,7 +71,7 @@ class GraphOperator():
         return False
 
     def load_operator_matrix(self):
-        if (not self.domain.valid) or (not self.target.valid):
+        if not self.valid:
             return []
         if not self.matrix_built():
             raise GVS.NotBuiltError("Cannot load matrix: No matrix file")

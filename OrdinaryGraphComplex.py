@@ -10,31 +10,23 @@ dataDirOdd = dataDir + "/ordinary/oddedge/"
 dataDirEven = dataDir + "/ordinary/evenedge/"
 imgBaseDir = "img/"
 
+
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
         self.nVertices = nVertices
         self.nLoops = nLoops
         self.evenEdges = evenEdges
-        super(OrdinaryGraphVectorSpace,self).__init__()
 
-    def get_file_name(self):
+        self.nEdges = self.nLoops + self.nVertices - 1
+
         directory = dataDirEven if self.evenEdges else dataDirOdd
         s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
-        return os.path.join(directory, s)
+        file_name = os.path.join(directory, s)
 
-    def svg_dir(self):
-        directory = dataDirEven if self.evenEdges else dataDirOdd
-        s = "imgs%d_%d/" % (self.nVertices, self.nLoops)
-        return os.path.join(directory, imgBaseDir, s)
+        valid = (3 * self.nVertices <= 2 * self.nEdges) and self.nVertices > 0 and self.nLoops >= 0 and self.nEdges <= self.nVertices * (self.nVertices - 1) / 2
 
-    def color_counts(self):
-        return None # no coloring
-
-    def is_valid(self):
-        nEdges = self.nLoops + self.nVertices -1
-        # at least trivalent, and simple
-        return  (3*self.nVertices <= 2*nEdges) and self.nVertices > 0 and self.nLoops >= 0 and nEdges <= self.nVertices*(self.nVertices-1)/2
+        super(OrdinaryGraphVectorSpace,self).__init__(valid, file_name)
 
     def _generating_graphs(self):
         # generate List of unmarked graphs
@@ -81,7 +73,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
             pp = [j+1 for u,v,j in G1.edges()]
             return Permutation(pp).signature()
 
-    def work_estimate(self):
+    def get_work_estimate(self):
         # give estimate of number of graphs
         nEdges = self.nLoops + self.nVertices - 1
         n = self.nVertices
@@ -92,29 +84,22 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 class ContractDOrdinary(GO.GraphOperator):
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
-        # source vector space:
-        self.nVertices = nVertices
-        self.nLoops = nLoops
-        self.evenEdges = evenEdges
-        super(ContractDOrdinary, self).__init__()
 
-    def file_name(self):
-        directory = directory = dataDirEven if self.evenEdges else dataDirOdd
-        s = "contractD%d_%d.txt" % (self.nVertices, self.nLoops)
-        return os.path.join(directory, s)
+        directory = dataDirEven if evenEdges else dataDirOdd
+        s = "contractD%d_%d.txt" % (nVertices, nLoops)
+        file_name = os.path.join(directory, s)
 
-    def get_domain(self):
-        return OrdinaryGraphVectorSpace(self.nVertices, self.nLoops, self.evenEdges)
+        domain = OrdinaryGraphVectorSpace(nVertices, nLoops, evenEdges)
+        target = OrdinaryGraphVectorSpace(nVertices-1, nLoops, evenEdges)
 
-    def get_target(self):
-        return OrdinaryGraphVectorSpace(self.nVertices-1, self.nLoops, self.evenEdges)
+        super(ContractDOrdinary, self).__init__(file_name, domain, target)
 
     def operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             u, v = e
             # permute u,v to position 0,1
-            r = range(0,self.nVertices)
+            r = range(0,super(ContractDOrdinary, self).domain.nVertices)
             p = list(r)
             p[0] = u
             p[1] = v
@@ -136,15 +121,13 @@ class ContractDOrdinary(GO.GraphOperator):
             # now delete the first edge and join the vertices 0 and 1
             GG.merge_vertices([0,1])
             GG.relabel(list(range(0,GG.order())), inplace = True)
-            if not self.evenEdges:
+            if not super(ContractDOrdinary, self).domain.evenEdges:
                 p = [j for (a, b, j) in GG.edges()]
                 sgn *= Permutation(p).signature()
 
             image.append((GG, sgn))
         return image
 
-    def work_estimate(self):
+    def get_work_estimate(self):
         # give estimate of number of graphs
-        domain = self.domain()
-        nEdges = domain.nLoops + domain.nVertices -1
-        return domain.work_estimate * nEdges
+        return super(ContractDOrdinary, self).domain.work_estimate * super(ContractDOrdinary, self).domain.nEdges
