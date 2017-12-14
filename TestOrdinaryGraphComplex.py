@@ -6,9 +6,7 @@ from sage.all import *
 reload(OGC)
 
 
-class OGCTestCase(TGVS.GVSTestCase):
-    def setUp(self):
-        pass
+class OGCTestCase(unittest.TestCase):
 
     def test_perm_sign(self):
 
@@ -29,10 +27,9 @@ class OGCTestCase(TGVS.GVSTestCase):
 
         for evenEdges in [True, False]:
             ogc = OGC.OrdinaryGraphVectorSpace(10, 9, evenEdges=evenEdges)
-            ogc.create_basis_g6()
-            #super(OGCTestCase, self).test_create_basis(ogc)
-            #ogc_on_fly = OGC.OrdinaryGraphVectorSpace(6, 5, evenEdges=evenEdges, basis_on_fly=True)
-            #super(OGCTestCase, self).test_create_basis_on_fly(ogc,ogc_on_fly)
+            self.GVSTest.test_create_basis(ogc)
+            ogc_on_fly = OGC.OrdinaryGraphVectorSpace(6, 5, evenEdges=evenEdges, basis_on_fly=True)
+            self.GVSTest.test_create_basis_on_fly(ogc,ogc_on_fly)
 
 def suite():
     suite = unittest.TestSuite()

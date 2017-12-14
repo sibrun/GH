@@ -16,8 +16,7 @@ class GVSTestCase(unittest.TestCase):
         basis1 = graph_vector_space.create_basis_g6()
         self.assertTrue(graph_vector_space.basis_built(), 'basis should be built')
         basis2 = graph_vector_space.get_basis(g6=True)
-        for (a, b) in list(zip(basis1, basis2)):
-            self.assertEqual(a, b, 'created and loaded basis are not equal')
+        self.assertListEqual(basis1, basis2, 'created and loaded basis are not equal')
         graph_vector_space.delete_file()
         self.assertFalse(graph_vector_space.basis_built(), 'basis file should have been deleted')
 
@@ -28,9 +27,7 @@ class GVSTestCase(unittest.TestCase):
         graph_vector_space_on_fly.delet_basis()
         self.assertFalse(graph_vector_space_on_fly.basis_built(), 'basis file should have been deleted')
         basis2 = graph_vector_space.get_basis()
-        for (a, b) in list(zip(basis1, basis2)):
-            self.assertEqual(a, b, 'created and loaded basis(created on fly) are not equal')
-            graph_vector_space.delete_file()
+        self.assertListEqual(basis1, basis2, 'created and loaded basis(created on fly) are not equal')
         graph_vector_space.delete_file()
         self.assertFalse(graph_vector_space.basis_built(), 'basis file should have been deleted')
 
