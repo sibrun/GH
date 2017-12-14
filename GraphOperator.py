@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import os
+import pickle
 import scipy.sparse as sparse
 from sage.all import  *
 import GraphVectorSpace as GVS
@@ -14,7 +15,7 @@ class GraphOperator():
         self.valid = self.domain.valid and self.target.valid
 
     @abstractmethod
-    def operate_on(self,graph):
+    def _operate_on(self,graph):
         """For G a graph returns a list of pairs (GG, x),
            such that (operator)(G) = sum x GG.
         """
@@ -33,11 +34,11 @@ class GraphOperator():
         must exist when calling this function.
         """
         try:
-            domainBasis = self.domain.load_basis()
+            domainBasis = self.domain.get_basis(g6=False)
         except GVS.NotBuiltError:
             raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the domain")
         try:
-            targetBasis6 = self.target.load_basis(g6=True)
+            targetBasis6 = self.target.get_basis(g6=True)
         except GVS.NotBuiltError:
             raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the target")
 
@@ -46,7 +47,7 @@ class GraphOperator():
 
         if domainDim == 0 and targetDim == 0:
             # create empty file and return
-            open(self.fileName,"w").close()
+            open(self.fileName,"wb").close()
             return
 
         # lookup g6 -> index in target vector space
@@ -58,37 +59,38 @@ class GraphOperator():
                 # canonize and look up
                 GGcanon6, sgn = self.domain.canonical_g6(GG)
                 imageIndex = lookup.get(GGcanon6)
-                matrix.append("%d %d %d" % (domainIndex, imageIndex, sgn * prefactor))
+                matrix.append((domainIndex, imageIndex, sgn * prefactor))
 
-        f = open(self.fileName, "w")
-        for line in matrix:
-            f.write(line + '\n')
-        f.close()
+        with open(self.fileName, "wb") as f:
+            pickle.dump(matrix,f)
+        return matrix
 
     def matrix_built(self):
         if os.path.isfile(self.file_name):
             return True
         return False
 
-    def load_operator_matrix(self):
+    def _load_operator_matrix(self):
+        with open(self.file_name, 'rb') as f:
+            matrixList = pickle.load(f)
+        return matrixList
+
+    def get_operator_matrix(self):
         if not self.valid:
             return []
         if not self.matrix_built():
             raise GVS.NotBuiltError("Cannot load matrix: No matrix file")
 
-        f = open(self.file_name, 'r')
-        matrixList = f.read().splitlines()
-        f.close()
+        matrixList = self._load_operator_matrix()
         if len(matrixList)==0:
             return []
-        else:
-            row = []
-            column = []
-            data=[]
-            for line in matrixList:
-                (i, j, v) = map(int, line.split(" "))
-                row.append(i)
-                column.append(j)
-                data.append(v)
-            return sparse.csr_matrix(data,(row,column))
+
+        row = []
+        column = []
+        data=[]
+        for (i, j, v) in matrixList:
+            row.append(i)
+            column.append(j)
+            data.append(v)
+        return sparse.csr_matrix(data,(row,column))
 

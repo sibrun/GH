@@ -13,7 +13,7 @@ imgBaseDir = "img/"
 
 class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 
-    def __init__(self, nVertices, nLoops, evenEdges=True):
+    def __init__(self, nVertices, nLoops, evenEdges=True, basis_on_fly=False):
         self.nVertices = nVertices
         self.nLoops = nLoops
         self.evenEdges = evenEdges
@@ -26,7 +26,7 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 
         valid = (3 * self.nVertices <= 2 * self.nEdges) and self.nVertices > 0 and self.nLoops >= 0 and self.nEdges <= self.nVertices * (self.nVertices - 1) / 2
 
-        super(OrdinaryGraphVectorSpace,self).__init__(valid, file_name)
+        super(OrdinaryGraphVectorSpace,self).__init__(valid, file_name, basis_on_fly=basis_on_fly)
 
     def _generating_graphs(self):
         # generate List of unmarked graphs
@@ -83,18 +83,18 @@ class OrdinaryGraphVectorSpace(GVS.GraphVectorSpace):
 # -----  Contraction operator --------
 class ContractDOrdinary(GO.GraphOperator):
 
-    def __init__(self, nVertices, nLoops, evenEdges=True):
+    def __init__(self, nVertices, nLoops, evenEdges=True, basis_on_fly=False):
 
         directory = dataDirEven if evenEdges else dataDirOdd
         s = "contractD%d_%d.txt" % (nVertices, nLoops)
         file_name = os.path.join(directory, s)
 
-        domain = OrdinaryGraphVectorSpace(nVertices, nLoops, evenEdges)
-        target = OrdinaryGraphVectorSpace(nVertices-1, nLoops, evenEdges)
+        domain = OrdinaryGraphVectorSpace(nVertices, nLoops, evenEdges, basis_on_fly=basis_on_fly)
+        target = OrdinaryGraphVectorSpace(nVertices-1, nLoops, evenEdges, basis_on_fly=basis_on_fly)
 
         super(ContractDOrdinary, self).__init__(file_name, domain, target)
 
-    def operate_on(self,G):
+    def _operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             u, v = e
