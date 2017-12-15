@@ -24,22 +24,23 @@ class GraphVectorSpace():
         pass
 
     def create_basis(self):
-        outPath = self.file_name
-        outDir = os.path.dirname(outPath)
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
+        if not self.basis_built():
+            outPath = self.file_name
+            outDir = os.path.dirname(outPath)
+            if not os.path.exists(outDir):
+                os.makedirs(outDir)
 
-        generatingList = self._generating_graphs()
-        basisSet = set()
-        for G in generatingList:
-            canonG = G.canonical_label()
-            automList = G.automorphism_group().gens()
-            if len(automList):
-                canon6=canonG.graph6_string()
-                if not canon6 in basisSet:
-                    if not self._has_odd_automorphisms(G, automList):
-                        basisSet.add(canon6)
-        self._store_basis_g6(list(basisSet))
+            generatingList = self._generating_graphs()
+            basisSet = set()
+            for G in generatingList:
+                canonG = G.canonical_label()
+                automList = G.automorphism_group().gens()
+                if len(automList):
+                    canon6=canonG.graph6_string()
+                    if not canon6 in basisSet:
+                        if not self._has_odd_automorphisms(G, automList):
+                            basisSet.add(canon6)
+            self._store_basis_g6(list(basisSet))
 
     def canonical_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
@@ -58,12 +59,13 @@ class GraphVectorSpace():
         return False
 
     def _store_basis_g6(self, basis_g6):
-        with open(self.file_name, 'wb') as f:
-            pickle.dump(basis_g6, f)
+        with open(self.file_name, 'w') as f:
+            for g6 in basis_g6:
+                f.write(g6 + '\n')
 
     def _load_basis_g6(self):
-        with open(self.file_name, 'rb') as f:
-            basis_g6 = pickle.load(f)
+        with open(self.file_name, 'r') as f:
+            basis_g6 = f.read().splitlines()
         return basis_g6
 
     def get_basis(self, g6=True):

@@ -1,10 +1,10 @@
 import os
 from sage.all import *
 import GraphVectorSpace as GVS
-import GraphOperator as GO
+import GraphOperator
 
 reload(GVS)
-reload(GO)
+reload(GraphOperator)
 
 dataDir = "./data"
 dataDirOdd = dataDir + "/ordinary/oddedge/"
@@ -82,7 +82,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
 
 # -----  Contraction operator --------
-class ContractGO(GO.GraphOperator):
+class ContractGO(GraphOperator.GraphOperator):
 
     def __init__(self, nVertices, nLoops, evenEdges=True):
 
@@ -90,8 +90,8 @@ class ContractGO(GO.GraphOperator):
         s = "contract%d_%d.txt" % (nVertices, nLoops)
         file_name = os.path.join(directory, s)
 
-        domain = OrdinaryGVS(nVertices, nLoops, evenEdges)
-        target = OrdinaryGVS(nVertices-1, nLoops, evenEdges)
+        domain = OrdinaryGVS(nVertices, nLoops, evenEdges=evenEdges)
+        target = OrdinaryGVS(nVertices-1, nLoops, evenEdges=evenEdges)
 
         super(ContractGO, self).__init__(file_name, domain, target)
 
@@ -100,7 +100,7 @@ class ContractGO(GO.GraphOperator):
         for (i, e) in enumerate(G.edges(labels=False)):
             u, v = e
             # permute u,v to position 0,1
-            r = range(0,super(ContractGO, self).domain.nVertices)
+            r = range(0,self.domain.nVertices)
             p = list(r)
             p[0] = u
             p[1] = v
@@ -112,23 +112,30 @@ class ContractGO(GO.GraphOperator):
                     p[idx] = j
                     idx +=1
 
-            pp = Permutation([j+1 for j in p]).inverse()
-            sgn = super(ContractGO, self).domain.perm_sign(G, [j-1 for j in pp])
-            GG = G.relabel(p)
+            pp = [j-1 for j in (Permutation([j+1 for j in p]).inverse())]
+            sgn = self.domain.perm_sign(G, pp)
+            G1 = copy(G)
+            G1.relabel(pp, inplace=True)
 
-            for (j, ee) in enumerate(GG.edges(labels=False)):
+            for (j, ee) in enumerate(G1.edges(labels=False)):
                 a, b = ee
-                GG.set_edge_label(a,b,j)
+                G1.set_edge_label(a,b,j)
             # now delete the first edge and join the vertices 0 and 1
-            GG.merge_vertices([0,1])
-            GG.relabel(list(range(0,GG.order())), inplace = True)
-            if not super(ContractGO, self).domain.evenEdges:
-                p = [j for (a, b, j) in GG.edges()]
-                sgn *= Permutation(p).signature()
+            #print(G1.edges())
+            G1.merge_vertices([0,1])
+            #print(G1.edges())
+            #print(G1.vertices())
+            #G1.relabel(list(range(0,G1.order())), inplace = True)
+            #print(G1.vertices())
+            #print(G1.edges())
+            if not self.domain.evenEdges:
+                p = [j for (a, b, j) in G1.edges()]
+                #print(p)
+                #sgn *= Permutation(p).signature()
 
-            image.append((GG, sgn))
+            image.append((G1, sgn))
         return image
 
     def get_work_estimate(self):
         # give estimate of number of graphs
-        return super(ContractGO, self).domain.get_work_estimate * super(ContractGO, self).domain.nEdges
+        return self.domain.get_work_estimate() * self.domain.nEdges

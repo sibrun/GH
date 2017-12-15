@@ -1,10 +1,12 @@
 import unittest
 import GraphVectorSpace as GVS
+import GraphOperator
 import OrdinaryGraphComplex as OGC
 from sage.all import *
 
-reload(OGC)
 reload(GVS)
+reload(GraphOperator)
+reload(OGC)
 
 
 class OGCTestCase(unittest.TestCase):
@@ -26,8 +28,7 @@ class OGCTestCase(unittest.TestCase):
         self.assertTrue(ogc_even.perm_sign(G, p) == 1, 'incorrect permutation sign')
 
     def test_valid(self):
-        ogc_even = OGC.OrdinaryGVS(6, 5, evenEdges=True)
-        print(ogc_even.get_work_estimate())
+        ogc_even = OGC.OrdinaryGVS(5, 5, evenEdges=True)
 
     def test_basis_functionality(self):
 
@@ -52,11 +53,11 @@ class OGCTestCase(unittest.TestCase):
 
     def test_operator_functionality(self):
 
-        op=OGC.ContractGO(6,5,evenEdges=False)
-        print(op.valid)
+        op=OGC.ContractGO(7,6,evenEdges=False)
+        op.delete_file()
         op.create_domain_basis()
         op.create_target_basis()
-        #op.get_work_estimate()
+        op.create_operator_matrix()
 
 def suite():
     suite = unittest.TestSuite()
@@ -69,3 +70,4 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+

@@ -11,7 +11,6 @@ class GraphOperator():
     def __init__(self, file_name, domain, target):
         self.file_name = file_name
         self.domain = domain
-        print('domain recieved')
         self.target = target
         self.valid = self.domain.valid and self.target.valid
 
@@ -40,46 +39,58 @@ class GraphOperator():
         The corresponding list files for source and target
         must exist when calling this function.
         """
-        try:
-            domainBasis = self.domain.get_basis(g6=False)
-        except GVS.NotBuiltError:
-            raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the domain")
-        try:
-            targetBasis6 = self.target.get_basis(g6=True)
-        except GVS.NotBuiltError:
-            raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the target")
+        if not self.matrix_built():
+            try:
+                domainBasis = self.domain.get_basis(g6=False)
+            except GVS.NotBuiltError:
+                raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the domain")
+            try:
+                targetBasis6 = self.target.get_basis(g6=True)
+            except GVS.NotBuiltError:
+                raise GVS.NotBuiltError("Cannot build operator matrix: First build basis of the target")
 
-        domainDim = len(domainBasis)
-        targetDim = len(targetBasis6)
+            domainDim = len(domainBasis)
+            targetDim = len(targetBasis6)
 
-        if domainDim == 0 and targetDim == 0:
-            # create empty file and return
-            open(self.fileName,"wb").close()
-            return
+            if domainDim == 0 or targetDim == 0:
+                # create empty file and return
+                open(self.fileName,"w").close()
+                return
+            # lookup g6 -> index in target vector space
+            lookup = {s: j for (j,s) in enumerate(targetBasis6)}
+            print(lookup)
+            matrix = []
+            for (domainIndex,G) in enumerate(domainBasis):
+                imageList = self._operate_on(G)
+                for (GG, prefactor) in imageList:
+                    # canonize and look up
+                    GGcanon6, sgn = self.domain.canonical_g6(GG)
+                    #print(GGcanon6)
+                    imageIndex = lookup.get(GGcanon6)
+                    matrix.append((domainIndex, imageIndex, sgn * prefactor))
 
-        # lookup g6 -> index in target vector space
-        lookup = {s: j for (j,s) in enumerate(targetBasis6)}
-        matrix = []
-        for (domainIndex,G) in enumerate(domainBasis):
-            imageList = self._operate_on(G)
-            for (GG, prefactor) in imageList:
-                # canonize and look up
-                GGcanon6, sgn = self.domain.canonical_g6(GG)
-                imageIndex = lookup.get(GGcanon6)
-                matrix.append((domainIndex, imageIndex, sgn * prefactor))
-
-        with open(self.fileName, "wb") as f:
-            pickle.dump(matrix,f)
-        return matrix
+            #print(matrix)
+            self._store_operator_matrix(matrix)
 
     def matrix_built(self):
         if os.path.isfile(self.file_name):
             return True
         return False
 
+    def _store_operator_matrix(self, matrixList):
+        with open(self.file_name, 'w') as f:
+            for line in matrixList:
+                (i,j,v) = line
+                line_string = "%d %d %d" % (i,j,v)
+                f.write(line_string + '\n')
+
     def _load_operator_matrix(self):
-        with open(self.file_name, 'rb') as f:
-            matrixList = pickle.load(f)
+        with open(self.file_name, 'r') as f:
+            matrixList_string = f.read().splitlines()
+        matrixList=[]
+        for line in matrixList_string:
+            (i, j, v) = map(int, line.split(" "))
+            matrixList.append((i, j, v))
         return matrixList
 
     def get_operator_matrix(self):
@@ -101,3 +112,6 @@ class GraphOperator():
             data.append(v)
         return sparse.csr_matrix(data,(row,column))
 
+    def delete_file(self):
+        if os.path.isfile(self.file_name):
+            os.remove(self.file_name)
