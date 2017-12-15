@@ -6,18 +6,10 @@ from sage.all import  *
 class GraphVectorSpace():
     __metaclass__ = ABCMeta
 
-    def __init__(self, valid, file_name, color_counts=None, basis_on_fly=False):
+    def __init__(self, valid, file_name, color_counts=None):
         self.valid = valid
         self.file_name = file_name
         self.color_counts = color_counts
-        self.basis_on_fly = basis_on_fly
-        self.basis_g6 = None
-
-        if basis_on_fly:
-            if not self.basis_built():
-                self.basis_g6 = self.create_basis_g6()
-            else:
-                self.basis_g6 = self._load_basis_g6()
 
     @abstractmethod
     def _generating_graphs(self):
@@ -31,25 +23,23 @@ class GraphVectorSpace():
     def get_work_estimate(self):
         pass
 
-    def create_basis_g6(self):
+    def create_basis(self):
         outPath = self.file_name
         outDir = os.path.dirname(outPath)
         if not os.path.exists(outDir):
             os.makedirs(outDir)
 
-        gList = self._generating_graphs()
-        basisList = set()
-        for G in gList:
+        generatingList = self._generating_graphs()
+        basisSet = set()
+        for G in generatingList:
             canonG = G.canonical_label()
             automList = G.automorphism_group().gens()
             if len(automList):
                 canon6=canonG.graph6_string()
-                if not canon6 in basisList:
+                if not canon6 in basisSet:
                     if not self._has_odd_automorphisms(G, automList):
-                        basisList.add(canon6)
-        with open(outPath, 'wb') as f:
-            pickle.dump(basisList, f)
-        return basisList
+                        basisSet.add(canon6)
+        self._store_basis_g6(list(basisSet))
 
     def canonical_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
@@ -67,27 +57,28 @@ class GraphVectorSpace():
             return True
         return False
 
+    def _store_basis_g6(self, basis_g6):
+        with open(self.file_name, 'wb') as f:
+            pickle.dump(basis_g6, f)
+
     def _load_basis_g6(self):
         with open(self.file_name, 'rb') as f:
             basis_g6 = pickle.load(f)
         return basis_g6
 
-    def get_basis(self, g6=False):
+    def get_basis(self, g6=True):
         if not self.valid:
             return []
-        if self.basis_on_fly and self.basis_built():
-            basis_g6 = self.basis_g6
-        else:
-            if not self.basis_built():
-                raise NotBuiltError("Basis ist not built yet")
-            basis_g6 = self._load_basis_g6()
+        if not self.basis_built():
+            raise NotBuiltError("Basis ist not built yet")
+        basis_g6 = self._load_basis_g6()
         if g6:
             return basis_g6
         else:
-            basisList = []
+            basis = []
             for G in basis_g6:
-                basisList.append(Graph(G))
-            return basisList
+                basis.append(Graph(G))
+            return basis
 
     def get_dimension(self):
         if not self.valid:

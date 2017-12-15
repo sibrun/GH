@@ -11,6 +11,7 @@ class GraphOperator():
     def __init__(self, file_name, domain, target):
         self.file_name = file_name
         self.domain = domain
+        print('domain recieved')
         self.target = target
         self.valid = self.domain.valid and self.target.valid
 
@@ -26,6 +27,12 @@ class GraphOperator():
         """Provides a rough estimate of the amount of work needed to create the operator file.
           (In arbitrary units)"""
         pass
+
+    def create_domain_basis(self):
+        self.domain.create_basis()
+
+    def create_target_basis(self):
+        self.target.create_basis()
 
     def create_operator_matrix(self):
         """
