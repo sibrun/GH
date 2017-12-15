@@ -25,11 +25,6 @@ class GraphVectorSpace():
 
     def create_basis(self):
         if not self.basis_built():
-            outPath = self.file_name
-            outDir = os.path.dirname(outPath)
-            if not os.path.exists(outDir):
-                os.makedirs(outDir)
-
             generatingList = self._generating_graphs()
             basisSet = set()
             for G in generatingList:
@@ -59,6 +54,9 @@ class GraphVectorSpace():
         return False
 
     def _store_basis_g6(self, basis_g6):
+        outDir = os.path.dirname(self.file_name)
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
         with open(self.file_name, 'w') as f:
             for g6 in basis_g6:
                 f.write(g6 + '\n')

@@ -54,23 +54,24 @@ class GraphOperator():
 
             if domainDim == 0 or targetDim == 0:
                 # create empty file and return
-                open(self.fileName,"w").close()
+                open(self.file_name, "w").close()
                 return
             # lookup g6 -> index in target vector space
             lookup = {s: j for (j,s) in enumerate(targetBasis6)}
-            print(lookup)
-            matrix = []
-            for (domainIndex,G) in enumerate(domainBasis):
+            #print(lookup)
+            matrixList = []
+            for (domainIndex, G) in enumerate(domainBasis):
                 imageList = self._operate_on(G)
                 for (GG, prefactor) in imageList:
                     # canonize and look up
                     GGcanon6, sgn = self.domain.canonical_g6(GG)
                     #print(GGcanon6)
                     imageIndex = lookup.get(GGcanon6)
-                    matrix.append((domainIndex, imageIndex, sgn * prefactor))
+                    if imageIndex is not None:
+                        matrixList.append((domainIndex, imageIndex, sgn * prefactor))
 
             #print(matrix)
-            self._store_operator_matrix(matrix)
+            self._store_operator_matrix(matrixList)
 
     def matrix_built(self):
         if os.path.isfile(self.file_name):
@@ -78,10 +79,13 @@ class GraphOperator():
         return False
 
     def _store_operator_matrix(self, matrixList):
+        outDir = os.path.dirname(self.file_name)
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
         with open(self.file_name, 'w') as f:
             for line in matrixList:
-                (i,j,v) = line
-                line_string = "%d %d %d" % (i,j,v)
+                (i, j, v) = line
+                line_string = "%d %d %d" % (i, j, v)
                 f.write(line_string + '\n')
 
     def _load_operator_matrix(self):
@@ -97,7 +101,7 @@ class GraphOperator():
         if not self.valid:
             return []
         if not self.matrix_built():
-            raise GVS.NotBuiltError("Cannot load matrix: No matrix file")
+            raise GVS.NotBuiltError("Cannot load operator matrix: No operator file")
 
         matrixList = self._load_operator_matrix()
         if len(matrixList)==0:
@@ -105,12 +109,12 @@ class GraphOperator():
 
         row = []
         column = []
-        data=[]
+        data = []
         for (i, j, v) in matrixList:
             row.append(i)
             column.append(j)
             data.append(v)
-        return sparse.csr_matrix(data,(row,column))
+        return sparse.csr_matrix(data, (row, column))
 
     def delete_file(self):
         if os.path.isfile(self.file_name):

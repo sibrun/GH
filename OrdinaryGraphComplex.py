@@ -6,50 +6,46 @@ import GraphOperator
 reload(GVS)
 reload(GraphOperator)
 
-dataDir = "./data"
-dataDirOdd = dataDir + "/ordinary/oddedge/"
-dataDirEven = dataDir + "/ordinary/evenedge/"
+data_directory = "./data"
+data_directory_odd = data_directory + "/ordinary/oddedge/"
+data_directory_even = data_directory + "/ordinary/evenedge/"
 imgBaseDir = "img/"
 
 
 class OrdinaryGVS(GVS.GraphVectorSpace):
 
-    def __init__(self, nVertices, nLoops, evenEdges=True):
-        self.nVertices = nVertices
-        self.nLoops = nLoops
-        self.evenEdges = evenEdges
+    def __init__(self, n_vertices, n_loops, even_edges=True):
+        self.n_vertices = n_vertices
+        self.n_loops = n_loops
+        self.even_edges = even_edges
+        self.n_edges = self.n_loops + self.n_vertices - 1
 
-        self.nEdges = self.nLoops + self.nVertices - 1
-
-        directory = dataDirEven if self.evenEdges else dataDirOdd
-        s = "gra%d_%d.g6" % (self.nVertices, self.nLoops)
+        directory = data_directory_even if self.even_edges else data_directory_odd
+        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
         file_name = os.path.join(directory, s)
 
-        valid = (3 * self.nVertices <= 2 * self.nEdges) and self.nVertices > 0 and self.nLoops >= 0 and self.nEdges <= self.nVertices * (self.nVertices - 1) / 2
+        valid = (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
         super(OrdinaryGVS,self).__init__(valid, file_name)
 
     def _generating_graphs(self):
         # generate List of unmarked graphs
-        graphList = self._list_graphs(self.nVertices, self.nLoops)
+        graphList = self._list_graphs()
         #graphList = slef._listGraphs(self.nVertices, self.nLoops, false)
         return graphList
 
-    def _list_graphs(self, nVertices, nLoops, onlyonevi=True):
+    def _list_graphs(self, onlyonevi=True):
         """
         creates a list of simple 1vi graphs with at least trivalent vertices
         """
-        nEdges = nLoops + nVertices - 1
-        if (3 * nVertices > 2 * nEdges) or (nEdges > nVertices * (nVertices - 1) / 2):
+        if (3 * self.n_vertices > 2 * self.n_edges) or (self.n_edges > self.n_vertices * (self.n_vertices - 1) / 2):
             # impossible
             return []
-        gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (nVertices, nEdges, nEdges)))
+        gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (self.n_vertices, self.n_edges, self.n_edges)))
         return gL
 
     def perm_sign(self, G, p):
-        nVert, nLoops, evenEdges = (self.nVertices, self.nLoops, self.evenEdges)
-        nEdges = nLoops + nVert - 1
-        if evenEdges:
+        if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
             pp = [j+1 for j in p]
             sgn = Permutation(pp).signature()
@@ -67,31 +63,29 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             G1 = copy(G)
             for (j,e) in enumerate(G1.edges(labels=False)):
                 u,v = e
-                G1.set_edge_label(u,v,j)
+                G1.set_edge_label(u, v, j)
 
             # we permute the graph, and read of the new labels
-            G1.relabel(p,inplace=True)
-            pp = [j+1 for u,v,j in G1.edges()]
+            G1.relabel(p, inplace=True)
+            pp = [j+1 for (u, v, j) in G1.edges()]
             return Permutation(pp).signature()
 
     def get_work_estimate(self):
         # give estimate of number of graphs
-        nEdges = self.nLoops + self.nVertices - 1
-        n = self.nVertices
-        return binomial((n*(n-1))/2, nEdges) / factorial(n)
+        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
 
 # -----  Contraction operator --------
 class ContractGO(GraphOperator.GraphOperator):
 
-    def __init__(self, nVertices, nLoops, evenEdges=True):
+    def __init__(self, n_vertices, n_loops, even_edges=True):
 
-        directory = dataDirEven if evenEdges else dataDirOdd
-        s = "contract%d_%d.txt" % (nVertices, nLoops)
+        directory = data_directory_even if even_edges else data_directory_odd
+        s = "contract%d_%d.txt" % (n_vertices, n_loops)
         file_name = os.path.join(directory, s)
 
-        domain = OrdinaryGVS(nVertices, nLoops, evenEdges=evenEdges)
-        target = OrdinaryGVS(nVertices-1, nLoops, evenEdges=evenEdges)
+        domain = OrdinaryGVS(n_vertices, n_loops, even_edges=even_edges)
+        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges=even_edges)
 
         super(ContractGO, self).__init__(file_name, domain, target)
 
@@ -100,7 +94,7 @@ class ContractGO(GraphOperator.GraphOperator):
         for (i, e) in enumerate(G.edges(labels=False)):
             u, v = e
             # permute u,v to position 0,1
-            r = range(0,self.domain.nVertices)
+            r = range(0,self.domain.n_vertices)
             p = list(r)
             p[0] = u
             p[1] = v
@@ -128,7 +122,7 @@ class ContractGO(GraphOperator.GraphOperator):
             #G1.relabel(list(range(0,G1.order())), inplace = True)
             #print(G1.vertices())
             #print(G1.edges())
-            if not self.domain.evenEdges:
+            if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 #print(p)
                 #sgn *= Permutation(p).signature()
@@ -138,4 +132,4 @@ class ContractGO(GraphOperator.GraphOperator):
 
     def get_work_estimate(self):
         # give estimate of number of graphs
-        return self.domain.get_work_estimate() * self.domain.nEdges
+        return self.domain.get_work_estimate() * self.domain.n_edges
