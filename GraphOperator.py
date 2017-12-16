@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 import os
-import pickle
 import scipy.sparse as sparse
 from sage.all import  *
 import GraphVectorSpace as GVS
@@ -58,19 +57,21 @@ class GraphOperator():
                 return
             # lookup g6 -> index in target vector space
             lookup = {s: j for (j,s) in enumerate(targetBasis6)}
-            #print(lookup)
             matrixList = []
             for (domainIndex, G) in enumerate(domainBasis):
                 imageList = self._operate_on(G)
+                canonImages = dict()
                 for (GG, prefactor) in imageList:
                     # canonize and look up
-                    GGcanon6, sgn = self.domain.canonical_g6(GG)
-                    #print(GGcanon6)
-                    imageIndex = lookup.get(GGcanon6)
+                    (GGcanon6, sgn1) = self.target.canonical_g6(GG)
+                    sgn0 = canonImages.get(GGcanon6)
+                    if sgn0 is None:
+                        sgn0 = 0
+                    canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
+                for (image, factor) in canonImages.items():
+                    imageIndex = lookup.get(image)
                     if imageIndex is not None:
-                        matrixList.append((domainIndex, imageIndex, sgn * prefactor))
-
-            #print(matrix)
+                        matrixList.append((domainIndex, imageIndex, factor))
             self._store_operator_matrix(matrixList)
 
     def matrix_built(self):
@@ -79,9 +80,9 @@ class GraphOperator():
         return False
 
     def _store_operator_matrix(self, matrixList):
-        outDir = os.path.dirname(self.file_name)
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
+        out_dir = os.path.dirname(self.file_name)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         with open(self.file_name, 'w') as f:
             for line in matrixList:
                 (i, j, v) = line
@@ -104,7 +105,7 @@ class GraphOperator():
             raise GVS.NotBuiltError("Cannot load operator matrix: No operator file")
 
         matrixList = self._load_operator_matrix()
-        if len(matrixList)==0:
+        if len(matrixList) == 0:
             return []
 
         row = []

@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 import os
-import pickle
 from sage.all import  *
 
 class GraphVectorSpace():
@@ -39,7 +38,7 @@ class GraphVectorSpace():
 
     def canonical_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
-        sgn = self.perm_sign(graph, [v+1 for k, v in permDict.items()])
+        sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(),sgn)
 
     def _has_odd_automorphisms(self, G, automList):

@@ -53,9 +53,11 @@ class OGCTestCase(unittest.TestCase):
 
     def test_operator_functionality(self):
 
-        op=OGC.ContractGO(6, 5, even_edges=False)
+        op=OGC.ContractGO(6, 5, even_edges=True)
         op.delete_file()
+        op.domain.delete_file()
         op.create_domain_basis()
+        op.target.delete_file()
         op.create_target_basis()
         op.create_operator_matrix()
 

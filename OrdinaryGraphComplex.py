@@ -47,8 +47,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def perm_sign(self, G, p):
         if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            pp = [j+1 for j in p]
-            sgn = Permutation(pp).signature()
+            sgn = Permutation([j+1 for j in p]).signature()
             for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -58,17 +57,15 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             # The sign is (induced sign of the edge permutation)
             # we assume the edges are always lex ordered
             # for the computation we use that G.edges() returns the edges in lex ordering
-
             # we first label the edges on a copy of G lexicographically
             G1 = copy(G)
             for (j,e) in enumerate(G1.edges(labels=False)):
-                u,v = e
+                (u, v) = e
                 G1.set_edge_label(u, v, j)
 
             # we permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
-            pp = [j+1 for (u, v, j) in G1.edges()]
-            return Permutation(pp).signature()
+            return Permutation([j+1 for (u, v, j) in G1.edges()]).signature()
 
     def get_work_estimate(self):
         # give estimate of number of graphs
@@ -92,7 +89,7 @@ class ContractGO(GraphOperator.GraphOperator):
     def _operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
-            u, v = e
+            (u, v) = e
             # permute u,v to position 0,1
             r = range(0,self.domain.n_vertices)
             p = list(r)
@@ -115,13 +112,9 @@ class ContractGO(GraphOperator.GraphOperator):
                 a, b = ee
                 G1.set_edge_label(a,b,j)
             # now delete the first edge and join the vertices 0 and 1
-            #print(G1.edges())
             G1.merge_vertices([0,1])
-            #print(G1.edges())
-            #print(G1.vertices())
-            #G1.relabel(list(range(0,G1.order())), inplace = True)
-            #print(G1.vertices())
-            #print(G1.edges())
+            G1.relabel(list(range(0,G1.order())), inplace = True)
+
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 #print(p)
