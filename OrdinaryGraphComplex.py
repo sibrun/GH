@@ -1,53 +1,60 @@
 import os
+import itertools
+import operator
+import logging
 from sage.all import *
 import GraphVectorSpace as GVS
-import GraphOperator
+import GraphOperator as GO
+import GraphComplex as GC
+import Shared as SH
 
 reload(GVS)
-reload(GraphOperator)
+reload(GO)
+reload(GC)
+reload(SH)
 
-data_directory = "./data"
-data_directory_odd = data_directory + "/ordinary/oddedge/"
-data_directory_even = data_directory + "/ordinary/evenedge/"
-imgBaseDir = "img/"
+data_dir = "./data"
+data_ref_dir = "./data_ref"
+type_dir = "ordinary"
+sub_dir_odd = "oddedge"
+sub_dir_even = "evenedge"
+image_directory = "img"
 
 
 class OrdinaryGVS(GVS.GraphVectorSpace):
 
-    def __init__(self, n_vertices, n_loops, even_edges=True):
+    def __init__(self, n_vertices, n_loops, even_edges=True, header_ref=False):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
+        super(OrdinaryGVS,self).__init__(header_ref=header_ref)
 
-        directory = data_directory_even if self.even_edges else data_directory_odd
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        file_name = os.path.join(directory, s)
+    def _set_file_name(self, ref=False):
+        s0 = data_ref_dir if ref else data_dir
+        s1 = sub_dir_even if self.even_edges else sub_dir_odd
+        s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(s0, type_dir, s1, s2)
 
-        valid = (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
+    def _set_validity(self):
+        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
-        super(OrdinaryGVS,self).__init__(valid, file_name)
+    def _set_work_estimate(self):
+        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def _generating_graphs(self):
-        # generate List of unmarked graphs
-        graphList = self._list_graphs()
-        #graphList = slef._listGraphs(self.nVertices, self.nLoops, false)
-        return graphList
+    def params_to_string(self):
+        return "n_vertices=%d, n_loops=%d, even_edges=%d" % (self.n_vertices, self.n_loops, self.even_edges)
 
-    def _list_graphs(self, onlyonevi=True):
-        """
-        creates a list of simple 1vi graphs with at least trivalent vertices
-        """
+    def _generating_graphs(self, onlyonevi=True):
         if (3 * self.n_vertices > 2 * self.n_edges) or (self.n_edges > self.n_vertices * (self.n_vertices - 1) / 2):
             # impossible
             return []
-        gL = list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (self.n_vertices, self.n_edges, self.n_edges)))
-        return gL
+        return list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (self.n_vertices, self.n_edges, self.n_edges)))
 
     def perm_sign(self, G, p):
         if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            sgn = Permutation([j+1 for j in p]).signature()
+            sgn = SH.Perm(p).sign()
             for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -65,32 +72,38 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
             # we permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
-            return Permutation([j+1 for (u, v, j) in G1.edges()]).signature()
-
-    def get_work_estimate(self):
-        # give estimate of number of graphs
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+            return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
 # -----  Contraction operator --------
-class ContractGO(GraphOperator.GraphOperator):
+class ContractGO(GO.GraphOperator):
 
-    def __init__(self, n_vertices, n_loops, even_edges=True):
+    def __init__(self, n_vertices, n_loops, even_edges=True, header_ref=False, skip_if_no_basis=True):
+        self.n_vertices = n_vertices
+        self.n_loops = n_loops
+        self.even_edges = even_edges
 
-        directory = data_directory_even if even_edges else data_directory_odd
-        s = "contract%d_%d.txt" % (n_vertices, n_loops)
-        file_name = os.path.join(directory, s)
+        domain = OrdinaryGVS(self.n_vertices, self.n_loops, even_edges=self.even_edges)
+        target = OrdinaryGVS(self.n_vertices - 1, self.n_loops, even_edges=self.even_edges)
 
-        domain = OrdinaryGVS(n_vertices, n_loops, even_edges=even_edges)
-        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges=even_edges)
+        super(ContractGO, self).__init__(domain, target, header_ref=header_ref, skip_if_no_basis=skip_if_no_basis)
 
-        super(ContractGO, self).__init__(file_name, domain, target)
+    def _set_file_name(self, ref=False):
+        s0 = data_ref_dir if ref else data_dir
+        s1 = sub_dir_even if self.even_edges else sub_dir_odd
+        s2 = "contractD%d_%d.txt" % (self.n_vertices, self.n_loops)
+        return os.path.join(s0, type_dir, s1, s2)
+
+    def _set_work_estimate(self):
+        return self.domain.work_estimate * self.domain.n_edges
+
+    def params_to_string(self):
+        return "n_vertices=%d, n_loops=%d, even_edges=%d" % (self.n_vertices, self.n_loops, self.even_edges)
 
     def _operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # permute u,v to position 0,1
             r = range(0,self.domain.n_vertices)
             p = list(r)
             p[0] = u
@@ -103,7 +116,7 @@ class ContractGO(GraphOperator.GraphOperator):
                     p[idx] = j
                     idx +=1
 
-            pp = [j-1 for j in (Permutation([j+1 for j in p]).inverse())]
+            pp = SH.Perm(p).inverse()
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -111,18 +124,33 @@ class ContractGO(GraphOperator.GraphOperator):
             for (j, ee) in enumerate(G1.edges(labels=False)):
                 a, b = ee
                 G1.set_edge_label(a,b,j)
-            # now delete the first edge and join the vertices 0 and 1
+            previous_size = G1.size()
             G1.merge_vertices([0,1])
+            if (previous_size - G1.size()) != 1:
+                continue
             G1.relabel(list(range(0,G1.order())), inplace = True)
-
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
-                #print(p)
-                #sgn *= Permutation(p).signature()
-
+                sgn *= Permutation(p).signature()
             image.append((G1, sgn))
         return image
 
-    def get_work_estimate(self):
-        # give estimate of number of graphs
-        return self.domain.get_work_estimate() * self.domain.n_edges
+
+# ----- Ordinary Graph Complex --------
+class OrdinaryGC(GC.GraphComplex):
+    def __init__(self, v_range, l_range, even_range, header_ref=False, skip_if_no_basis=True, delete_old=False):
+        self.v_range = v_range
+        self.l_range = l_range
+        self.even_range = even_range
+        self.header_ref = header_ref
+        self.skip_if_no_basis = skip_if_no_basis
+        super(OrdinaryGC, self).__init__(delete_old=delete_old)
+
+    def create_vs(self):
+        for (v, l, even) in itertools.product(self.v_range, self.l_range, self.even_range):
+            self.vs_list.append(OrdinaryGVS(v, l, even_edges=even, header_ref=self.header_ref))
+
+    def create_op(self):
+        for (v, l, even) in itertools.product(self.v_range, self.l_range, self.even_range):
+            self.op_list.append(ContractGO(v, l, even_edges=even, header_ref=self.header_ref, skip_if_no_basis=self.skip_if_no_basis))
+

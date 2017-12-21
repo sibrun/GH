@@ -1,4 +1,7 @@
 from sage.all import *
+import operator
+import random
+import logging
 
 G = graphs.WheelGraph(5)
 
@@ -12,3 +15,6 @@ G.merge_vertices([3,4])
 
 print(G.edges())
 
+
+print(type(G)==type(Graph()))
+print(type(Graph()))
