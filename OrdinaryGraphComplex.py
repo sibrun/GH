@@ -13,8 +13,8 @@ reload(GO)
 reload(GC)
 reload(SH)
 
-data_dir = "./data"
-data_ref_dir = "./data_ref"
+data_dir = "data"
+data_ref_dir = "data_ref"
 type_dir = "ordinary"
 sub_dir_odd = "oddedge"
 sub_dir_even = "evenedge"
@@ -23,14 +23,14 @@ image_directory = "img"
 
 class OrdinaryGVS(GVS.GraphVectorSpace):
 
-    def __init__(self, n_vertices, n_loops, even_edges=True, header_ref=False):
+    def __init__(self, n_vertices, n_loops, even_edges, header_ref=False):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
         super(OrdinaryGVS,self).__init__(header_ref=header_ref)
 
-    def _set_file_name(self, ref=False):
+    def _set_file_path(self, ref=False):
         s0 = data_ref_dir if ref else data_dir
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
@@ -42,8 +42,11 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def _set_work_estimate(self):
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def params_to_string(self):
-        return "n_vertices=%d, n_loops=%d, even_edges=%d" % (self.n_vertices, self.n_loops, self.even_edges)
+    def __str__(self):
+        return "<Ordinary graph vector space with %d vertices, %d loops and even_edges=%d>" % (self.n_vertices, self.n_loops, self.even_edges)
+
+    def __eq__(self, other):
+        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.even_edges == other.even_edges
 
     def _generating_graphs(self, onlyonevi=True):
         if (3 * self.n_vertices > 2 * self.n_edges) or (self.n_edges > self.n_vertices * (self.n_vertices - 1) / 2):
@@ -78,27 +81,28 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 # -----  Contraction operator --------
 class ContractGO(GO.GraphOperator):
 
-    def __init__(self, n_vertices, n_loops, even_edges=True, header_ref=False, skip_if_no_basis=True):
+    def __init__(self, n_vertices, n_loops, even_edges, header_ref=False, skip_if_no_basis=True):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
 
-        domain = OrdinaryGVS(self.n_vertices, self.n_loops, even_edges=self.even_edges)
-        target = OrdinaryGVS(self.n_vertices - 1, self.n_loops, even_edges=self.even_edges)
+        domain = OrdinaryGVS(self.n_vertices, self.n_loops, self.even_edges)
+        target = OrdinaryGVS(self.n_vertices - 1, self.n_loops, self.even_edges)
 
         super(ContractGO, self).__init__(domain, target, header_ref=header_ref, skip_if_no_basis=skip_if_no_basis)
 
-    def _set_file_name(self, ref=False):
+    def _set_file_path(self, ref=False):
         s0 = data_ref_dir if ref else data_dir
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "contractD%d_%d.txt" % (self.n_vertices, self.n_loops)
-        return os.path.join(s0, type_dir, s1, s2)
+        return SH.get_path_from_current(s0, type_dir, s1, s2)
 
     def _set_work_estimate(self):
         return self.domain.work_estimate * self.domain.n_edges
 
-    def params_to_string(self):
-        return "n_vertices=%d, n_loops=%d, even_edges=%d" % (self.n_vertices, self.n_loops, self.even_edges)
+    def __str__(self):
+        validity = "Valid" if self.valid else "Not valid"
+        return "<Contract edge graph operator with domain: %s>" % str(self.domain)
 
     def _operate_on(self,G):
         image=[]
@@ -135,22 +139,29 @@ class ContractGO(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
-
 # ----- Ordinary Graph Complex --------
 class OrdinaryGC(GC.GraphComplex):
-    def __init__(self, v_range, l_range, even_range, header_ref=False, skip_if_no_basis=True, delete_old=False):
+    def __init__(self, v_range, l_range, even_edges, header_ref=False, skip_if_no_basis=True, skip_existing_files=False):
         self.v_range = v_range
         self.l_range = l_range
-        self.even_range = even_range
+        self.even_edges = even_edges
         self.header_ref = header_ref
         self.skip_if_no_basis = skip_if_no_basis
-        super(OrdinaryGC, self).__init__(delete_old=delete_old)
+        super(OrdinaryGC, self).__init__(skip_existing_files=skip_existing_files)
+
+    def __str__(self):
+        return "<Ordinary graph complex with parameter range: vertices: %s, loops: %s, even_edges=%d>" % (str(self.v_range), str(self.l_range), self.even_edges)
+
+    def _set_file_path(self):
+        s1 = sub_dir_even if self.even_edges else sub_dir_odd
+        s2 = "graph_complex.txt"
+        return SH.get_path_from_current(data_dir, type_dir, s1, s2)
 
     def create_vs(self):
-        for (v, l, even) in itertools.product(self.v_range, self.l_range, self.even_range):
-            self.vs_list.append(OrdinaryGVS(v, l, even_edges=even, header_ref=self.header_ref))
+        for (v, l) in itertools.product(self.v_range, self.l_range):
+            self.vs_list.append(OrdinaryGVS(v, l, self.even_edges, header_ref=self.header_ref))
 
     def create_op(self):
-        for (v, l, even) in itertools.product(self.v_range, self.l_range, self.even_range):
-            self.op_list.append(ContractGO(v, l, even_edges=even, header_ref=self.header_ref, skip_if_no_basis=self.skip_if_no_basis))
+        for (v, l) in itertools.product(self.v_range, self.l_range):
+            self.op_list.append(ContractGO(v, l, self.even_edges, header_ref=self.header_ref, skip_if_no_basis=self.skip_if_no_basis))
 
