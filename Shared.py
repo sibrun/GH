@@ -39,15 +39,15 @@ def store_string_list(L, path, header=None):
         for x in L:
             f.write(x + '\n')
 
-def load_string_list(path, header=False):
+def load_string_list(path, header=True):
     if not os.path.exists(path):
         raise FileNotExistingError("Cannot load from %s: The refered file does not exist" % str(path))
     with open(path, 'r') as f:
         if header:
-            header = f.readline()
+            H = f.readline()
         L = f.read().splitlines()
     if header:
-        return (header, L)
+        return (H, L)
     else:
         return L
 

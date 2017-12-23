@@ -1,35 +1,34 @@
 from abc import ABCMeta, abstractmethod
-import os
+import itertools
 import scipy.sparse as sparse
-import numpy as np
-import pickle
 import logging
 from sage.all import *
 import Shared as SH
 
 reload(SH)
 
+
 class GraphOperator():
     __metaclass__ = ABCMeta
 
-    def __init__(self, domain, target, header_ref=False, skip_if_no_basis=True):
+    def __init__(self, domain, target):
         self.domain = domain
         self.target = target
         self.valid = self.domain.valid and self.target.valid
         self.file_path = self._set_file_path()
-        self.work_estimate = self._set_work_estimate()
         self.file_path_ref = self._set_file_path(ref=True)
-        self.header_ref = header_ref
-        self.skip_if_no_basis = skip_if_no_basis
-        self.shape = None
-        self.entries = None
+
+    @classmethod
+    @abstractmethod
+    def generate_operators(cls, vs_list):
+        pass
 
     @abstractmethod
     def _set_file_path(self, ref=False):
         pass
 
     @abstractmethod
-    def _set_work_estimate(self):
+    def get_work_estimate(self):
         pass
 
     @abstractmethod
@@ -40,30 +39,36 @@ class GraphOperator():
     def __str__(self):
         pass
 
+    @staticmethod
+    def get_operators(cls, vs_list):
+        op_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
+                op_list.append(cls(domain, target))
+        return op_list
+
     def get_info(self):
         validity = "valid" if self.valid else "not valid"
-        built = "matrix built" if self.matrix_built() else "matrix not built"
-        shape = "shape unknown"
-        trivial = "triviality unknown"
+        built = "matrix built" if self.exists_file() else "matrix not built"
+        shape = "matrix shape unknown"
         entries = "entries unknown"
-        if self.matrix_built():
-            shape = "shape = none" if self.shape is None else "shape = (%d,%d)" % (self.shape[0],self.shape[1])
-            if self.shape is not None:
-                trivial = "trivial" if self.shape[0]==0 or self.shape[1]==0 else "not trivial"
-            entries = "entries = none" if self.entries is None else "%d entries" % self.entries
-        return "%s, %s, %s, %s, %s" % (validity, built, shape, trivial, entries)
+        if self.exists_file():
+            (s, e) = self.get_matrix_header()
+            (m, n) = s
+            shape = "matrix shape = (%d, %d)" % (m, n)
+            entries = "%d entries" % e
+        return "%s, %s, %s" % (validity, shape, entries)
 
-    def build_matrix(self):
+    def build_matrix(self, skip_if_no_basis = True):
         if not self.valid:
             logging.info("Skip creating file for operator matrix, since %s is not valid" % str(self))
             return
-        if self.matrix_built():
-            self.load_info_from_file()
+        if self.exists_file():
             return
         try:
             domainBasis = self.domain.get_basis(g6=False)
         except SH.NotBuiltError:
-            if not self.skip_if_no_basis:
+            if not skip_if_no_basis:
                 raise SH.NotBuiltError("Cannot build operator matrix of %s: First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
                 logging.warn("Skip building operator matrix of %s since basis of the domain %s is not built" % (str(self), str(self.domain)))
@@ -71,17 +76,18 @@ class GraphOperator():
         try:
             targetBasis6 = self.target.get_basis(g6=True)
         except SH.NotBuiltError:
-            if not self.skip_if_no_basis:
+            if not skip_if_no_basis:
                 raise SH.NotBuiltError("Cannot build operator matrix of %s: First build basis of the target %s" % (str(self), str(self.target)))
             else:
                 logging.warn("Skip building operator matrix of %s since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        self.shape = (self.domain.dimension, self.target.dimension)
-        if self.is_trivial():
-            self.entries = 0
-            self._store_matrix([])
-            logging.info("Created file with empty operator matrix of %s, since it's shape is %s" % (str(self), str(self.shape)))
+        shape = (self.domain.get_dimension(), self.target.get_dimension())
+        (m, n) = shape
+        if m == 0 or n == 0:
+            entries = 0
+            self._store_matrix([],(shape, entries))
+            logging.info("Created empty file for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
         lookup = {s: j for (j,s) in enumerate(targetBasis6)}
@@ -99,109 +105,135 @@ class GraphOperator():
                 imageIndex = lookup.get(image)
                 if imageIndex is not None:
                     matrixList.append("%d %d %d" % (domainIndex, imageIndex, factor))
-        self.entries = len(matrixList)
-        self._store_matrix(matrixList)
+        entries = len(matrixList)
+        self._store_matrix(matrixList,(shape, entries))
         logging.info("Operator matrix built for %s" % str(self))
 
-    def matrix_built(self):
-        if os.path.isfile(self.file_path):
-            return True
-        return False
+    def exists_file(self):
+        return os.path.isfile(self.file_path)
 
-    def load_info_from_file(self):
+    def exist_domain_target_files(self):
+        return os.path.isfile(self.domain.file_path) and os.path.isfile(self.target.file_path)
+
+    def get_matrix_header(self):
+        if not self.valid:
+            return None
         try:
             header = SH.load_header(self.file_path)
         except SH.FileNotExistingError:
-            logging.warn("Cannot load infos from file %s" % str(self.file_path))
-            return
-        self._load_info_from_header(header)
-        self.domain.load_info_from_file()
-        self.target.load_info_from_file()
-        logging.info("Infos loaded from file %s" % str(self.file_path))
+            raise SH.NotBuiltError("Cannot load header from file %s: Build operator matrix first" % str(self.file_path))
+        return GraphOperator._get_matrix_info_from_header(header)
 
-    def _load_info_from_header(self, header):
-        (m, n, self.entries) = map(int,header.split(" "))
-        self.shape = (m, n)
+    def get_matrix_entries(self):
+        (shape, entries) = self.get_matrix_header()
+        return entries
 
-    def _get_header(self):
-        (m, n) = self.shape
-        return "%d %d %d" % (m, n, self.entries)
+    @staticmethod
+    def _get_matrix_info_from_header(header):
+        (m, n, entries) = map(int, header.split(" "))
+        shape = (m, n)
+        return(shape, entries)
+
+    @staticmethod
+    def _get_header_from_matrix_info(matrix_info):
+        (shape, entries) = matrix_info
+        (m, n) = shape
+        return "%d %d %d" % (m, n, entries)
 
     def is_trivial(self):
-        if self.shape is None:
-            raise SH.NotBuiltError("Shape of %s unknown: First load matrix" % str(self))
-        return self.shape[0] == 0 or self.shape[1] == 0
+        if not self.valid:
+            return True
+        try:
+            (shape, entries) = self.get_matrix_header()
+            (m, n) = shape
+        except SH.NotBuiltError:
+            try:
+                m = self.domain.get_dimension()
+                n = self.target.get_dimension()
+                entries = 1
+            except SH.NotBuiltError:
+                raise SH.NotBuiltError("Matrix shape of %s unknown: Build operator matrix first" % str(self))
+        return m == 0 or n == 0 or entries == 0
 
-    def _store_matrix(self, matrixList):
+    def _store_matrix(self, matrixList, matrix_info):
         logging.info("Store operator matrix in file: %s" % str(self.file_path))
-        SH.store_string_list(matrixList, self.file_path, header=self._get_header())
+        header = GraphOperator._get_header_from_matrix_info(matrix_info)
+        SH.store_string_list(matrixList, self.file_path, header=header)
 
     def _load_matrix(self):
         logging.info("Load operator matrix from file: %s" % str(self.file_path))
         (header, matrixList) = SH.load_string_list(self.file_path, header=True)
-        self._load_info_from_header(header)
-        if len(matrixList) != self.entries:
+        (shape, entries) = GraphOperator._get_matrix_info_from_header(header)
+        if len(matrixList) != entries:
             raise ValueError("Number of matrix entries read from file %s is wrong" % str(self.file_path))
         row = []
         column = []
         data = []
         for line in matrixList:
             (i, j, v) = map(int, line.split(" "))
+            if not (i >= 0 and j >= 0):
+                raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path),i, j))
             row.append(i)
             column.append(j)
             data.append(v)
-        return (row, column, data)
-
-    def _load_ref_matrix(self):
-        logging.info("Load operator matrix from reference file: %s" % str(self.file_path_ref))
-        data = SH.load_string_list(self.file_path_ref, header=self.header_ref)
-        if self.header_ref:
-            (header, matrixList) = data
-            (m, n, entries) = map(int, header.split(" "))
-            if len(matrixList) != entries:
-                raise ValueError("Number of matrix entries read from file %s is wrong" % str(self.file_path_ref))
-        else:
-            matrixList = data
-        row = []
-        column = []
-        data = []
-        for line in matrixList:
-            (i, j, v) = map(int, line.split(" "))
-            row.append(i-1)
-            column.append(j-1)
-            data.append(v)
-        if data[-1] == 0:
-            if max(row) > row[-1] or max(column) > column[-1]:
-                raise ValueError("Matrix read from referencde file %s is wrong: Index exceeds matrix diemension" % str(self.file_path_ref))
-        return (row, column, data)
+        (m, n) = shape
+        if len(row):
+            if min(row) < 0 or min(column) < 0:
+                raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path), min(row), min(column)))
+            if max(row) >= m or max(column) >= n:
+                raise ValueError("Matrix read from file %s is wrong: Index outside matrix size" % str(self.file_path))
+        return ((data, (row, column)), shape)
 
     def get_matrix(self):
         if not self.valid:
             log.warning("No operator matrix: %s is not valid" % str(self))
             return None
-        if not self.matrix_built():
+        if not self.exists_file():
             raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
-        matrix = self._load_matrix()
-        logging.info("Get operator matrix of %s with shape %s" % (str(self), str(self.shape)))
-        (row, column, data) = matrix
-        return sparse.csr_matrix((data, (row, column)), shape=self.shape, dtype=float)
-
-    def ref_file_available(self):
-        return (self.file_path_ref is not None) and os.path.isfile(self.file_path_ref)
-
-    def get_ref_matrix(self):
-        if self.file_path_ref is None:
-            raise SH.RefError("%s: Path to reference file not specified" % str(self))
-        if not os.path.isfile(self.file_path_ref):
-            raise SH.RefError("%s: Reference basis file not found" % str(self))
-        (row, column, data) = self._load_ref_matrix()
-        if len(row):
-            shape=(row.pop(-1)+1,column.pop(-1)+1)
-            data.pop(-1)
-        else:
-            shape=(0,0)
-        return sparse.csr_matrix((data, (row, column)), shape=shape, dtype=float)
+        (matrixList, shape) = self._load_matrix()
+        (m, n) = shape
+        logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), m, n))
+        return sparse.csr_matrix(matrixList, shape=shape, dtype=float)
 
     def delete_file(self):
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)
+
+    @staticmethod
+    def get_cohomology(opD, opDD, only_dim = True):
+        if not opD.valid:
+            D = 0
+        else:
+            try:
+                D = opD.get_matrix()
+            except SH.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opD))
+                return (None, False)
+        if D.nnz == 0:
+            D = 0
+        if not opDD.valid:
+            DD = 0
+        else:
+            try:
+                DD = opD.get_matrix()
+            except SH.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
+                return (None, False)
+        if DD.nnz == 0:
+            DD = 0
+
+        if D is 0 and DD is 0:
+            cohomology = opD.domain
+            dim = opD.domain.get_dimension()
+        else:                                       #TODO: Implement Cohomology
+            if D is not 0 and DD is 0:
+                A = D
+            elif D is 0 and DD is not 0:
+                A = DD
+            else:
+                pass #A = DD * D
+        cohomology = "bla"
+        dim = "not implemented"
+        if only_dim:
+            return (dim, True)
+        return (cohomology, True)
