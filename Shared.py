@@ -41,7 +41,7 @@ def store_string_list(L, path, header=None):
 
 def load_string_list(path, header=True):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The refered file does not exist" % str(path))
+        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         if header:
             H = f.readline()
@@ -53,7 +53,7 @@ def load_string_list(path, header=True):
 
 def load_header(path):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The refered file does not exist" % str(path))
+        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         return f.readline()
 
@@ -74,7 +74,7 @@ def pickle_store(Ob, path):
 
 def pickle_load(path):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The refered file does not exist" % str(path))
+        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'rb') as f:
         Ob = pickle.load(f)
     return Ob

@@ -3,7 +3,6 @@ import itertools
 import logging
 from scipy.sparse.linalg import aslinearoperator
 from scipy.linalg.interpolative import estimate_rank
-from sage.all import *
 import OrdinaryGraphComplex as OGC
 import Shared as SH
 import RefDataHandler as REF
@@ -84,6 +83,7 @@ class OGCTestCase(unittest.TestCase):
             ref_basis_set = set(REF.get_basis_g6(vs.file_path_ref))
             self.assertSetEqual(basis_set, ref_basis_set, '%s: basis not equal reference basis' % str(vs))
 
+
     def test_operator_matrix(self):
         logging.warn('----- Test operator matrix -----')
         v_range = range(7,10)
@@ -113,14 +113,14 @@ class OGCTestCase(unittest.TestCase):
             matrix = op.get_matrix()
             (shape, entries) = op.get_matrix_header()
             (m, n) = shape
-            self.assertEqual(matrix.shape, shape, '%s: matrix shape not consistent' % str(op))
+            self.assertEqual(matrix.get_shape(), shape, '%s: matrix shape not consistent' % str(op))
             self.assertEqual(matrix.nnz, entries, '%s: number of matrix entries not consistent' % str(op))
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,'%s: triviality check wrong' % str(op))
             if not REF.exists_file(op.file_path_ref):
                 logging.warn('%s: no reference file for operator matrix' % str(op))
                 continue
             ref_matrix = REF.get_matrix(op.file_path_ref)
-            self.assertEqual(matrix.shape, ref_matrix.shape, '%s: shape of matrix and reference matrix not equal' % str(op))
+            self.assertEqual(matrix.get_shape(), ref_matrix.get_shape(), '%s: shape of matrix and reference matrix not equal' % str(op))
             self.assertEqual(matrix.nnz, ref_matrix.nnz, '%s: number of entries of matrix and reference matrix not equal' % str(op))
             if op.is_trivial():
                 logging.info('%s: trivial operator matrix: no rank test' % str(op))
