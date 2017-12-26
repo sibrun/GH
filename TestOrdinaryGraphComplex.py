@@ -5,7 +5,7 @@ from scipy.sparse.linalg import aslinearoperator
 from scipy.linalg.interpolative import estimate_rank
 import OrdinaryGraphComplex as OGC
 import Shared as SH
-import RefDataHandler as REF
+import RefData as REF
 
 reload(OGC)
 reload(SH)
