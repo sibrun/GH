@@ -6,11 +6,13 @@ from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
+import RefData as RF
 import Shared as SH
 
 reload(GVS)
 reload(GO)
 reload(GC)
+reload(RF)
 reload(SH)
 
 data_dir = "data"
@@ -174,3 +176,39 @@ class OrdinaryGC(GC.GraphComplex):
     def create_op(self):
         self.op_list = ContractGO.generate_operators(self.vs_list)
 
+
+# ----- Reference Data Handler --------
+class OrdinaryRefVS(RF.RefVectorSpace):
+
+    def _load_basis_g6(self, header):
+        basis_g6 = SH.load_string_list(self.file_path_ref, header=header)
+        return basis_g6
+
+
+class OrdinaryRefOP(RF.RefOperator):
+
+    def _load_matrix(self, header):
+        shape = None
+        matrixList = SH.load_string_list(self.file_path_ref, header=header)
+        row = []
+        column = []
+        data = []
+        if matrixList is []:
+            shape = (0,0)
+        else:
+            for line in matrixList:
+                (i, j, v) = map(int, line.split(" "))
+                row.append(i-1)
+                column.append(j-1)
+                data.append(v)
+            if data[-1] == 0:
+                shape = (m, n) = (row.pop(-1)+1, column.pop(-1)+1)
+                data.pop(-1)
+                if len(row):
+                    if min(row) < 0 or min(column) < 0:
+                        raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self), min(row), min(column)))
+                    if max(row) >= m or max(column) >= n:
+                        raise ValueError("Matrix read from reference file %s is wrong: Index outside matrix size" % str(self))
+        if shape is None:
+            raise ValueError("%s: Shape of reference matrix is unknown" % str(self))
+        return ((data, (row, column)), shape)

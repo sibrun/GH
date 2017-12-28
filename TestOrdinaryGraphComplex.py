@@ -83,7 +83,6 @@ class OGCTestCase(unittest.TestCase):
             ref_basis_set = set(REF.get_basis_g6(vs.file_path_ref))
             self.assertSetEqual(basis_set, ref_basis_set, '%s: basis not equal reference basis' % str(vs))
 
-
     def test_operator_matrix(self):
         logging.warn('----- Test operator matrix -----')
         v_range = range(7,10)
@@ -146,6 +145,7 @@ class OGCTestCase(unittest.TestCase):
             ogc.compute_cohomology()
             ogc.store_member_info()
 
+
 def suite():
     log_path = SH.get_path_from_current(log_dir, log_file)
     SH.generate_path(log_path)
@@ -158,6 +158,7 @@ def suite():
     #suite.addTest(OGCTestCase('test_operator_matrix'))
     suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

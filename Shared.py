@@ -17,19 +17,24 @@ class Perm():
 class NotBuiltError(RuntimeError):
     pass
 
+
 class RefError(RuntimeError):
     pass
+
 
 class FileNotExistingError(RuntimeError):
     pass
 
+
 def get_path_from_current(*paths):
     return os.path.join(os.getcwd(), *paths)
+
 
 def generate_path(path):
     directory = os.path.dirname(path)
     if not os.path.exists(directory):
         os.makedirs(directory)
+
 
 def store_string_list(L, path, header=None):
     generate_path(path)
@@ -38,6 +43,7 @@ def store_string_list(L, path, header=None):
             f.write(header + '\n')
         for x in L:
             f.write(x + '\n')
+
 
 def load_string_list(path, header=True):
     if not os.path.exists(path):
@@ -51,11 +57,13 @@ def load_string_list(path, header=True):
     else:
         return L
 
+
 def load_header(path):
     if not os.path.exists(path):
         raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         return f.readline()
+
 
 def store_list_of_header_lists(LHL, path):
     generate_path(path)
@@ -67,10 +75,12 @@ def store_list_of_header_lists(LHL, path):
             for x in L:
                 f.write(x + '\n')
 
+
 def pickle_store(Ob, path):
     generate_path(path)
     with open(path,'wb') as f:
         pickle.dump(Ob, f)
+
 
 def pickle_load(path):
     if not os.path.exists(path):
