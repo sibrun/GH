@@ -13,10 +13,13 @@ class GraphVectorSpace():
         self.color_counts = color_counts
         self.valid = self._set_validity()
         self.file_path = self._set_file_path()
-        self.file_path_ref = self._set_file_path(ref=True)
 
     @abstractmethod
-    def _set_file_path(self, ref=False):
+    def _set_file_path(self):
+        pass
+
+    @abstractmethod
+    def get_file_path_ref(self):
         pass
 
     @abstractmethod

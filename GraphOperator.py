@@ -16,7 +16,6 @@ class GraphOperator():
         self.target = target
         self.valid = self.domain.valid and self.target.valid
         self.file_path = self._set_file_path()
-        self.file_path_ref = self._set_file_path(ref=True)
 
     @classmethod
     @abstractmethod
@@ -24,7 +23,11 @@ class GraphOperator():
         pass
 
     @abstractmethod
-    def _set_file_path(self, ref=False):
+    def _set_file_path(self):
+        pass
+
+    @abstractmethod
+    def get_file_path_ref(self):
         pass
 
     @abstractmethod

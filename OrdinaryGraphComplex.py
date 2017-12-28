@@ -30,11 +30,15 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices - 1
         super(OrdinaryGVS,self).__init__()
 
-    def _set_file_path(self, ref=False):
-        s0 = data_ref_dir if ref else data_dir
+    def _set_file_path(self):
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(s0, type_dir, s1, s2)
+        return os.path.join(data_dir, type_dir, s1, s2)
+
+    def get_file_path_ref(self):
+        s1 = sub_dir_even if self.even_edges else sub_dir_odd
+        s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(data_ref_dir, type_dir, s1, s2)
 
     def _set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
@@ -96,11 +100,15 @@ class ContractGO(GO.GraphOperator):
         target = OrdinaryGVS(n_vertices-1, n_loops, even_edges)
         return cls(domain, target)
 
-    def _set_file_path(self, ref=False):
-        s0 = data_ref_dir if ref else data_dir
+    def _set_file_path(self):
         s1 = sub_dir_even if self.domain.even_edges else sub_dir_odd
         s2 = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(s0, type_dir, s1, s2)
+        return os.path.join(data_dir, type_dir, s1, s2)
+
+    def get_file_path_ref(self):
+        s1 = sub_dir_even if self.domain.even_edges else sub_dir_odd
+        s2 = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        return os.path.join(data_ref_dir, type_dir, s1, s2)
 
     def get_work_estimate(self):
         return self.domain.n_edges * sqrt(self.target.get_dimension())
