@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 import scipy.sparse as sparse
 import logging
 from sage.all import *
@@ -12,7 +11,6 @@ reload(GO)
 
 
 class RefVectorSpace:
-    __metaclass__ = ABCMeta
 
     def __init__(self, vs):
         self.vs = vs
@@ -71,7 +69,6 @@ class RefVectorSpace:
 
 
 class RefOperator:
-    __metaclass__ = ABCMeta
 
     def __init__(self, op):
         self.op = op
