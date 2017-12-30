@@ -56,8 +56,8 @@ class GraphVectorSpace():
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
-        sgn = self.perm_sign(graph, permDict.values())
-        return (canonG.graph6_string(), sgn)
+        sign = self.perm_sign(graph, permDict.values())
+        return (canonG.graph6_string(), sign)
 
     def build_basis(self):
         if not self.valid:

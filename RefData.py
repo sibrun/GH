@@ -24,27 +24,27 @@ class RefVectorSpace:
     def exists_file(self):
         return (self.file_path_ref is not None) and os.path.isfile(self.file_path_ref)
 
-    @abstractmethod
     def _load_basis_g6(self, header):
-        pass
+        logging.info("Load basis from reference file: %s" % str(self))
+        basis_g6 = SH.load_string_list(self.file_path_ref, header=header)
+        return basis_g6
 
     def _g6_to_canon_g6(self, graph6, sign=False):
         graph = Graph(graph6)
         if not sign:
             return graph.canonical_label().graph6_string()
         canonG, permDict = graph.canonical_label(certificate=True)
-        sign = self.vs.perm_sign(graph, permDict.values())
-        return (canonG.graph6_string(), sign)
+        sgn = self.vs.perm_sign(graph, permDict.values())
+        return (canonG.graph6_string(), sgn)
 
     def get_basis_g6(self, header=False):
         if not self.exists_file():
             raise SH.RefError("%s: Reference basis file not found" % str(self))
         basis_g6 = self._load_basis_g6(header)
-        logging.info("Load basis from reference file: %s" % str(self))
         basis_g6_canon = []
         for G6 in basis_g6:
             basis_g6_canon.append(self._g6_to_canon_g6(G6))
-            return basis_g6_canon
+        return basis_g6_canon
 
     def get_transformation_matrix(self, header=False):
         if not self.exists_file():
@@ -59,15 +59,15 @@ class RefVectorSpace:
         lookup = {s: j for (j, s) in enumerate(self.vs.get_basis(g6=True))}
         i = 0
         for G6 in basis_g6:
-            (canonG6, sign) = self._g6_to_canon_g6(G6, sign=True)
+            (canonG6, sgn) = self._g6_to_canon_g6(G6, sign=True)
             j = lookup.get(canonG6)
             if j is None:
                 raise ValueError("%s: Graph from ref basis not found in basis" % str(self))
-            row.append(i)
-            column.append(j)
-            data.append(sign)
+            column.append(i)
+            row.append(j)
+            data.append(sgn)
             i += 1
-        return sparse.csr_matrix((data, (row, column)), shape=(dim, dim), dtype=float)
+        return sparse.csc_matrix((data, (row, column)), shape=(dim, dim), dtype=int)
 
 
 class RefOperator:
@@ -83,17 +83,42 @@ class RefOperator:
     def exists_file(self):
         return (self.file_path_ref is not None) and os.path.isfile(self.file_path_ref)
 
-    @abstractmethod
     def _load_matrix(self, header):
-        pass
+        logging.info("Load operator matrix from reference file: %s" % str(self.file_path_ref))
+        shape = None
+        matrixList = SH.load_string_list(self.file_path_ref, header=header)
+        row = []
+        column = []
+        data = []
+        if len(matrixList) == 0:
+            (shape, e) = self.op.get_matrix_header()
+        else:
+            for line in matrixList:
+                (i, j, v) = map(int, line.split(" "))
+                column.append(i-1)
+                row.append(j-1)
+                data.append(v)
+            if data[-1] == 0:
+                shape = (m, n) = (row.pop(-1)+1, column.pop(-1)+1)
+                data.pop(-1)
+                if len(row):
+                    if min(row) < 0 or min(column) < 0:
+                        raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self), min(row), min(column)))
+                    if max(row) >= m or max(column) >= n:
+                        raise ValueError("Matrix read from reference file %s is wrong: Index outside matrix size" % str(self))
+        if shape is None:
+            raise ValueError("%s: Shape of reference matrix is unknown" % str(self))
+        return ((data, (row, column)), shape)
 
     def get_matrix_wrt_ref(self, header=False):
         if not self.exists_file():
            raise SH.RefError("%s: Reference basis file not found" % str(self))
         (matrixList, shape) = self._load_matrix(header)
         (m, n) = shape
-        logging.info("Got reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
-        return sparse.csr_matrix(matrixList, shape=shape, dtype=float)
+        logging.info("Get reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
+        matrix = sparse.csc_matrix(matrixList, shape=shape, dtype=int)
+        matrix.eliminate_zeros()
+        return matrix
 
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref(header=header)
@@ -101,4 +126,7 @@ class RefOperator:
         ref_target = RefVectorSpace(self.op.target)
         T_domain = ref_domain.get_transformation_matrix(header=header)
         T_target = ref_target.get_transformation_matrix(header=header)
-        return M                                                         #TODO: Implement Matrix Transformation
+        (m, n) = M.get_shape()
+        if m == 0 or n == 0:
+            return M
+        return T_target * M * SH.sparse_inverse(T_domain)

@@ -85,7 +85,7 @@ class GraphOperator():
                 logging.warn("Skip building operator matrix of %s since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        shape = (self.domain.get_dimension(), self.target.get_dimension())
+        shape = (self.target.get_dimension(), self.domain.get_dimension())
         (m, n) = shape
         if m == 0 or n == 0:
             entries = 0
@@ -105,9 +105,10 @@ class GraphOperator():
                     sgn0 = 0
                 canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
             for (image, factor) in canonImages.items():
-                imageIndex = lookup.get(image)
-                if imageIndex is not None:
-                    matrixList.append("%d %d %d" % (domainIndex, imageIndex, factor))
+                if factor:
+                    imageIndex = lookup.get(image)
+                    if imageIndex is not None:
+                        matrixList.append("%d %d %d" % (domainIndex, imageIndex, factor))
         entries = len(matrixList)
         self._store_matrix(matrixList,(shape, entries))
         logging.info("Operator matrix built for %s" % str(self))
@@ -120,7 +121,7 @@ class GraphOperator():
 
     def get_matrix_header(self):
         if not self.valid:
-            return None
+            return ((self.target.get_dimension(), self.domain.get_dimension()), 0)
         try:
             header = SH.load_header(self.file_path)
         except SH.FileNotExistingError:
@@ -167,6 +168,9 @@ class GraphOperator():
         logging.info("Load operator matrix from file: %s" % str(self.file_path))
         (header, matrixList) = SH.load_string_list(self.file_path, header=True)
         (shape, entries) = GraphOperator._get_matrix_info_from_header(header)
+        (m, n) = shape
+        if m != self.target.get_dimension() or n != self.domain.get_dimension():
+            raise ValueError("Shape of matrix doesn't correspond to the vector space dimensions for the file: %s" % str(self.file_path))
         if len(matrixList) != entries:
             raise ValueError("Number of matrix entries read from file %s is wrong" % str(self.file_path))
         row = []
@@ -176,10 +180,9 @@ class GraphOperator():
             (i, j, v) = map(int, line.split(" "))
             if not (i >= 0 and j >= 0):
                 raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path),i, j))
-            row.append(i)
-            column.append(j)
+            column.append(i)
+            row.append(j)
             data.append(v)
-        (m, n) = shape
         if len(row):
             if min(row) < 0 or min(column) < 0:
                 raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path), min(row), min(column)))
@@ -190,13 +193,17 @@ class GraphOperator():
     def get_matrix(self):
         if not self.valid:
             log.warning("No operator matrix: %s is not valid" % str(self))
-            return None
-        if not self.exists_file():
-            raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
-        (matrixList, shape) = self._load_matrix()
-        (m, n) = shape
+            shape = (m ,n) = (self.target.get_dimension(), self.domain.get_dimension())
+            matrixList = ([], ([], []))
+        else:
+            if not self.exists_file():
+                raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
+            (matrixList, shape) = self._load_matrix()
+            (m, n) = shape
         logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), m, n))
-        return sparse.csr_matrix(matrixList, shape=shape, dtype=float)
+        matrix = sparse.csc_matrix(matrixList, shape=shape, dtype=int)
+        matrix.eliminate_zeros()
+        return matrix
 
     def delete_file(self):
         if os.path.isfile(self.file_path):
@@ -212,18 +219,18 @@ class GraphOperator():
             except SH.NotBuiltError:
                 logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opD))
                 return (None, False)
-        if D.nnz == 0:
-            D = 0
+            if D.getnnz() == 0:
+                D = 0
         if not opDD.valid:
-            DD = 0
+                DD = 0
         else:
             try:
                 DD = opD.get_matrix()
             except SH.NotBuiltError:
                 logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
                 return (None, False)
-        if DD.nnz == 0:
-            DD = 0
+            if DD.getnnz() == 0:
+                DD = 0
 
         if D is 0 and DD is 0:
             cohomology = opD.domain
@@ -234,9 +241,10 @@ class GraphOperator():
             elif D is 0 and DD is not 0:
                 A = DD
             else:
-                pass #A = DD * D
+                pass #A = D * DD
         cohomology = "bla"
         dim = "not implemented"
         if only_dim:
             return (dim, True)
         return (cohomology, True)
+

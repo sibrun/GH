@@ -60,8 +60,8 @@ class OGCTestCase(unittest.TestCase):
 
     def test_basis(self):
         logging.warn('----- Compare basis with reference -----')
-        v_range = range(6,10)
-        l_range = range(5,10)
+        v_range = range(7,9)
+        l_range = range(6,9)
         even_range = [True, False]
         vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in itertools.product(v_range, l_range, even_range)]
         for vs in vs_list:
@@ -77,16 +77,17 @@ class OGCTestCase(unittest.TestCase):
             self.assertEqual(len(basis_list), dimension, '%s: basis dimension not consistant' % str(vs))
             basis_set=set(basis_list)
             self.assertTrue(len(basis_list) == len(basis_set), '%s: basis contains duplicates' % str(vs))
-            if not REF.exists_file(vs.file_path_ref):
+            ref_vs = REF.RefVectorSpace(vs)
+            if not ref_vs.exists_file():
                 logging.warn('%s: no reference file for basis' % str(vs))
                 continue
-            ref_basis_set = set(REF.get_basis_g6(vs.file_path_ref))
+            ref_basis_set = set(ref_vs.get_basis_g6())
             self.assertSetEqual(basis_set, ref_basis_set, '%s: basis not equal reference basis' % str(vs))
 
     def test_operator_matrix(self):
         logging.warn('----- Test operator matrix -----')
-        v_range = range(7,10)
-        l_range = range(6,10)
+        v_range = range(6,10)
+        l_range = range(5,10)
         even_range = [True, False]
         eps = 1.0e-6
 
@@ -113,26 +114,32 @@ class OGCTestCase(unittest.TestCase):
             (shape, entries) = op.get_matrix_header()
             (m, n) = shape
             self.assertEqual(matrix.get_shape(), shape, '%s: matrix shape not consistent' % str(op))
-            self.assertEqual(matrix.nnz, entries, '%s: number of matrix entries not consistent' % str(op))
+            self.assertEqual(matrix.getnnz(), entries, '%s: number of matrix entries not consistent' % str(op))
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,'%s: triviality check wrong' % str(op))
-            if not REF.exists_file(op.file_path_ref):
+            ref_op = REF.RefOperator(op)
+            if not ref_op.exists_file():
                 logging.warn('%s: no reference file for operator matrix' % str(op))
                 continue
-            ref_matrix = REF.get_matrix(op.file_path_ref)
+            ref_matrix = ref_op.get_matrix_wrt_ref()
             self.assertEqual(matrix.get_shape(), ref_matrix.get_shape(), '%s: shape of matrix and reference matrix not equal' % str(op))
-            self.assertEqual(matrix.nnz, ref_matrix.nnz, '%s: number of entries of matrix and reference matrix not equal' % str(op))
+            self.assertEqual(matrix.getnnz(), ref_matrix.getnnz(), '%s: number of entries of matrix and reference matrix not equal' % str(op))
             if op.is_trivial():
                 logging.info('%s: trivial operator matrix: no rank test' % str(op))
                 continue
-            matrix_rank = estimate_rank(aslinearoperator(matrix), eps)
-            ref_matrix_rank = estimate_rank(aslinearoperator(ref_matrix), eps)
+            matrix_rank = estimate_rank(aslinearoperator(matrix.asfptype()), eps)
+            ref_matrix_rank = estimate_rank(aslinearoperator(ref_matrix.asfptype()), eps)
             logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), matrix_rank, ref_matrix_rank))
             self.assertEqual(matrix_rank, ref_matrix_rank, '%s: estimated rank of matrix and reference matrix not the same' % str(op))
+            ref_matrix_transformed = ref_op.get_matrix()
+            if op.domain.even_edges:
+                ref_matrix_transformed = -ref_matrix_transformed
+            missmatch_matrix = matrix != ref_matrix_transformed
+            self.assertTrue(missmatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
-        v_range = range(7,11)
-        l_range = range(6,11)
+        v_range = range(6,9)
+        l_range = range(5,9)
         even_range = [True, False]
         eps = 1.0e-6
 
@@ -155,7 +162,7 @@ def suite():
     #suite.addTest(OGCTestCase('test_perm_sign'))
     #suite.addTest(OGCTestCase('test_basis_functionality'))
     #suite.addTest(OGCTestCase('test_basis'))
-    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    suite.addTest(OGCTestCase('test_operator_matrix'))
     suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
@@ -163,3 +170,5 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+
+

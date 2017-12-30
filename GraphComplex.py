@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 import operator
 import itertools
 import logging
-from scipy.sparse import linalg
+import scipy.sparse as sparse
 from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
@@ -94,7 +94,7 @@ class GraphComplex():
                     if op1.is_trivial() or op2.is_trivial():
                         triv.append(p)
                         continue
-                    if linalg.norm(M1 * M2) < eps:
+                    if sparse.linalg.norm(M2 * M1) < eps:
                         succ.append(p)
                     else:
                         fail.append(p)

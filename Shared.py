@@ -1,5 +1,6 @@
 import os
 import pickle
+import scipy.sparse as sparse
 from sage.all import *
 
 
@@ -88,3 +89,10 @@ def pickle_load(path):
     with open(path, 'rb') as f:
         Ob = pickle.load(f)
     return Ob
+
+
+def sparse_inverse(M):
+    (m ,n) = M.shape
+    if m != n:
+        raise ValueError("Cannot compute the inverse: Not a square matrix")
+    return sparse.csc_matrix(sparse.linalg.spsolve(M, sparse.eye(m)))
