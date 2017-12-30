@@ -35,6 +35,11 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
         return os.path.join(data_dir, type_dir, s1, s2)
 
+    def _set_img_path(self):
+        s1 = sub_dir_even if self.even_edges else sub_dir_odd
+        s2 = "gra%d_%d" % (self.n_vertices, self.n_loops)
+        return os.path.join(data_dir, type_dir, s1, s2)
+
     def get_file_path_ref(self):
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)

@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import os
 import logging
 from sage.all import *
 import Shared as SH
@@ -13,9 +14,14 @@ class GraphVectorSpace():
         self.color_counts = color_counts
         self.valid = self._set_validity()
         self.file_path = self._set_file_path()
+        self.img_path = self._set_img_path()
 
     @abstractmethod
     def _set_file_path(self):
+        pass
+
+    @abstractmethod
+    def _set_img_path(self):
         pass
 
     @abstractmethod
@@ -130,3 +136,9 @@ class GraphVectorSpace():
     def delete_file(self):
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)
+
+    def create_graph_images(self, graph6_list):
+        SH.generate_path(self.img_path)
+        for g6 in graph6_list:
+            path = os.path.join(self.img_path, g6 + '.png')
+            Graph(g6).plot().show()
