@@ -132,7 +132,7 @@ class OGCTestCase(unittest.TestCase):
             self.assertEqual(matrix_rank, ref_matrix_rank, '%s: estimated rank of matrix and reference matrix not the same' % str(op))
             ref_matrix_transformed = ref_op.get_matrix()
             if op.domain.even_edges:
-                ref_matrix_transformed = -ref_matrix_transformed
+                ref_matrix_transformed = -ref_matrix_transformed            #TODO: sign error in transformation matrix for even edges
             missmatch_matrix = matrix != ref_matrix_transformed
             self.assertTrue(missmatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
 
