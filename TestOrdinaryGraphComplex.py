@@ -163,11 +163,11 @@ def suite():
     #suite.addTest(OGCTestCase('test_basis_functionality'))
     #suite.addTest(OGCTestCase('test_basis'))
     #suite.addTest(OGCTestCase('test_operator_matrix'))
-    #suite.addTest(OGCTestCase('test_graph_complex'))
-    suite.addTest(OGCTestCase('test_graph_image'))
+    suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+

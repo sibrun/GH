@@ -95,4 +95,4 @@ def sparse_inverse(M):
     (m ,n) = M.shape
     if m != n:
         raise ValueError("Cannot compute the inverse: Not a square matrix")
-    return sparse.csc_matrix(sparse.linalg.spsolve(M, sparse.eye(m)))
+    return sparse.csc_matrix(sparse.linalg.spsolve(M, sparse.eye(m))).astype(int)
