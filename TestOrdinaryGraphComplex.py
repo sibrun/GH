@@ -60,8 +60,8 @@ class OGCTestCase(unittest.TestCase):
 
     def test_basis(self):
         logging.warn('----- Compare basis with reference -----')
-        v_range = range(7,9)
-        l_range = range(6,9)
+        v_range = range(6,9)
+        l_range = range(5,9)
         even_range = [True, False]
         vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in itertools.product(v_range, l_range, even_range)]
         for vs in vs_list:
@@ -86,8 +86,8 @@ class OGCTestCase(unittest.TestCase):
 
     def test_operator_matrix(self):
         logging.warn('----- Test operator matrix -----')
-        v_range = range(6,10)
-        l_range = range(5,10)
+        v_range = range(6,9)
+        l_range = range(5,9)
         even_range = [True, False]
         eps = 1.0e-6
 
@@ -161,8 +161,8 @@ def suite():
     suite = unittest.TestSuite()
     #suite.addTest(OGCTestCase('test_perm_sign'))
     #suite.addTest(OGCTestCase('test_basis_functionality'))
-    #suite.addTest(OGCTestCase('test_basis'))
-    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    suite.addTest(OGCTestCase('test_basis'))
+    suite.addTest(OGCTestCase('test_operator_matrix'))
     suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 

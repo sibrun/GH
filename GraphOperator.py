@@ -106,9 +106,9 @@ class GraphOperator():
                 canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
             for (image, factor) in canonImages.items():
                 if factor:
-                    imageIndex = lookup.get(image)
-                    if imageIndex is not None:
-                        matrixList.append("%d %d %d" % (domainIndex, imageIndex, factor))
+                    targetIndex = lookup.get(image)
+                    if targetIndex is not None:
+                        matrixList.append("%d %d %d" % (targetIndex, domainIndex, factor))
         entries = len(matrixList)
         self._store_matrix(matrixList,(shape, entries))
         logging.info("Operator matrix built for %s" % str(self))
@@ -180,8 +180,8 @@ class GraphOperator():
             (i, j, v) = map(int, line.split(" "))
             if not (i >= 0 and j >= 0):
                 raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path),i, j))
-            column.append(i)
-            row.append(j)
+            row.append(i)
+            column.append(j)
             data.append(v)
         if len(row):
             if min(row) < 0 or min(column) < 0:
