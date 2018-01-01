@@ -57,11 +57,10 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.even_edges == other.even_edges
 
-    def _generating_graphs(self, onlyonevi=True):
-        if (3 * self.n_vertices > 2 * self.n_edges) or (self.n_edges > self.n_vertices * (self.n_vertices - 1) / 2):
-            # impossible
+    def _generating_graphs(self):
+        if not self.valid:
             return []
-        return list(graphs.nauty_geng(("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (self.n_vertices, self.n_edges, self.n_edges)))
+        return SH.nauty_geng(self.n_vertices, self.n_edges)
 
     def perm_sign(self, G, p):
         if self.even_edges:
