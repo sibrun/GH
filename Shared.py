@@ -4,7 +4,7 @@ import scipy.sparse as sparse
 from sage.all import *
 
 
-class Perm():
+class Perm:
     def __init__(self, p):
         self.p = p
 
