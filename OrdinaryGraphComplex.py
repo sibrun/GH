@@ -95,8 +95,12 @@ class ContractGO(GO.GraphOperator):
         super(ContractGO, self).__init__(domain, target)
 
     @classmethod
-    def generate_operators(cls, vs_list):
-        return ContractGO.get_operators(cls, vs_list)
+    def get_operators(cls, vs_list):
+        op_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
+                op_list.append(cls(domain, target))
+        return op_list
 
     @classmethod
     def get_operator(cls, n_vertices, n_loops, even_edges):
@@ -162,7 +166,10 @@ class OrdinaryGC(GC.GraphComplex):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
-        super(OrdinaryGC, self).__init__()
+
+        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        op_list = ContractGO.get_operators(vs_list)
+        super(OrdinaryGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
@@ -171,9 +178,3 @@ class OrdinaryGC(GC.GraphComplex):
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "graph_complex.txt"
         return SH.get_path_from_current(data_dir, type_dir, s1, s2)
-
-    def create_vs(self):
-        self.vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-
-    def create_op(self):
-        self.op_list = ContractGO.generate_operators(self.vs_list)

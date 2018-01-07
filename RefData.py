@@ -72,7 +72,9 @@ class RefOperator:
 
     def __init__(self, op):
         self.op = op
-        self.file_path_ref = op.get_file_path_ref()
+        self.ref_domain = RefVectorSpace(self.op.domain)
+        self.ref_target = RefVectorSpace(self.op.target)
+        self.file_path_ref = self.op.get_file_path_ref()
 
     def __str__(self):
         return "Reference operator: %s" % str(self.file_path_ref)
@@ -119,10 +121,8 @@ class RefOperator:
 
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref(header=header)
-        ref_domain = RefVectorSpace(self.op.domain)
-        ref_target = RefVectorSpace(self.op.target)
-        T_domain = ref_domain.get_transformation_matrix(header=header)
-        T_target = ref_target.get_transformation_matrix(header=header)
+        T_domain = self.ref_domain.get_transformation_matrix(header=header)
+        T_target = self.ref_target.get_transformation_matrix(header=header)
         (m, n) = M.get_shape()
         if m == 0 or n == 0:
             return M

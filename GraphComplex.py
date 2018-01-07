@@ -16,9 +16,9 @@ reload(SH)
 class GraphComplex():
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        self.vs_list = []
-        self.op_list = []
+    def __init__(self, vs_list, op_list):
+        self.vs_list = vs_list
+        self.op_list = op_list
         self.file_path = self._set_file_path()
         self.cohomology = dict()
 
@@ -28,14 +28,6 @@ class GraphComplex():
 
     @abstractmethod
     def _set_file_path(self):
-        pass
-
-    @abstractmethod
-    def create_vs(self):
-        pass
-
-    @abstractmethod
-    def create_op(self):
         pass
 
     def members_to_string(self):
@@ -50,8 +42,6 @@ class GraphComplex():
         SH.store_list_of_header_lists(LHL, self.file_path)
 
     def build_basis(self, skip_existing_files=True):
-        self.vs_list = []
-        self.create_vs()
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         for vs in self.vs_list:
             if not skip_existing_files:
@@ -60,8 +50,6 @@ class GraphComplex():
         self.vs_list.sort(key=operator.methodcaller('get_dimension'))
 
     def build_operator_matrix(self, skip_existing_files=True):
-        self.op_list = []
-        self.create_op()
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
         for op in self.op_list:
             if not skip_existing_files:
@@ -114,7 +102,7 @@ class GraphComplex():
             for opDD in self.op_list:
                 tvsDD = opDD.target
                 if tvsDD == dvsD:
-                    (CH, conclusive) = GO.GraphOperator.get_cohomology(opD, opDD, only_dim=only_dim)
+                    (CH, conclusive) = self._cohomology(opD, opDD, only_dim=only_dim)
                     if not conclusive:
                         self.cohomology.update({dvsD: "inconclusive"})
                         continue
@@ -131,5 +119,41 @@ class GraphComplex():
             cohomologyList.append(line)
         return cohomologyList
 
+    def _cohomology(opD, opDD, only_dim = True):
+        if not opD.valid:
+            D = 0
+        else:
+            try:
+                D = opD.get_matrix()
+            except SH.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opD))
+                return (None, False)
+            if D.getnnz() == 0:
+                D = 0
+        if not opDD.valid:
+                DD = 0
+        else:
+            try:
+                DD = opD.get_matrix()
+            except SH.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
+                return (None, False)
+            if DD.getnnz() == 0:
+                DD = 0
 
+        if D is 0 and DD is 0:
+            cohomology = opD.domain
+            dim = opD.domain.get_dimension()
+        else:                                       #TODO: Implement Cohomology
+            if D is not 0 and DD is 0:
+                A = D
+            elif D is 0 and DD is not 0:
+                A = DD
+            else:
+                pass #A = D * DD
+        cohomology = "bla"
+        dim = "not implemented"
+        if only_dim:
+            return (dim, True)
+        return (cohomology, True)
 
