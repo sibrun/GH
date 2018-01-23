@@ -11,11 +11,14 @@ reload(SH)
 class GraphOperator():
     __metaclass__ = ABCMeta
 
+    data_type = "R"
+
     def __init__(self, domain, target):
         self.domain = domain
         self.target = target
         self.valid = self.domain.valid and self.target.valid
         self.file_path = self._set_file_path()
+        self.rank_file_path = self._set_rank_file_path()
 
     @classmethod
     @abstractmethod
@@ -27,7 +30,15 @@ class GraphOperator():
         pass
 
     @abstractmethod
+    def _set_rank_file_path(self):
+        pass
+
+    @abstractmethod
     def get_file_path_ref(self):
+        pass
+
+    @abstractmethod
+    def get_rank_file_path_ref(self):
         pass
 
     @abstractmethod
@@ -77,12 +88,11 @@ class GraphOperator():
                 logging.warn("Skip building operator matrix of %s since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        shape = (self.target.get_dimension(), self.domain.get_dimension())
+        shape = (self.domain.get_dimension(), self.target.get_dimension())
         (m, n) = shape
         if m == 0 or n == 0:
-            entries = 0
-            self._store_matrix([],(shape, entries))
-            logging.info("Created empty file for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
+            self._store_matrix([], shape)
+            logging.info("Created matrix file without entries for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
         lookup = {s: j for (j,s) in enumerate(targetBasis6)}
@@ -100,13 +110,15 @@ class GraphOperator():
                 if factor:
                     targetIndex = lookup.get(image)
                     if targetIndex is not None:
-                        matrixList.append("%d %d %d" % (targetIndex, domainIndex, factor))
-        entries = len(matrixList)
-        self._store_matrix(matrixList,(shape, entries))
+                        matrixList.append((domainIndex, targetIndex, factor))
+        self._store_matrix(matrixList, shape)
         logging.info("Operator matrix built for %s" % str(self))
 
     def exists_file(self):
         return os.path.isfile(self.file_path)
+
+    def exists_rank_file(self):
+        return os.path.isfile(self.rank_file_path)
 
     def exist_domain_target_files(self):
         return os.path.isfile(self.domain.file_path) and os.path.isfile(self.target.file_path)
@@ -151,55 +163,64 @@ class GraphOperator():
                 raise SH.NotBuiltError("Matrix shape of %s unknown: Build operator matrix first" % str(self))
         return m == 0 or n == 0 or entries == 0
 
-    def _store_matrix(self, matrixList, matrix_info):
+    def _store_matrix(self, matrixList, shape, data_type=data_type):
         logging.info("Store operator matrix in file: %s" % str(self.file_path))
-        header = GraphOperator._get_header_from_matrix_info(matrix_info)
-        SH.store_string_list(matrixList, self.file_path, header=header)
+        (m, n) = shape
+        stringList = []
+        stringList.append("%d %d %s" % (m, n, data_type))
+        for (domainIndex, targetIndex, data) in matrixList:
+            stringList.append("%d %d %d" % (domainIndex + 1, targetIndex + 1, data))
+        stringList.append("0 0 0")
+        SH.store_string_list(stringList, self.file_path)
 
     def _load_matrix(self):
         logging.info("Load operator matrix from file: %s" % str(self.file_path))
-        (header, matrixList) = SH.load_string_list(self.file_path, header=True)
-        (shape, entries) = GraphOperator._get_matrix_info_from_header(header)
-        (m, n) = shape
-        if m != self.target.get_dimension() or n != self.domain.get_dimension():
+        matrixList = SH.load_string_list(self.file_path)
+        header = matrixList.pop(0)
+        (m, n, type) = map(int, header.split(" "))
+        shape = (m, n)
+        if m != self.domain.get_dimension() or n != self.target.get_dimension():
             raise ValueError("Shape of matrix doesn't correspond to the vector space dimensions for the file: %s" % str(self.file_path))
-        if len(matrixList) != entries:
+        tail = map(int, matrixList.pop().split(" "))
+        if not tail == (0, 0, 0):
             raise ValueError("Number of matrix entries read from file %s is wrong" % str(self.file_path))
-        row = []
-        column = []
-        data = []
+        matrixList = []
         for line in matrixList:
             (i, j, v) = map(int, line.split(" "))
-            if not (i >= 0 and j >= 0):
-                raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path),i, j))
-            row.append(i)
-            column.append(j)
-            data.append(v)
-        if len(row):
-            if min(row) < 0 or min(column) < 0:
-                raise ValueError("%s: Found negative matrix indices: %d %d" % (str(self.file_path), min(row), min(column)))
-            if max(row) >= m or max(column) >= n:
-                raise ValueError("Matrix read from file %s is wrong: Index outside matrix size" % str(self.file_path))
-        return ((data, (row, column)), shape)
+            if not (i >= 1 and j >= 1):
+                raise ValueError("%s: Found invalid matrix indices: %d %d" % (str(self.file_path),i, j))
+            if i >= m or j >= n:
+                raise ValueError("%s: Found invalid matrix indices outside matrix size: %d %d" % (str(self.file_path),i, j))
+            matrixList.append((i, j, v))
+        return (matrixList, shape)
 
     def get_matrix(self):
         if not self.valid:
             log.warning("No operator matrix: %s is not valid" % str(self))
             shape = (m ,n) = (self.target.get_dimension(), self.domain.get_dimension())
-            matrixList = ([], ([], []))
+            matrixList = ([], sahpe)
         else:
             if not self.exists_file():
                 raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
             (matrixList, shape) = self._load_matrix()
             (m, n) = shape
         logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), m, n))
-        matrix = sparse.csc_matrix(matrixList, shape=shape, dtype=int)
-        matrix.eliminate_zeros()
-        return matrix
+        m = matrix(ZZ, m, n, sparse=True)
+        for (i, j, v) in matrixList:
+            m.add_to_entry(i, j, v)
+        return m
+
+    def compute_rank(self):
+        rank = self.get_matrix().rank()
+        SH.store(rank, self.rank_file_path)
+
+    def get_rank(self):
+        if not self.exists_rank_file():
+            raise SH.NotBuiltError("Cannot load operator rank, No rank file found for %s: " % str(self))
+        SH.load(self.rank_file_path)
+
+
 
     def delete_file(self):
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)
-
-
-

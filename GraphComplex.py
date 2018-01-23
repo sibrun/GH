@@ -102,7 +102,7 @@ class GraphComplex():
             for opDD in self.op_list:
                 tvsDD = opDD.target
                 if tvsDD == dvsD:
-                    (CH, conclusive) = self._cohomology(opD, opDD, only_dim=only_dim)
+                    (CH, conclusive) = GraphComplex._cohomology(opD, opDD, only_dim=only_dim)
                     if not conclusive:
                         self.cohomology.update({dvsD: "inconclusive"})
                         continue
@@ -119,6 +119,7 @@ class GraphComplex():
             cohomologyList.append(line)
         return cohomologyList
 
+    @staticmethod
     def _cohomology(opD, opDD, only_dim = True):
         if not opD.valid:
             D = 0

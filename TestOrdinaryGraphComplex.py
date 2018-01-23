@@ -14,7 +14,7 @@ reload(REF)
 log_dir = "log"
 log_file = "test.log"
 test_file = "test.txt"
-skip_existing_files = True
+skip_existing_files = False
 
 eps = 1.0e-6
 
@@ -133,8 +133,8 @@ class OGCTestCase(unittest.TestCase):
             ref_matrix_transformed = ref_op.get_matrix()
             if op.domain.even_edges:
                 ref_matrix_transformed = -ref_matrix_transformed            #TODO: sign error in transformation matrix for even edges
-            missmatch_matrix = matrix != ref_matrix_transformed
-            self.assertTrue(missmatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
+            mismatch_matrix = matrix != ref_matrix_transformed
+            self.assertTrue(mismatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
@@ -160,7 +160,7 @@ def suite():
     logging.warn("----- Start test suite -----")
     suite = unittest.TestSuite()
     #suite.addTest(OGCTestCase('test_perm_sign'))
-    #suite.addTest(OGCTestCase('test_basis_functionality'))
+    suite.addTest(OGCTestCase('test_basis_functionality'))
     suite.addTest(OGCTestCase('test_basis'))
     suite.addTest(OGCTestCase('test_operator_matrix'))
     suite.addTest(OGCTestCase('test_graph_complex'))
@@ -170,4 +170,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-

@@ -94,6 +94,8 @@ class RefOperator:
         else:
             for line in matrixList:
                 (i, j, v) = map(int, line.split(" "))
+                if i == 0 or j == 0:
+                    continue
                 column.append(i-1)
                 row.append(j-1)
                 data.append(v)
