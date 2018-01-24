@@ -28,22 +28,20 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
+        self.sub_dir = sub_dir_even if self.even_edges else sub_dir_odd
         super(OrdinaryGVS,self).__init__()
 
-    def _set_file_path(self):
-        s1 = sub_dir_even if self.even_edges else sub_dir_odd
-        s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_dir, s1, s2)
+    def _set_basis_file_path(self):
+        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
 
     def _set_img_path(self):
-        s1 = sub_dir_even if self.even_edges else sub_dir_odd
-        s2 = "gra%d_%d" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_dir, s1, s2)
+        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
 
-    def get_file_path_ref(self):
-        s1 = sub_dir_even if self.even_edges else sub_dir_odd
-        s2 = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_ref_dir, type_dir, s1, s2)
+    def get_ref_basis_file_path(self):
+        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
 
     def _set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
@@ -92,6 +90,7 @@ class ContractGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
+        self.sub_dir = sub_dir_even if self.domain.even_edges else sub_dir_odd
         super(ContractGO, self).__init__(domain, target)
 
     @classmethod
@@ -108,15 +107,21 @@ class ContractGO(GO.GraphOperator):
         target = OrdinaryGVS(n_vertices-1, n_loops, even_edges)
         return cls(domain, target)
 
-    def _set_file_path(self):
-        s1 = sub_dir_even if self.domain.even_edges else sub_dir_odd
-        s2 = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, type_dir, s1, s2)
+    def _set_matrix_file_path(self):
+        s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
 
-    def get_file_path_ref(self):
-        s1 = sub_dir_even if self.domain.even_edges else sub_dir_odd
-        s2 = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_ref_dir, type_dir, s1, s2)
+    def _set_rank_file_path(self):
+        s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
 
     def get_work_estimate(self):
         return self.domain.n_edges * sqrt(self.target.get_dimension())
@@ -174,7 +179,7 @@ class OrdinaryGC(GC.GraphComplex):
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
 
-    def _set_file_path(self):
+    def _set_info_file_path(self):
         s1 = sub_dir_even if self.even_edges else sub_dir_odd
         s2 = "graph_complex.txt"
         return SH.get_path_from_current(data_dir, type_dir, s1, s2)

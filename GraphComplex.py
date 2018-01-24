@@ -19,7 +19,7 @@ class GraphComplex():
     def __init__(self, vs_list, op_list):
         self.vs_list = vs_list
         self.op_list = op_list
-        self.file_path = self._set_file_path()
+        self.info_file_path = self._set_info_file_path()
         self.cohomology = dict()
 
     @abstractmethod
@@ -27,7 +27,7 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def _set_file_path(self):
+    def _set_info_file_path(self):
         pass
 
     def members_to_string(self):
@@ -39,13 +39,13 @@ class GraphComplex():
         (vector_space, operator) = self.members_to_string()
         cohomology = self.get_cohomology_info()
         LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology -----", cohomology)]
-        SH.store_list_of_header_lists(LHL, self.file_path)
+        SH.store_list_of_header_lists(LHL, self.info_file_path)
 
     def build_basis(self, skip_existing_files=True):
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         for vs in self.vs_list:
             if not skip_existing_files:
-                vs.delete_file()
+                vs.delete_matrix_file()
             vs.build_basis()
         self.vs_list.sort(key=operator.methodcaller('get_dimension'))
 
@@ -53,7 +53,7 @@ class GraphComplex():
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
         for op in self.op_list:
             if not skip_existing_files:
-                op.delete_file()
+                op.delete_matrix_file()
             op.build_matrix()
         self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
 

@@ -41,11 +41,11 @@ class OGCTestCase(unittest.TestCase):
         logging.warn('----- Test basis functionality -----')
         for even_edges in [True, False]:
             vs = OGC.OrdinaryGVS(9, 9, even_edges=even_edges)
-            vs.delete_file()
-            self.assertFalse(vs.exists_file(),'basis should have been deleted')
+            vs.delete_basis_file()
+            self.assertFalse(vs.exists_basis_file(),'basis should have been deleted')
             self.assertRaises(SH.NotBuiltError, vs.get_basis)
             vs.build_basis()
-            self.assertTrue(vs.exists_file(),'basis should exist')
+            self.assertTrue(vs.exists_basis_file(),'basis should exist')
             basis_g6 = vs.get_basis()
             self.assertTrue(len(basis_g6) > 0,'%s: basis_g6 has size 0' % str(vs))
             self.assertIsInstance(basis_g6,list,'type of basis_g6 is not a list')
@@ -69,7 +69,7 @@ class OGCTestCase(unittest.TestCase):
                 logging.info('%s: no basis test, since not valid' % str(vs))
                 continue
             if not skip_existing_files:
-                vs.delete_file()
+                vs.delete_basis_file()
             vs.build_basis()
             logging.info("%s: %s" % (str(vs), vs.get_info()))
             basis_list = vs.get_basis(g6=True)
@@ -78,7 +78,7 @@ class OGCTestCase(unittest.TestCase):
             basis_set=set(basis_list)
             self.assertTrue(len(basis_list) == len(basis_set), '%s: basis contains duplicates' % str(vs))
             ref_vs = REF.RefVectorSpace(vs)
-            if not ref_vs.exists_file():
+            if not ref_vs.exists_basis_file():
                 logging.warn('%s: no reference file for basis' % str(vs))
                 continue
             ref_basis_set = set(ref_vs.get_basis_g6())
@@ -104,11 +104,11 @@ class OGCTestCase(unittest.TestCase):
             if not op.exist_domain_target_files():
                 logging.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
-            if not skip_existing_files and op.exists_file():
-                op.delete_file()
-                self.assertFalse(op.exists_file(), '%s matrix file should have been deleted' % str(op))
+            if not skip_existing_files and op.exists_matrix_file():
+                op.delete_matrix_file()
+                self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
             op.build_matrix()
-            self.assertTrue(op.exists_file(), '%s matrix file should exist' % str(op))
+            self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
             logging.info("%s: %s" % (str(op), op.get_info()))
             matrix = op.get_matrix()
             (shape, entries) = op.get_matrix_header()
@@ -117,7 +117,7 @@ class OGCTestCase(unittest.TestCase):
             self.assertEqual(matrix.getnnz(), entries, '%s: number of matrix entries not consistent' % str(op))
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,'%s: triviality check wrong' % str(op))
             ref_op = REF.RefOperator(op)
-            if not ref_op.exists_file():
+            if not ref_op.exists_matrix_file():
                 logging.warn('%s: no reference file for operator matrix' % str(op))
                 continue
             ref_matrix = ref_op.get_matrix_wrt_ref()
@@ -159,11 +159,11 @@ def suite():
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("----- Start test suite -----")
     suite = unittest.TestSuite()
-    #suite.addTest(OGCTestCase('test_perm_sign'))
+    suite.addTest(OGCTestCase('test_perm_sign'))
     suite.addTest(OGCTestCase('test_basis_functionality'))
     suite.addTest(OGCTestCase('test_basis'))
-    suite.addTest(OGCTestCase('test_operator_matrix'))
-    suite.addTest(OGCTestCase('test_graph_complex'))
+    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    #suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
 

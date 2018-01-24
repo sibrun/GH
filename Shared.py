@@ -43,33 +43,31 @@ def generate_path(path):
         os.makedirs(directory)
 
 
-def store_string_list(L, path, header=None):
+def store_string_list(L, path):
     generate_path(path)
     with open(path,'w') as f:
-        if header is not None:
-            f.write(header + '\n')
         for x in L:
             f.write(x + '\n')
 
 
-def load_string_list(path, header=True):
+def load_string_list(path):
     if not os.path.exists(path):
         raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
-        if header:
-            H = f.readline()
-        L = f.read().splitlines()
-    if header:
-        return (H, L)
-    else:
-        return L
+        return f.read().splitlines()
 
 
-def load_header(path):
+def load_line(path):
     if not os.path.exists(path):
         raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         return f.readline()
+
+
+def store_line(S, path):
+    generate_path(path)
+    with open(path,'w') as f:
+        f.write(S + '\n')
 
 
 def store_list_of_header_lists(LHL, path):
