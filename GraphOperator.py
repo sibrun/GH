@@ -96,7 +96,7 @@ class GraphOperator():
             return
 
         lookup = {s: j for (j,s) in enumerate(targetBasis6)}
-        matrixList = []
+        entriesList = []
         for (domainIndex, G) in enumerate(domainBasis):
             imageList = self._operate_on(G)
             canonImages = dict()
@@ -110,8 +110,8 @@ class GraphOperator():
                 if factor:
                     targetIndex = lookup.get(image)
                     if targetIndex is not None:
-                        matrixList.append((domainIndex, targetIndex, factor))
-        self._store_matrix(matrixList, shape)
+                        entriesList.append((domainIndex, targetIndex, factor))
+        self._store_matrix(entriesList, shape)
         logging.info("Operator matrix built for %s" % str(self))
 
     def exists_matrix_file(self):
@@ -180,15 +180,15 @@ class GraphOperator():
         tail = map(int, stringList.pop().split(" "))
         if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file" % str(self.matrix_file_path))
-        entryList = []
+        entriesList = []
         for line in stringList:
             (i, j, v) = map(int, line.split(" "))
-            if not (i >= 1 and j >= 1):
-                raise ValueError("%s: Found invalid matrix indices: %d %d" % (str(self.matrix_file_path), i, j))
+            if i < 1 or j < 1:
+                raise ValueError("%s: Invalid matrix index: %d %d" % (str(self.matrix_file_path), i, j))
             if i > m or j > n:
-                raise ValueError("%s: Found invalid matrix indices outside matrix size: %d %d" % (str(self.matrix_file_path), i, j))
-            entryList.append((i - 1, j - 1, v))
-        return (entryList, shape)
+                raise ValueError("%s: Invalid matrix index outside matrix size: %d %d" % (str(self.matrix_file_path), i, j))
+            entriesList.append((i - 1, j - 1, v))
+        return (entriesList, shape)
 
     def get_matrix(self):
         if not self.valid:

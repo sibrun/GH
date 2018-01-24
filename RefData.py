@@ -59,6 +59,8 @@ class RefVectorSpace:
                 raise ValueError("%s: Graph from ref basis not found in basis" % str(self))
             M.add_to_entry(i, j, sgn)
             i += 1
+        if not M.is_invertible():
+            raise ValueError("%s: Basis transformation matrix not invertible" % str(self))
         return M
 
 
@@ -105,11 +107,11 @@ class RefOperator:
         return (entriesList, shape)
 
     def get_matrix_wrt_ref(self):
-        (entryList, shape) = self._load_matrix()
+        (entriesList, shape) = self._load_matrix()
         (m, n) = shape
         logging.info("Get reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
         M = matrix(ZZ, m, n, sparse=True)
-        for (i, j, v) in entryList:
+        for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
         return M
 
@@ -120,9 +122,9 @@ class RefOperator:
 
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref()
-        T_domain = self.ref_domain.get_transformation_matrix()
-        T_target = self.ref_target.get_transformation_matrix()
+        T_domain = self.ref_domain.get_transformation_matrix().transpose()
+        T_target = self.ref_target.get_transformation_matrix().transpose()
         (m, n) = (M.nrows(), M.ncols())
         if m == 0 or n == 0:
             return M
-        return T_target * M
+        return T_domain.inverse() * M * T_target

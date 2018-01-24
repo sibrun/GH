@@ -135,13 +135,14 @@ class OGCTestCase(unittest.TestCase):
             self.assertEqual(ref_rk1, ref_rk2,'%s: inconsistent reference rank' % str(op))
             self.assertEqual(rk1, ref_rk2,'%s: rank and reference rank not equal' % str(op))
             logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), rk1, ref_rk1))
-            ref_matrix_transformed = ref_op.get_matrix()
-            '''
-            if op.domain.even_edges:
-                ref_matrix_transformed = -ref_matrix_transformed            #TODO: sign error in transformation matrix for even edges
-            mismatch_matrix = M != ref_matrix_transformed
-            self.assertTrue(mismatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
-'''
+            ref_M_transformed = ref_op.get_matrix()
+            self.assertEqual(ref_M_transformed.rank(), rk1,'%s: transformed reference matrix has wrong rank' % str(op))
+            #if op.domain.even_edges:
+                #ref_M_transformed = -ref_M_transformed               #TODO: sign error in transformation matrix for even edges
+            logging.warn(str(M))
+            logging.warn(str(ref_M_transformed))
+            logging.warn("-------------------")
+            #self.assertTrue(M == ref_M_transformed, '%s: matrix and transformed reference matrix not equal' % str(op))
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
@@ -177,5 +178,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-
-
