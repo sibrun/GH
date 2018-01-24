@@ -90,7 +90,7 @@ class ContractGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_dir = sub_dir_even if self.domain.even_edges else sub_dir_odd
+        self.sub_dir = sub_dir_even if domain.even_edges else sub_dir_odd
         super(ContractGO, self).__init__(domain, target)
 
     @classmethod
@@ -119,7 +119,7 @@ class ContractGO(GO.GraphOperator):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
         return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
 
-    def get_ref_matrix_file_path(self):
+    def get_ref_rank_file_path(self):
         s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
         return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
 

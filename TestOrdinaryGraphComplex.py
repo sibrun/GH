@@ -110,31 +110,38 @@ class OGCTestCase(unittest.TestCase):
             op.build_matrix()
             self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
             logging.info("%s: %s" % (str(op), op.get_info()))
-            matrix = op.get_matrix()
-            (shape, entries) = op.get_matrix_header()
+            M = op.get_matrix()
+            shape = op.get_matrix_shape()
+            (shape2, entries) = op.get_matrix_shape_entries()
+            self.assertEqual(shape, shape2, '%s: matrix shape not consistent' % str(op))
+            self.assertEqual((M.nrows(), M.ncols()), shape, '%s: matrix shape not consistent' % str(op))
             (m, n) = shape
-            self.assertEqual(matrix.get_shape(), shape, '%s: matrix shape not consistent' % str(op))
-            self.assertEqual(matrix.getnnz(), entries, '%s: number of matrix entries not consistent' % str(op))
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,'%s: triviality check wrong' % str(op))
             ref_op = REF.RefOperator(op)
             if not ref_op.exists_matrix_file():
                 logging.warn('%s: no reference file for operator matrix' % str(op))
                 continue
-            ref_matrix = ref_op.get_matrix_wrt_ref()
-            self.assertEqual(matrix.get_shape(), ref_matrix.get_shape(), '%s: shape of matrix and reference matrix not equal' % str(op))
-            self.assertEqual(matrix.getnnz(), ref_matrix.getnnz(), '%s: number of entries of matrix and reference matrix not equal' % str(op))
+            ref_M = ref_op.get_matrix_wrt_ref()
+            self.assertEqual((M.nrows(), M.ncols()), (ref_M.nrows(), ref_M.ncols()), '%s: shape of matrix and reference matrix not equal' % str(op))
             if op.is_trivial():
                 logging.info('%s: trivial operator matrix: no rank test' % str(op))
                 continue
-            matrix_rank = estimate_rank(aslinearoperator(matrix.asfptype()), eps)
-            ref_matrix_rank = estimate_rank(aslinearoperator(ref_matrix.asfptype()), eps)
-            logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), matrix_rank, ref_matrix_rank))
-            self.assertEqual(matrix_rank, ref_matrix_rank, '%s: estimated rank of matrix and reference matrix not the same' % str(op))
+            op.compute_rank()
+            rk1 = op.get_rank()
+            rk2 = M.rank()
+            self.assertEqual(rk1, rk2,'%s: inconsistent rank' % str(op))
+            ref_rk1 = ref_op.get_rank()
+            ref_rk2 = ref_M.rank()
+            self.assertEqual(ref_rk1, ref_rk2,'%s: inconsistent reference rank' % str(op))
+            self.assertEqual(rk1, ref_rk2,'%s: rank and reference rank not equal' % str(op))
+            logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), rk1, ref_rk1))
             ref_matrix_transformed = ref_op.get_matrix()
+            '''
             if op.domain.even_edges:
                 ref_matrix_transformed = -ref_matrix_transformed            #TODO: sign error in transformation matrix for even edges
-            mismatch_matrix = matrix != ref_matrix_transformed
+            mismatch_matrix = M != ref_matrix_transformed
             self.assertTrue(mismatch_matrix.getnnz() == 0, '%s: matrix and transformed reference matrix not equal' % str(op))
+'''
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
@@ -159,10 +166,10 @@ def suite():
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("----- Start test suite -----")
     suite = unittest.TestSuite()
-    suite.addTest(OGCTestCase('test_perm_sign'))
-    suite.addTest(OGCTestCase('test_basis_functionality'))
-    suite.addTest(OGCTestCase('test_basis'))
-    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    #suite.addTest(OGCTestCase('test_perm_sign'))
+    #suite.addTest(OGCTestCase('test_basis_functionality'))
+    #suite.addTest(OGCTestCase('test_basis'))
+    suite.addTest(OGCTestCase('test_operator_matrix'))
     #suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
@@ -170,3 +177,5 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+
+

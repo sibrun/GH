@@ -11,7 +11,7 @@ reload(SH)
 class GraphOperator():
     __metaclass__ = ABCMeta
 
-    data_type = "R"
+    data_type = "M"
 
     def __init__(self, domain, target):
         self.domain = domain
@@ -140,8 +140,8 @@ class GraphOperator():
 
     @staticmethod
     def _get_matrix_shape_from_header(header):
-        (m, n, data_type) = map(int, header.split(" "))
-        return (m, n)
+        (m, n, data_type) = header.split(" ")
+        return (int(m), int(n))
 
     def is_trivial(self):
         if not self.valid:
@@ -178,7 +178,7 @@ class GraphOperator():
         if m != self.domain.get_dimension() or n != self.target.get_dimension():
             raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions: %s" % str(self.matrix_file_path))
         tail = map(int, stringList.pop().split(" "))
-        if not tail == (0, 0, 0):
+        if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file" % str(self.matrix_file_path))
         entryList = []
         for line in stringList:

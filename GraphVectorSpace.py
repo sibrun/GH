@@ -55,10 +55,10 @@ class GraphVectorSpace():
     def get_info(self):
         validity = "valid" if self.valid else "not valid"
         built = "basis built" if self.exists_basis_file() else "basis not built"
-        dimension = "dimension unknown"
+        dim = "dimension unknown"
         if self.exists_basis_file():
-            dimension = "dimension = %d" % self.get_dimension()
-        return "%s, %s" % (validity, dimension)
+            dim = "dimension = %d" % self.get_dimension()
+        return "%s, %s" % (validity, dim)
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
@@ -91,9 +91,7 @@ class GraphVectorSpace():
         return False
 
     def exists_basis_file(self):
-        if os.path.isfile(self.basis_file_path):
-            return True
-        return False
+        return os.path.isfile(self.basis_file_path)
 
     def get_dimension(self):
         if not self.valid:

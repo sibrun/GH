@@ -69,12 +69,16 @@ class RefOperator:
         self.ref_domain = RefVectorSpace(self.op.domain)
         self.ref_target = RefVectorSpace(self.op.target)
         self.matrix_file_path = self.op.get_ref_matrix_file_path()
+        self.rank_file_path = self.op.get_ref_rank_file_path()
 
     def __str__(self):
         return "Reference operator: %s" % str(self.matrix_file_path)
 
     def exists_matrix_file(self):
-        return (self.matrix_file_path is not None) and os.path.isfile(self.matrix_file_path)
+        return os.path.isfile(self.matrix_file_path)
+
+    def exists_rank_file(self):
+        return os.path.isfile(self.rank_file_path)
 
     def _load_matrix(self):
         if not self.exists_matrix_file():
@@ -109,11 +113,16 @@ class RefOperator:
             M.add_to_entry(i, j, v)
         return M
 
+    def get_rank(self):
+        if not self.exists_rank_file():
+           raise SH.RefError("%s: Reference rank file not found" % str(self))
+        return int(SH.load_line(self.rank_file_path))
+
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref()
         T_domain = self.ref_domain.get_transformation_matrix()
         T_target = self.ref_target.get_transformation_matrix()
-        (m, n) = M.get_shape()
+        (m, n) = (M.nrows(), M.ncols())
         if m == 0 or n == 0:
             return M
-        return T_target * M * SH.sparse_inverse(T_domain)
+        return T_target * M
