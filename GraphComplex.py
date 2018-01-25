@@ -1,8 +1,5 @@
 from abc import ABCMeta, abstractmethod
-import operator
-import itertools
 import logging
-import scipy.sparse as sparse
 from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
@@ -38,7 +35,7 @@ class GraphComplex():
     def store_member_info(self):
         (vector_space, operator) = self.members_to_string()
         cohomology = self.get_cohomology_info()
-        LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology -----", cohomology)]
+        LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
         SH.store_list_of_header_lists(LHL, self.info_file_path)
 
     def build_basis(self, skip_existing_files=True):
@@ -82,79 +79,67 @@ class GraphComplex():
                     if op1.is_trivial() or op2.is_trivial():
                         triv.append(p)
                         continue
-                    if sparse.linalg.norm(M2 * M1) < eps:
+                    if sum(map(abs, (M2 * M1).list())) < eps:
                         succ.append(p)
                     else:
                         fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        logging.info("Square zero test for %s: trivial success: %d, success: %d, inconclusive %d, failed %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l ))
+        logging.warn("Square zero test for %s: trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l ))
         if inc_l:
             logging.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
         for (op1, op2) in fail:
             logging.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
 
+    def compute_ranks(self, skip_existing_files=True):
+        for op in self.op_list:
+            if not skip_existing_files:
+                op.delete_rank_file()
+            op.compute_rank()
+
     #Computes the cohomology, i.e., ker(D)/im(DD)
-    def compute_cohomology(self, only_dim=True):
+    def compute_cohomology(self):
         self.cohomology.clear()
         for opD in self.op_list:
             dvsD = opD.domain
             for opDD in self.op_list:
                 tvsDD = opDD.target
                 if tvsDD == dvsD:
-                    (CH, conclusive) = GraphComplex._cohomology(opD, opDD, only_dim=only_dim)
-                    if not conclusive:
+                    dimCohom = GraphComplex._cohomology(opD, opDD)
+                    if dimCohom is None:
                         self.cohomology.update({dvsD: "inconclusive"})
                         continue
-                    self.cohomology.update({dvsD: CH})
+                    self.cohomology.update({dvsD: dimCohom})
 
     def get_cohomology_info(self):
         cohomologyList = []
         for vs in self.vs_list:
             dim = self.cohomology.get(vs)
             if dim is not None:
-                line = "%s: dimension: %s" % (str(vs), str(dim))
-            else:
-                line = "%s: dimension: unknown" % str(vs)
-            cohomologyList.append(line)
+                line = "%s: %s" % (str(vs), str(dim))
+                cohomologyList.append(line)
         return cohomologyList
 
+    # Computes the cohomology, i.e., ker(D)/im(DD)
     @staticmethod
-    def _cohomology(opD, opDD, only_dim = True):
+    def _cohomology(opD, opDD):
+        dimV =  opD.domain.get_dimension()
+        if dimV == 0:
+            return 0
         if not opD.valid:
-            D = 0
+            rankD = 0
         else:
-            try:
-                D = opD.get_matrix()
-            except SH.NotBuiltError:
+            if not opD.exists_rank_file():
                 logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opD))
-                return (None, False)
-            if D.getnnz() == 0:
-                D = 0
+                return None
+            rankD = opD.get_rank()
         if not opDD.valid:
-                DD = 0
+            rankDD = 0
         else:
-            try:
-                DD = opD.get_matrix()
-            except SH.NotBuiltError:
+            if not opDD.exists_rank_file():
                 logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
-                return (None, False)
-            if DD.getnnz() == 0:
-                DD = 0
-
-        if D is 0 and DD is 0:
-            cohomology = opD.domain
-            dim = opD.domain.get_dimension()
-        else:                                       #TODO: Implement Cohomology
-            if D is not 0 and DD is 0:
-                A = D
-            elif D is 0 and DD is not 0:
-                A = DD
-            else:
-                pass #A = D * DD
-        cohomology = "bla"
-        dim = "not implemented"
-        if only_dim:
-            return (dim, True)
-        return (cohomology, True)
+                return None
+            rankDD = opDD.get_rank()
+        logging.warn(str((dimV,rankD,rankDD)))
+        return dimV - rankD - rankDD
 

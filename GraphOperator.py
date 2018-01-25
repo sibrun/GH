@@ -1,6 +1,4 @@
 from abc import ABCMeta, abstractmethod
-import itertools
-import scipy.sparse as sparse
 import logging
 from sage.all import *
 import Shared as SH
@@ -59,9 +57,9 @@ class GraphOperator():
         shape = "matrix shape unknown"
         entries = "entries unknown"
         if self.exists_matrix_file():
-            (s, e) = self.get_matrix_shape_entries()
-            (m, n) = s
+            (m, n) = self.get_matrix_shape()
             shape = "matrix shape = (%d, %d)" % (m, n)
+            e = self.get_matrix_entries()
             entries = "%d entries" % e
         return "%s, %s, %s" % (validity, shape, entries)
 
@@ -88,14 +86,13 @@ class GraphOperator():
                 logging.warn("Skip building operator matrix of %s since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        shape = (self.domain.get_dimension(), self.target.get_dimension())
-        (m, n) = shape
+        shape = (m, n) = (self.domain.get_dimension(), self.target.get_dimension())
         if m == 0 or n == 0:
             self._store_matrix([], shape)
             logging.info("Created matrix file without entries for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
-        lookup = {s: j for (j,s) in enumerate(targetBasis6)}
+        lookup = {G6: j for (j,G6) in enumerate(targetBasis6)}
         entriesList = []
         for (domainIndex, G) in enumerate(domainBasis):
             imageList = self._operate_on(G)
@@ -130,18 +127,14 @@ class GraphOperator():
             header = SH.load_line(self.matrix_file_path)
         except SH.FileNotExistingError:
             raise SH.NotBuiltError("Cannot load header from file %s: Build operator matrix first" % str(self.matrix_file_path))
-        return GraphOperator._get_matrix_shape_from_header(header)
-
-    def get_matrix_shape_entries(self):
-        if not self.valid:
-            return ((self.target.get_dimension(), self.domain.get_dimension()), 0)
-        (matrixList, shape) = self._load_matrix()
-        return (shape, len(matrixList))
-
-    @staticmethod
-    def _get_matrix_shape_from_header(header):
         (m, n, data_type) = header.split(" ")
-        return (int(m), int(n))
+        return (int(n), int(m))
+
+    def get_matrix_entries(self):
+        if not self.valid:
+            return 0
+        (matrixList, shape) = self._load_matrix()
+        return len(matrixList)
 
     def is_trivial(self):
         if not self.valid:
@@ -150,14 +143,13 @@ class GraphOperator():
             (m, n) = self.get_matrix_shape()
         except SH.NotBuiltError:
             try:
-                m = self.domain.get_dimension()
-                n = self.target.get_dimension()
+                m = self.target.get_dimension()
+                n = self.domain.get_dimension()
             except SH.NotBuiltError:
                 raise SH.NotBuiltError("Matrix shape of %s unknown: Build operator matrix or domain and target basis first" % str(self))
         if m == 0 or n == 0:
             return True
-        (shape, entries) = self.get_matrix_shape_entries()
-        return entries == 0
+        return self.get_matrix_entries() == 0
 
     def _store_matrix(self, matrixList, shape, data_type=data_type):
         logging.info("Store operator matrix in file: %s" % str(self.matrix_file_path))
@@ -174,7 +166,8 @@ class GraphOperator():
             raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
         logging.info("Load operator matrix from file: %s" % str(self.matrix_file_path))
         stringList = SH.load_string_list(self.matrix_file_path)
-        (m, n) = shape = GraphOperator._get_matrix_shape_from_header(stringList.pop(0))
+        (m, n, data_type) = stringList.pop(0).split(" ")
+        shape = (m, n) = (int(m), int(n))
         if m != self.domain.get_dimension() or n != self.target.get_dimension():
             raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions: %s" % str(self.matrix_file_path))
         tail = map(int, stringList.pop().split(" "))
@@ -192,7 +185,7 @@ class GraphOperator():
 
     def get_matrix(self):
         if not self.valid:
-            log.warning("No operator matrix: %s is not valid" % str(self))
+            logging.warn("No operator matrix: %s is not valid" % str(self))
             (m ,n) = (self.target.get_dimension(), self.domain.get_dimension())
             entriesList = []
         else:
@@ -202,13 +195,18 @@ class GraphOperator():
         M = matrix(ZZ, m, n, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
-        return M
+        return M.transpose()
 
     def compute_rank(self):
+        if not self.valid:
+            logging.info("Skip creating rank file, since %s is not valid" % str(self))
+            return
         rk = self.get_matrix().rank()
         SH.store_line(str(rk), self.rank_file_path)
 
     def get_rank(self):
+        if not self.valid:
+            return 0
         if not self.exists_rank_file():
             raise SH.NotBuiltError("Cannot load operator rank, No rank file found for %s: " % str(self))
         return int(SH.load_line(self.rank_file_path))

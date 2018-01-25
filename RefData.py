@@ -26,8 +26,7 @@ class RefVectorSpace:
         if not self.exists_basis_file():
             raise SH.RefError("%s: Reference basis file not found" % str(self))
         logging.info("Load basis from reference file: %s" % str(self))
-        basisList = SH.load_string_list(self.basis_file_path)
-        return basisList
+        return SH.load_string_list(self.basis_file_path)
 
     def _g6_to_canon_g6(self, graph6, sign=False):
         graph = Graph(graph6)
@@ -49,19 +48,19 @@ class RefVectorSpace:
         dim = len(basis_g6)
         if not dim == self.vs.get_dimension():
             raise ValueError("Dimension of reference basis and basis not equal for %s" % str(self))
-        M = matrix(ZZ, dim, dim, sparse=True)
-        lookup = {s: j for (j, s) in enumerate(self.vs.get_basis(g6=True))}
+        T = matrix(ZZ, dim, dim, sparse=True)
+        lookup = {G6: j for (j, G6) in enumerate(self.vs.get_basis(g6=True))}
         i = 0
         for G6 in basis_g6:
             (canonG6, sgn) = self._g6_to_canon_g6(G6, sign=True)
             j = lookup.get(canonG6)
             if j is None:
                 raise ValueError("%s: Graph from ref basis not found in basis" % str(self))
-            M.add_to_entry(i, j, sgn)
+            T.add_to_entry(i, j, sgn)
             i += 1
-        if not M.is_invertible():
+        if not T.is_invertible():
             raise ValueError("%s: Basis transformation matrix not invertible" % str(self))
-        return M
+        return T
 
 
 class RefOperator:
@@ -89,7 +88,7 @@ class RefOperator:
         stringList = SH.load_string_list(self.matrix_file_path)
         entriesList = []
         if len(stringList) == 0:
-            shape = self.op.get_matrix_shape()
+            return ([], None)
         else:
             (m, n, t) = map(int, stringList.pop().split(" "))
             if t != 0:
@@ -108,12 +107,15 @@ class RefOperator:
 
     def get_matrix_wrt_ref(self):
         (entriesList, shape) = self._load_matrix()
-        (m, n) = shape
+        if shape is None:
+            (n, m) = self.op.get_matrix_shape()
+        else:
+            (m, n) = shape
         logging.info("Get reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
         M = matrix(ZZ, m, n, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
-        return M
+        return M.transpose()
 
     def get_rank(self):
         if not self.exists_rank_file():
@@ -122,9 +124,9 @@ class RefOperator:
 
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref()
-        T_domain = self.ref_domain.get_transformation_matrix().transpose()
-        T_target = self.ref_target.get_transformation_matrix().transpose()
+        T_domain = self.ref_domain.get_transformation_matrix()
+        T_target = self.ref_target.get_transformation_matrix()
         (m, n) = (M.nrows(), M.ncols())
         if m == 0 or n == 0:
             return M
-        return T_domain.inverse() * M * T_target
+        return T_target.inverse() * M * T_domain

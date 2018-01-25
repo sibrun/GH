@@ -171,6 +171,7 @@ class OrdinaryGC(GC.GraphComplex):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
+        self.sub_dir = sub_dir_even if self.even_edges else sub_dir_odd
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
         op_list = ContractGO.get_operators(vs_list)
@@ -180,6 +181,5 @@ class OrdinaryGC(GC.GraphComplex):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
 
     def _set_info_file_path(self):
-        s1 = sub_dir_even if self.even_edges else sub_dir_odd
-        s2 = "graph_complex.txt"
-        return SH.get_path_from_current(data_dir, type_dir, s1, s2)
+        s = "graph_complex.txt"
+        return SH.get_path_from_current(data_dir, type_dir, self.sub_dir, s)

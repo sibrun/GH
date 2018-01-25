@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-import os
 import logging
 from sage.all import *
 import Shared as SH
