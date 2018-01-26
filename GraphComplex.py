@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import logging
-from sage.all import *
+import operator
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import Shared as SH
@@ -17,7 +17,7 @@ class GraphComplex():
         self.vs_list = vs_list
         self.op_list = op_list
         self.info_file_path = self._set_info_file_path()
-        self.cohomology = dict()
+        self.cohomology_dim = dict()
 
     @abstractmethod
     def __str__(self):
@@ -99,22 +99,19 @@ class GraphComplex():
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
     def compute_cohomology(self):
-        self.cohomology.clear()
+        self.cohomology_dim.clear()
         for opD in self.op_list:
             dvsD = opD.domain
             for opDD in self.op_list:
                 tvsDD = opDD.target
                 if tvsDD == dvsD:
                     dimCohom = GraphComplex._cohomology(opD, opDD)
-                    if dimCohom is None:
-                        self.cohomology.update({dvsD: "inconclusive"})
-                        continue
-                    self.cohomology.update({dvsD: dimCohom})
+                    self.cohomology_dim.update({dvsD: dimCohom})
 
     def get_cohomology_info(self):
         cohomologyList = []
         for vs in self.vs_list:
-            dim = self.cohomology.get(vs)
+            dim = self.cohomology_dim.get(vs)
             if dim is not None:
                 line = "%s: %s" % (str(vs), str(dim))
                 cohomologyList.append(line)
@@ -140,6 +137,5 @@ class GraphComplex():
                 logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
                 return None
             rankDD = opDD.get_rank()
-        logging.warn(str((dimV,rankD,rankDD)))
+        #logging.warn(str((dimV,rankD,rankDD)))
         return dimV - rankD - rankDD
-

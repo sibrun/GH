@@ -1,18 +1,15 @@
-from sage.all import *
-import OrdinaryGraphComplex as OGC
-import Shared as SH
-import RefData as REF
-import scipy.sparse as sparse
-import logging
+import numpy as np
+import Display
+import matplotlib.pyplot as plt
+import os
 
-reload(SH)
-reload(REF)
-reload(OGC)
+reload(Display)
 
-m = matrix(ZZ, 4, 3, sparse=True)
-m.add_to_entry(1, 2, -1)
+min_val, max_val = 0, 15
 
+M = np.random.randint(0, 10, size=(max_val, max_val-1))
 
+path = os.path.join('test','test.png')
 
-
+Display.save_matrix_plot(M,'x','y','titel',path)
 

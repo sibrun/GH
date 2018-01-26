@@ -191,7 +191,7 @@ class GraphOperator():
         else:
             (entriesList, shape) = self._load_matrix()
             (m, n) = shape
-        logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), m, n))
+        logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), n, m))
         M = matrix(ZZ, m, n, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)

@@ -1,17 +1,18 @@
-import os
 import itertools
-import operator
 import logging
+import numpy as np
 from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
+import Display
 
 reload(GVS)
 reload(GO)
 reload(GC)
 reload(SH)
+reload(Display)
 
 data_dir = "data"
 data_ref_dir = "data_ref"
@@ -182,4 +183,33 @@ class OrdinaryGC(GC.GraphComplex):
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
-        return SH.get_path_from_current(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+
+    def get_cohomology_plot_path(self):
+        s = "cohomology_dim.png"
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+
+    def get_cohomology_file_path(self):
+        s = "cohomology_dim.txt"
+        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+
+    def store_cohomology_dim(self):
+        dim_dict = dict()
+        for vs in self.vs_list:
+            dim_dict.update({(vs.n_vertices, vs.n_loops): self.cohomology_dim.get(vs)})
+        v_range = range(max(self.v_range) + 1)
+        l_range = range(max(self.l_range) + 1)
+        dim_matrix = [[-1 for l in l_range] for v in v_range]
+        for key in dim_dict:
+            (v, l) = key
+            dim = dim_dict.get(key)
+            dim_matrix[v][l] = dim if dim is not None else -1
+        path = self.get_cohomology_file_path()
+        SH.pickle_store(np.array(dim_matrix), path)
+
+    def plot_cohomology_dim(self):
+        dim_matrix = SH.pickle_load(self.get_cohomology_file_path())
+        edges = 'even edges' if self.even_edges else 'odd edges'
+        titel = 'Cohomology: Ordinary GC with %s, contraction operator' % edges
+        path = self.get_cohomology_plot_path()
+        Display.save_matrix_plot(dim_matrix, 'vertices', 'loops', titel, path)

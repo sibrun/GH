@@ -146,20 +146,23 @@ class OGCTestCase(unittest.TestCase):
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
-        v_range = range(6,10)
-        l_range = range(5,10)
-        even_range = [True, False]
+        v_range = range(4,11)
+        l_range = range(4,10)
+        even_range = [True]
         eps = 1.0e-6
 
         for even_edges in even_range:
             ogc = OGC.OrdinaryGC(v_range, l_range, even_edges)
+
             ogc.build_basis(skip_existing_files=skip_existing_files)
             ogc.build_operator_matrix(skip_existing_files=skip_existing_files)
-            (triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
-            self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
-            ogc.compute_ranks(skip_existing_files=skip_existing_files)
+            #(triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
+            #self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
+            #ogc.compute_ranks(skip_existing_files=skip_existing_files)
             ogc.compute_cohomology()
             ogc.store_member_info()
+            ogc.store_cohomology_dim()
+            ogc.plot_cohomology_dim()
 
 
 def suite():
