@@ -12,9 +12,10 @@ reload(REF)
 log_dir = "log"
 log_file = "test.log"
 test_file = "test.txt"
-skip_existing_files = True
+skip_existing_files = False
 
 eps = 1.0e-6
+n_jobs = 1
 
 
 class OGCTestCase(unittest.TestCase):
@@ -58,8 +59,8 @@ class OGCTestCase(unittest.TestCase):
 
     def test_basis(self):
         logging.warn('----- Compare basis with reference -----')
-        v_range = range(6,9)
-        l_range = range(5,9)
+        v_range = range(6,10)
+        l_range = range(5,10)
         even_range = [True, False]
         vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in itertools.product(v_range, l_range, even_range)]
         for vs in vs_list:
@@ -85,9 +86,8 @@ class OGCTestCase(unittest.TestCase):
     def test_operator_matrix(self):
         logging.warn('----- Test operator matrix -----')
         v_range = range(6,10)
-        l_range = range(5,10)
+        l_range = range(6,10)
         even_range = [True, False]
-        eps = 1.0e-6
 
         vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in itertools.product(v_range, l_range, even_range)]
         op_list = [OGC.ContractGO.get_operator(v, l, even_edges) for (v, l, even_edges) in itertools.product(v_range, l_range, even_range)]
@@ -105,7 +105,7 @@ class OGCTestCase(unittest.TestCase):
             if not skip_existing_files and op.exists_matrix_file():
                 op.delete_matrix_file()
                 self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
-            op.build_matrix()
+            op.build_matrix(n_jobs=n_jobs)
             self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
             logging.info("%s: %s" % (str(op), op.get_info()))
 
@@ -146,16 +146,15 @@ class OGCTestCase(unittest.TestCase):
 
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
-        v_range = range(4,11)
-        l_range = range(4,10)
+        v_range = range(6,9)
+        l_range = range(6,9)
         even_range = [True]
-        eps = 1.0e-6
 
         for even_edges in even_range:
             ogc = OGC.OrdinaryGC(v_range, l_range, even_edges)
 
-            ogc.build_basis(skip_existing_files=skip_existing_files)
-            ogc.build_operator_matrix(skip_existing_files=skip_existing_files)
+            #ogc.build_basis(skip_existing_files=skip_existing_files)
+            #ogc.build_operator_matrix(skip_existing_files=skip_existing_files, n_jobs=n_jobs)
             #(triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
             #self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
             #ogc.compute_ranks(skip_existing_files=skip_existing_files)
@@ -174,8 +173,8 @@ def suite():
     #suite.addTest(OGCTestCase('test_perm_sign'))
     #suite.addTest(OGCTestCase('test_basis_functionality'))
     #suite.addTest(OGCTestCase('test_basis'))
-    #suite.addTest(OGCTestCase('test_operator_matrix'))
-    suite.addTest(OGCTestCase('test_graph_complex'))
+    suite.addTest(OGCTestCase('test_operator_matrix'))
+    #suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
 

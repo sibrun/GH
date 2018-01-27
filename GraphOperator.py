@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
+import itertools
+from joblib import Parallel, delayed
 from sage.all import *
 import Shared as SH
 
@@ -63,7 +65,7 @@ class GraphOperator():
             entries = "%d entries" % e
         return "%s, %s, %s" % (validity, shape, entries)
 
-    def build_matrix(self, skip_if_no_basis = True):
+    def build_matrix(self, skip_if_no_basis=True, n_jobs=1):
         if not self.valid:
             logging.info("Skip creating file for operator matrix, since %s is not valid" % str(self))
             return
@@ -93,23 +95,36 @@ class GraphOperator():
             return
 
         lookup = {G6: j for (j,G6) in enumerate(targetBasis6)}
+        P = Parallel(n_jobs=n_jobs, backend="threading")
+        L = P(delayed(self._get_matrix_entries)(b, lookup) for b in enumerate(domainBasis))
+        L = list(itertools.chain.from_iterable(L))
         entriesList = []
-        for (domainIndex, G) in enumerate(domainBasis):
-            imageList = self._operate_on(G)
-            canonImages = dict()
-            for (GG, prefactor) in imageList:
-                (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
-                sgn0 = canonImages.get(GGcanon6)
-                if sgn0 is None:
-                    sgn0 = 0
-                canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
-            for (image, factor) in canonImages.items():
-                if factor:
-                    targetIndex = lookup.get(image)
-                    if targetIndex is not None:
-                        entriesList.append((domainIndex, targetIndex, factor))
+        for entry in L:
+            if entry is not None:
+                entriesList.append(entry)
         self._store_matrix(entriesList, shape)
         logging.info("Operator matrix built for %s" % str(self))
+
+    def _get_matrix_entries(self, domainBasisElement, lookup):
+        (domainIndex, G) = domainBasisElement
+        imageList = self._operate_on(G)
+        canonImages = dict()
+        for (GG, prefactor) in imageList:
+            (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
+            sgn0 = canonImages.get(GGcanon6)
+            sgn0 = sgn0 if sgn0 is not None else 0
+            canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
+        entriesList = []
+        for (image, factor) in canonImages.items():
+            if factor == 0:
+                entriesList.append(None)
+            else:
+                targetIndex = lookup.get(image)
+                if targetIndex is None:
+                    entriesList.append(None)
+                else:
+                    entriesList.append((domainIndex, targetIndex, factor))
+        return entriesList
 
     def exists_matrix_file(self):
         return os.path.isfile(self.matrix_file_path)

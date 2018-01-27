@@ -1,15 +1,17 @@
-import numpy as np
-import Display
-import matplotlib.pyplot as plt
-import os
+from sage.all import *
+from math import sqrt
+from joblib import Parallel, delayed
 
-reload(Display)
 
-min_val, max_val = 0, 15
+def f (a,b):
+    return a *b
 
-M = np.random.randint(0, 10, size=(max_val, max_val-1))
 
-path = os.path.join('test','test.png')
+x = Parallel(n_jobs=2, backend="threading")(delayed(f)(i,2) for i in range(10))
+print(x)
 
-Display.save_matrix_plot(M,'x','y','titel',path)
+
+
+
+
 
