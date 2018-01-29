@@ -1,22 +1,25 @@
 import unittest
 import itertools
 import logging
+import os
 import OrdinaryGraphComplex as OGC
 import Shared as SH
 import StoreLoad as SL
 import RefData as REF
+import Profiling
 
 reload(OGC)
 reload(SH)
 reload(SL)
 reload(REF)
+reload(Profiling)
 
 log_dir = "log"
 log_file = "OGC_Unittest.log"
 skip_existing_files = False
 
 eps = 1.0e-6
-n_jobs = 2
+n_jobs = 4
 
 
 class OGCTestCase(unittest.TestCase):
@@ -145,6 +148,7 @@ class OGCTestCase(unittest.TestCase):
                 ref_M_transformed = -ref_M_transformed               #TODO: sign error in transformation matrix for even edges
             self.assertTrue(M == ref_M_transformed, '%s: matrix and transformed reference matrix not equal' % str(op))
 
+    @Profiling.profile('log')
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
         v_range = range(6,9)
@@ -166,7 +170,7 @@ class OGCTestCase(unittest.TestCase):
 
 
 def suite():
-    log_path = SL.get_path(log_dir, log_file)
+    log_path = os.path.join(log_dir, log_file)
     SL.generate_path(log_path)
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("###################################\n" + "----- Start test suite -----")
@@ -174,13 +178,12 @@ def suite():
     #suite.addTest(OGCTestCase('test_perm_sign'))
     #suite.addTest(OGCTestCase('test_basis_functionality'))
     #suite.addTest(OGCTestCase('test_basis'))
-    suite.addTest(OGCTestCase('test_operator_matrix'))
-    #suite.addTest(OGCTestCase('test_graph_complex'))
+    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-
 

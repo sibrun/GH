@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from joblib import Parallel, delayed
 import logging
 import operator
 import itertools
@@ -11,7 +12,6 @@ reload(GVS)
 reload(GO)
 reload(SH)
 reload(SL)
-
 
 class GraphComplex():
     __metaclass__ = ABCMeta
@@ -45,7 +45,7 @@ class GraphComplex():
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         for vs in self.vs_list:
             if not skip_existing_files:
-                vs.delete_matrix_file()
+                vs.delete_basis_file()
             vs.build_basis()
         self.vs_list.sort(key=operator.methodcaller('get_dimension'))
 
@@ -54,7 +54,7 @@ class GraphComplex():
         for op in self.op_list:
             if not skip_existing_files:
                 op.delete_matrix_file()
-            op.build_matrix(n_jobs=n_jobs)
+            op.build_matrix()
         self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
 
     def square_zero_test(self, eps):
