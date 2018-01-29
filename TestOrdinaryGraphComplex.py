@@ -3,19 +3,20 @@ import itertools
 import logging
 import OrdinaryGraphComplex as OGC
 import Shared as SH
+import StoreLoad as SL
 import RefData as REF
 
 reload(OGC)
 reload(SH)
+reload(SL)
 reload(REF)
 
 log_dir = "log"
-log_file = "test.log"
-test_file = "test.txt"
+log_file = "OGC_Unittest.log"
 skip_existing_files = False
 
 eps = 1.0e-6
-n_jobs = 1
+n_jobs = 2
 
 
 class OGCTestCase(unittest.TestCase):
@@ -153,8 +154,8 @@ class OGCTestCase(unittest.TestCase):
         for even_edges in even_range:
             ogc = OGC.OrdinaryGC(v_range, l_range, even_edges)
 
-            #ogc.build_basis(skip_existing_files=skip_existing_files)
-            #ogc.build_operator_matrix(skip_existing_files=skip_existing_files, n_jobs=n_jobs)
+            ogc.build_basis(skip_existing_files=skip_existing_files)
+            ogc.build_operator_matrix(skip_existing_files=skip_existing_files, n_jobs=n_jobs)
             #(triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
             #self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
             #ogc.compute_ranks(skip_existing_files=skip_existing_files)
@@ -165,8 +166,8 @@ class OGCTestCase(unittest.TestCase):
 
 
 def suite():
-    log_path = SH.get_path_from_current(log_dir, log_file)
-    SH.generate_path(log_path)
+    log_path = SL.get_path(log_dir, log_file)
+    SL.generate_path(log_path)
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("###################################\n" + "----- Start test suite -----")
     suite = unittest.TestSuite()
@@ -181,3 +182,5 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+
+

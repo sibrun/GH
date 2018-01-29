@@ -2,10 +2,13 @@ from abc import ABCMeta, abstractmethod
 import logging
 import itertools
 from joblib import Parallel, delayed
+import multiprocessing
 from sage.all import *
 import Shared as SH
+import StoreLoad as SL
 
 reload(SH)
+reload(SL)
 
 
 class GraphOperator():
@@ -94,14 +97,11 @@ class GraphOperator():
             logging.info("Created matrix file without entries for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
-        lookup = {G6: j for (j,G6) in enumerate(targetBasis6)}
-        P = Parallel(n_jobs=n_jobs, backend="threading")
-        L = P(delayed(self._get_matrix_entries)(b, lookup) for b in enumerate(domainBasis))
-        L = list(itertools.chain.from_iterable(L))
-        entriesList = []
-        for entry in L:
-            if entry is not None:
-                entriesList.append(entry)
+        manager = multiprocessing.Manager()
+        lookup = manager.dict({G6: j for (j,G6) in enumerate(targetBasis6)})
+        P = Parallel(n_jobs=n_jobs)
+        listOfLists = P(delayed(self._get_matrix_entries)(b, lookup) for b in enumerate(domainBasis))
+        entriesList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(entriesList, shape)
         logging.info("Operator matrix built for %s" % str(self))
 
@@ -116,13 +116,9 @@ class GraphOperator():
             canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
         entriesList = []
         for (image, factor) in canonImages.items():
-            if factor == 0:
-                entriesList.append(None)
-            else:
+            if factor:
                 targetIndex = lookup.get(image)
-                if targetIndex is None:
-                    entriesList.append(None)
-                else:
+                if targetIndex is not None:
                     entriesList.append((domainIndex, targetIndex, factor))
         return entriesList
 
@@ -139,8 +135,8 @@ class GraphOperator():
         if not self.valid:
             return (self.target.get_dimension(), self.domain.get_dimension())
         try:
-            header = SH.load_line(self.matrix_file_path)
-        except SH.FileNotExistingError:
+            header = SL.load_line(self.matrix_file_path)
+        except SL.FileNotExistingError:
             raise SH.NotBuiltError("Cannot load header from file %s: Build operator matrix first" % str(self.matrix_file_path))
         (m, n, data_type) = header.split(" ")
         return (int(n), int(m))
@@ -174,13 +170,13 @@ class GraphOperator():
         for (domainIndex, targetIndex, data) in matrixList:
             stringList.append("%d %d %d" % (domainIndex + 1, targetIndex + 1, data))
         stringList.append("0 0 0")
-        SH.store_string_list(stringList, self.matrix_file_path)
+        SL.store_string_list(stringList, self.matrix_file_path)
 
     def _load_matrix(self):
         if not self.exists_matrix_file():
             raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
         logging.info("Load operator matrix from file: %s" % str(self.matrix_file_path))
-        stringList = SH.load_string_list(self.matrix_file_path)
+        stringList = SL.load_string_list(self.matrix_file_path)
         (m, n, data_type) = stringList.pop(0).split(" ")
         shape = (m, n) = (int(m), int(n))
         if m != self.domain.get_dimension() or n != self.target.get_dimension():
@@ -217,14 +213,14 @@ class GraphOperator():
             logging.info("Skip creating rank file, since %s is not valid" % str(self))
             return
         rk = self.get_matrix().rank()
-        SH.store_line(str(rk), self.rank_file_path)
+        SL.store_line(str(rk), self.rank_file_path)
 
     def get_rank(self):
         if not self.valid:
             return 0
         if not self.exists_rank_file():
             raise SH.NotBuiltError("Cannot load operator rank, No rank file found for %s: " % str(self))
-        return int(SH.load_line(self.rank_file_path))
+        return int(SL.load_line(self.rank_file_path))
 
     def delete_matrix_file(self):
         if os.path.isfile(self.matrix_file_path):

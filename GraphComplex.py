@@ -5,10 +5,12 @@ import itertools
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import Shared as SH
+import StoreLoad as SL
 
 reload(GVS)
 reload(GO)
 reload(SH)
+reload(SL)
 
 
 class GraphComplex():
@@ -37,7 +39,7 @@ class GraphComplex():
         (vector_space, operator) = self.members_to_string()
         cohomology = self.get_cohomology_info()
         LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
-        SH.store_list_of_header_lists(LHL, self.info_file_path)
+        SL.store_list_of_header_lists(LHL, self.info_file_path)
 
     def build_basis(self, skip_existing_files=True):
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))

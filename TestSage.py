@@ -1,16 +1,26 @@
 from sage.all import *
-from math import sqrt
 from joblib import Parallel, delayed
+import multiprocessing
+import Profiling
+
+reload(Profiling)
+
+manager = multiprocessing.Manager()
+res1 = manager.list()
+
+res2 = list()
+
+@Profiling.profile('log')
+def f (a, b, res):
+    res.append(a * b)
+    return a * b
 
 
-def f (a,b):
-    return a *b
+x = Parallel(n_jobs=2)(delayed(f)(i, 2, res1) for i in range(10))
 
 
-x = Parallel(n_jobs=2, backend="threading")(delayed(f)(i,2) for i in range(10))
 print(x)
-
-
+print(res1)
 
 
 

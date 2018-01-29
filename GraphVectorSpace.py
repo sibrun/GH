@@ -2,8 +2,10 @@ from abc import ABCMeta, abstractmethod
 import logging
 from sage.all import *
 import Shared as SH
+import StoreLoad as SL
 
 reload(SH)
+reload(SL)
 
 
 class GraphVectorSpace():
@@ -96,21 +98,21 @@ class GraphVectorSpace():
         if not self.valid:
             return 0
         try:
-            header = SH.load_line(self.basis_file_path)
-        except SH.FileNotExistingError:
+            header = SL.load_line(self.basis_file_path)
+        except SL.FileNotExistingError:
             raise SH.NotBuiltError("Cannot load header from file %s: Build basis first" % str(self.basis_file_path))
         return int(header)
 
     def _store_basis_g6(self, basisList):
         logging.info("Store basis in file: %s" % str(self.basis_file_path))
         basisList.insert(0, str(len(basisList)))
-        SH.store_string_list(basisList, self.basis_file_path)
+        SL.store_string_list(basisList, self.basis_file_path)
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
             raise SH.NotBuiltError("Cannot load basis, No Basis file found for %s: " % str(self))
         logging.info("Load basis from file: %s" % str(self.basis_file_path))
-        basisList = SH.load_string_list(self.basis_file_path)
+        basisList = SL.load_string_list(self.basis_file_path)
         dim = int(basisList.pop(0))
         if len(basisList) != dim:
             raise ValueError("Basis read from file %s has wrong dimension" % str(self.basis_file_path))
@@ -133,9 +135,3 @@ class GraphVectorSpace():
     def delete_basis_file(self):
         if os.path.isfile(self.basis_file_path):
             os.remove(self.basis_file_path)
-
-    def create_graph_images(self, graph6_list):
-        SH.generate_path(self.img_path)
-        for g6 in graph6_list:
-            path = os.path.join(self.img_path, g6 + '.png')
-            Graph(g6).plot().show()

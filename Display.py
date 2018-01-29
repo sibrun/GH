@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import itertools
-import logging
 
 
 def save_matrix_plot(M, i_label, j_label, title, path):

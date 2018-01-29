@@ -1,7 +1,7 @@
 import scipy.sparse as sparse
 import logging
 from sage.all import *
-import Shared as SH
+import StoreLoad as SH
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 
