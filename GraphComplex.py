@@ -30,6 +30,14 @@ class GraphComplex():
     def _set_info_file_path(self):
         pass
 
+    @abstractmethod
+    def store_cohomology_dim(self):
+        pass
+
+    @abstractmethod
+    def plot_cohomology_dim(self):
+        pass
+
     def members_to_string(self):
         vector_space = ["%s: %s" % (str(vs),vs.get_info()) for vs in self.vs_list]
         operator = ["%s: %s" % (str(op),op.get_info()) for op in self.op_list]
@@ -100,7 +108,7 @@ class GraphComplex():
             op.compute_rank()
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
-    def compute_cohomology(self):
+    def compute_cohomology(self, only_dim=True):
         self.cohomology_dim.clear()
         for opD in self.op_list:
             dvsD = opD.domain

@@ -153,7 +153,7 @@ class OGCTestCase(unittest.TestCase):
         logging.warn('----- Test graph complex -----')
         v_range = range(6,9)
         l_range = range(6,9)
-        even_range = [True]
+        even_range = [True, False]
 
         for even_edges in even_range:
             ogc = OGC.OrdinaryGC(v_range, l_range, even_edges)
