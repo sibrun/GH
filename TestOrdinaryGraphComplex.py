@@ -19,7 +19,7 @@ log_file = "OGC_Unittest.log"
 skip_existing_files = False
 
 eps = 1.0e-6
-n_jobs = 4
+n_jobs = 1
 
 
 class OGCTestCase(unittest.TestCase):
@@ -148,7 +148,6 @@ class OGCTestCase(unittest.TestCase):
                 ref_M_transformed = -ref_M_transformed               #TODO: sign error in transformation matrix for even edges
             self.assertTrue(M == ref_M_transformed, '%s: matrix and transformed reference matrix not equal' % str(op))
 
-    @Profiling.profile('log')
     def test_graph_complex(self):
         logging.warn('----- Test graph complex -----')
         v_range = range(6,9)
@@ -160,9 +159,9 @@ class OGCTestCase(unittest.TestCase):
 
             ogc.build_basis(skip_existing_files=skip_existing_files)
             ogc.build_operator_matrix(skip_existing_files=skip_existing_files, n_jobs=n_jobs)
-            #(triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
-            #self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
-            #ogc.compute_ranks(skip_existing_files=skip_existing_files)
+            (triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
+            self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
+            ogc.compute_ranks(skip_existing_files=skip_existing_files)
             ogc.compute_cohomology()
             ogc.store_member_info()
             ogc.store_cohomology_dim()
@@ -175,10 +174,10 @@ def suite():
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("###################################\n" + "----- Start test suite -----")
     suite = unittest.TestSuite()
-    #suite.addTest(OGCTestCase('test_perm_sign'))
-    #suite.addTest(OGCTestCase('test_basis_functionality'))
-    #suite.addTest(OGCTestCase('test_basis'))
-    #suite.addTest(OGCTestCase('test_operator_matrix'))
+    suite.addTest(OGCTestCase('test_perm_sign'))
+    suite.addTest(OGCTestCase('test_basis_functionality'))
+    suite.addTest(OGCTestCase('test_basis'))
+    suite.addTest(OGCTestCase('test_operator_matrix'))
     suite.addTest(OGCTestCase('test_graph_complex'))
     return suite
 

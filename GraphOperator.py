@@ -97,15 +97,17 @@ class GraphOperator():
             logging.info("Created matrix file without entries for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
-        #manager = multiprocessing.Manager()
-        #lookup = manager.dict({G6: j for (j,G6) in enumerate(targetBasis6)})
-        #P = Parallel(n_jobs=n_jobs)
-        #listOfLists = P(delayed(self._get_matrix_entries)(b, lookup) for b in enumerate(domainBasis))
-
-        listOfLists = []
-        lookup = {G6: j for (j,G6) in enumerate(targetBasis6)}
-        for dbelement in enumerate(domainBasis):
-            listOfLists.append(self._get_matrix_entries(dbelement, lookup))
+        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
+        logging.warn(n_jobs)
+        if n_jobs > 1:
+            manager = multiprocessing.Manager()
+            lookupShared = manager.dict(lookup)
+            P = Parallel(n_jobs=n_jobs)
+            listOfLists = P(delayed(self._get_matrix_entries)(b, lookupShared) for b in enumerate(domainBasis))
+        else:
+            listOfLists = []
+            for dbelement in enumerate(domainBasis):
+                listOfLists.append(self._get_matrix_entries(dbelement, lookup))
 
         entriesList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(entriesList, shape)
