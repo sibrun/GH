@@ -72,5 +72,5 @@ if __name__ == "__main__":
         if args.l_range is None:
             raise MissingArgumentError('specify v_range: range for number of vertices')
         v_range = range(args.v_range[0], args.v_range[1])
-        l_range = range(args.v_range[0], args.v_range[1])
+        l_range = range(args.l_range[0], args.l_range[1])
         ogc_main(v_range, l_range, even_edges)

@@ -17,9 +17,9 @@ reload(Display)
 
 data_dir = "data"
 data_ref_dir = "data_ref"
-type_dir = "ordinary"
-sub_dir_odd = "oddedge"
-sub_dir_even = "evenedge"
+type_name = "ordinary"
+odd_type = "oddedge"
+even_type = "evenedge"
 image_directory = "img"
 
 
@@ -30,20 +30,20 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
-        self.sub_dir = sub_dir_even if self.even_edges else sub_dir_odd
+        self.sub_type_name = even_type if self.even_edges else odd_type
         super(OrdinaryGVS,self).__init__()
 
     def _set_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def _set_img_path(self):
         s = "gra%d_%d" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def get_ref_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
 
     def _set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
@@ -92,7 +92,7 @@ class ContractGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_dir = sub_dir_even if domain.even_edges else sub_dir_odd
+        self.sub_type_name = even_type if domain.even_edges else odd_type
         super(ContractGO, self).__init__(domain, target)
 
     @classmethod
@@ -111,19 +111,19 @@ class ContractGO(GO.GraphOperator):
 
     def _set_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def _set_rank_file_path(self):
         s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def get_ref_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
 
     def get_ref_rank_file_path(self):
         s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_ref_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
 
     def get_work_estimate(self):
         return self.domain.n_edges * sqrt(self.target.get_dimension())
@@ -173,7 +173,7 @@ class OrdinaryGC(GC.GraphComplex):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
-        self.sub_dir = sub_dir_even if self.even_edges else sub_dir_odd
+        self.sub_type_name = even_type if self.even_edges else odd_type
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
         op_list = ContractGO.get_operators(vs_list)
@@ -184,15 +184,15 @@ class OrdinaryGC(GC.GraphComplex):
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def get_cohomology_plot_path(self):
-        s = "cohomology_dim.png"
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        s = "cohomology_dim_%s_%s.png" % (type_name, self.sub_type_name)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def get_cohomology_file_path(self):
-        s = "cohomology_dim.txt"
-        return os.path.join(data_dir, type_dir, self.sub_dir, s)
+        s = "cohomology_dim_%s_%s.p" % (type_name, self.sub_type_name)
+        return os.path.join(data_dir, type_name, self.sub_type_name, s)
 
     def compute_cohomology_dim(self):
         self._compute_cohomology_dim()
@@ -200,11 +200,10 @@ class OrdinaryGC(GC.GraphComplex):
         for vs in self.vs_list:
             dim_dict.update({(vs.n_vertices, vs.n_loops): self.cohomology_dim.get(vs)})
         path = self.get_cohomology_file_path()
-        SL.pickle_store((dim_dict, self.v_range, self.l_range), path)
+        v_range = range(min(self.v_range)+1,max(self.v_range))
+        SL.pickle_store((dim_dict, v_range, self.l_range), path)
 
     def plot_cohomology_dim(self):
         (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
-        edges = 'even edges' if self.even_edges else 'odd edges'
-        titel = 'Cohomology Dimension'
         path = self.get_cohomology_plot_path()
-        Display.save_2_indices_plot(dim_dict, 'vertices', v_range, 'loops', l_range, titel, path)
+        Display.save_2_indices_plot(dim_dict, 'vertices', v_range, 'loops', l_range, path)

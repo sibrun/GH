@@ -3,18 +3,19 @@ import numpy as np
 import itertools
 
 
-def save_2_indices_plot(value_dict, x_label, x_range, y_label, y_range, titel, path):
+def save_2_indices_plot(value_dict, x_label, x_range, y_label, y_range, path):
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = x_max - x_min
+    x_size = (x_max + 1 - x_min)*0.7
     y_min = min(y_range)
     y_max = max(y_range)
-    y_size = y_max - y_min
-
-    size = max(x_size, y_size) + 3
+    y_size = (y_max + 1 - y_min)*0.7
 
     fig, ax = plt.subplots(figsize=(x_size, y_size))
+
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
 
     plt.xlim(x_min, x_max)
     plt.ylim(y_min, y_max)
@@ -27,8 +28,8 @@ def save_2_indices_plot(value_dict, x_label, x_range, y_label, y_range, titel, p
     x_ticks_grid = np.arange(x_min-0.5, x_max+1, 1)
     y_ticks_grid = np.arange(y_min-0.5, y_max+1, 1)
 
-    x_ticks = np.arange(x_min, x_max + 1, 1)
-    y_ticks = np.arange(y_min, y_max + 1, 1)
+    x_ticks = np.arange(x_min, x_max+1, 1)
+    y_ticks = np.arange(y_min, y_max+1, 1)
 
     ax.set_xticks(x_ticks)
     ax.set_yticks(y_ticks)
@@ -37,8 +38,6 @@ def save_2_indices_plot(value_dict, x_label, x_range, y_label, y_range, titel, p
 
     ax.grid(which='minor')
 
-    #plt.title(titel)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
+    plt.tight_layout()
 
     plt.savefig(path)
