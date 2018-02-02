@@ -31,7 +31,7 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def store_cohomology_dim(self):
+    def compute_cohomology_dim(self):
         pass
 
     @abstractmethod
@@ -49,20 +49,16 @@ class GraphComplex():
         LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
         SL.store_list_of_header_lists(LHL, self.info_file_path)
 
-    def build_basis(self, skip_existing_files=True):
+    def build_basis(self, ignore_existing_files=True):
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         for vs in self.vs_list:
-            if not skip_existing_files:
-                vs.delete_basis_file()
-            vs.build_basis()
+            vs.build_basis(ignore_existing_file=ignore_existing_files)
         self.vs_list.sort(key=operator.methodcaller('get_dimension'))
 
-    def build_operator_matrix(self, skip_existing_files=True, n_jobs=1):
+    def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
         for op in self.op_list:
-            if not skip_existing_files:
-                op.delete_matrix_file()
-            op.build_matrix()
+            op.build_matrix(ignore_existing_file=ignore_existing_files)
         self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
 
     def square_zero_test(self, eps):
@@ -101,14 +97,12 @@ class GraphComplex():
             logging.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
 
-    def compute_ranks(self, skip_existing_files=True):
+    def compute_ranks(self, ignore_existing_files=True):
         for op in self.op_list:
-            if not skip_existing_files:
-                op.delete_rank_file()
-            op.compute_rank()
+            op.compute_rank(ignore_existing_file=ignore_existing_files)
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
-    def compute_cohomology(self, only_dim=True):
+    def _compute_cohomology_dim(self):
         self.cohomology_dim.clear()
         for opD in self.op_list:
             dvsD = opD.domain

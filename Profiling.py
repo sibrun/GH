@@ -6,6 +6,11 @@ import StoreLoad as SL
 reload(SL)
 
 
+def cond_decorator(flag, dec):
+   def decorate(func):
+      return dec(func) if flag else func
+   return decorate
+
 def profile(dir_name):
     def inner(func):
         @functools.wraps(func)

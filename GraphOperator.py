@@ -68,11 +68,11 @@ class GraphOperator():
             entries = "%d entries" % e
         return "%s, %s, %s" % (validity, shape, entries)
 
-    def build_matrix(self, skip_if_no_basis=True, n_jobs=1):
+    def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
         if not self.valid:
             logging.info("Skip creating file for operator matrix, since %s is not valid" % str(self))
             return
-        if self.exists_matrix_file():
+        if not ignore_existing_file and self.exists_matrix_file():
             return
         try:
             domainBasis = self.domain.get_basis(g6=False)
@@ -98,7 +98,7 @@ class GraphOperator():
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-        logging.warn(n_jobs)
+        logging.warn("n_jobs to build matrix: %d" % n_jobs)
         if n_jobs > 1:
             manager = multiprocessing.Manager()
             lookupShared = manager.dict(lookup)
@@ -216,9 +216,11 @@ class GraphOperator():
             M.add_to_entry(i, j, v)
         return M.transpose()
 
-    def compute_rank(self):
+    def compute_rank(self, ignore_existing_file=False):
         if not self.valid:
             logging.info("Skip creating rank file, since %s is not valid" % str(self))
+            return
+        if not ignore_existing_file and self.exists_rank_file():
             return
         rk = self.get_matrix().rank()
         SL.store_line(str(rk), self.rank_file_path)

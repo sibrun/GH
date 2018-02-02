@@ -16,7 +16,7 @@ reload(Profiling)
 
 log_dir = "log"
 log_file = "OGC_Unittest.log"
-skip_existing_files = False
+ignore_existing_files = True
 
 eps = 1.0e-6
 n_jobs = 1
@@ -44,10 +44,11 @@ class OGCTestCase(unittest.TestCase):
         logging.warn('----- Test basis functionality -----')
         for even_edges in [True, False]:
             vs = OGC.OrdinaryGVS(9, 9, even_edges=even_edges)
-            vs.delete_basis_file()
-            self.assertFalse(vs.exists_basis_file(),'basis should have been deleted')
-            self.assertRaises(SH.NotBuiltError, vs.get_basis)
-            vs.build_basis()
+            if ignore_existing_files:
+                vs.delete_basis_file()
+                self.assertFalse(vs.exists_basis_file(),'basis should have been deleted')
+                self.assertRaises(SH.NotBuiltError, vs.get_basis)
+            vs.build_basis(ignore_existing_file=ignore_existing_files)
             self.assertTrue(vs.exists_basis_file(),'basis should exist')
             basis_g6 = vs.get_basis()
             self.assertTrue(len(basis_g6) > 0,'%s: basis_g6 has size 0' % str(vs))
@@ -71,9 +72,7 @@ class OGCTestCase(unittest.TestCase):
             if not vs.valid:
                 logging.info('%s: no basis test, since not valid' % str(vs))
                 continue
-            if not skip_existing_files:
-                vs.delete_basis_file()
-            vs.build_basis()
+            vs.build_basis(ignore_existing_file=ignore_existing_files)
             logging.info("%s: %s" % (str(vs), vs.get_info()))
             basis_list = vs.get_basis(g6=True)
             dimension = vs.get_dimension()
@@ -106,10 +105,10 @@ class OGCTestCase(unittest.TestCase):
             if not op.exist_domain_target_files():
                 logging.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
-            if not skip_existing_files and op.exists_matrix_file():
+            if ignore_existing_files:
                 op.delete_matrix_file()
                 self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
-            op.build_matrix(n_jobs=n_jobs)
+            op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
             self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
             logging.info("%s: %s" % (str(op), op.get_info()))
 
@@ -119,7 +118,7 @@ class OGCTestCase(unittest.TestCase):
             self.assertEqual(op.get_matrix_shape(), shape, '%s: matrix shape not consistent' % str(op))
             self.assertEqual(shape, (op.target.get_dimension(), op.domain.get_dimension()), '%s: matrix shape not consistent with vector space dimensions' % str(op))
 
-            if not skip_existing_files and op.exists_rank_file():
+            if not ignore_existing_files and op.exists_rank_file():
                 op.delete_rank_file()
                 self.assertFalse(op.exists_rank_file(), '%s rank file should have been deleted' % str(op))
             op.compute_rank()
@@ -157,11 +156,11 @@ class OGCTestCase(unittest.TestCase):
         for even_edges in even_range:
             ogc = OGC.OrdinaryGC(v_range, l_range, even_edges)
 
-            ogc.build_basis(skip_existing_files=skip_existing_files)
-            ogc.build_operator_matrix(skip_existing_files=skip_existing_files, n_jobs=n_jobs)
+            ogc.build_basis(ignore_existing_files=ignore_existing_files)
+            ogc.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
             (triv_l, succ_l, inc_l, fail_l) = ogc.square_zero_test(eps)
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(ogc),fail_l))
-            ogc.compute_ranks(skip_existing_files=skip_existing_files)
+            ogc.compute_ranks(ignore_existing_files=ignore_existing_files)
             ogc.compute_cohomology()
             ogc.store_member_info()
             ogc.store_cohomology_dim()

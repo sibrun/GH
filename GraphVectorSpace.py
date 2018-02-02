@@ -66,11 +66,11 @@ class GraphVectorSpace():
         sign = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sign)
 
-    def build_basis(self):
+    def build_basis(self, ignore_existing_file=False):
         if not self.valid:
             logging.info("Skip building basis: %s is not valid" % str(self))
             return
-        if self.exists_basis_file():
+        if not ignore_existing_file and self.exists_basis_file():
             return
         generatingList = self._generating_graphs()
         basisSet = set()
