@@ -31,7 +31,7 @@ parser.add_argument('-v_range',  nargs=2, type=int, help='range for number of ve
 parser.add_argument('-l_range', nargs=2, type=int, help='range for number of loops')
 parser.add_argument('-ignore_existing', action='store_true', help='ignore existing files')
 parser.add_argument('-n_jobs', type=int, default=1, help='number of parallel processes')
-parser.add_argument('-profile', action='store_true')
+parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=log_levels, help='logging level')
 
 args = parser.parse_args()
