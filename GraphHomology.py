@@ -1,13 +1,10 @@
 import argparse
 import logging
 import os
-import OrdinaryGraphComplex as OGC
 import Profiling
 import StoreLoad as SL
+import OrdinaryGraphComplex as OGC
 
-reload(OGC)
-reload(Profiling)
-reload(SL)
 
 log_dir = 'log'
 
@@ -20,7 +17,6 @@ def positive_int(value):
 
 
 def range_type(arg):
-    print(arg)
     (min, max) = map(positive_int, arg.split(','))
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
@@ -44,6 +40,7 @@ parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=log_levels, help='logging level')
 parser.add_argument('-build', action='store_true', help='just build vector space basis and operator matrix')
 parser.add_argument('-ranks', action='store_true', help='just compute matrix ranks')
+parser.add_argument('-cohomology', action='store_true', help='just compute cohomology')
 
 args = parser.parse_args()
 
@@ -62,6 +59,11 @@ def build(graph_complex):
 @Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
 def ranks(graph_complex):
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_existing)
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
+def cohomology(graph_complex):
+    graph_complex.compute_cohomology_dim()
+    graph_complex.plot_cohomology_dim()
 
 
 class MissingArgumentError(RuntimeError):
@@ -94,12 +96,13 @@ if __name__ == "__main__":
 
     if graph_complex is None:
         raise ValueError('graph complex not specified')
-    if not (args.build or args.ranks):
-        main(graph_complex)
-    elif args.build and not args.ranks:
-        build(graph_complex)
-    elif args.ranks and not args.build:
-        ranks(graph_complex)
-    else:
-        raise ValueError('set either -build or -ranks but not both')
 
+    if not (args.build or args.ranks or args.cohomology):
+        main(graph_complex)
+    else:
+        if args.build:
+            build(graph_complex)
+        if args.ranks:
+            ranks(graph_complex)
+        if args.cohomology:
+            cohomology(graph_complex)

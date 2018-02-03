@@ -1,31 +1,28 @@
+from abc import ABCMeta, abstractmethod
 import logging
 from sage.all import *
-import StoreLoad as SH
-import GraphVectorSpace as GVS
-import GraphOperator as GO
-
-reload(SH)
-reload(GVS)
-reload(GO)
+import StoreLoad as SL
+import GraphComplex as GC
 
 
 class RefVectorSpace:
+    __metaclass__ = ABCMeta
 
     def __init__(self, vs):
         self.vs = vs
         self.basis_file_path = vs.get_ref_basis_file_path()
+
+    def _load_basis_g6(self):
+        if not self.exists_basis_file():
+            raise SL.RefError("%s: Reference basis file not found" % str(self))
+        logging.info("Load basis from reference file: %s" % str(self))
+        return SL.load_string_list(self.basis_file_path)
 
     def __str__(self):
         return "Reference vector space: %s" % str(self.basis_file_path)
 
     def exists_basis_file(self):
         return (self.basis_file_path is not None) and os.path.isfile(self.basis_file_path)
-
-    def _load_basis_g6(self):
-        if not self.exists_basis_file():
-            raise SH.RefError("%s: Reference basis file not found" % str(self))
-        logging.info("Load basis from reference file: %s" % str(self))
-        return SH.load_string_list(self.basis_file_path)
 
     def _g6_to_canon_g6(self, graph6, sign=False):
         graph = Graph(graph6)
@@ -63,6 +60,7 @@ class RefVectorSpace:
 
 
 class RefOperator:
+    __metaclass__ = ABCMeta
 
     def __init__(self, op):
         self.op = op
@@ -71,20 +69,11 @@ class RefOperator:
         self.matrix_file_path = self.op.get_ref_matrix_file_path()
         self.rank_file_path = self.op.get_ref_rank_file_path()
 
-    def __str__(self):
-        return "Reference operator: %s" % str(self.matrix_file_path)
-
-    def exists_matrix_file(self):
-        return os.path.isfile(self.matrix_file_path)
-
-    def exists_rank_file(self):
-        return os.path.isfile(self.rank_file_path)
-
     def _load_matrix(self):
         if not self.exists_matrix_file():
-           raise SH.RefError("%s: Reference basis file not found" % str(self))
+           raise SL.RefError("%s: Reference basis file not found" % str(self))
         logging.info("Load operator matrix from reference file: %s" % str(self.matrix_file_path))
-        stringList = SH.load_string_list(self.matrix_file_path)
+        stringList = SL.load_string_list(self.matrix_file_path)
         entriesList = []
         if len(stringList) == 0:
             return ([], None)
@@ -104,6 +93,15 @@ class RefOperator:
                 entriesList.append((i - 1, j - 1, v))
         return (entriesList, shape)
 
+    def __str__(self):
+        return "Reference operator: %s" % str(self.matrix_file_path)
+
+    def exists_matrix_file(self):
+        return os.path.isfile(self.matrix_file_path)
+
+    def exists_rank_file(self):
+        return os.path.isfile(self.rank_file_path)
+
     def get_matrix_wrt_ref(self):
         (entriesList, shape) = self._load_matrix()
         if shape is None:
@@ -118,8 +116,8 @@ class RefOperator:
 
     def get_rank(self):
         if not self.exists_rank_file():
-           raise SH.RefError("%s: Reference rank file not found" % str(self))
-        return int(SH.load_line(self.rank_file_path))
+           raise SL.RefError("%s: Reference rank file not found" % str(self))
+        return int(SL.load_line(self.rank_file_path))
 
     def get_matrix(self, header=False):
         M = self.get_matrix_wrt_ref()
@@ -129,3 +127,13 @@ class RefOperator:
         if m == 0 or n == 0:
             return M
         return T_target.inverse() * M * T_domain
+
+
+class RefGraphComplex:
+    __metaclass__ = ABCMeta
+
+    def __init__(self, gc):
+        self.gc = gc
+        self.ref_vs_list = [RefVectorSpace(vs) for vs in self.gc.vs_list]
+        self.ref_op_list = [RefOperator(op) for op in self.gc.op_list]
+

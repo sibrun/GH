@@ -1,17 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from joblib import Parallel, delayed
 import logging
 import operator
 import itertools
-import GraphVectorSpace as GVS
-import GraphOperator as GO
+import os
 import Shared as SH
 import StoreLoad as SL
 
-reload(GVS)
-reload(GO)
-reload(SH)
-reload(SL)
 
 class GraphComplex():
     __metaclass__ = ABCMeta
@@ -31,12 +25,27 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def compute_cohomology_dim(self):
+    def get_cohomology_file_path(self):
+        pass
+
+    @abstractmethod
+    def get_cohomology_plot_path(self):
+        pass
+
+    @abstractmethod
+    def compute_cohomology_dim(self, ignore_existing_file=False):
+        pass
+
+    @abstractmethod
+    def get_cohomology_dim(self):
         pass
 
     @abstractmethod
     def plot_cohomology_dim(self):
         pass
+
+    def exists_cohomology_file(self):
+        return os.path.isfile(self.get_cohomology_file_path())
 
     def members_to_string(self):
         vector_space = ["%s: %s" % (str(vs),vs.get_info()) for vs in self.vs_list]
@@ -46,7 +55,8 @@ class GraphComplex():
     def store_member_info(self):
         (vector_space, operator) = self.members_to_string()
         cohomology = self.get_cohomology_info()
-        LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----", vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
+        LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----",
+                    vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
         SL.store_list_of_header_lists(LHL, self.info_file_path)
 
     def build_basis(self, ignore_existing_files=True):
@@ -54,12 +64,14 @@ class GraphComplex():
         for vs in self.vs_list:
             vs.build_basis(ignore_existing_file=ignore_existing_files)
         self.vs_list.sort(key=operator.methodcaller('get_dimension'))
+        self.store_member_info()
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
         for op in self.op_list:
             op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
         self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
+        self.store_member_info()
 
     def build(self, ignore_existing_files=True, n_jobs=1):
         self.build_basis(ignore_existing_files=ignore_existing_files)
@@ -82,8 +94,9 @@ class GraphComplex():
                 try:
                     M1 = op1.get_matrix()
                     M2 = op2.get_matrix()
-                except SH.NotBuiltError:
-                    logging.warn("Cannot test square zero: Operator matrix not built for %s or %s" % (str(op1), str(op2)))
+                except SL.NotBuiltError:
+                    logging.warn("Cannot test square zero: "
+                                 "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
                     inc.append(p)
                     continue
                 if op1.is_trivial() or op2.is_trivial():
@@ -94,7 +107,8 @@ class GraphComplex():
                 else:
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        logging.warn("Square zero test for %s: trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l ))
+        logging.warn("Square zero test for %s: trivial success: "
+                     "%d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l ))
         if inc_l:
             logging.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
         for (op1, op2) in fail:
@@ -113,8 +127,9 @@ class GraphComplex():
             for opDD in self.op_list:
                 tvsDD = opDD.target
                 if tvsDD == dvsD:
-                    dimCohom = GraphComplex._cohomology(opD, opDD)
+                    dimCohom = GraphComplex.cohomology(opD, opDD)
                     self.cohomology_dim.update({dvsD: dimCohom})
+        self.store_member_info()
 
     def get_cohomology_info(self):
         cohomologyList = []
@@ -127,23 +142,32 @@ class GraphComplex():
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
     @staticmethod
-    def _cohomology(opD, opDD):
-        dimV =  opD.domain.get_dimension()
+    def cohomology(opD, opDD):
+        try:
+            dimV =  opD.domain.get_dimension()
+        except SL.NotBuiltError:
+            logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.domain))
+            return None
         if dimV == 0:
             return 0
         if not opD.valid:
             rankD = 0
         else:
-            if not opD.exists_rank_file():
-                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opD))
+            try:
+                rankD = opD.get_rank()
+            except SL.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opD))
                 return None
-            rankD = opD.get_rank()
         if not opDD.valid:
             rankDD = 0
         else:
-            if not opDD.exists_rank_file():
-                logging.warn("Cannot compute cohomology: Operator matrix not built for %s " % str(opDD))
+            try:
+                rankDD = opDD.get_rank()
+            except SL.NotBuiltError:
+                logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opDD))
                 return None
-            rankDD = opDD.get_rank()
         #logging.warn(str((dimV,rankD,rankDD)))
-        return dimV - rankD - rankDD
+        cohomDim = dimV - rankD - rankDD
+        if cohomDim < 0:
+            raise ValueError("Negative cohomology dimension for %s" % str(opD.Domain))
+        return cohomDim

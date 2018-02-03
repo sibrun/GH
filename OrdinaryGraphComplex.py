@@ -8,12 +8,6 @@ import Shared as SH
 import StoreLoad as SL
 import Display
 
-reload(GVS)
-reload(GO)
-reload(GC)
-reload(SH)
-reload(SL)
-reload(Display)
 
 data_dir = "data"
 data_ref_dir = "data_ref"
@@ -46,16 +40,19 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
 
     def _set_validity(self):
-        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
+        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
+               and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
     def get_work_estimate(self):
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def __str__(self):
-        return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops, "even edges" if self.even_edges else "odd edges")
+        return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops,
+                                                                 "even edges" if self.even_edges else "odd edges")
 
     def __eq__(self, other):
-        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.even_edges == other.even_edges
+        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
+               and self.even_edges == other.even_edges
 
     def _generating_graphs(self):
         if not self.valid:
@@ -90,7 +87,8 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 class ContractGO(GO.GraphOperator):
 
     def __init__(self, domain, target):
-        if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops or domain.even_edges != target.even_edges:
+        if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
+                or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type_name = even_type if domain.even_edges else odd_type
         super(ContractGO, self).__init__(domain, target)
@@ -180,7 +178,8 @@ class OrdinaryGC(GC.GraphComplex):
         super(OrdinaryGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
-        return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
+        return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
+               % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
@@ -203,7 +202,15 @@ class OrdinaryGC(GC.GraphComplex):
         v_range = range(min(self.v_range)+1,max(self.v_range))
         SL.pickle_store((dim_dict, v_range, self.l_range), path)
 
+    def get_cohomology_dim(self):
+        if not self.exists_cohomology_file():
+            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
+        (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
+        return dim_dict
+
     def plot_cohomology_dim(self):
+        if not self.exists_cohomology_file():
+            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
         (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
         path = self.get_cohomology_plot_path()
         Display.save_2_indices_plot(dim_dict, 'vertices', v_range, 'loops', l_range, path)

@@ -2,8 +2,17 @@ import os
 import pickle
 
 
+class NotBuiltError(RuntimeError):
+    pass
+
+
+class RefError(RuntimeError):
+    pass
+
+
 class FileNotExistingError(RuntimeError):
     pass
+
 
 
 def generate_path(path):

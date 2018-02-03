@@ -3,8 +3,6 @@ import functools
 import os
 import StoreLoad as SL
 
-reload(SL)
-
 
 def cond_decorator(flag, dec):
    def decorate(func):

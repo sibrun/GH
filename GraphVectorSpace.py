@@ -1,11 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
 from sage.all import *
-import Shared as SH
 import StoreLoad as SL
-
-reload(SH)
-reload(SL)
 
 
 class GraphVectorSpace():
@@ -100,7 +96,7 @@ class GraphVectorSpace():
         try:
             header = SL.load_line(self.basis_file_path)
         except SL.FileNotExistingError:
-            raise SH.NotBuiltError("Cannot load header from file %s: Build basis first" % str(self.basis_file_path))
+            raise SL.NotBuiltError("Cannot load header from file %s: Build basis first" % str(self.basis_file_path))
         return int(header)
 
     def _store_basis_g6(self, basisList):
@@ -110,7 +106,7 @@ class GraphVectorSpace():
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
-            raise SH.NotBuiltError("Cannot load basis, No Basis file found for %s: " % str(self))
+            raise SL.NotBuiltError("Cannot load basis, No Basis file found for %s: " % str(self))
         logging.info("Load basis from file: %s" % str(self.basis_file_path))
         basisList = SL.load_string_list(self.basis_file_path)
         dim = int(basisList.pop(0))

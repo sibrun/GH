@@ -1,46 +1,41 @@
-import os
-from joblib import Parallel, delayed
-import multiprocessing
-import Profiling
-import logging
-import StoreLoad as SL
-import numpy as np
-import Display
+from abc import ABCMeta, abstractmethod
 
-#reload(SL)
-#reload(Profiling)
-
-if __name__=='__main__':
-    xrange = range(5,10)
-    yrange = range(4,10)
-    vdict = {(5,4):1,(7,8):2,(8,9):3}
-
-    Display.save_2_indices_plot(vdict,'x',xrange,'y',yrange,'t','./test.png')
-
-'''
-log_path = os.path.join('log', 'test.log')
-SL.generate_path(log_path)
-
-logging.basicConfig(filename=log_path, level=logging.WARN)
-logging.warn("###################################\n" + "----- Start test -----")
-
-manager = multiprocessing.Manager()
-res1 = manager.list()
-
-res2 = list()
-
-@Profiling.profile('log')
-def f (a, b, res):
-    res.append(a * b)
-    return a * b
+class Fahrzeug:
+    def __init__(self, w, number):
+        self.wheels = w
+        self.number = number
 
 
-x = Parallel(n_jobs=2)(delayed(f)(i, 2, res1) for i in range(10))
+class Auto(Fahrzeug):
+    def __init__(self, n):
+        super(Auto, self).__init__(4, n)
 
 
-print(x)
-print(res1)
-'''
+class Fuhrpark:
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def get_fz(self, n):
+        pass
+
+    def __init__(self, n):
+        self.Fz_list = [self.get_fz(i) for i in range(n)]
+
+
+class AutoFp(Fuhrpark):
+    def get_fz(self, n):
+        return Auto(n)
+
+if __name__ == '__main__':
+
+    my_autos = AutoFp(2)
+
+    print(type(my_autos.Fz_list[0]))
+
+
+
+
+
 
 
 

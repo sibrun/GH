@@ -7,9 +7,6 @@ from sage.all import *
 import Shared as SH
 import StoreLoad as SL
 
-reload(SH)
-reload(SL)
-
 
 class GraphOperator():
     __metaclass__ = ABCMeta
@@ -76,29 +73,34 @@ class GraphOperator():
             return
         try:
             domainBasis = self.domain.get_basis(g6=False)
-        except SH.NotBuiltError:
+        except SL.NotBuiltError:
             if not skip_if_no_basis:
-                raise SH.NotBuiltError("Cannot build operator matrix of %s: First build basis of the domain %s" % (str(self), str(self.domain)))
+                raise SL.NotBuiltError("Cannot build operator matrix of %s: "
+                                       "First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
-                logging.warn("Skip building operator matrix of %s since basis of the domain %s is not built" % (str(self), str(self.domain)))
+                logging.warn("Skip building operator matrix of %s "
+                             "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
             targetBasis6 = self.target.get_basis(g6=True)
-        except SH.NotBuiltError:
+        except SL.NotBuiltError:
             if not skip_if_no_basis:
-                raise SH.NotBuiltError("Cannot build operator matrix of %s: First build basis of the target %s" % (str(self), str(self.target)))
+                raise SL.NotBuiltError("Cannot build operator matrix of %s: "
+                                       "First build basis of the target %s" % (str(self), str(self.target)))
             else:
-                logging.warn("Skip building operator matrix of %s since basis of the target %s is not built" % (str(self), str(self.target)))
+                logging.warn("Skip building operator matrix of %s "
+                             "since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
         shape = (m, n) = (self.domain.get_dimension(), self.target.get_dimension())
         if m == 0 or n == 0:
             self._store_matrix([], shape)
-            logging.info("Created matrix file without entries for operator matrix of %s, since the matrix shape is (%d, %d)" % (str(self), m, n))
+            logging.info("Created matrix file without entries for operator matrix of %s, "
+                         "since the matrix shape is (%d, %d)" % (str(self), m, n))
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-        logging.warn("n_jobs to build matrix: %d" % n_jobs)
+        logging.info("%d jobs to build matrix of %s" % (n_jobs,str(self)))
         if n_jobs > 1:
             manager = multiprocessing.Manager()
             lookupShared = manager.dict(lookup)
@@ -145,7 +147,8 @@ class GraphOperator():
         try:
             header = SL.load_line(self.matrix_file_path)
         except SL.FileNotExistingError:
-            raise SH.NotBuiltError("Cannot load header from file %s: Build operator matrix first" % str(self.matrix_file_path))
+            raise SL.NotBuiltError("Cannot load header from file %s: "
+                                   "Build operator matrix first" % str(self.matrix_file_path))
         (m, n, data_type) = header.split(" ")
         return (int(n), int(m))
 
@@ -160,12 +163,13 @@ class GraphOperator():
             return True
         try:
             (m, n) = self.get_matrix_shape()
-        except SH.NotBuiltError:
+        except SL.NotBuiltError:
             try:
                 m = self.target.get_dimension()
                 n = self.domain.get_dimension()
-            except SH.NotBuiltError:
-                raise SH.NotBuiltError("Matrix shape of %s unknown: Build operator matrix or domain and target basis first" % str(self))
+            except SL.NotBuiltError:
+                raise SL.NotBuiltError("Matrix shape of %s unknown: "
+                                       "Build operator matrix or domain and target basis first" % str(self))
         if m == 0 or n == 0:
             return True
         return self.get_matrix_entries() == 0
@@ -182,13 +186,14 @@ class GraphOperator():
 
     def _load_matrix(self):
         if not self.exists_matrix_file():
-            raise SH.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
+            raise SL.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
         logging.info("Load operator matrix from file: %s" % str(self.matrix_file_path))
         stringList = SL.load_string_list(self.matrix_file_path)
         (m, n, data_type) = stringList.pop(0).split(" ")
         shape = (m, n) = (int(m), int(n))
         if m != self.domain.get_dimension() or n != self.target.get_dimension():
-            raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions: %s" % str(self.matrix_file_path))
+            raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions:"
+                             " %s" % str(self.matrix_file_path))
         tail = map(int, stringList.pop().split(" "))
         if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file" % str(self.matrix_file_path))
@@ -198,7 +203,8 @@ class GraphOperator():
             if i < 1 or j < 1:
                 raise ValueError("%s: Invalid matrix index: %d %d" % (str(self.matrix_file_path), i, j))
             if i > m or j > n:
-                raise ValueError("%s: Invalid matrix index outside matrix size: %d %d" % (str(self.matrix_file_path), i, j))
+                raise ValueError("%s: Invalid matrix index outside matrix size:"
+                                 " %d %d" % (str(self.matrix_file_path), i, j))
             entriesList.append((i - 1, j - 1, v))
         return (entriesList, shape)
 
@@ -216,20 +222,27 @@ class GraphOperator():
             M.add_to_entry(i, j, v)
         return M.transpose()
 
-    def compute_rank(self, ignore_existing_file=False):
+    def compute_rank(self, ignore_existing_file=False, skip_if_no_matrix=True):
         if not self.valid:
             logging.info("Skip creating rank file, since %s is not valid" % str(self))
             return
         if not ignore_existing_file and self.exists_rank_file():
             return
-        rk = self.get_matrix().rank()
-        SL.store_line(str(rk), self.rank_file_path)
+        try:
+            M = self.get_matrix()
+        except SL.NotBuiltError:
+            if not skip_if_no_matrix:
+                raise SL.NotBuiltError("Cannot compute rank of %s: First build operator matrix" % str(self))
+            else:
+                logging.warn("Skip computing rank of %s, since matrix is not built" % str(self))
+                return
+        SL.store_line(str(M.rank()), self.rank_file_path)
 
     def get_rank(self):
         if not self.valid:
             return 0
         if not self.exists_rank_file():
-            raise SH.NotBuiltError("Cannot load operator rank, No rank file found for %s: " % str(self))
+            raise SL.NotBuiltError("Cannot load operator rank, No rank file found for %s: " % str(self))
         return int(SL.load_line(self.rank_file_path))
 
     def delete_matrix_file(self):
