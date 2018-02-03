@@ -1,4 +1,3 @@
-import scipy.sparse as sparse
 import logging
 from sage.all import *
 import StoreLoad as SH

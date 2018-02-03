@@ -18,8 +18,8 @@ reload(Display)
 data_dir = "data"
 data_ref_dir = "data_ref"
 type_name = "ordinary"
-odd_type = "oddedge"
-even_type = "evenedge"
+odd_type = "odd_edge"
+even_type = "even_edge"
 image_directory = "img"
 
 
@@ -159,7 +159,7 @@ class ContractGO(GO.GraphOperator):
             G1.merge_vertices([0,1])
             if (previous_size - G1.size()) != 1:
                 continue
-            G1.relabel(list(range(0,G1.order())), inplace = True)
+            G1.relabel(list(range(0,G1.order())), inplace=True)
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 sign *= Permutation(p).signature()

@@ -58,8 +58,12 @@ class GraphComplex():
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
         for op in self.op_list:
-            op.build_matrix(ignore_existing_file=ignore_existing_files)
+            op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
         self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
+
+    def build(self, ignore_existing_files=True, n_jobs=1):
+        self.build_basis(ignore_existing_files=ignore_existing_files)
+        self.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful
