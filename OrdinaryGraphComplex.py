@@ -1,5 +1,4 @@
 import itertools
-import logging
 from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
@@ -10,13 +9,12 @@ import Display
 
 
 data_dir = "data"
-data_ref_dir = "data_ref"
-type_name = "ordinary"
-odd_type = "odd_edge"
-even_type = "even_edge"
-image_directory = "img"
+ref_data_dir = "data_ref"
+graph_type = "ordinary"
+sub_types = {True: "even_edges", False: "odd_edges"}
 
 
+# ------- Ordinary Graph Vector Space --------
 class OrdinaryGVS(GVS.GraphVectorSpace):
 
     def __init__(self, n_vertices, n_loops, even_edges):
@@ -24,31 +22,32 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
-        self.sub_type_name = even_type if self.even_edges else odd_type
+        self.sub_type = sub_types.get(self.even_edges)
         super(OrdinaryGVS,self).__init__()
 
-    def _set_basis_file_path(self):
+    def set_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
-    def _set_img_path(self):
-        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+    def set_img_path(self):
+        pass
 
     def get_ref_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
+        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
 
     def _set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
                and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
+    def _set_colour_counts(self):
+        return None
+
     def get_work_estimate(self):
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def __str__(self):
-        return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops,
-                                                                 "even edges" if self.even_edges else "odd edges")
+        return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops, self.sub_type)
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
@@ -83,14 +82,14 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-# -----  Contraction operator --------
+# ------- Contraction Operator --------
 class ContractGO(GO.GraphOperator):
 
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
                 or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_type_name = even_type if domain.even_edges else odd_type
+        self.sub_type = sub_types.get(domain.even_edges)
         super(ContractGO, self).__init__(domain, target)
 
     @classmethod
@@ -107,21 +106,21 @@ class ContractGO(GO.GraphOperator):
         target = OrdinaryGVS(n_vertices-1, n_loops, even_edges)
         return cls(domain, target)
 
-    def _set_matrix_file_path(self):
+    def set_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
-    def _set_rank_file_path(self):
+    def set_rank_file_path(self):
         s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
+        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
         s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_ref_dir, type_name, self.sub_type_name, s)
+        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
         return self.domain.n_edges * sqrt(self.target.get_dimension())
@@ -146,7 +145,7 @@ class ContractGO(GO.GraphOperator):
                     idx +=1
 
             pp = SH.Perm(p).inverse()
-            sign = self.domain.perm_sign(G, pp)
+            sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
 
@@ -160,18 +159,18 @@ class ContractGO(GO.GraphOperator):
             G1.relabel(list(range(0,G1.order())), inplace=True)
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
-                sign *= Permutation(p).signature()
-            image.append((G1, sign))
+                sgn *= Permutation(p).signature()
+            image.append((G1, sgn))
         return image
 
 
-# ----- Ordinary Graph Complex --------
+# ------- Ordinary Graph Complex --------
 class OrdinaryGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
-        self.sub_type_name = even_type if self.even_edges else odd_type
+        self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
         op_list = ContractGO.get_operators(vs_list)
@@ -179,19 +178,19 @@ class OrdinaryGC(GC.GraphComplex):
 
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
-               % ("even edges" if self.even_edges else "odd edges", str(self.v_range), str(self.l_range))
+               % (self.sub_type, str(self.v_range), str(self.l_range))
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_plot_path(self):
-        s = "cohomology_dim_%s_%s.png" % (type_name, self.sub_type_name)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_file_path(self):
-        s = "cohomology_dim_%s_%s.p" % (type_name, self.sub_type_name)
-        return os.path.join(data_dir, type_name, self.sub_type_name, s)
+        s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
+        return os.path.join(data_dir, graph_type, self.sub_type, s)
 
     def compute_cohomology_dim(self):
         self._compute_cohomology_dim()
@@ -213,4 +212,4 @@ class OrdinaryGC(GC.GraphComplex):
             raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
         (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
         path = self.get_cohomology_plot_path()
-        Display.save_2_indices_plot(dim_dict, 'vertices', v_range, 'loops', l_range, path)
+        Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range).savefig(path)

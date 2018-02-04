@@ -52,13 +52,16 @@ def main(graph_complex):
     graph_complex.compute_cohomology_dim()
     graph_complex.plot_cohomology_dim()
 
+
 @Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
 def build(graph_complex):
     graph_complex.build(ignore_existing_files=args.ignore_existing, n_jobs=args.n_jobs)
 
+
 @Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
 def ranks(graph_complex):
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_existing)
+
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
 def cohomology(graph_complex):

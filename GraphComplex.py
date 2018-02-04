@@ -33,7 +33,7 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def compute_cohomology_dim(self, ignore_existing_file=False):
+    def compute_cohomology_dim(self):
         pass
 
     @abstractmethod
@@ -123,12 +123,10 @@ class GraphComplex():
     def _compute_cohomology_dim(self):
         self.cohomology_dim.clear()
         for opD in self.op_list:
-            dvsD = opD.domain
             for opDD in self.op_list:
-                tvsDD = opDD.target
-                if tvsDD == dvsD:
-                    dimCohom = GraphComplex.cohomology(opD, opDD)
-                    self.cohomology_dim.update({dvsD: dimCohom})
+                if opD.matches(opDD):
+                    dimCohom = opD.cohomology_dim(opDD)
+                    self.cohomology_dim.update({opD.domain: dimCohom})
         self.store_member_info()
 
     def get_cohomology_info(self):
@@ -140,34 +138,4 @@ class GraphComplex():
                 cohomologyList.append(line)
         return cohomologyList
 
-    # Computes the cohomology, i.e., ker(D)/im(DD)
-    @staticmethod
-    def cohomology(opD, opDD):
-        try:
-            dimV =  opD.domain.get_dimension()
-        except SL.NotBuiltError:
-            logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.domain))
-            return None
-        if dimV == 0:
-            return 0
-        if not opD.valid:
-            rankD = 0
-        else:
-            try:
-                rankD = opD.get_rank()
-            except SL.NotBuiltError:
-                logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opD))
-                return None
-        if not opDD.valid:
-            rankDD = 0
-        else:
-            try:
-                rankDD = opDD.get_rank()
-            except SL.NotBuiltError:
-                logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opDD))
-                return None
-        #logging.warn(str((dimV,rankD,rankDD)))
-        cohomDim = dimV - rankD - rankDD
-        if cohomDim < 0:
-            raise ValueError("Negative cohomology dimension for %s" % str(opD.Domain))
-        return cohomDim
+

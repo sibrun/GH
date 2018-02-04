@@ -10,15 +10,16 @@ class GraphVectorSpace():
     def __init__(self, color_counts=None):
         self.color_counts = color_counts
         self.valid = self._set_validity()
-        self.basis_file_path = self._set_basis_file_path()
-        self.img_path = self._set_img_path()
+        self.color_counts = self._set_colour_counts()
+        self.basis_file_path = self.set_basis_file_path()
+        self.img_path = self.set_img_path()
 
     @abstractmethod
-    def _set_basis_file_path(self):
+    def set_basis_file_path(self):
         pass
 
     @abstractmethod
-    def _set_img_path(self):
+    def set_img_path(self):
         pass
 
     @abstractmethod
@@ -31,6 +32,10 @@ class GraphVectorSpace():
 
     @abstractmethod
     def get_work_estimate(self):
+        pass
+
+    @abstractmethod
+    def _set_colour_counts(self):
         pass
 
     @abstractmethod
