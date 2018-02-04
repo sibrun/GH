@@ -137,3 +137,5 @@ class RefGraphComplex:
         self.ref_vs_list = [RefVectorSpace(vs) for vs in self.gc.vs_list]
         self.ref_op_list = [RefOperator(op) for op in self.gc.op_list]
 
+
+

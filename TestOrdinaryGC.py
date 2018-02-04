@@ -11,13 +11,14 @@ log_file = "OGC_Unittest.log"
 
 v_range = range(4, 10)
 l_range = range(4, 10)
-even_edges = [True, False]
+edges_types = [True, False]
 
 
 class OGCBasisTest(TGC.BasisTest):
 
     def setUp(self):
-        self.vs_list = [OGC.OrdinaryGVS(v, l, even) for (v, l, even) in itertools.product(v_range, l_range, even_edges)]
+        self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
+                        itertools.product(v_range, l_range, edges_types)]
 
     def tearDown(self):
         self.vs_list = None
@@ -42,9 +43,10 @@ class OGCBasisTest(TGC.BasisTest):
 class OGCOperatorTest(TGC.OperatorTest):
 
     def setUp(self):
-        self.vs_list = [OGC.OrdinaryGVS(v, l, even) for (v, l, even) in itertools.product(v_range, l_range, even_edges)]
-        self.op_list = [OGC.ContractGO.get_operator(v, l, even) for (v, l, even) in
-                        itertools.product(v_range, l_range, even_edges)]
+        self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
+                        itertools.product(v_range, l_range, edges_types)]
+        self.op_list = [OGC.ContractGO.get_operator(v, l, even_edges) for (v, l, even_edges) in
+                        itertools.product(v_range, l_range, edges_types)]
 
     def tearDown(self):
         self.vs_list = None
@@ -53,7 +55,7 @@ class OGCOperatorTest(TGC.OperatorTest):
 
 class OGCGraphComplexTest(TGC.GraphComplexTest):
     def setUp(self):
-        self.gc_list = [OGC.OrdinaryGC(v_range, l_range, edges) for edges in even_edges]
+        self.gc_list = [OGC.OrdinaryGC(v_range, l_range, even_edges) for even_edges in edges_types]
 
     def tearDown(self):
         self.gc_list = None

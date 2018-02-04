@@ -2,15 +2,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 
+x_wieth = 0.7
+y_width = 0.7
+zero_symbol = '*'
+
 
 def plot_2d_array(value_dict, x_label, x_range, y_label, y_range):
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min)*0.6
+    x_size = (x_max + 1 - x_min) * x_wieth
     y_min = min(y_range)
     y_max = max(y_range)
-    y_size = (y_max + 1 - y_min)*0.6
+    y_size = (y_max + 1 - y_min) * y_width
 
     fig, ax = plt.subplots(figsize=(x_size, y_size))
 
@@ -23,14 +27,14 @@ def plot_2d_array(value_dict, x_label, x_range, y_label, y_range):
     for (x, y) in itertools.product(x_range, y_range):
         v = value_dict.get((x, y))
         if v is not None:
-            v = '*' if v == 0 else v
+            v = zero_symbol if v == 0 else v
             ax.text(x, y, str(v), va='center', ha='center')
 
-    x_ticks_grid = np.arange(x_min-0.5, x_max+1, 1)
-    y_ticks_grid = np.arange(y_min-0.5, y_max+1, 1)
+    x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
+    y_ticks_grid = np.arange(y_min - 0.5, y_max + 1, 1)
 
-    x_ticks = np.arange(x_min, x_max+1, 1)
-    y_ticks = np.arange(y_min, y_max+1, 1)
+    x_ticks = np.arange(x_min, x_max + 1, 1)
+    y_ticks = np.arange(y_min, y_max + 1, 1)
 
     ax.set_xticks(x_ticks)
     ax.set_yticks(y_ticks)
@@ -47,10 +51,10 @@ def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_ran
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * 0.6
+    x_size = (x_max + 1 - x_min) * x_wieth
     y_min = min(y_range)
     y_max = max(y_range)
-    y_size = (y_max + 1 - y_min) * 0.6
+    y_size = (y_max + 1 - y_min) * y_width
     z_min = min(z_range)
     z_max = max(z_range)
     z_size = z_max + 1 - z_min
@@ -73,7 +77,7 @@ def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_ran
     for (x, y, z) in itertools.product(x_range, y_range, z_range):
         v = value_dict.get((x, y, z))
         if v is not None:
-            v = '*' if v == 0 else v
+            v = zero_symbol if v == 0 else v
             get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
