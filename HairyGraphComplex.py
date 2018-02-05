@@ -78,7 +78,22 @@ class HairyGVS(GVS.GraphVectorSpace):
         max_deg_1 = self.n_edges + 1
         n_edges_bip = self.n_hairs + 2 * self.n_edges
         L = SH.list_bipartite_g(n_vertices_1, n_vertices_2, max_deg_1, n_edges_bip)
-        return [bip_to_ordinary(self, parse_graph6(l)) for l in lll]
+        return [self._bip_to_ordinary(G) for G in L]
+
+    def _bip_to_ordinary(self, G):
+        # translates bipartite into ordinary graph by contracting adjacent edges of an edge (2 valent) vertex of coulour 2
+        for h in range(self.n_vertices, self.n_vertices + self.n_hairs):
+            neighbours = G.neighbours(h)
+            n_l = len(neighbours)
+            if n_l == 1: #hair
+                continue
+            elif n_l == 2: #edge: contract adjacent edges
+                adj_edges = [(h, n) for n in neighbours]
+                G.contract.edges(adj_edges)
+            else:
+                raise ValueError('%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
+        return G.to_simple()
+
 
     '''For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
        Here vertex j becomes vertex p[j] in the new graph.'''
@@ -88,8 +103,9 @@ class HairyGVS(GVS.GraphVectorSpace):
         sgn = self.ogvs.perm_sign(G, p)
         # compute the extra contribution from hairs if necessary
         if self.even_hairs == self.even_edges:
-            hairp = #inducedPerm(p, collect(self.nVertices + 1: self.nVertices + self.nHairs) )
-        return sgn * SH.Perm(hairp).sign()
+            hair_perm = p[self.n_vertices + 1:]
+            sgn *= SH.Perm(hair_perm).sign()
+        return sgn
 
     def get_work_estimate(self):
         # give estimate of number of graphs

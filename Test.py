@@ -18,18 +18,16 @@ if __name__ == '__main__':
     Display.plot_3d_array(v_dict, x_label, x_range, y_label, y_range, z_label, z_range,'./log/test.png', x_plots=3)
     '''
 
-print([list(range(0,3)), list(range(3,6))])
+n_vertices = 8
+n_loops = 7
+n_edges = n_vertices + n_loops - 1
 
-L = SH.list_bipartite_g(2,3,4,3+2*5)
+nauty_string = "-cbl -d1  %d %d:%d" % (n_vertices, n_edges, n_edges)
+l = list(graphs.nauty_geng(nauty_string))
 
-print(len(L))
-for G in L:
-    G.plot().show()
+print(len(l))
 
-
-
-
-
-
-
+for i in range(min(5,len(l))):
+    g = l[i]
+    g.plot().show()
 

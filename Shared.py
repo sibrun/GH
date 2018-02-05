@@ -17,7 +17,6 @@ class Perm:
 
 
 #---- Nauty interface -----
-
 '''creates a list of simple 1vi graphs with at least trivalent vertices'''
 def list_simple_g(n_vertices, n_edges, onlyonevi=True):
     if n_vertices <= 0 or n_edges <= 0 or 3 * n_vertices > 2 * n_edges or n_edges > n_vertices * (n_vertices - 1) / 2:
@@ -26,13 +25,11 @@ def list_simple_g(n_vertices, n_edges, onlyonevi=True):
     return list(graphs.nauty_geng(nauty_string))
 
 
-'''creates a list of bipartid graphs, vertices of the first colour have degree in the range 3:n_edges,
+'''creates a list of bipartite graphs, vertices of the first colour have degree in the range 3:n_edges,
 vertices of the second colour have degree in the range 1:2'''
 def list_bipartite_g(n_vertices_1, n_vertices_2, max_deg_1, n_edges_bip):
-    # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2
-    # degree 1 vertices are hairs, degree 2 vertices are edges and are removed later
     # z switch prevents multiple hairs and multiple edges
-    nauty_string = "-b -czl -d3:1 -D%d:2 %d %d %d:%d" % (max_deg_1, n_vertices_1, n_vertices_2, n_edges_bip, n_edges_bip)
+    nauty_string = "-cbl -d1 -D%d %d %d %d:%d" % (max_deg_1, n_vertices_1, n_vertices_2, n_edges_bip, n_edges_bip)
     return list(graphs.nauty_geng(nauty_string))
 
 '''

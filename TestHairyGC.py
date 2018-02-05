@@ -55,13 +55,13 @@ def suite():
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("\n#######################################\n" + "----- Start test suite for hairy graph complex -----")
     suite = unittest.TestSuite()
-    suite.addTest(HGCBasisTest('test_perm_sign'))
+    #suite.addTest(HGCBasisTest('test_perm_sign'))
     suite.addTest(HGCBasisTest('test_basis_functionality'))
-    suite.addTest(HGCBasisTest('test_basis'))
-    suite.addTest(HGCOperatorTest('test_operator_functionality'))
-    suite.addTest(HGCOperatorTest('test_operator_matrix'))
-    suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
-    suite.addTest(HGCGraphComplexTest('test_graph_complex'))
+    #suite.addTest(HGCBasisTest('test_basis'))
+    #suite.addTest(HGCOperatorTest('test_operator_functionality'))
+    #suite.addTest(HGCOperatorTest('test_operator_matrix'))
+    #suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
+    #suite.addTest(HGCGraphComplexTest('test_graph_complex'))
     return suite
 
 
