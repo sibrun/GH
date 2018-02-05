@@ -183,14 +183,14 @@ class GraphComplexTest(unittest.TestCase):
             gc.compute_cohomology_dim()
             dim_dict = gc.get_cohomology_dim_dict()
             ref_dim_dict = gc.get_cohomology_dim_dict()
-            succ_l = 0
-            fail_l = 0
+            n_succ = 0
+            n_fail = 0
             for (vs, dim) in dim_dict.items():
                 for (ref_vs, ref_dim) in ref_dim_dict.items():
                     if ref_vs.matches(vs):
-                        succ_l += 1
+                        n_succ += 1
                     else:
-                        fail_l += 1
-            self.assertTrue(fail_l == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
-            if succ_l == len(dim_dict):
+                        n_fail += 1
+            self.assertTrue(n_fail == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
+            if n_succ == len(dim_dict):
                 logging.warn('Not all cohomology dimensions successfully compared with reference for %s' % str(gc))

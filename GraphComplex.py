@@ -83,9 +83,7 @@ class GraphComplex():
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
         for (op1, op2) in itertools.product(self.op_list, self.op_list):
-            tvs1 = op1.target
-            dvs2 = op2.domain
-            if tvs1 == dvs2:
+            if op2.matches(op1):
                 # A composable pair is found
                 p = (op1, op2)
                 if not (op1.valid and op2.valid):
