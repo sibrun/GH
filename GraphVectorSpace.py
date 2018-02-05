@@ -131,10 +131,7 @@ class GraphVectorSpace():
         if g6:
             return basis_g6
         else:
-            basis = []
-            for G in basis_g6:
-                basis.append(Graph(G))
-            return basis
+            return [Graph(g6) for g6 in basis_g6]
 
     def delete_basis_file(self):
         if os.path.isfile(self.basis_file_path):

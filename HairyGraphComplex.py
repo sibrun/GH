@@ -4,6 +4,7 @@ import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
+import NautyInterface as NI
 import StoreLoad as SL
 import Display
 import OrdinaryGraphComplex as OGC
@@ -77,18 +78,18 @@ class HairyGVS(GVS.GraphVectorSpace):
         n_vertices_2 = self.n_hairs + self.n_edges
         max_deg_1 = self.n_edges + 1
         n_edges_bip = self.n_hairs + 2 * self.n_edges
-        L = SH.list_bipartite_g(n_vertices_1, n_vertices_2, max_deg_1, n_edges_bip)
+        L = NI.list_bipartite_graphs(n_vertices_1, n_vertices_2, (3, max_deg_1), (1,2), n_edges_bip)
         return [self._bip_to_ordinary(G) for G in L]
 
     def _bip_to_ordinary(self, G):
         # translates bipartite into ordinary graph by contracting adjacent edges of an edge (2 valent) vertex of coulour 2
         for h in range(self.n_vertices, self.n_vertices + self.n_hairs):
-            neighbours = G.neighbours(h)
-            n_l = len(neighbours)
+            neighbors = G.neighbors(h)
+            n_l = len(neighbors)
             if n_l == 1: #hair
                 continue
             elif n_l == 2: #edge: contract adjacent edges
-                adj_edges = [(h, n) for n in neighbours]
+                adj_edges = [(h, n) for n in neighbors]
                 G.contract.edges(adj_edges)
             else:
                 raise ValueError('%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))

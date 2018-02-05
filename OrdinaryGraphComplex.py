@@ -4,6 +4,7 @@ import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
+import NautyInterface as NI
 import StoreLoad as SL
 import Display
 
@@ -58,7 +59,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def _generating_graphs(self):
         if not self.valid:
             return []
-        return SH.list_simple_g(self.n_vertices, self.n_edges)
+        return NI.list_simple_graphs(self.n_vertices, self.n_edges)
 
     def perm_sign(self, G, p):
         if self.even_edges:

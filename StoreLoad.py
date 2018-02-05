@@ -14,7 +14,6 @@ class FileNotExistingError(RuntimeError):
     pass
 
 
-
 def generate_path(path):
     directory = os.path.dirname(path)
     if not os.path.exists(directory):
