@@ -10,8 +10,8 @@ import OrdinaryGraphComplex as OGC
 
 
 data_dir = "data"
-ref_data_dir = "data_ref"
 plots_dir = "plots"
+ref_data_dir = "data_ref"
 graph_type = "hairy"
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
@@ -203,7 +203,7 @@ class HairyGC(GC.GraphComplex):
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(plot_dir, graph_type, self.sub_type, s)
+        return os.path.join(plots_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_file_path(self):
         s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
