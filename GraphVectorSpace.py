@@ -10,16 +10,16 @@ class GraphVectorSpace():
     def __init__(self, color_counts=None):
         self.color_counts = color_counts
         self.valid = self._set_validity()
-        self.color_counts = self._set_colour_counts()
+        self.color_partition = self._set_colour_partition()
         self.basis_file_path = self.set_basis_file_path()
-        self.img_path = self.set_img_path()
+        self.plot_path = self.set_plot_path()
 
     @abstractmethod
     def set_basis_file_path(self):
         pass
 
     @abstractmethod
-    def set_img_path(self):
+    def set_plot_path(self):
         pass
 
     @abstractmethod
@@ -35,7 +35,7 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def _set_colour_counts(self):
+    def _set_colour_partition(self):
         pass
 
     @abstractmethod
@@ -77,7 +77,10 @@ class GraphVectorSpace():
         basisSet = set()
         for G in generatingList:
             canonG = G.canonical_label()
-            automList = G.automorphism_group().gens()
+            if self.color_partition is None:
+                automList = G.automorphism_group().gens()
+            else:
+                automList = G.automorphism_group(partition=self.color_partition).gens()
             if len(automList):
                 canon6=canonG.graph6_string()
                 if not canon6 in basisSet:

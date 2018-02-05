@@ -32,14 +32,15 @@ class HairyGVS(GVS.GraphVectorSpace):
         self.ogvs = OGC.OrdinaryGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
     def set_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
         return os.path.join(data_dir, graph_type, self.sub_type, s)
 
-    def set_img_path(self):
-        pass
+    def set_plot_path(self):
+        s = "cohomology%d_%d_%d.png" % (self.n_vertices, self.n_loops, self.n_hairs)
+        return os.path.join(plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
         return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
 
     def __str__(self):
@@ -61,9 +62,9 @@ class HairyGVS(GVS.GraphVectorSpace):
         l = l and self.n_vertices >= self.n_hairs
         return l
 
-    def _set_colour_counts(self):
+    def _set_colour_partition(self):
         # all internal vertices are in color 1, the hair vertices are in color 2
-        return[self.n_vertices, self.n_hairs]
+        return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
 
     '''Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)'''
     def _generating_graphs(self):
@@ -72,8 +73,11 @@ class HairyGVS(GVS.GraphVectorSpace):
         # z switch prevents multiple hairs and multiple edges
         if not self.valid:
             return []
-        n_edgesBiP = self.n_hairs + 2 * self.n_edges
-        SH.nauty_geng()#`$genbg - czl - d3:1 - D$(nEdges + 1):2 $(self.nVertices) $(self.nHairs + nEdges) $nEdgesBiP:$nEdgesBiP $tempFile`)
+        n_vertices_1 = self.n_vertices
+        n_vertices_2 = self.n_hairs + self.n_edges
+        max_deg_1 = self.n_edges + 1
+        n_edges_bip = self.n_hairs + 2 * self.n_edges
+        L = SH.list_bipartite_g(n_vertices_1, n_vertices_2, max_deg_1, n_edges_bip)
         return [bip_to_ordinary(self, parse_graph6(l)) for l in lll]
 
     '''For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.

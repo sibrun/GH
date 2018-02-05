@@ -30,8 +30,9 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
         return os.path.join(data_dir, graph_type, self.sub_type, s)
 
-    def set_img_path(self):
-        pass
+    def set_plot_path(self):
+        s = "cohomology%d_%d.png" % (self.n_vertices, self.n_loops)
+        return os.path.join(plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
@@ -41,7 +42,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
                and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
-    def _set_colour_counts(self):
+    def _set_colour_partition(self):
         return None
 
     def get_work_estimate(self):
@@ -57,7 +58,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def _generating_graphs(self):
         if not self.valid:
             return []
-        return SH.nauty_geng(self.n_vertices, self.n_edges)
+        return SH.list_simple_g(self.n_vertices, self.n_edges)
 
     def perm_sign(self, G, p):
         if self.even_edges:
