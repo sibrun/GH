@@ -11,6 +11,7 @@ import OrdinaryGraphComplex as OGC
 
 data_dir = "data"
 ref_data_dir = "data_ref"
+plots_dir = "plots"
 graph_type = "hairy"
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
@@ -202,7 +203,7 @@ class HairyGC(GC.GraphComplex):
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(plot_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_file_path(self):
         s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
@@ -228,4 +229,4 @@ class HairyGC(GC.GraphComplex):
             raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
         (dim_dict, v_range, l_range, h_range) = SL.pickle_load(self.get_cohomology_file_path())
         path = self.get_cohomology_plot_path()
-        Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range).savefig()
+        Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range, path)

@@ -9,6 +9,7 @@ import Display
 
 
 data_dir = "data"
+plots_dir = "plots"
 ref_data_dir = "data_ref"
 graph_type = "ordinary"
 sub_types = {True: "even_edges", False: "odd_edges"}
@@ -186,7 +187,7 @@ class OrdinaryGC(GC.GraphComplex):
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(plots_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_file_path(self):
         s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
@@ -212,4 +213,4 @@ class OrdinaryGC(GC.GraphComplex):
             raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
         (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
         path = self.get_cohomology_plot_path()
-        Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range).savefig(path)
+        Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range, path)

@@ -1,13 +1,9 @@
-from abc import ABCMeta, abstractmethod
 import logging
 from sage.all import *
 import StoreLoad as SL
-import GraphComplex as GC
 
 
 class RefVectorSpace:
-    __metaclass__ = ABCMeta
-
     def __init__(self, vs):
         self.vs = vs
         self.basis_file_path = vs.get_ref_basis_file_path()
@@ -39,6 +35,9 @@ class RefVectorSpace:
             basis_g6_canon.append(self._g6_to_canon_g6(G6))
         return basis_g6_canon
 
+    def get_dimension(self):
+        return len(self._load_basis_g6())
+
     def get_transformation_matrix(self):
         basis_g6 = self._load_basis_g6()
         dim = len(basis_g6)
@@ -58,14 +57,15 @@ class RefVectorSpace:
             raise ValueError("%s: Basis transformation matrix not invertible" % str(self))
         return T
 
+    def matches(self, vs):
+        return self.vs == vs
+
 
 class RefOperator:
-    __metaclass__ = ABCMeta
-
     def __init__(self, op):
         self.op = op
-        self.ref_domain = RefVectorSpace(self.op.domain)
-        self.ref_target = RefVectorSpace(self.op.target)
+        self.domain = RefVectorSpace(self.op.domain)
+        self.target = RefVectorSpace(self.op.target)
         self.matrix_file_path = self.op.get_ref_matrix_file_path()
         self.rank_file_path = self.op.get_ref_rank_file_path()
 
@@ -119,23 +119,68 @@ class RefOperator:
            raise SL.RefError("%s: Reference rank file not found" % str(self))
         return int(SL.load_line(self.rank_file_path))
 
-    def get_matrix(self, header=False):
+    def get_matrix(self):
         M = self.get_matrix_wrt_ref()
-        T_domain = self.ref_domain.get_transformation_matrix()
-        T_target = self.ref_target.get_transformation_matrix()
+        T_domain = self.domain.get_transformation_matrix()
+        T_target = self.target.get_transformation_matrix()
         (m, n) = (M.nrows(), M.ncols())
         if m == 0 or n == 0:
             return M
         return T_target.inverse() * M * T_domain
 
+    # Check whether opD.domain == opDD.target
+    def matches(opD, opDD):
+        return opD.domain == opDD.target
+
+    # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
+    def cohomology_dim(opD, opDD):
+        try:
+            dimV =  opD.domain.get_dimension()
+        except SL.NotBuiltError:
+            logging.warn("Cannot compute reference cohomology: No reference basis file for %s " % str(opD.domain))
+            return None
+        if dimV == 0:
+            return 0
+        if not opD.op.valid:
+            rankD = 0
+        else:
+            try:
+                rankD = opD.get_rank()
+            except SL.NotBuiltError:
+                logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opD))
+                return None
+        if not opDD.op.valid:
+            rankDD = 0
+        else:
+            try:
+                rankDD = opDD.get_rank()
+            except SL.NotBuiltError:
+                logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opDD))
+                return None
+        cohomDim = dimV - rankD - rankDD
+        if cohomDim < 0:
+            raise ValueError("Negative refernece cohomology dimension for %s" % str(opD.domain))
+        return cohomDim
+
 
 class RefGraphComplex:
-    __metaclass__ = ABCMeta
-
     def __init__(self, gc):
         self.gc = gc
-        self.ref_vs_list = [RefVectorSpace(vs) for vs in self.gc.vs_list]
-        self.ref_op_list = [RefOperator(op) for op in self.gc.op_list]
+        self.vs_list = [RefVectorSpace(vs) for vs in self.gc.vs_list]
+        self.op_list = [RefOperator(op) for op in self.gc.op_list]
 
+    def __str__(self):
+        return "Reference graph complex for: %s" % str(self.gc)
 
-
+    def get_cohomology_dim_dict(self):
+        cohomology_dim = dict()
+        for opD in self.op_list:
+            for opDD in self.op_list:
+                if opD.matches(opDD):
+                    dim = opD.cohomology_dim(opDD)
+                    cohomology_dim.update({opD.domain: dim})
+        dim_dict = dict()
+        for vs in self.vs_list:
+            dim_dict.update({(vs.vs.n_vertices, vs.vs.n_loops): cohomology_dim.get(vs)})
+        v_range = range(min(self.gc.v_range) + 1, max(self.gc.v_range))
+        return dim_dict

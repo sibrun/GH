@@ -15,7 +15,6 @@ edges_types = [True, False]
 
 
 class OGCBasisTest(TGC.BasisTest):
-
     def setUp(self):
         self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
@@ -41,7 +40,6 @@ class OGCBasisTest(TGC.BasisTest):
 
 
 class OGCOperatorTest(TGC.OperatorTest):
-
     def setUp(self):
         self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
@@ -65,7 +63,7 @@ def suite():
     log_path = os.path.join(log_dir, log_file)
     SL.generate_path(log_path)
     logging.basicConfig(filename=log_path, level=logging.WARN)
-    logging.warn("###################################\n" + "----- Start test suite -----")
+    logging.warn("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
     suite = unittest.TestSuite()
     suite.addTest(OGCBasisTest('test_perm_sign'))
     suite.addTest(OGCBasisTest('test_basis_functionality'))
@@ -73,6 +71,7 @@ def suite():
     suite.addTest(OGCOperatorTest('test_operator_functionality'))
     suite.addTest(OGCOperatorTest('test_operator_matrix'))
     suite.addTest(OGCGraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(OGCGraphComplexTest('test_graph_complex'))
     return suite
 
 

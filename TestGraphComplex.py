@@ -3,7 +3,7 @@ import unittest
 from sage.all import *
 import logging
 import StoreLoad as SL
-import RefData as REF
+import ReferenceGC as REF
 
 
 class BasisTest(unittest.TestCase):
@@ -110,7 +110,7 @@ class OperatorTest(unittest.TestCase):
             self.assertTrue(M == M_parallel, '%s matrix not equal if computed with parallel jobs' % str(op))
 
     def test_operator_matrix(self):
-        logging.warn('----- Test operator functionality -----')
+        logging.warn('----- Compare operator with reference -----')
         for op in self.op_list:
             if not op.valid:
                 logging.info('%s: no operator test, since not valid' % str(op))
@@ -161,7 +161,7 @@ class GraphComplexTest(unittest.TestCase):
         pass
 
     def test_graph_complex_functionality(self):
-        logging.warn('----- Test graph complex -----')
+        logging.warn('----- Test graph complex functionality -----')
         for gc in self.gc_list:
             gc.build(ignore_existing_files=True, n_jobs=1)
             (triv_l, succ_l, inc_l, fail_l) = gc.square_zero_test(GraphComplexTest.eps)
@@ -173,3 +173,24 @@ class GraphComplexTest(unittest.TestCase):
             gc.compute_cohomology_dim()
             self.assertTrue(gc.exists_cohomology_file(), "%s: cohomology file should exist" % str(self))
             gc.plot_cohomology_dim()
+
+    def test_graph_complex(self):
+        logging.warn('----- Compare cohomology dimensions with reference -----')
+        for gc in self.gc_list:
+            ref_gc = REF.RefGraphComplex(gc)
+            gc.build(ignore_existing_files=True, n_jobs=4)
+            gc.compute_ranks(ignore_existing_files=True)
+            gc.compute_cohomology_dim()
+            dim_dict = gc.get_cohomology_dim_dict()
+            ref_dim_dict = gc.get_cohomology_dim_dict()
+            succ_l = 0
+            fail_l = 0
+            for (vs, dim) in dim_dict.items():
+                for (ref_vs, ref_dim) in ref_dim_dict.items():
+                    if ref_vs.matches(vs):
+                        succ_l += 1
+                    else:
+                        fail_l += 1
+            self.assertTrue(fail_l == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
+            if succ_l == len(dim_dict):
+                logging.warn('Not all cohomology dimensions successfully compared with reference for %s' % str(gc))

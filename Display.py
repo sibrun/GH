@@ -1,17 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import itertools
+import StoreLoad as SL
 
-x_wieth = 0.7
+x_width = 0.7
 y_width = 0.7
 zero_symbol = '*'
+x_plots = 2
 
 
-def plot_2d_array(value_dict, x_label, x_range, y_label, y_range):
+def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * x_wieth
+    x_size = (x_max + 1 - x_min) * x_width
     y_min = min(y_range)
     y_max = max(y_range)
     y_size = (y_max + 1 - y_min) * y_width
@@ -44,14 +46,15 @@ def plot_2d_array(value_dict, x_label, x_range, y_label, y_range):
 
     plt.tight_layout()
 
-    return plt
+    SL.generate_path(path)
+    plt.savefig(path)
 
 
-def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_range, x_plots=2):
+def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_range, path, x_plots=x_plots):
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * x_wieth
+    x_size = (x_max + 1 - x_min) * x_width
     y_min = min(y_range)
     y_max = max(y_range)
     y_size = (y_max + 1 - y_min) * y_width
@@ -101,7 +104,8 @@ def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_ran
             ax = get_ax(axarr, x_plots, y_plots, z, z_min)
             fig.delaxes(ax)
 
-    return plt
+    SL.generate_path(path)
+    plt.savefig(path)
 
 
 def get_ax(axarr, x_plots, y_plots, z, z_min):

@@ -17,7 +17,6 @@ hairs_types = [True, False]
 
 
 class HGCBasisTest(TGC.BasisTest):
-
     def setUp(self):
         self.vs_list = [HGC.HairyGVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
@@ -30,7 +29,6 @@ class HGCBasisTest(TGC.BasisTest):
 
 
 class HGCOperatorTest(TGC.OperatorTest):
-
     def setUp(self):
         self.vs_list = [HGC.HairyGVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
@@ -55,7 +53,7 @@ def suite():
     log_path = os.path.join(log_dir, log_file)
     SL.generate_path(log_path)
     logging.basicConfig(filename=log_path, level=logging.WARN)
-    logging.warn("###################################\n" + "----- Start test suite -----")
+    logging.warn("\n#######################################\n" + "----- Start test suite for hairy graph complex -----")
     suite = unittest.TestSuite()
     suite.addTest(HGCBasisTest('test_perm_sign'))
     suite.addTest(HGCBasisTest('test_basis_functionality'))
@@ -63,6 +61,7 @@ def suite():
     suite.addTest(HGCOperatorTest('test_operator_functionality'))
     suite.addTest(HGCOperatorTest('test_operator_matrix'))
     suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(HGCGraphComplexTest('test_graph_complex'))
     return suite
 
 

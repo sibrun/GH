@@ -125,9 +125,12 @@ class GraphComplex():
         for opD in self.op_list:
             for opDD in self.op_list:
                 if opD.matches(opDD):
-                    dimCohom = opD.cohomology_dim(opDD)
-                    self.cohomology_dim.update({opD.domain: dimCohom})
+                    dim = opD.cohomology_dim(opDD)
+                    self.cohomology_dim.update({opD.domain: dim})
         self.store_member_info()
+
+    def get_cohomology_dim_dict(self):
+        return self.cohomology_dim
 
     def get_cohomology_info(self):
         cohomologyList = []
@@ -137,5 +140,6 @@ class GraphComplex():
                 line = "%s: %s" % (str(vs), str(dim))
                 cohomologyList.append(line)
         return cohomologyList
+
 
 
