@@ -4,7 +4,7 @@ import os
 import Profiling
 import StoreLoad as SL
 import OrdinaryGraphComplex as OGC
-#import HairyGraphComplex as HGC
+import HairyGraphComplex as HGC
 
 
 log_dir = 'log'
@@ -113,8 +113,7 @@ if __name__ == "__main__":
         graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges)
 
     elif args.graph_type == 'hgc':
-        pass
-        #graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs)
+        graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs)
 
     if graph_complex is None:
         raise ValueError('graph complex not specified')

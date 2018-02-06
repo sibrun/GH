@@ -54,16 +54,14 @@ class GraphOperator():
         pass
 
     def get_info(self):
-        validity = "valid" if self.valid else "not valid"
-        built = "matrix built" if self.exists_matrix_file() else "matrix not built"
+        if not self.valid:
+            return "not valid"
         shape = "matrix shape unknown"
         entries = "entries unknown"
         if self.exists_matrix_file():
-            (m, n) = self.get_matrix_shape()
-            shape = "matrix shape = (%d, %d)" % (m, n)
-            e = self.get_matrix_entries()
-            entries = "%d entries" % e
-        return "%s, %s, %s" % (validity, shape, entries)
+            shape = "matrix shape: (%d, %d)" % self.get_matrix_shape()
+            entries = "%d entries" % self.get_matrix_entries()
+        return "valid, %s, %s" % (shape, entries)
 
     def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
         if not self.valid:
@@ -192,8 +190,8 @@ class GraphOperator():
         (m, n, data_type) = stringList.pop(0).split(" ")
         shape = (m, n) = (int(m), int(n))
         if m != self.domain.get_dimension() or n != self.target.get_dimension():
-            raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions:"
-                             " %s" % str(self.matrix_file_path))
+            raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions"
+                             % str(self.matrix_file_path))
         tail = map(int, stringList.pop().split(" "))
         if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file" % str(self.matrix_file_path))

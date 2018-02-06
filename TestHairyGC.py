@@ -6,12 +6,13 @@ import StoreLoad as SL
 import TestGraphComplex as TGC
 import HairyGraphComplex as HGC
 
+
 log_dir = "log"
 log_file = "HGC_Unittest.log"
 
-v_range = range(4, 10)
-l_range = range(4, 10)
-h_range = range(4, 10)
+v_range = range(6, 8)
+l_range = range(6, 8)
+h_range = range(6, 8)
 edges_types = [True, False]
 hairs_types = [True, False]
 
@@ -58,9 +59,9 @@ def suite():
     #suite.addTest(HGCBasisTest('test_perm_sign'))
     suite.addTest(HGCBasisTest('test_basis_functionality'))
     #suite.addTest(HGCBasisTest('test_basis'))
-    #suite.addTest(HGCOperatorTest('test_operator_functionality'))
+    suite.addTest(HGCOperatorTest('test_operator_functionality'))
     #suite.addTest(HGCOperatorTest('test_operator_matrix'))
-    #suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
     #suite.addTest(HGCGraphComplexTest('test_graph_complex'))
     return suite
 

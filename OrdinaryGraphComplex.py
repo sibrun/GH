@@ -39,11 +39,11 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
         return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
 
-    def _set_validity(self):
+    def set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
                and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
-    def _set_colour_partition(self):
+    def set_partition(self):
         return None
 
     def get_work_estimate(self):
@@ -106,7 +106,7 @@ class ContractGO(GO.GraphOperator):
     @classmethod
     def get_operator(cls, n_vertices, n_loops, even_edges):
         domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
-        target = OrdinaryGVS(n_vertices-1, n_loops, even_edges)
+        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
 
     def set_matrix_file_path(self):

@@ -14,3 +14,8 @@ class Perm:
 
     def sign(self):
         return Permutation([j+1 for j in self.p]).signature()
+
+    @classmethod
+    def shifted(cls, p):
+        pmin = min(p)
+        return cls([j - pmin for j in p])

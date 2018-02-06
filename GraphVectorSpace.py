@@ -7,12 +7,15 @@ import StoreLoad as SL
 class GraphVectorSpace():
     __metaclass__ = ABCMeta
 
-    def __init__(self, color_counts=None):
-        self.color_counts = color_counts
-        self.valid = self._set_validity()
-        self.color_partition = self._set_colour_partition()
+    def __init__(self):
+        self.partition = self.set_partition()
+        self.valid = self.set_validity()
         self.basis_file_path = self.set_basis_file_path()
         self.plot_path = self.set_plot_path()
+
+    @abstractmethod
+    def set_partition(self):
+        pass
 
     @abstractmethod
     def set_basis_file_path(self):
@@ -27,15 +30,11 @@ class GraphVectorSpace():
         pass
 
     @abstractmethod
-    def _set_validity(self,):
+    def set_validity(self, ):
         pass
 
     @abstractmethod
     def get_work_estimate(self):
-        pass
-
-    @abstractmethod
-    def _set_colour_partition(self):
         pass
 
     @abstractmethod
@@ -55,12 +54,12 @@ class GraphVectorSpace():
         pass
 
     def get_info(self):
-        validity = "valid" if self.valid else "not valid"
-        built = "basis built" if self.exists_basis_file() else "basis not built"
+        if not self.valid:
+            return "not valid"
         dim = "dimension unknown"
         if self.exists_basis_file():
-            dim = "dimension = %d" % self.get_dimension()
-        return "%s, %s" % (validity, dim)
+            dim = "dimension: %d" % self.get_dimension()
+        return "valid, %s" % dim
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(certificate=True)
@@ -76,11 +75,12 @@ class GraphVectorSpace():
         generatingList = self._generating_graphs()
         basisSet = set()
         for G in generatingList:
-            canonG = G.canonical_label()
-            if self.color_partition is None:
+            if self.partition is None:
                 automList = G.automorphism_group().gens()
+                canonG = G.canonical_label()
             else:
-                automList = G.automorphism_group(partition=self.color_partition).gens()
+                automList = G.automorphism_group(partition=self.partition).gens()
+                canonG = G.canonical_label(partition=self.partition)
             if len(automList):
                 canon6=canonG.graph6_string()
                 if not canon6 in basisSet:
