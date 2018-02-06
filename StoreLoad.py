@@ -20,6 +20,13 @@ def generate_path(path):
         os.makedirs(directory)
 
 
+def delete_file_and_empty_dir(path):
+    os.remove(path)
+    dir_name = os.path.dirname(path)
+    if len(os.listdir(dir_name)) == 0:
+        os.rmdir(dir_name)
+
+
 def store_string_list(L, path):
     generate_path(path)
     with open(path,'w') as f:

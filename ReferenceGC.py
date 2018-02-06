@@ -1,4 +1,5 @@
 import logging
+import itertools
 from sage.all import *
 import StoreLoad as SL
 
@@ -24,7 +25,7 @@ class RefVectorSpace:
         graph = Graph(graph6)
         if not sign:
             return graph.canonical_label().graph6_string()
-        canonG, permDict = graph.canonical_label(certificate=True)
+        canonG, permDict = graph.canonical_label(partition=self.vs.partition, certificate=True)
         sgn = self.vs.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
@@ -57,8 +58,8 @@ class RefVectorSpace:
             raise ValueError("%s: Basis transformation matrix not invertible" % str(self))
         return T
 
-    def matches(self, vs):
-        return self.vs == vs
+    def __eq__(self, other):
+        return self.vs == other.vs
 
 
 class RefOperator:
@@ -105,7 +106,7 @@ class RefOperator:
     def get_matrix_wrt_ref(self):
         (entriesList, shape) = self._load_matrix()
         if shape is None:
-            (n, m) = self.op.get_matrix_shape()
+            (m, n) = (self.target.get_dimension(), self.domain.get_dimension())
         else:
             (m, n) = shape
         logging.info("Get reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
@@ -136,7 +137,7 @@ class RefOperator:
     def cohomology_dim(opD, opDD):
         try:
             dimV =  opD.domain.get_dimension()
-        except SL.NotBuiltError:
+        except SL.RefError:
             logging.warn("Cannot compute reference cohomology: No reference basis file for %s " % str(opD.domain))
             return None
         if dimV == 0:
@@ -146,7 +147,7 @@ class RefOperator:
         else:
             try:
                 rankD = opD.get_rank()
-            except SL.NotBuiltError:
+            except SL.RefError:
                 logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opD))
                 return None
         if not opDD.op.valid:
@@ -154,7 +155,7 @@ class RefOperator:
         else:
             try:
                 rankDD = opDD.get_rank()
-            except SL.NotBuiltError:
+            except SL.RefError:
                 logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opDD))
                 return None
         cohomDim = dimV - rankD - rankDD
@@ -166,21 +167,37 @@ class RefOperator:
 class RefGraphComplex:
     def __init__(self, gc):
         self.gc = gc
-        self.vs_list = [RefVectorSpace(vs) for vs in self.gc.vs_list]
         self.op_list = [RefOperator(op) for op in self.gc.op_list]
 
     def __str__(self):
         return "Reference graph complex for: %s" % str(self.gc)
 
-    def get_cohomology_dim_dict(self):
+    def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()
-        for opD in self.op_list:
-            for opDD in self.op_list:
-                if opD.matches(opDD):
-                    dim = opD.cohomology_dim(opDD)
-                    cohomology_dim.update({opD.domain: dim})
-        dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({(vs.vs.n_vertices, vs.vs.n_loops): cohomology_dim.get(vs)})
-        v_range = range(min(self.gc.v_range) + 1, max(self.gc.v_range))
-        return dim_dict
+        for (opD, opDD) in itertools.product(self.op_list, self.op_list):
+            if opD.matches(opDD):
+                dim = opD.cohomology_dim(opDD)
+                cohomology_dim.update({opD.op.domain: dim})
+        return cohomology_dim
+
+    def compare_cohomology_dim(self):
+        dim_dict = self.gc.get_general_cohomology_dim_dict()
+        ref_dim_dict = self.get_general_cohomology_dim_dict()
+        succ = []
+        fail = []
+        inc = []
+        for (vs, dim) in dim_dict.items():
+            for (vs_matches_ref_vs, ref_dim) in ref_dim_dict.items():
+                if vs == vs_matches_ref_vs:
+                    if dim is None or ref_dim is None:
+                        inc.append(vs)
+                    elif dim == ref_dim:
+                        succ.append(vs)
+                    else:
+                        fail.append(vs)
+        (succ_l, fail_l, inc_l) = (len(succ), len(fail), len(inc))
+        logging.warn('Compared cohomology dimension for %s: success: %d, fail: %d, inconclusive: %d'
+                     % (str(self.gc), succ_l, fail_l, inc_l))
+        for vs in fail:
+            logging.error('Cohomology dimension not equal reference for: %s' % str(vs))
+        return (succ_l, fail_l, inc_l)

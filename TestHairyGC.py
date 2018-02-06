@@ -5,14 +5,14 @@ from sage.all import *
 import StoreLoad as SL
 import TestGraphComplex as TGC
 import HairyGraphComplex as HGC
+import Parameters
 
 
-log_dir = "log"
 log_file = "HGC_Unittest.log"
 
-v_range = range(6, 8)
-l_range = range(6, 8)
-h_range = range(6, 8)
+v_range = range(3, 8)
+l_range = range(3, 7)
+h_range = range(3, 7)
 edges_types = [True, False]
 hairs_types = [True, False]
 
@@ -31,13 +31,10 @@ class HGCBasisTest(TGC.BasisTest):
 
 class HGCOperatorTest(TGC.OperatorTest):
     def setUp(self):
-        self.vs_list = [HGC.HairyGVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
-                        in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
-        self.op_list = [HGC.ContractGO.get_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.op_list = [HGC.ContractDHairy.get_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):
-        self.vs_list = None
         self.op_list = None
 
 
@@ -51,18 +48,18 @@ class HGCGraphComplexTest(TGC.GraphComplexTest):
 
 
 def suite():
-    log_path = os.path.join(log_dir, log_file)
+    log_path = os.path.join(Parameters.log_dir, log_file)
     SL.generate_path(log_path)
     logging.basicConfig(filename=log_path, level=logging.WARN)
     logging.warn("\n#######################################\n" + "----- Start test suite for hairy graph complex -----")
     suite = unittest.TestSuite()
-    #suite.addTest(HGCBasisTest('test_perm_sign'))
+    suite.addTest(HGCBasisTest('test_perm_sign'))
     suite.addTest(HGCBasisTest('test_basis_functionality'))
-    #suite.addTest(HGCBasisTest('test_basis'))
+    suite.addTest(HGCBasisTest('test_compare_ref_basis'))
     suite.addTest(HGCOperatorTest('test_operator_functionality'))
-    #suite.addTest(HGCOperatorTest('test_operator_matrix'))
+    suite.addTest(HGCOperatorTest('test_compare_ref_op_matrix'))
     suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
-    #suite.addTest(HGCGraphComplexTest('test_graph_complex'))
+    suite.addTest(HGCGraphComplexTest('test_compare_ref_cohomology'))
     return suite
 
 

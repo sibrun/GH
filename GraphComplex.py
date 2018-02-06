@@ -3,7 +3,8 @@ import logging
 import operator
 import itertools
 import os
-import Shared as SH
+import cProfile
+import functools
 import StoreLoad as SL
 
 
@@ -14,7 +15,6 @@ class GraphComplex():
         self.vs_list = vs_list
         self.op_list = op_list
         self.info_file_path = self._set_info_file_path()
-        self.cohomology_dim = dict()
 
     @abstractmethod
     def __str__(self):
@@ -25,15 +25,7 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def get_cohomology_file_path(self):
-        pass
-
-    @abstractmethod
     def get_cohomology_plot_path(self):
-        pass
-
-    @abstractmethod
-    def compute_cohomology_dim(self):
         pass
 
     @abstractmethod
@@ -44,38 +36,43 @@ class GraphComplex():
     def plot_cohomology_dim(self):
         pass
 
-    def exists_cohomology_file(self):
-        return os.path.isfile(self.get_cohomology_file_path())
-
     def members_to_string(self):
         vector_space = ["%s: %s" % (str(vs),vs.get_info()) for vs in self.vs_list]
         operator = ["%s: %s" % (str(op),op.get_info()) for op in self.op_list]
         return (vector_space, operator)
 
-    def store_member_info(self):
+    def store_member_info(self, cohomology_dim=None):
         (vector_space, operator) = self.members_to_string()
-        cohomology = self.get_cohomology_info()
+        cohomology = self.get_cohomology_info(cohomology_dim=cohomology_dim)
         LHL = [("----- Graph Complex -----", [str(self)]),("----- Vector Space -----",
                     vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
         SL.store_list_of_header_lists(LHL, self.info_file_path)
 
     def build_basis(self, ignore_existing_files=True):
         self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+        self.store_member_info()
         for vs in self.vs_list:
             vs.build_basis(ignore_existing_file=ignore_existing_files)
-        self.vs_list.sort(key=operator.methodcaller('get_dimension'))
         self.store_member_info()
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
         self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+        self.store_member_info()
         for op in self.op_list:
             op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
-        self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
         self.store_member_info()
 
     def build(self, ignore_existing_files=True, n_jobs=1):
         self.build_basis(ignore_existing_files=ignore_existing_files)
         self.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
+
+    def sort_member(self, work_estimate=False):
+        if work_estimate:
+            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+            self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+        else:
+            self.vs_list.sort(key=operator.methodcaller('get_dimension'))
+            self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful
@@ -114,30 +111,37 @@ class GraphComplex():
         return (triv_l, succ_l, inc_l, fail_l)
 
     def compute_ranks(self, ignore_existing_files=True):
+        self.store_member_info()
         for op in self.op_list:
             op.compute_rank(ignore_existing_file=ignore_existing_files)
-
-    #Computes the cohomology, i.e., ker(D)/im(DD)
-    def _compute_cohomology_dim(self):
-        self.cohomology_dim.clear()
-        for opD in self.op_list:
-            for opDD in self.op_list:
-                if opD.matches(opDD):
-                    dim = opD.cohomology_dim(opDD)
-                    self.cohomology_dim.update({opD.domain: dim})
         self.store_member_info()
 
-    def get_cohomology_dim_dict(self):
-        return self.cohomology_dim
+    #Computes the cohomology, i.e., ker(D)/im(DD)
+    def get_general_cohomology_dim_dict(self):
+        cohomology_dim = dict()
+        for (opD, opDD) in itertools.product(self.op_list, self.op_list):
+            if opD.matches(opDD):
+                dim = opD.cohomology_dim(opDD)
+                cohomology_dim.update({opD.domain: dim})
+        self.store_member_info(cohomology_dim=cohomology_dim)
+        return cohomology_dim
 
-    def get_cohomology_info(self):
+    def get_cohomology_info(self, cohomology_dim=None):
+        if cohomology_dim is None:
+            return []
         cohomologyList = []
         for vs in self.vs_list:
-            dim = self.cohomology_dim.get(vs)
+            dim = cohomology_dim.get(vs)
             if dim is not None:
                 line = "%s: %s" % (str(vs), str(dim))
                 cohomologyList.append(line)
         return cohomologyList
 
-
-
+    def sorted(self, work_estimate=False):
+        def inner(func):
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                self.sort_member(work_estimate=work_estimate)
+                return func(*args, **kwargs)
+            return wrapper
+        return inner

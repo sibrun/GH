@@ -56,12 +56,14 @@ class GraphOperator():
     def get_info(self):
         if not self.valid:
             return "not valid"
-        shape = "matrix shape unknown"
-        entries = "entries unknown"
-        if self.exists_matrix_file():
-            shape = "matrix shape: (%d, %d)" % self.get_matrix_shape()
-            entries = "%d entries" % self.get_matrix_entries()
-        return "valid, %s, %s" % (shape, entries)
+        if not self.exists_matrix_file():
+            return "unknown"
+        shape = "matrix shape: (%d, %d)" % self.get_matrix_shape()
+        entries = "%d entries" % self.get_matrix_entries()
+        rank = "rank unknown"
+        if self.exists_rank_file():
+            rank = "rank: %d" % self.get_rank()
+        return "%s, %s, %s" % (shape, entries, rank)
 
     def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
         if not self.valid:
@@ -258,7 +260,7 @@ class GraphOperator():
     # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
     def cohomology_dim(opD, opDD):
         try:
-            dimV =  opD.domain.get_dimension()
+            dimV = opD.domain.get_dimension()
         except SL.NotBuiltError:
             logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.domain))
             return None

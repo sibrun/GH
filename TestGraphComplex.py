@@ -32,6 +32,11 @@ class BasisTest(unittest.TestCase):
             basis_g6 = vs.get_basis()
             if len(basis_g6) == 0:
                 logging.warn('len(basis_g6) == 0 for %s' % str(vs))
+            else:
+                vs.plot_graph(Graph(basis_g6[0]))
+                plot_path = os.path.join(vs.plot_path, basis_g6[0] + '.png')
+                self.assertTrue(os.path.isfile(plot_path), 'graph plot not existing for %s' % str(vs))
+                SL.delete_file_and_empty_dir(plot_path)
             self.assertIsInstance(basis_g6, list, 'type of basis_g6 is not a list')
             for G6 in basis_g6:
                 self.assertIsInstance(G6, basestring, "%s: type of basis_g6 element is not string" % str(vs))
@@ -46,7 +51,7 @@ class BasisTest(unittest.TestCase):
             self.assertListEqual(basis_g6, basis_g6_2,
                              '%s: error: G.graph6_string is not equal to G6 for G in basis and G6 in basis_g6' % str(vs))
 
-    def test_basis(self):
+    def test_compare_ref_basis(self):
         logging.warn('----- Compare basis with reference -----')
         for vs in self.vs_list:
             if not vs.valid:
@@ -109,8 +114,8 @@ class OperatorTest(unittest.TestCase):
             M_parallel = op.get_matrix()
             self.assertTrue(M == M_parallel, '%s matrix not equal if computed with parallel jobs' % str(op))
 
-    def test_operator_matrix(self):
-        logging.warn('----- Compare operator with reference -----')
+    def test_compare_ref_op_matrix(self):
+        logging.warn('----- Compare operator matrix with reference -----')
         for op in self.op_list:
             if not op.valid:
                 logging.info('%s: no operator test, since not valid' % str(op))
@@ -169,28 +174,20 @@ class GraphComplexTest(unittest.TestCase):
                 logging.warn('%s: no successful pairs in square zero test' % str(gc))
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(gc),fail_l))
 
+            gc.sort_member(work_estimate=False)
             gc.compute_ranks(ignore_existing_files=True)
-            gc.compute_cohomology_dim()
-            self.assertTrue(gc.exists_cohomology_file(), "%s: cohomology file should exist" % str(self))
             gc.plot_cohomology_dim()
+            self.assertTrue(os.path.isfile(gc.get_cohomology_plot_path()),
+                            'Cohomology plot should exist for %s' % str(gc))
 
-    def test_graph_complex(self):
+    def test_compare_ref_cohomology(self):
         logging.warn('----- Compare cohomology dimensions with reference -----')
         for gc in self.gc_list:
             ref_gc = REF.RefGraphComplex(gc)
             gc.build(ignore_existing_files=True, n_jobs=4)
+            gc.sort_member(work_estimate=False)
             gc.compute_ranks(ignore_existing_files=True)
-            gc.compute_cohomology_dim()
-            dim_dict = gc.get_cohomology_dim_dict()
-            ref_dim_dict = gc.get_cohomology_dim_dict()
-            n_succ = 0
-            n_fail = 0
-            for (vs, dim) in dim_dict.items():
-                for (ref_vs, ref_dim) in ref_dim_dict.items():
-                    if ref_vs.matches(vs):
-                        n_succ += 1
-                    else:
-                        n_fail += 1
+            (n_succ, n_fail, n_inc) = ref_gc.compare_cohomology_dim()
             self.assertTrue(n_fail == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
-            if n_succ == len(dim_dict):
-                logging.warn('Not all cohomology dimensions successfully compared with reference for %s' % str(gc))
+            if n_succ == 0:
+                logging.warn('No successful cohomology dimension comparison for %s' % str(gc))

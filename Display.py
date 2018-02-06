@@ -1,22 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import itertools
+import logging
 import StoreLoad as SL
-
-x_width = 0.7
-y_width = 0.7
-zero_symbol = '*'
-x_plots = 2
+import Parameters
 
 
 def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
+    if len(list(x_range)) == 0 or len(list(y_range)) == 0:
+        logging.warn('empty parameter range: nothing to plot')
+        return
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * x_width
+    x_size = (x_max + 1 - x_min) * Parameters.x_width
     y_min = min(y_range)
     y_max = max(y_range)
-    y_size = (y_max + 1 - y_min) * y_width
+    y_size = (y_max + 1 - y_min) * Parameters.y_width
 
     fig, ax = plt.subplots(figsize=(x_size, y_size))
 
@@ -29,7 +29,7 @@ def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
     for (x, y) in itertools.product(x_range, y_range):
         v = value_dict.get((x, y))
         if v is not None:
-            v = zero_symbol if v == 0 else v
+            v = Parameters.zero_symbol if v == 0 else v
             ax.text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
@@ -50,14 +50,17 @@ def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
     plt.savefig(path)
 
 
-def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_range, path, x_plots=x_plots):
+def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_range, path, x_plots=Parameters.x_plots):
+    if len(list(x_range)) == 0 or len(list(y_range)) == 0 or len(list(z_range)) == 0:
+        logging.warn('empty parameter range: nothing to plot')
+        return
 
     x_min = min(x_range)
     x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * x_width
+    x_size = (x_max + 1 - x_min) * Parameters.x_width
     y_min = min(y_range)
     y_max = max(y_range)
-    y_size = (y_max + 1 - y_min) * y_width
+    y_size = (y_max + 1 - y_min) * Parameters.y_width
     z_min = min(z_range)
     z_max = max(z_range)
     z_size = z_max + 1 - z_min
@@ -80,7 +83,7 @@ def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_ran
     for (x, y, z) in itertools.product(x_range, y_range, z_range):
         v = value_dict.get((x, y, z))
         if v is not None:
-            v = zero_symbol if v == 0 else v
+            v = Parameters.zero_symbol if v == 0 else v
             get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)

@@ -5,13 +5,10 @@ import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
 import NautyInterface as NI
-import StoreLoad as SL
 import Display
+import Parameters
 
 
-data_dir = "data"
-plots_dir = "plots"
-ref_data_dir = "data_ref"
 graph_type = "ordinary"
 sub_types = {True: "even_edges", False: "odd_edges"}
 
@@ -29,15 +26,15 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
     def set_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def set_plot_path(self):
-        s = "cohomology%d_%d.png" % (self.n_vertices, self.n_loops)
-        return os.path.join(plots_dir, graph_type, self.sub_type, s)
+        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def set_validity(self):
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
@@ -47,6 +44,8 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         return None
 
     def get_work_estimate(self):
+        if not self.valid:
+            return 0
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def __str__(self):
@@ -86,14 +85,14 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
 
 # ------- Contraction Operator --------
-class ContractGO(GO.GraphOperator):
+class ContractDOrdinary(GO.GraphOperator):
 
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
                 or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get(domain.even_edges)
-        super(ContractGO, self).__init__(domain, target)
+        super(ContractDOrdinary, self).__init__(domain, target)
 
     @classmethod
     def get_operators(cls, vs_list):
@@ -111,21 +110,23 @@ class ContractGO(GO.GraphOperator):
 
     def set_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def set_rank_file_path(self):
         s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
         s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
+        if not self.valid:
+            return 0
         return self.domain.n_edges * sqrt(self.target.get_dimension())
 
     def __str__(self):
@@ -166,6 +167,11 @@ class ContractGO(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
+    @staticmethod
+    def transform_param_range(param_range):
+        (v_range, l_range) = param_range
+        return (range(min(v_range) + 1, max(v_range)), l_range)
+
 
 # ------- Ordinary Graph Complex --------
 class OrdinaryGC(GC.GraphComplex):
@@ -176,7 +182,7 @@ class OrdinaryGC(GC.GraphComplex):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        op_list = ContractGO.get_operators(vs_list)
+        op_list = ContractDOrdinary.get_operators(vs_list)
         super(OrdinaryGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
@@ -185,34 +191,22 @@ class OrdinaryGC(GC.GraphComplex):
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(plots_dir, graph_type, self.sub_type, s)
-
-    def get_cohomology_file_path(self):
-        s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
-
-    def compute_cohomology_dim(self):
-        self._compute_cohomology_dim()
-        dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({(vs.n_vertices, vs.n_loops): self.cohomology_dim.get(vs)})
-        path = self.get_cohomology_file_path()
-        v_range = range(min(self.v_range)+1,max(self.v_range))
-        SL.pickle_store((dim_dict, v_range, self.l_range), path)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_dim(self):
-        if not self.exists_cohomology_file():
-            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
-        (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
-        return dim_dict
+        cohomology_dim = self.get_general_cohomology_dim_dict()
+        dim_dict = dict()
+        for vs in self.vs_list:
+            dim_dict.update({(vs.n_vertices, vs.n_loops): cohomology_dim.get(vs)})
+        param_range = ContractDOrdinary.transform_param_range((self.v_range, self.l_range))
+        return(dim_dict, param_range)
 
     def plot_cohomology_dim(self):
-        if not self.exists_cohomology_file():
-            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
-        (dim_dict, v_range, l_range) = SL.pickle_load(self.get_cohomology_file_path())
+        (dim_dict, param_range) = self.get_cohomology_dim()
+        (v_range, l_range) = param_range
         path = self.get_cohomology_plot_path()
         Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range, path)

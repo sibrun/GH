@@ -5,9 +5,7 @@ import Profiling
 import StoreLoad as SL
 import OrdinaryGraphComplex as OGC
 import HairyGraphComplex as HGC
-
-
-log_dir = 'log'
+import Parameters
 
 
 def positive_int(value):
@@ -49,27 +47,30 @@ parser.add_argument('-coho', action='store_true', help='just compute cohomology'
 args = parser.parse_args()
 
 
-@Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def main(graph_complex):
     graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.sort_member(work_estimate=False)
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex)
-    graph_complex.compute_cohomology_dim()
+    graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()
 
 
-@Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build(graph_complex):
     graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
 
 
-@Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
+    graph_complex.sort_member(work_estimate=False)
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex)
 
 
-@Profiling.cond_decorator(args.profile, Profiling.profile(log_dir))
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def cohomology(graph_complex):
-    graph_complex.compute_cohomology_dim()
+    graph_complex.sort_member(work_estimate=False)
+    graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()
 
 
@@ -80,7 +81,7 @@ class MissingArgumentError(RuntimeError):
 if __name__ == "__main__":
     if args.log is not None:
         log_file = args.graph_type + '.log'
-        log_path = os.path.join(log_dir, log_file)
+        log_path = os.path.join(Parameters.log_dir, log_file)
         SL.generate_path(log_path)
         logging.basicConfig(filename=log_path, level=args.log.upper())
         logging.warn("\n###########################\n" + "----- Graph Homology -----")

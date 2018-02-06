@@ -5,14 +5,11 @@ import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
 import NautyInterface as NI
-import StoreLoad as SL
 import Display
 import OrdinaryGraphComplex as OGC
+import Parameters
 
 
-data_dir = "data"
-plots_dir = "plots"
-ref_data_dir = "data_ref"
 graph_type = "hairy"
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
@@ -34,15 +31,15 @@ class HairyGVS(GVS.GraphVectorSpace):
 
     def set_basis_file_path(self):
         s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def set_plot_path(self):
-        s = "cohomology%d_%d_%d.png" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(plots_dir, graph_type, self.sub_type, s)
+        s = "gra%d_%d_%d" % (self.n_vertices, self.n_loops, self.n_hairs)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
         s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def __str__(self):
         return "<Hairy graphs: %d vertices, %d loops, %d hairs, %s>" \
@@ -110,24 +107,27 @@ class HairyGVS(GVS.GraphVectorSpace):
         return sgn
 
     def get_work_estimate(self):
+        if not self.valid:
+            return 0
         # give estimate of number of graphs
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
 
 # ------- Ordinary Graph Complex --------
-class ContractGO(GO.GraphOperator):
+class ContractDHairy(GO.GraphOperator):
     def __init__(self, domain, target):
-        if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
-                or domain.sub_type != target.sub_type:
+        if domain.n_vertices != target.n_vertices + 1 or domain.n_loops != target.n_loops  or \
+                        domain.n_hairs != target.n_hairs or domain.sub_type != target.sub_type:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
-        super(ContractGO, self).__init__(domain, target)
+        super(ContractDHairy, self).__init__(domain, target)
 
     @classmethod
     def get_operators(cls, vs_list):
         op_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
-            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
+            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
+                    and domain.n_hairs == target.n_hairs:
                 op_list.append(cls(domain, target))
         return op_list
 
@@ -139,21 +139,23 @@ class ContractGO(GO.GraphOperator):
 
     def set_matrix_file_path(self):
         s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def set_rank_file_path(self):
         s = "contractD%d_%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
         s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
         s = "contractD%d_%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(ref_data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
+        if not self.valid:
+            return 0
         return self.domain.n_edges * sqrt(self.target.get_dimension())
 
     def __str__(self):
@@ -199,6 +201,11 @@ class ContractGO(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
+    @staticmethod
+    def transform_param_range(param_range):
+        (v_range, l_range, h_range) = param_range
+        return (range(min(v_range) + 1, max(v_range)), l_range, h_range)
+
 
 # ------- Ordinary Graph Complex --------
 class HairyGC(GC.GraphComplex):
@@ -212,43 +219,31 @@ class HairyGC(GC.GraphComplex):
 
         vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        op_list = ContractGO.get_operators(vs_list)
+        op_list = ContractDHairy.get_operators(vs_list)
         super(HairyGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
-        return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s>" \
-               % (self.sub_type, str(self.v_range), str(self.l_range))
+        return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
+               % (self.sub_type, str(self.v_range), str(self.l_range), str(self.h_range))
 
     def _set_info_file_path(self):
         s = "graph_complex.txt"
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(plots_dir, graph_type, self.sub_type, s)
-
-    def get_cohomology_file_path(self):
-        s = "cohomology_dim_%s_%s.p" % (graph_type, self.sub_type)
-        return os.path.join(data_dir, graph_type, self.sub_type, s)
-
-    def compute_cohomology_dim(self):
-        self._compute_cohomology_dim()
-        dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({(vs.n_vertices, vs.n_loops, vs.n_hairs): self.cohomology_dim.get(vs)})
-        path = self.get_cohomology_file_path()
-        v_range = range(min(self.v_range)+1,max(self.v_range))
-        SL.pickle_store((dim_dict, v_range, self.l_range, self.h_range), path)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_dim(self):
-        if not self.exists_cohomology_file():
-            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
-        (dim_dict, v_range, l_range, h_range) = SL.pickle_load(self.get_cohomology_file_path())
-        return dim_dict
+        cohomology_dim = self.get_general_cohomology_dim_dict()
+        dim_dict = dict()
+        for vs in self.vs_list:
+            dim_dict.update({(vs.n_vertices, vs.n_loops, vs.n_hairs): cohomology_dim.get(vs)})
+        param_range = ContractDHairy.transform_param_range((self.v_range, self.l_range, self.h_range))
+        return (dim_dict, param_range)
 
     def plot_cohomology_dim(self):
-        if not self.exists_cohomology_file():
-            raise SL.NotBuiltError("Cannot load cohomology dimensions, No cohomology file found for %s: " % str(self))
-        (dim_dict, v_range, l_range, h_range) = SL.pickle_load(self.get_cohomology_file_path())
+        (dim_dict, param_range) = self.get_cohomology_dim()
+        (v_range, l_range, h_range) = param_range
         path = self.get_cohomology_plot_path()
         Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range, path)

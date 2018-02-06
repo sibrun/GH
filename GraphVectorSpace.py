@@ -56,15 +56,15 @@ class GraphVectorSpace():
     def get_info(self):
         if not self.valid:
             return "not valid"
-        dim = "dimension unknown"
-        if self.exists_basis_file():
-            dim = "dimension: %d" % self.get_dimension()
-        return "valid, %s" % dim
+        if not self.exists_basis_file():
+            return "unknown"
+        dim = "dimension: %d" % self.get_dimension()
+        return dim
 
     def graph_to_canon_g6(self, graph):
-        canonG, permDict = graph.canonical_label(certificate=True)
-        sign = self.perm_sign(graph, permDict.values())
-        return (canonG.graph6_string(), sign)
+        canonG, permDict = graph.canonical_label(partition=self.partition, certificate=True)
+        sgn = self.perm_sign(graph, permDict.values())
+        return (canonG.graph6_string(), sgn)
 
     def build_basis(self, ignore_existing_file=False):
         if not self.valid:
@@ -136,3 +136,10 @@ class GraphVectorSpace():
     def delete_basis_file(self):
         if os.path.isfile(self.basis_file_path):
             os.remove(self.basis_file_path)
+
+    def plot_graph(self, G):
+        g6 = G.graph6_string()
+        path = os.path.join(self.plot_path, g6 + '.png')
+        SL.generate_path(path)
+        P = G.plot(partition=self.partition, vertex_labels=False)
+        P.save(path)
