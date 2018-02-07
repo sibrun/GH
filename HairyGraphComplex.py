@@ -123,7 +123,7 @@ class ContractDHairy(GO.GraphOperator):
         super(ContractDHairy, self).__init__(domain, target)
 
     @classmethod
-    def get_operators(cls, vs_list):
+    def generate_operators(cls, vs_list):
         op_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
@@ -132,7 +132,7 @@ class ContractDHairy(GO.GraphOperator):
         return op_list
 
     @classmethod
-    def get_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
+    def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         domain = HairyGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
         target = HairyGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
         return cls(domain, target)
@@ -219,14 +219,14 @@ class HairyGC(GC.GraphComplex):
 
         vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        op_list = ContractDHairy.get_operators(vs_list)
+        op_list = ContractDHairy.generate_operators(vs_list)
         super(HairyGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
                % (self.sub_type, str(self.v_range), str(self.l_range), str(self.h_range))
 
-    def _set_info_file_path(self):
+    def set_info_file_path(self):
         s = "graph_complex.txt"
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 

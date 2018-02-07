@@ -4,7 +4,6 @@ import itertools
 from joblib import Parallel, delayed
 import multiprocessing
 from sage.all import *
-import Shared as SH
 import StoreLoad as SL
 
 
@@ -92,11 +91,11 @@ class GraphOperator():
                              "since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        shape = (m, n) = (self.domain.get_dimension(), self.target.get_dimension())
-        if m == 0 or n == 0:
+        shape = (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
+        if d == 0 or t == 0:
             self._store_matrix([], shape)
             logging.info("Created matrix file without entries for operator matrix of %s, "
-                         "since the matrix shape is (%d, %d)" % (str(self), m, n))
+                         "since the matrix shape is (%d, %d)" % (str(self), t, d))
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
@@ -105,17 +104,17 @@ class GraphOperator():
             manager = multiprocessing.Manager()
             lookupShared = manager.dict(lookup)
             P = Parallel(n_jobs=n_jobs)
-            listOfLists = P(delayed(self._get_matrix_entries)(b, lookupShared) for b in enumerate(domainBasis))
+            listOfLists = P(delayed(self._generate_matrix_list)(b, lookupShared) for b in enumerate(domainBasis))
         else:
             listOfLists = []
             for dbelement in enumerate(domainBasis):
-                listOfLists.append(self._get_matrix_entries(dbelement, lookup))
+                listOfLists.append(self._generate_matrix_list(dbelement, lookup))
 
-        entriesList = list(itertools.chain.from_iterable(listOfLists))
-        self._store_matrix(entriesList, shape)
+        matrixList = list(itertools.chain.from_iterable(listOfLists))
+        self._store_matrix(matrixList, shape)
         logging.info("Operator matrix built for %s" % str(self))
 
-    def _get_matrix_entries(self, domainBasisElement, lookup):
+    def _generate_matrix_list(self, domainBasisElement, lookup):
         (domainIndex, G) = domainBasisElement
         imageList = self._operate_on(G)
         canonImages = dict()
@@ -124,13 +123,13 @@ class GraphOperator():
             sgn0 = canonImages.get(GGcanon6)
             sgn0 = sgn0 if sgn0 is not None else 0
             canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
-        entriesList = []
+        matrixList = []
         for (image, factor) in canonImages.items():
             if factor:
                 targetIndex = lookup.get(image)
                 if targetIndex is not None:
-                    entriesList.append((domainIndex, targetIndex, factor))
-        return entriesList
+                    matrixList.append((domainIndex, targetIndex, factor))
+        return matrixList
 
     def exists_matrix_file(self):
         return os.path.isfile(self.matrix_file_path)
@@ -149,8 +148,8 @@ class GraphOperator():
         except SL.FileNotExistingError:
             raise SL.NotBuiltError("Cannot load header from file %s: "
                                    "Build operator matrix first" % str(self.matrix_file_path))
-        (m, n, data_type) = header.split(" ")
-        return (int(n), int(m))
+        (d, t, data_type) = header.split(" ")
+        return (int(t), int(d))
 
     def get_matrix_entries(self):
         if not self.valid:
@@ -162,23 +161,23 @@ class GraphOperator():
         if not self.valid:
             return True
         try:
-            (m, n) = self.get_matrix_shape()
+            (t, d) = self.get_matrix_shape()
         except SL.NotBuiltError:
             try:
-                m = self.target.get_dimension()
-                n = self.domain.get_dimension()
+                t = self.target.get_dimension()
+                d = self.domain.get_dimension()
             except SL.NotBuiltError:
                 raise SL.NotBuiltError("Matrix shape of %s unknown: "
                                        "Build operator matrix or domain and target basis first" % str(self))
-        if m == 0 or n == 0:
+        if t == 0 or d == 0:
             return True
         return self.get_matrix_entries() == 0
 
     def _store_matrix(self, matrixList, shape, data_type=data_type):
         logging.info("Store operator matrix in file: %s" % str(self.matrix_file_path))
-        (m, n) = shape
+        (d, t) = shape
         stringList = []
-        stringList.append("%d %d %s" % (m, n, data_type))
+        stringList.append("%d %d %s" % (d, t, data_type))
         for (domainIndex, targetIndex, data) in matrixList:
             stringList.append("%d %d %d" % (domainIndex + 1, targetIndex + 1, data))
         stringList.append("0 0 0")
@@ -189,38 +188,41 @@ class GraphOperator():
             raise SL.NotBuiltError("Cannot load operator matrix, No operator file found for %s: " % str(self))
         logging.info("Load operator matrix from file: %s" % str(self.matrix_file_path))
         stringList = SL.load_string_list(self.matrix_file_path)
-        (m, n, data_type) = stringList.pop(0).split(" ")
-        shape = (m, n) = (int(m), int(n))
-        if m != self.domain.get_dimension() or n != self.target.get_dimension():
+        (d, t, data_type) = stringList.pop(0).split(" ")
+        shape = (d, t) = (int(d), int(t))
+        if d != self.domain.get_dimension() or t != self.target.get_dimension():
             raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions"
                              % str(self.matrix_file_path))
         tail = map(int, stringList.pop().split(" "))
         if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file" % str(self.matrix_file_path))
-        entriesList = []
+        matrixList = []
         for line in stringList:
             (i, j, v) = map(int, line.split(" "))
             if i < 1 or j < 1:
                 raise ValueError("%s: Invalid matrix index: %d %d" % (str(self.matrix_file_path), i, j))
-            if i > m or j > n:
+            if i > d or j > t:
                 raise ValueError("%s: Invalid matrix index outside matrix size:"
                                  " %d %d" % (str(self.matrix_file_path), i, j))
-            entriesList.append((i - 1, j - 1, v))
-        return (entriesList, shape)
+            matrixList.append((i - 1, j - 1, v))
+        return (matrixList, shape)
 
-    def get_matrix(self):
+    def get_matrix_transposed(self):
         if not self.valid:
             logging.warn("No operator matrix: %s is not valid" % str(self))
-            (m ,n) = (self.target.get_dimension(), self.domain.get_dimension())
+            (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
             entriesList = []
         else:
             (entriesList, shape) = self._load_matrix()
-            (m, n) = shape
-        logging.info("Get operator matrix of %s with shape (%d, %d)" % (str(self), n, m))
-        M = matrix(ZZ, m, n, sparse=True)
+            (d, t) = shape
+        logging.info("Get operator matrix of %s" % str(self))
+        M = matrix(ZZ, d, t, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
-        return M.transpose()
+        return M
+
+    def get_matrix(self):
+        return self.get_matrix_transposed().transpose()
 
     def compute_rank(self, ignore_existing_file=False, skip_if_no_matrix=True):
         if not self.valid:
@@ -229,7 +231,7 @@ class GraphOperator():
         if not ignore_existing_file and self.exists_rank_file():
             return
         try:
-            M = self.get_matrix()
+            M = self.get_matrix_transposed()
         except SL.NotBuiltError:
             if not skip_if_no_matrix:
                 raise SL.NotBuiltError("Cannot compute rank of %s: First build operator matrix" % str(self))
@@ -282,7 +284,7 @@ class GraphOperator():
             except SL.NotBuiltError:
                 logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opDD))
                 return None
-        cohomDim = dimV - rankD - rankDD
-        if cohomDim < 0:
+        cohomologyDim = dimV - rankD - rankDD
+        if cohomologyDim < 0:
             raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
-        return cohomDim
+        return cohomologyDim

@@ -14,14 +14,14 @@ class GraphComplex():
     def __init__(self, vs_list, op_list):
         self.vs_list = vs_list
         self.op_list = op_list
-        self.info_file_path = self._set_info_file_path()
+        self.info_file_path = self.set_info_file_path()
 
     @abstractmethod
     def __str__(self):
         pass
 
     @abstractmethod
-    def _set_info_file_path(self):
+    def set_info_file_path(self):
         pass
 
     @abstractmethod

@@ -95,7 +95,7 @@ class ContractDOrdinary(GO.GraphOperator):
         super(ContractDOrdinary, self).__init__(domain, target)
 
     @classmethod
-    def get_operators(cls, vs_list):
+    def generate_operators(cls, vs_list):
         op_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
@@ -103,7 +103,7 @@ class ContractDOrdinary(GO.GraphOperator):
         return op_list
 
     @classmethod
-    def get_operator(cls, n_vertices, n_loops, even_edges):
+    def generate_operator(cls, n_vertices, n_loops, even_edges):
         domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
         target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
@@ -182,14 +182,14 @@ class OrdinaryGC(GC.GraphComplex):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        op_list = ContractDOrdinary.get_operators(vs_list)
+        op_list = ContractDOrdinary.generate_operators(vs_list)
         super(OrdinaryGC, self).__init__(vs_list, op_list)
 
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
                % (self.sub_type, str(self.v_range), str(self.l_range))
 
-    def _set_info_file_path(self):
+    def set_info_file_path(self):
         s = "graph_complex.txt"
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 

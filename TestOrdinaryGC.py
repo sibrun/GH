@@ -42,7 +42,7 @@ class OGCBasisTest(TGC.BasisTest):
 
 class OGCOperatorTest(TGC.OperatorTest):
     def setUp(self):
-        self.op_list = [OGC.ContractDOrdinary.get_operator(v, l, even_edges) for (v, l, even_edges) in
+        self.op_list = [OGC.ContractDOrdinary.generate_operator(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
 
     def tearDown(self):

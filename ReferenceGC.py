@@ -16,7 +16,7 @@ class RefVectorSpace:
         return SL.load_string_list(self.basis_file_path)
 
     def __str__(self):
-        return "Reference vector space: %s" % str(self.basis_file_path)
+        return "<Reference vector space: %s>" % str(self.basis_file_path)
 
     def exists_basis_file(self):
         return (self.basis_file_path is not None) and os.path.isfile(self.basis_file_path)
@@ -37,7 +37,14 @@ class RefVectorSpace:
         return basis_g6_canon
 
     def get_dimension(self):
-        return len(self._load_basis_g6())
+        try:
+            dim = len(self._load_basis_g6())
+        except SL.RefError:
+            if not self.vs.valid:
+                return 0
+            else:
+                raise SL.RefError('Dimension of reference basis unknown: %s' % str(self))
+        return dim
 
     def get_transformation_matrix(self):
         basis_g6 = self._load_basis_g6()
@@ -79,15 +86,15 @@ class RefOperator:
         if len(stringList) == 0:
             return ([], None)
         else:
-            (m, n, t) = map(int, stringList.pop().split(" "))
-            if t != 0:
+            (d, t, z) = map(int, stringList.pop().split(" "))
+            if z != 0:
                 raise ValueError("End line in reference file %s is missing" % str(self))
-            shape = (m, n)
+            shape = (d, t)
             for line in stringList:
                 (i, j, v) = map(int, line.split(" "))
                 if i < 0 or j < 0:
                     raise ValueError("%s: Negative matrix index" % str(self))
-                if i > m or j > n:
+                if i > d or j > t:
                     raise ValueError("%s Matrix index outside matrix size" % str(self))
                 if i == 0 or j == 0:
                     continue
@@ -95,7 +102,7 @@ class RefOperator:
         return (entriesList, shape)
 
     def __str__(self):
-        return "Reference operator: %s" % str(self.matrix_file_path)
+        return "<Reference operator: %s>" % str(self.matrix_file_path)
 
     def exists_matrix_file(self):
         return os.path.isfile(self.matrix_file_path)
@@ -106,11 +113,11 @@ class RefOperator:
     def get_matrix_wrt_ref(self):
         (entriesList, shape) = self._load_matrix()
         if shape is None:
-            (m, n) = (self.target.get_dimension(), self.domain.get_dimension())
+            (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
         else:
-            (m, n) = shape
-        logging.info("Get reference operator matrix from file %s with shape (%d, %d)" % (str(self), m, n))
-        M = matrix(ZZ, m, n, sparse=True)
+            (d, t) = shape
+        logging.info("Get reference operator matrix from file %s" % str(self))
+        M = matrix(ZZ, d, t, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
         return M.transpose()
@@ -170,7 +177,7 @@ class RefGraphComplex:
         self.op_list = [RefOperator(op) for op in self.gc.op_list]
 
     def __str__(self):
-        return "Reference graph complex for: %s" % str(self.gc)
+        return "<Reference graph complex for: %s>" % str(self.gc)
 
     def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()

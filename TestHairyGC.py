@@ -27,11 +27,12 @@ class HGCBasisTest(TGC.BasisTest):
 
     def test_perm_sign(self):
         logging.warn('----- Test permutation sign -----')
+        logging.warn('NOT IMPLEMENTED')         #TODO: implement sign test for hairy graphs
 
 
 class HGCOperatorTest(TGC.OperatorTest):
     def setUp(self):
-        self.op_list = [HGC.ContractDHairy.get_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.op_list = [HGC.ContractDHairy.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):

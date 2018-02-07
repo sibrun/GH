@@ -4,6 +4,7 @@ from sage.all import *
 import logging
 import StoreLoad as SL
 import ReferenceGC as REF
+import Parameters
 
 
 class BasisTest(unittest.TestCase):
@@ -155,8 +156,6 @@ class OperatorTest(unittest.TestCase):
 class GraphComplexTest(unittest.TestCase):
     __metaclass__ = ABCMeta
 
-    eps = 1.0e-6
-
     @abstractmethod
     def setUp(self):
         pass
@@ -169,7 +168,7 @@ class GraphComplexTest(unittest.TestCase):
         logging.warn('----- Test graph complex functionality -----')
         for gc in self.gc_list:
             gc.build(ignore_existing_files=True, n_jobs=1)
-            (triv_l, succ_l, inc_l, fail_l) = gc.square_zero_test(GraphComplexTest.eps)
+            (triv_l, succ_l, inc_l, fail_l) = gc.square_zero_test(Parameters.eps)
             if succ_l == 0:
                 logging.warn('%s: no successful pairs in square zero test' % str(gc))
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(gc),fail_l))
