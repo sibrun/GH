@@ -1,3 +1,5 @@
+import sys
+
 #---- Genearal Parameters ----
 #---- Directory Names ----
 data_dir = "data"
@@ -13,3 +15,7 @@ x_width = 0.7
 y_width = 0.7
 zero_symbol = '*'
 x_plots = 2
+
+#---- Max Values for Sorting ----
+MAX_ENTRIES = sys.maxint  # return value if number of entries is unkown, i.e. if no matrix file
+MAX_DIMENSION = sys.maxint  # return value if dimension is unkown, i.e. if no basis file

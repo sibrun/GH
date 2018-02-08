@@ -2,15 +2,7 @@ import os
 import pickle
 
 
-class NotBuiltError(RuntimeError):
-    pass
-
-
-class RefError(RuntimeError):
-    pass
-
-
-class FileNotExistingError(RuntimeError):
+class FileNotFoundError(RuntimeError):
     pass
 
 
@@ -36,14 +28,14 @@ def store_string_list(L, path):
 
 def load_string_list(path):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
+        raise FileNotFoundError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         return f.read().splitlines()
 
 
 def load_line(path):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
+        raise FileNotFoundError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'r') as f:
         return f.readline()
 
@@ -73,6 +65,6 @@ def pickle_store(Ob, path):
 
 def pickle_load(path):
     if not os.path.exists(path):
-        raise FileNotExistingError("Cannot load from %s: The file does not exist" % str(path))
+        raise FileNotFoundError("Cannot load from %s: The file does not exist" % str(path))
     with open(path, 'rb') as f:
         return pickle.load(f)

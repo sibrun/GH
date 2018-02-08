@@ -11,7 +11,7 @@ class RefVectorSpace:
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
-            raise SL.RefError("%s: Reference basis file not found" % str(self))
+            raise SL.FileNotFoundError("%s: Reference basis file not found" % str(self))
         logging.info("Load basis from reference file: %s" % str(self))
         return SL.load_string_list(self.basis_file_path)
 
@@ -39,11 +39,11 @@ class RefVectorSpace:
     def get_dimension(self):
         try:
             dim = len(self._load_basis_g6())
-        except SL.RefError:
+        except SL.FileNotFoundError:
             if not self.vs.valid:
                 return 0
             else:
-                raise SL.RefError('Dimension of reference basis unknown: %s' % str(self))
+                raise SL.FileNotFoundError('Dimension of reference basis unknown: %s' % str(self))
         return dim
 
     def get_transformation_matrix(self):
@@ -79,7 +79,7 @@ class RefOperator:
 
     def _load_matrix(self):
         if not self.exists_matrix_file():
-           raise SL.RefError("%s: Reference basis file not found" % str(self))
+           raise SL.FileNotFoundError("%s: Reference basis file not found" % str(self))
         logging.info("Load operator matrix from reference file: %s" % str(self.matrix_file_path))
         stringList = SL.load_string_list(self.matrix_file_path)
         entriesList = []
@@ -124,7 +124,7 @@ class RefOperator:
 
     def get_rank(self):
         if not self.exists_rank_file():
-           raise SL.RefError("%s: Reference rank file not found" % str(self))
+           raise SL.FileNotFoundError("%s: Reference rank file not found" % str(self))
         return int(SL.load_line(self.rank_file_path))
 
     def get_matrix(self):
@@ -144,7 +144,7 @@ class RefOperator:
     def cohomology_dim(opD, opDD):
         try:
             dimV =  opD.domain.get_dimension()
-        except SL.RefError:
+        except SL.FileNotFoundError:
             logging.warn("Cannot compute reference cohomology: No reference basis file for %s " % str(opD.domain))
             return None
         if dimV == 0:
@@ -154,7 +154,7 @@ class RefOperator:
         else:
             try:
                 rankD = opD.get_rank()
-            except SL.RefError:
+            except SL.FileNotFoundError:
                 logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opD))
                 return None
         if not opDD.op.valid:
@@ -162,7 +162,7 @@ class RefOperator:
         else:
             try:
                 rankDD = opDD.get_rank()
-            except SL.RefError:
+            except SL.FileNotFoundError:
                 logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opDD))
                 return None
         cohomDim = dimV - rankD - rankDD

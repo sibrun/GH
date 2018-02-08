@@ -41,6 +41,8 @@ parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of par
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=log_levels, help='logging level')
 parser.add_argument('-build', action='store_true', help='just build vector space basis and operator matrix')
+parser.add_argument('-build_b', action='store_true', help='just build vector space basis')
+parser.add_argument('-build_op', action='store_true', help='just build operator matrix')
 parser.add_argument('-rank', action='store_true', help='just compute matrix ranks')
 parser.add_argument('-coho', action='store_true', help='just compute cohomology')
 
@@ -62,15 +64,22 @@ def build(graph_complex):
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
+def build_basis(graph_complex):
+    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
+def build_operator(graph_complex):
+    graph_complex.build_operator_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
-    graph_complex.sort_member(work_estimate=False)
-    graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex)
+    graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def cohomology(graph_complex):
-    graph_complex.sort_member(work_estimate=False)
-    graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()
 
 
@@ -103,7 +112,7 @@ if __name__ == "__main__":
     if args.graph_type == 'hgc':
         if args.even_h:
                 even_hairs = True
-        elif args.odd_e:
+        elif args.odd_h:
                 even_hairs = False
         else:
             raise MissingArgumentError('specify -even_h or -odd_h')
@@ -119,11 +128,16 @@ if __name__ == "__main__":
     if graph_complex is None:
         raise ValueError('graph complex not specified')
 
-    if not (args.build or args.rank or args.coho):
+    if not (args.build or args.build_b or args.build_op or args.rank or args.coho):
         main(graph_complex)
     else:
         if args.build:
             build(graph_complex)
+        else:
+            if args.build_b:
+                build_basis(graph_complex)
+            if args.build_op:
+                build_operator(graph_complex)
         if args.rank:
             rank(graph_complex)
         if args.coho:

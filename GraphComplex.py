@@ -2,8 +2,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 import operator
 import itertools
-import os
-import cProfile
+from joblib import Parallel, delayed
 import functools
 import StoreLoad as SL
 
@@ -48,31 +47,45 @@ class GraphComplex():
                     vector_space),("----- Operator -----", operator),("----- Cohomology Dimensions -----", cohomology)]
         SL.store_list_of_header_lists(LHL, self.info_file_path)
 
-    def build_basis(self, ignore_existing_files=True):
-        self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+    def build_basis(self, ignore_existing_files=True, n_jobs=1):
+        self.sort_vs()
         self.store_member_info()
-        for vs in self.vs_list:
-            vs.build_basis(ignore_existing_file=ignore_existing_files)
+        if n_jobs > 1:
+            P = Parallel(n_jobs=n_jobs)
+            P(delayed(self._build_single_basis)(vs, ignore_existing_file=ignore_existing_files)
+              for vs in self.vs_list)
+        else:
+            for vs in self.vs_list:
+                vs.build_basis(ignore_existing_file=ignore_existing_files)
         self.store_member_info()
 
+    def _build_single_basis(self, vs, ignore_existing_file=True):
+        vs.build_basis(ignore_existing_file=ignore_existing_file)
+
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
-        self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+        self.sort_vs(dimension=True)
+        self.sort_op()
         self.store_member_info()
         for op in self.op_list:
-            op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
+                op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
         self.store_member_info()
 
     def build(self, ignore_existing_files=True, n_jobs=1):
-        self.build_basis(ignore_existing_files=ignore_existing_files)
+        self.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
         self.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
-    def sort_member(self, work_estimate=False):
-        if work_estimate:
-            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
-            self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
-        else:
+    def sort_vs(self, dimension=False):
+        if dimension:
             self.vs_list.sort(key=operator.methodcaller('get_dimension'))
+        else:
+            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+
+    def sort_op(self, entries=False):
+        if entries:
             self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
+        else:
+            self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful
@@ -89,7 +102,7 @@ class GraphComplex():
                 try:
                     M1 = op1.get_matrix()
                     M2 = op2.get_matrix()
-                except SL.NotBuiltError:
+                except SL.FileNotFoundError:
                     logging.warn("Cannot test square zero: "
                                  "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
                     inc.append(p)
@@ -110,11 +123,21 @@ class GraphComplex():
             logging.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
 
-    def compute_ranks(self, ignore_existing_files=True):
+    def compute_ranks(self, ignore_existing_files=True, n_jobs=1):
+        self.sort_vs(dimension=True)
+        self.sort_op(entries=True)
         self.store_member_info()
-        for op in self.op_list:
-            op.compute_rank(ignore_existing_file=ignore_existing_files)
+        if n_jobs > 1:
+            P = Parallel(n_jobs=n_jobs)
+            P(delayed(self._compute_single_rank)(op, ignore_existing_file=ignore_existing_files)
+              for op in self.op_list)
+        else:
+            for op in self.op_list:
+                op.compute_rank(ignore_existing_file=ignore_existing_files)
         self.store_member_info()
+
+    def _compute_single_rank(self, op, ignore_existing_file=True):
+            op.compute_rank(ignore_existing_file=ignore_existing_file)
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
@@ -136,12 +159,3 @@ class GraphComplex():
                 line = "%s: %s" % (str(vs), str(dim))
                 cohomologyList.append(line)
         return cohomologyList
-
-    def sorted(self, work_estimate=False):
-        def inner(func):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                self.sort_member(work_estimate=work_estimate)
-                return func(*args, **kwargs)
-            return wrapper
-        return inner

@@ -26,7 +26,7 @@ class BasisTest(unittest.TestCase):
                 continue
             vs.delete_basis_file()
             self.assertFalse(vs.exists_basis_file(), 'basis should have been deleted')
-            self.assertRaises(SL.NotBuiltError, vs.get_basis)
+            self.assertRaises(SL.FileNotFoundError, vs.get_basis)
             vs.build_basis(ignore_existing_file=True)
             self.assertTrue(vs.exists_basis_file(), 'basis should exist')
             logging.info("%s: %s" % (str(vs), vs.get_info()))

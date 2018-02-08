@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 from sage.all import *
 import StoreLoad as SL
+import Parameters
 
 
 class GraphVectorSpace():
@@ -103,9 +104,11 @@ class GraphVectorSpace():
             return 0
         try:
             header = SL.load_line(self.basis_file_path)
-        except SL.FileNotExistingError:
-            raise SL.NotBuiltError("Cannot load header from file %s: Build basis first" % str(self.basis_file_path))
-        return int(header)
+            dim = int(header)
+        except SL.FileNotFoundError:
+            logging.warn("Dimension unknown for %s: No basis file" % str(self))
+            dim = Parameters.MAX_DIMENSION
+        return dim
 
     def _store_basis_g6(self, basisList):
         logging.info("Store basis in file: %s" % str(self.basis_file_path))
@@ -114,7 +117,7 @@ class GraphVectorSpace():
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
-            raise SL.NotBuiltError("Cannot load basis, No Basis file found for %s: " % str(self))
+            raise SL.FileNotFoundError("Cannot load basis, No Basis file found for %s: " % str(self))
         logging.info("Load basis from file: %s" % str(self.basis_file_path))
         basisList = SL.load_string_list(self.basis_file_path)
         dim = int(basisList.pop(0))
