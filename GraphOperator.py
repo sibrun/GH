@@ -26,6 +26,14 @@ class GraphOperator():
         pass
 
     @abstractmethod
+    def get_params(self):
+        pass
+
+    @abstractmethod
+    def get_type(self):
+        pass
+
+    @abstractmethod
     def set_matrix_file_path(self):
         pass
 
@@ -54,16 +62,16 @@ class GraphOperator():
         pass
 
     def get_info(self):
-        if not self.valid:
-            return "not valid"
-        if not self.exists_matrix_file():
-            return "unknown"
-        shape = "matrix shape: (%d, %d)" % self.get_matrix_shape()
-        entries = "%d entries" % self.get_matrix_entries()
-        rank = "rank unknown"
-        if self.exists_rank_file():
-            rank = "rank: %d" % self.get_rank()
-        return "%s, %s, %s" % (shape, entries, rank)
+        shape = None
+        entries = None
+        m_rank = None
+        if self.valid:
+            if self.exists_matrix_file():
+                shape = self.get_matrix_shape()
+                entries = self.get_matrix_entries()
+                if self.exists_rank_file():
+                    m_rank = self.get_matrix_rank()
+        return (self.valid, shape, entries, m_rank)
 
     def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
         if not self.valid:
@@ -246,7 +254,7 @@ class GraphOperator():
                 return
         SL.store_line(str(M.rank()), self.rank_file_path)
 
-    def get_rank(self):
+    def get_matrix_rank(self):
         if not self.valid:
             return 0
         if not self.exists_rank_file():
@@ -278,7 +286,7 @@ class GraphOperator():
             rankD = 0
         else:
             try:
-                rankD = opD.get_rank()
+                rankD = opD.get_matrix_rank()
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opD))
                 return None
@@ -286,7 +294,7 @@ class GraphOperator():
             rankDD = 0
         else:
             try:
-                rankDD = opDD.get_rank()
+                rankDD = opDD.get_matrix_rank()
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute cohomology: Operator matrix rank not calculated for %s " % str(opDD))
                 return None

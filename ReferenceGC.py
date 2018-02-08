@@ -161,7 +161,7 @@ class RefOperator:
             rankDD = 0
         else:
             try:
-                rankDD = opDD.get_rank()
+                rankDD = opDD.get_matrix_rank()
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute reference cohomology: No reference rank file for %s " % str(opDD))
                 return None

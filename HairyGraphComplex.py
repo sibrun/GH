@@ -29,6 +29,9 @@ class HairyGVS(GVS.GraphVectorSpace):
         super(HairyGVS,self).__init__()
         self.ogvs = OGC.OrdinaryGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
+    def get_params(self):
+        return (self.n_vertices, self.n_loops, self.n_hairs)
+
     def set_basis_file_path(self):
         s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -137,6 +140,12 @@ class ContractDHairy(GO.GraphOperator):
         target = HairyGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
         return cls(domain, target)
 
+    def get_params(self):
+        return self.domain.get_params()
+
+    def get_type(self):
+        return 'contract edges'
+
     def set_matrix_file_path(self):
         s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -221,6 +230,17 @@ class HairyGC(GC.GraphComplex):
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
         op_list = ContractDHairy.generate_operators(vs_list)
         super(HairyGC, self).__init__(vs_list, op_list)
+
+    def get_type(self):
+        e = 'even edges' if self.even_edges else 'odd edges'
+        h = 'even hairs' if self.even_hairs else 'odd hairs'
+        return e + ', ' + h
+
+    def get_params_range(self):
+        return (self.v_range, self.l_range, self.h_range)
+
+    def get_params_names(self):
+        return('vertices', 'loops', 'hairs')
 
     def __str__(self):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \

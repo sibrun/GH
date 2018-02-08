@@ -24,6 +24,9 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
         super(OrdinaryGVS,self).__init__()
 
+    def get_params(self):
+        return (self.n_vertices, self.n_loops)
+
     def set_basis_file_path(self):
         s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -108,6 +111,12 @@ class ContractDOrdinary(GO.GraphOperator):
         target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
 
+    def get_params(self):
+        return self.domain.get_params()
+
+    def get_type(self):
+        return 'contract edges'
+
     def set_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -184,6 +193,15 @@ class OrdinaryGC(GC.GraphComplex):
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
         op_list = ContractDOrdinary.generate_operators(vs_list)
         super(OrdinaryGC, self).__init__(vs_list, op_list)
+
+    def get_type(self):
+        return 'even edges' if self.even_edges else 'odd edges'
+
+    def get_params_range(self):
+        return (self.v_range, self.l_range)
+
+    def get_params_names(self):
+        return('vertices', 'loops')
 
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \

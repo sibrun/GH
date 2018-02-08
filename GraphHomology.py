@@ -52,7 +52,6 @@ args = parser.parse_args()
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def main(graph_complex):
     graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
-    graph_complex.sort_member(work_estimate=False)
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex)
     graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()

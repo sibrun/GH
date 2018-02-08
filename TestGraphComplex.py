@@ -106,7 +106,7 @@ class OperatorTest(unittest.TestCase):
             self.assertFalse(op.exists_rank_file(), '%s rank file should have been deleted' % str(op))
             op.compute_rank()
             self.assertTrue(op.exists_rank_file(), '%s rank file should exist' % str(op))
-            self.assertEqual(op.get_rank(), rank, '%s: inconsistent rank' % str(op))
+            self.assertEqual(op.get_matrix_rank(), rank, '%s: inconsistent rank' % str(op))
             entries = op.get_matrix_entries()
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,
                              '%s: triviality check wrong' % str(op))
@@ -128,7 +128,7 @@ class OperatorTest(unittest.TestCase):
             op.compute_rank(ignore_existing_file=True)
             M = op.get_matrix()
             shape = op.get_matrix_shape()
-            rank = op.get_rank()
+            rank = op.get_matrix_rank()
             ref_op = REF.RefOperator(op)
             if not ref_op.exists_matrix_file():
                 logging.warn('%s: no reference file for operator matrix' % str(op))

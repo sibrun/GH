@@ -15,6 +15,10 @@ class GraphVectorSpace():
         self.plot_path = self.set_plot_path()
 
     @abstractmethod
+    def get_params(self):
+        pass
+
+    @abstractmethod
     def set_partition(self):
         pass
 
@@ -55,12 +59,10 @@ class GraphVectorSpace():
         pass
 
     def get_info(self):
-        if not self.valid:
-            return "not valid"
-        if not self.exists_basis_file():
-            return "unknown"
-        dim = "dimension: %d" % self.get_dimension()
-        return dim
+        dim = None
+        if self.valid and self.exists_basis_file():
+                dim = self.get_dimension()
+        return (self.valid, dim)
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(partition=self.partition, certificate=True)
