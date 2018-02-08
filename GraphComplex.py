@@ -3,7 +3,11 @@ import logging
 import operator
 import itertools
 from joblib import Parallel, delayed
-import functools
+import multiprocessing
+import os
+import pandas
+import webbrowser
+from urllib import pathname2url
 import StoreLoad as SL
 
 
@@ -13,8 +17,10 @@ class GraphComplex():
     def __init__(self, vs_list, op_list):
         self.vs_list = vs_list
         self.op_list = op_list
-        self.vs_info_dict = dict()
-        self.op_info_dict = dict()
+        manager = multiprocessing.Manager()
+        self.vs_info_dict = manager.dict(dict())
+        self.op_info_dict = manager.dict(dict())
+        self.computing = manager.dict(dict())
         self.info_file_path = self.set_info_file_path()
 
     @abstractmethod
@@ -49,11 +55,27 @@ class GraphComplex():
     def plot_cohomology_dim(self):
         pass
 
-    def update_vs_info(self, vs):
-        self.vs_info_dict.update({vs.get_params(): vs.get_info()})
+    def load_member_info(self):
+        for vs in self.vs_list:
+            self.vs_info_dict.update({vs.get_params(): vs.get_info()})
+        for op in self.op_list:
+            self.op_info_dict.update({op.get_params(): op.get_info()})
 
-    def update_op_info(self, op):
-        self.op_info_dict.update({op.get_params(): op.get_info()})
+    def plot_member_info(self):
+        vsList = []
+        opList = []
+        for key, value in self.vs_info_dict.items():
+            vsList.append(list(key) + list(value))
+        for key, value in self.op_info_dict.items():
+                opList.append(list(key) + list(value))
+        vsColumns = list(self.get_params_names()) + ['valid', 'dimension']
+        opColumns = list(self.get_params_names()) + ['valid', 'shape', 'entries', 'rank']
+        vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
+        opTable = pandas.DataFrame(data=opList, columns=opColumns)
+        vsTable.to_html('./plots/vs.html')
+        opTable.to_html('./plots/op.html')
+        url = 'file:{}'.format(pathname2url(os.path.abspath('./plots/vs.html')))
+        webbrowser.open(url)
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1):
         self.sort_vs()
@@ -63,17 +85,19 @@ class GraphComplex():
               for vs in self.vs_list)
         else:
             for vs in self.vs_list:
-                vs.build_basis(ignore_existing_file=ignore_existing_files)
+                self._build_single_basis(vs, ignore_existing_file=ignore_existing_files)
+        self.plot_member_info()
 
     def _build_single_basis(self, vs, ignore_existing_file=True):
         vs.build_basis(ignore_existing_file=ignore_existing_file)
-        self.update_vs_info(vs)
+        self.vs_info_dict.update({vs.get_params(): vs.get_info()})
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
         self.sort_op()
         for op in self.op_list:
             op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
-            self.update_op_info(op)
+            self.op_info_dict.update({op.get_params(): op.get_info()})
+        self.plot_member_info()
 
     def build(self, ignore_existing_files=True, n_jobs=1):
         self.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
@@ -135,11 +159,12 @@ class GraphComplex():
               for op in self.op_list)
         else:
             for op in self.op_list:
-                op.compute_rank(ignore_existing_file=ignore_existing_files)
+                self._compute_single_rank(op,  ignore_existing_file=ignore_existing_files)
+        self.plot_member_info()
 
     def _compute_single_rank(self, op, ignore_existing_file=True):
         op.compute_rank(ignore_existing_file=ignore_existing_file)
-        self.update_op_info(op)
+        self.op_info_dict.update({op.get_params(): op.get_info()})
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):

@@ -237,10 +237,10 @@ class HairyGC(GC.GraphComplex):
         return e + ', ' + h
 
     def get_params_range(self):
-        return (self.v_range, self.l_range, self.h_range)
+        return [self.v_range, self.l_range, self.h_range]
 
     def get_params_names(self):
-        return('vertices', 'loops', 'hairs')
+        return ('vertices', 'loops', 'hairs')
 
     def __str__(self):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
