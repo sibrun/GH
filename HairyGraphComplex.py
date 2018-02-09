@@ -32,6 +32,9 @@ class HairyGVS(GVS.GraphVectorSpace):
     def get_params(self):
         return (self.n_vertices, self.n_loops, self.n_hairs)
 
+    def get_params_string(self):
+        return "%d vertices, %d loops, %d hairs" % self.get_params()
+
     def set_basis_file_path(self):
         s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -143,8 +146,11 @@ class ContractDHairy(GO.GraphOperator):
     def get_params(self):
         return self.domain.get_params()
 
+    def get_params_string(self):
+        return self.domain.get_params_string()
+
     def get_type(self):
-        return 'contract edges'
+        return 'contract edge'
 
     def set_matrix_file_path(self):
         s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)

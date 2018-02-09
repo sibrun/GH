@@ -3,8 +3,10 @@ import logging
 import itertools
 from joblib import Parallel, delayed
 import multiprocessing
+from tqdm import tqdm
 from sage.all import *
 import StoreLoad as SL
+import Shared as SH
 import Parameters
 
 
@@ -27,6 +29,10 @@ class GraphOperator():
 
     @abstractmethod
     def get_params(self):
+        pass
+
+    @abstractmethod
+    def get_params_string(self):
         pass
 
     @abstractmethod
@@ -110,17 +116,21 @@ class GraphOperator():
                          "since the matrix shape is (%d, %d)" % (str(self), t, d))
             return
 
-        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
+        print('Build matrix for ' + self.get_type() + ' operator on graph vector space with ' + self.get_params_string())
         logging.info("%d jobs to build matrix of %s" % (n_jobs,str(self)))
-        if n_jobs > 1:
-            manager = multiprocessing.Manager()
-            lookupShared = manager.dict(lookup)
-            P = Parallel(n_jobs=n_jobs)
-            listOfLists = P(delayed(self._generate_matrix_list)(b, lookupShared) for b in enumerate(domainBasis))
-        else:
-            listOfLists = []
-            for dbelement in enumerate(domainBasis):
-                listOfLists.append(self._generate_matrix_list(dbelement, lookup))
+
+        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
+        with tqdm(total=len(domainBasis)) as pbar:
+            if n_jobs > 1:
+                manager = multiprocessing.Manager()
+                lookupShared = manager.dict(lookup)
+                P = Parallel(n_jobs=n_jobs)
+                listOfLists = SH.parallel(self._generate_matrix_list, enumerate(domainBasis), n_jobs, lookupShared)#P(delayed(self._generate_matrix_list)(b, lookupShared) for b in progress(eDB))
+            else:
+                listOfLists = []
+                for dbelement in enumerate(domainBasis):
+                    listOfLists.append(self._generate_matrix_list(dbelement, lookup))
+                    pbar.update(1)
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(matrixList, shape)
         logging.info("Operator matrix built for %s" % str(self))

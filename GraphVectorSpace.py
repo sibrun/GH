@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import logging
-import progressbar
+from tqdm import tqdm
 from sage.all import *
 import StoreLoad as SL
 import Parameters
@@ -17,6 +17,10 @@ class GraphVectorSpace():
 
     @abstractmethod
     def get_params(self):
+        pass
+
+    @abstractmethod
+    def get_params_string(self):
         pass
 
     @abstractmethod
@@ -77,15 +81,11 @@ class GraphVectorSpace():
             return
         if not ignore_existing_file and self.exists_basis_file():
             return
+        print('Build basis for graph vector space with ' + self.get_params_string())
         generatingList = self._generating_graphs()
-        l = len(generatingList)
-        if l == 0:
-            self._store_basis_g6([])
-        else:
-            basisSet = set()
-            progress = progressbar.ProgressBar(widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                                             progressbar.Percentage(), ' ', progressbar.ETA()])
-            for G in progress(generatingList):
+        basisSet = set()
+        with tqdm(total=len(generatingList)) as pbar:
+            for G in generatingList:
                 if self.partition is None:
                     automList = G.automorphism_group().gens()
                     canonG = G.canonical_label()
@@ -97,6 +97,7 @@ class GraphVectorSpace():
                     if not canon6 in basisSet:
                         if not self._has_odd_automorphisms(G, automList):
                             basisSet.add(canon6)
+                pbar.update(1)
         self._store_basis_g6(list(basisSet))
         logging.info("Basis built for %s" % str(self))
 
