@@ -1,8 +1,7 @@
 from sage.all import *
 import os
 import StoreLoad as SL
-
-temp_folder = 'temp'
+import Parameters
 
 
 '''creates a list of simple 1vi graphs with at least trivalent vertices'''
@@ -17,7 +16,7 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
 vertices of the second colour have degree in the range min_deg_2:max_deg_2'''
 def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
     s = 'bipartite_%d_%d_%d.txt' % (n_vertices_1, n_vertices_2, n_edges)
-    temp_file = os.path.join(temp_folder, s)
+    temp_file = os.path.join(Parameters.temp_folder, s)
     SL.generate_path(temp_file)
 
     (min_deg_1, max_deg_1) = deg_range_1

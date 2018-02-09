@@ -2,8 +2,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import logging
+import os
+import webbrowser
+from urllib import pathname2url
 import StoreLoad as SL
 import Parameters
+
+
+def display_pandas_dfs(dfs, path):
+    idx = 0
+    for df in dfs:
+        s = 'temp_%d.html' % idx
+        idx += 1
+        temp_path = os.path.join(Parameters.temp_folder, s)
+        df.to_html(temp_path)
+        url = 'file:{}'.format(pathname2url(os.path.abspath(temp_path)))
+        webbrowser.open_new_tab(url)
 
 
 def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):

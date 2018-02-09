@@ -4,11 +4,9 @@ import operator
 import itertools
 from joblib import Parallel, delayed
 import multiprocessing
-import os
 import pandas
-import webbrowser
-from urllib import pathname2url
 import StoreLoad as SL
+import Display
 
 
 class GraphComplex():
@@ -20,8 +18,8 @@ class GraphComplex():
         manager = multiprocessing.Manager()
         self.vs_info_dict = manager.dict(dict())
         self.op_info_dict = manager.dict(dict())
+        self.load_info()
         self.computing = manager.dict(dict())
-        self.info_file_path = self.set_info_file_path()
 
     @abstractmethod
     def get_type(self):
@@ -40,7 +38,7 @@ class GraphComplex():
         pass
 
     @abstractmethod
-    def set_info_file_path(self):
+    def get_info_file_path(self):
         pass
 
     @abstractmethod
@@ -55,13 +53,13 @@ class GraphComplex():
     def plot_cohomology_dim(self):
         pass
 
-    def load_member_info(self):
+    def load_info(self):
         for vs in self.vs_list:
             self.vs_info_dict.update({vs.get_params(): vs.get_info()})
         for op in self.op_list:
             self.op_info_dict.update({op.get_params(): op.get_info()})
 
-    def plot_member_info(self):
+    def plot_info(self):
         vsList = []
         opList = []
         for key, value in self.vs_info_dict.items():
@@ -72,12 +70,14 @@ class GraphComplex():
         opColumns = list(self.get_params_names()) + ['valid', 'shape', 'entries', 'rank']
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
-        vsTable.to_html('./plots/vs.html')
-        opTable.to_html('./plots/op.html')
-        url = 'file:{}'.format(pathname2url(os.path.abspath('./plots/vs.html')))
-        webbrowser.open(url)
+        vsTable.sort_values(by=['valid', 'dimension'], inplace=True, na_position='last')
+        vsTable.reset_index()
+        opTable.sort_values(by=['valid', 'entries'], inplace=True, na_position='last')
+        opTable.reset_index()
+        Display.display_pandas_dfs([vsTable, opTable], self.get_info_file_path())
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1):
+        self.plot_info()
         self.sort_vs()
         if n_jobs > 1:
             P = Parallel(n_jobs=n_jobs)
@@ -86,34 +86,33 @@ class GraphComplex():
         else:
             for vs in self.vs_list:
                 self._build_single_basis(vs, ignore_existing_file=ignore_existing_files)
-        self.plot_member_info()
 
     def _build_single_basis(self, vs, ignore_existing_file=True):
         vs.build_basis(ignore_existing_file=ignore_existing_file)
         self.vs_info_dict.update({vs.get_params(): vs.get_info()})
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
+        self.plot_info()
         self.sort_op()
         for op in self.op_list:
             op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
             self.op_info_dict.update({op.get_params(): op.get_info()})
-        self.plot_member_info()
 
     def build(self, ignore_existing_files=True, n_jobs=1):
         self.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
         self.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
-    def sort_vs(self, dimension=False):
-        if dimension:
-            self.vs_list.sort(key=operator.methodcaller('get_dimension'))
-        else:
+    def sort_vs(self, work_estimate=True):
+        if work_estimate:
             self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
-
-    def sort_op(self, entries=False):
-        if entries:
-            self.op_list.sort(key=operator.methodcaller('get_matrix_entries'))
         else:
+            self.vs_list.sort(key=operator.methodcaller('get_sort_value'))
+
+    def sort_op(self, work_estimate=True):
+        if work_estimate:
             self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+        else:
+            self.op_list.sort(key=operator.methodcaller('get_sort_value'))
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful
@@ -152,7 +151,8 @@ class GraphComplex():
         return (triv_l, succ_l, inc_l, fail_l)
 
     def compute_ranks(self, ignore_existing_files=True, n_jobs=1):
-        self.sort_op(entries=True)
+        self.plot_info()
+        self.sort_op(work_estimate=False)
         if n_jobs > 1:
             P = Parallel(n_jobs=n_jobs)
             P(delayed(self._compute_single_rank)(op, ignore_existing_file=ignore_existing_files)
@@ -160,7 +160,6 @@ class GraphComplex():
         else:
             for op in self.op_list:
                 self._compute_single_rank(op,  ignore_existing_file=ignore_existing_files)
-        self.plot_member_info()
 
     def _compute_single_rank(self, op, ignore_existing_file=True):
         op.compute_rank(ignore_existing_file=ignore_existing_file)

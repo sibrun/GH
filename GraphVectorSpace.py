@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import logging
+import progressbar
 from sage.all import *
 import StoreLoad as SL
 import Parameters
@@ -59,9 +60,10 @@ class GraphVectorSpace():
         pass
 
     def get_info(self):
-        dim = None
-        if self.valid and self.exists_basis_file():
-                dim = self.get_dimension()
+        try:
+            dim = self.get_dimension()
+        except SL.FileNotFoundError:
+            dim = None
         return (self.valid, dim)
 
     def graph_to_canon_g6(self, graph):
@@ -76,19 +78,25 @@ class GraphVectorSpace():
         if not ignore_existing_file and self.exists_basis_file():
             return
         generatingList = self._generating_graphs()
-        basisSet = set()
-        for G in generatingList:
-            if self.partition is None:
-                automList = G.automorphism_group().gens()
-                canonG = G.canonical_label()
-            else:
-                automList = G.automorphism_group(partition=self.partition).gens()
-                canonG = G.canonical_label(partition=self.partition)
-            if len(automList):
-                canon6=canonG.graph6_string()
-                if not canon6 in basisSet:
-                    if not self._has_odd_automorphisms(G, automList):
-                        basisSet.add(canon6)
+        l = len(generatingList)
+        if l == 0:
+            self._store_basis_g6([])
+        else:
+            basisSet = set()
+            progress = progressbar.ProgressBar(widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                             progressbar.Percentage(), ' ', progressbar.ETA()])
+            for G in progress(generatingList):
+                if self.partition is None:
+                    automList = G.automorphism_group().gens()
+                    canonG = G.canonical_label()
+                else:
+                    automList = G.automorphism_group(partition=self.partition).gens()
+                    canonG = G.canonical_label(partition=self.partition)
+                if len(automList):
+                    canon6=canonG.graph6_string()
+                    if not canon6 in basisSet:
+                        if not self._has_odd_automorphisms(G, automList):
+                            basisSet.add(canon6)
         self._store_basis_g6(list(basisSet))
         logging.info("Basis built for %s" % str(self))
 
@@ -106,9 +114,14 @@ class GraphVectorSpace():
             return 0
         try:
             header = SL.load_line(self.basis_file_path)
-            dim = int(header)
+            return int(header)
         except SL.FileNotFoundError:
-            logging.warn("Dimension unknown for %s: No basis file" % str(self))
+            raise SL.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
+
+    def get_sort_value(self):
+        try:
+            dim = self.get_dimension()
+        except SL.FileNotFoundError:
             dim = Parameters.MAX_DIMENSION
         return dim
 

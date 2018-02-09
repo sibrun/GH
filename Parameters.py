@@ -6,6 +6,7 @@ data_dir = "data"
 plots_dir = "plots"
 ref_data_dir = "data_ref"
 log_dir = "log"
+temp_folder = 'temp'
 
 #---- Test Parameters ----
 eps = 1e-6

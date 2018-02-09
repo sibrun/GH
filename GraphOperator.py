@@ -62,15 +62,18 @@ class GraphOperator():
         pass
 
     def get_info(self):
-        shape = None
-        entries = None
-        m_rank = None
-        if self.valid:
-            if self.exists_matrix_file():
-                shape = self.get_matrix_shape()
-                entries = self.get_matrix_entries()
-                if self.exists_rank_file():
-                    m_rank = self.get_matrix_rank()
+        try:
+            shape = self.get_matrix_shape()
+        except SL.FileNotFoundError:
+            shape = None
+        try:
+            entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            entries = None
+        try:
+            m_rank = self.get_matrix_rank()
+        except SL.FileNotFoundError:
+            m_rank = None
         return (self.valid, shape, entries, m_rank)
 
     def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
@@ -118,7 +121,6 @@ class GraphOperator():
             listOfLists = []
             for dbelement in enumerate(domainBasis):
                 listOfLists.append(self._generate_matrix_list(dbelement, lookup))
-
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(matrixList, shape)
         logging.info("Operator matrix built for %s" % str(self))
@@ -150,32 +152,10 @@ class GraphOperator():
         return self.domain.exists_basis_file() and self.target.exists_basis_file()
 
     def get_matrix_shape(self):
-        if not self.valid:
-            return (self.target.get_dimension(), self.domain.get_dimension())
         try:
             header = SL.load_line(self.matrix_file_path)
-        except SL.FileNotFoundError:
-            raise SL.FileNotFoundError("Cannot load header from file %s: "
-                                   "Build operator matrix first" % str(self.matrix_file_path))
-        (d, t, data_type) = header.split(" ")
-        return (int(t), int(d))
-
-    def get_matrix_entries(self):
-        if not self.valid:
-            return 0
-        try:
-            (matrixList, shape) = self._load_matrix()
-            entries = len(matrixList)
-        except SL.FileNotFoundError:
-            logging.warn("Matrix entries unknown for %s: No matrix file" % str(self))
-            entries = Parameters.MAX_ENTRIES
-        return entries
-
-    def is_trivial(self):
-        if not self.valid:
-            return True
-        try:
-            (t, d) = self.get_matrix_shape()
+            (d, t, data_type) = header.split(" ")
+            (d, t) = (int(d), int(t))
         except SL.FileNotFoundError:
             try:
                 t = self.target.get_dimension()
@@ -183,6 +163,28 @@ class GraphOperator():
             except SL.FileNotFoundError:
                 raise SL.FileNotFoundError("Matrix shape of %s unknown: "
                                        "Build operator matrix or domain and target basis first" % str(self))
+        return (t, d)
+
+    def get_matrix_entries(self):
+        if not self.valid:
+            return 0
+        try:
+            (matrixList, shape) = self._load_matrix()
+            return len(matrixList)
+        except SL.FileNotFoundError:
+            raise SL.FileNotFoundError("Matrix entries unknown for %s: No matrix file" % str(self))
+
+    def get_sort_value(self):
+        try:
+            entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            entries = Parameters.MAX_ENTRIES
+        return entries
+
+    def is_trivial(self):
+        if not self.valid:
+            return True
+        (t, d) = self.get_matrix_shape()
         if t == 0 or d == 0:
             return True
         return self.get_matrix_entries() == 0
@@ -257,9 +259,10 @@ class GraphOperator():
     def get_matrix_rank(self):
         if not self.valid:
             return 0
-        if not self.exists_rank_file():
+        try:
+            return int(SL.load_line(self.rank_file_path))
+        except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Cannot load operator rank, No rank file found for %s: " % str(self))
-        return int(SL.load_line(self.rank_file_path))
 
     def delete_matrix_file(self):
         if os.path.isfile(self.matrix_file_path):

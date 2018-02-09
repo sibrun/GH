@@ -246,9 +246,9 @@ class HairyGC(GC.GraphComplex):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
                % (self.sub_type, str(self.v_range), str(self.l_range), str(self.h_range))
 
-    def set_info_file_path(self):
-        s = "graph_complex.txt"
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+    def get_info_file_path(self):
+        s = "graph_complex.html"
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
