@@ -1,12 +1,9 @@
 from abc import ABCMeta, abstractmethod
 import logging
 import itertools
-from joblib import Parallel, delayed
-import multiprocessing
-from tqdm import tqdm
 from sage.all import *
 import StoreLoad as SL
-import Shared as SH
+import ParallelProgress as PP
 import Parameters
 
 
@@ -82,11 +79,11 @@ class GraphOperator():
             m_rank = None
         return (self.valid, shape, entries, m_rank)
 
-    def build_matrix(self, ignore_existing_file=False, skip_if_no_basis=True, n_jobs=1):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         if not self.valid:
             logging.info("Skip creating file for operator matrix, since %s is not valid" % str(self))
             return
-        if not ignore_existing_file and self.exists_matrix_file():
+        if not ignore_existing_files and self.exists_matrix_file():
             return
         try:
             domainBasis = self.domain.get_basis(g6=False)
@@ -116,21 +113,15 @@ class GraphOperator():
                          "since the matrix shape is (%d, %d)" % (str(self), t, d))
             return
 
-        print('Build matrix for ' + self.get_type() + ' operator on graph vector space with ' + self.get_params_string())
-        logging.info("%d jobs to build matrix of %s" % (n_jobs,str(self)))
+        logging.info('Build matrix for ' + self.get_type() + ' operator on graph vector space with ' + self.get_params_string())
+        logging.info("%d jobs to build matrix of %s" % (n_jobs, str(self)))
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-        with tqdm(total=len(domainBasis)) as pbar:
-            if n_jobs > 1:
-                manager = multiprocessing.Manager()
-                lookupShared = manager.dict(lookup)
-                P = Parallel(n_jobs=n_jobs)
-                listOfLists = SH.parallel(self._generate_matrix_list, enumerate(domainBasis), n_jobs, lookupShared)#P(delayed(self._generate_matrix_list)(b, lookupShared) for b in progress(eDB))
-            else:
-                listOfLists = []
-                for dbelement in enumerate(domainBasis):
-                    listOfLists.append(self._generate_matrix_list(dbelement, lookup))
-                    pbar.update(1)
+
+        desc = 'Build matrix: ' + self.get_type() + ', ' + self.get_params_string()
+        listOfLists = PP.map_parallel(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
+                                      n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
+
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(matrixList, shape)
         logging.info("Operator matrix built for %s" % str(self))
@@ -250,11 +241,11 @@ class GraphOperator():
     def get_matrix(self):
         return self.get_matrix_transposed().transpose()
 
-    def compute_rank(self, ignore_existing_file=False, skip_if_no_matrix=True):
+    def compute_rank(self, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.valid:
             logging.info("Skip creating rank file, since %s is not valid" % str(self))
             return
-        if not ignore_existing_file and self.exists_rank_file():
+        if not ignore_existing_files and self.exists_rank_file():
             return
         try:
             M = self.get_matrix_transposed()

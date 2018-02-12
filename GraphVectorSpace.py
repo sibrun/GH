@@ -75,16 +75,33 @@ class GraphVectorSpace():
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, ignore_existing_file=False):
+    def build_basis(self, pbar_pos, ignore_existing_files=False):
         if not self.valid:
             logging.info("Skip building basis: %s is not valid" % str(self))
             return
-        if not ignore_existing_file and self.exists_basis_file():
+        if not ignore_existing_files and self.exists_basis_file():
             return
-        print('Build basis for graph vector space with ' + self.get_params_string())
+        logging.info('Build basis for graph vector space with ' + self.get_params_string())
         generatingList = self._generating_graphs()
+
+        total = len(generatingList)
+        if total == 0:
+            self._store_basis_g6([])
+            logging.info("Trivial basis with dimension 0 built for %s" % str(self))
+            return
+
+        disable = True
+        position = 0
+        miniters = 0
+        desc = None
+        if pbar_pos is not None:
+            disable = False
+            position = pbar_pos
+            miniters = int(len(generatingList) / Parameters.pbar_steps)
+            desc = 'Build basis: ' + self.get_params_string()
+
         basisSet = set()
-        with tqdm(total=len(generatingList)) as pbar:
+        with tqdm(total=total, desc=desc, miniters=miniters, position=position, disable=disable) as pbar:
             for G in generatingList:
                 if self.partition is None:
                     automList = G.automorphism_group().gens()
@@ -97,7 +114,8 @@ class GraphVectorSpace():
                     if not canon6 in basisSet:
                         if not self._has_odd_automorphisms(G, automList):
                             basisSet.add(canon6)
-                pbar.update(1)
+                pbar.update()
+
         self._store_basis_g6(list(basisSet))
         logging.info("Basis built for %s" % str(self))
 

@@ -27,7 +27,7 @@ class BasisTest(unittest.TestCase):
             vs.delete_basis_file()
             self.assertFalse(vs.exists_basis_file(), 'basis should have been deleted')
             self.assertRaises(SL.FileNotFoundError, vs.get_basis)
-            vs.build_basis(ignore_existing_file=True)
+            vs.build_basis(ignore_existing_files=True)
             self.assertTrue(vs.exists_basis_file(), 'basis should exist')
             logging.info("%s: %s" % (str(vs), vs.get_info()))
             basis_g6 = vs.get_basis()
@@ -58,7 +58,7 @@ class BasisTest(unittest.TestCase):
             if not vs.valid:
                 logging.info('%s: no basis test, since not valid' % str(vs))
                 continue
-            vs.build_basis(ignore_existing_file=True)
+            vs.build_basis(ignore_existing_files=True)
             logging.info("%s: %s" % (str(vs), vs.get_info()))
             basis_g6 = vs.get_basis(g6=True)
             ref_vs = REF.RefVectorSpace(vs)
@@ -93,7 +93,7 @@ class OperatorTest(unittest.TestCase):
                 continue
             op.delete_matrix_file()
             self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
-            op.build_matrix(ignore_existing_file=True, n_jobs=1)
+            op.build_matrix(ignore_existing_files=True, n_jobs=1)
             self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
             logging.info("%s: %s" % (str(op), op.get_info()))
             M = op.get_matrix()
@@ -111,7 +111,7 @@ class OperatorTest(unittest.TestCase):
             self.assertEqual(op.is_trivial(), m == 0 or n == 0 or entries == 0,
                              '%s: triviality check wrong' % str(op))
             op.delete_matrix_file()
-            op.build_matrix(ignore_existing_file=True, n_jobs=4)
+            op.build_matrix(ignore_existing_files=True, n_jobs=4)
             M_parallel = op.get_matrix()
             self.assertTrue(M == M_parallel, '%s matrix not equal if computed with parallel jobs' % str(op))
 
@@ -124,8 +124,8 @@ class OperatorTest(unittest.TestCase):
             if not op.exist_domain_target_files():
                 logging.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
-            op.build_matrix(ignore_existing_file=True, n_jobs=1)
-            op.compute_rank(ignore_existing_file=True)
+            op.build_matrix(ignore_existing_files=True, n_jobs=1)
+            op.compute_rank(ignore_existing_files=True)
             M = op.get_matrix()
             shape = op.get_matrix_shape()
             rank = op.get_matrix_rank()

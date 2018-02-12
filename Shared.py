@@ -19,4 +19,3 @@ class Perm:
     def shifted(cls, p):
         pmin = min(p)
         return cls([j - pmin for j in p])
-

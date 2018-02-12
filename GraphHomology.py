@@ -38,6 +38,7 @@ parser.add_argument('-l', type=range_type, help='range min,max for number of loo
 parser.add_argument('-hairs', type=range_type, help='range min,max for number of hairs')
 parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
 parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of parallel processes')
+parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=log_levels, help='logging level')
 parser.add_argument('-build', action='store_true', help='just build vector space basis and operator matrix')
@@ -50,8 +51,8 @@ args = parser.parse_args()
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
-def main(graph_complex):
-    graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+def cohomology_complete(graph_complex):
+    graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
     graph_complex.compute_ranks(ignore_existing_files=args.ignore_ex)
     graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()
@@ -59,17 +60,18 @@ def main(graph_complex):
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build(graph_complex):
-    graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.build(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_basis(graph_complex):
-    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_operator(graph_complex):
-    graph_complex.build_operator_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.build_operator_matrix(ignore_existing_files=args.ignore_ex,
+                                        n_jobs=args.n_jobs, progress_bar=args.pbar)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
@@ -128,7 +130,7 @@ if __name__ == "__main__":
         raise ValueError('graph complex not specified')
 
     if not (args.build or args.build_b or args.build_op or args.rank or args.coho):
-        main(graph_complex)
+        cohomology_complete(graph_complex)
     else:
         if args.build:
             build(graph_complex)

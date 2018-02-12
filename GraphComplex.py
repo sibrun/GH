@@ -2,11 +2,11 @@ from abc import ABCMeta, abstractmethod
 import logging
 import operator
 import itertools
-from joblib import Parallel, delayed
 import multiprocessing
 import pandas
 import StoreLoad as SL
 import Display
+import ParallelProgress as PP
 
 
 class GraphComplex():
@@ -15,11 +15,6 @@ class GraphComplex():
     def __init__(self, vs_list, op_list):
         self.vs_list = vs_list
         self.op_list = op_list
-        manager = multiprocessing.Manager()
-        self.vs_info_dict = manager.dict(dict())
-        self.op_info_dict = manager.dict(dict())
-        self.load_info()
-        self.computing = manager.dict(dict())
 
     @abstractmethod
     def get_type(self):
@@ -53,19 +48,13 @@ class GraphComplex():
     def plot_cohomology_dim(self):
         pass
 
-    def load_info(self):
-        for vs in self.vs_list:
-            self.vs_info_dict.update({vs.get_params(): vs.get_info()})
-        for op in self.op_list:
-            self.op_info_dict.update({op.get_params(): op.get_info()})
-
     def plot_info(self):
         vsList = []
         opList = []
-        for key, value in self.vs_info_dict.items():
-            vsList.append(list(key) + list(value))
-        for key, value in self.op_info_dict.items():
-                opList.append(list(key) + list(value))
+        for vs in self.vs_list:
+            vsList.append(list(vs.get_params()) + list(vs.get_info()))
+        for op in self.op_list:
+                opList.append(list(op.get_params()) + list(op.get_info()))
         vsColumns = list(self.get_params_names()) + ['valid', 'dimension']
         opColumns = list(self.get_params_names()) + ['valid', 'shape', 'entries', 'rank']
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
@@ -76,31 +65,25 @@ class GraphComplex():
         opTable.reset_index()
         Display.display_pandas_dfs([vsTable, opTable], self.get_info_file_path())
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1):
+    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
         self.sort_vs()
-        if n_jobs > 1:
-            P = Parallel(n_jobs=n_jobs)
-            P(delayed(self._build_single_basis)(vs, ignore_existing_file=ignore_existing_files)
-              for vs in self.vs_list)
-        else:
-            for vs in self.vs_list:
-                self._build_single_basis(vs, ignore_existing_file=ignore_existing_files)
+        PP.parallel_progress(self._build_single_basis, self.vs_list, progress_bar=progress_bar,
+                             ignore_existing_files=ignore_existing_files)
 
-    def _build_single_basis(self, vs, ignore_existing_file=True):
-        vs.build_basis(ignore_existing_file=ignore_existing_file)
-        self.vs_info_dict.update({vs.get_params(): vs.get_info()})
+    def _build_single_basis(self, vs, pbar_pos, ignore_existing_files=True):
+        vs.build_basis(pbar_pos, ignore_existing_files=ignore_existing_files)
 
-    def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1):
+    def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
         self.sort_op()
         for op in self.op_list:
-            op.build_matrix(ignore_existing_file=ignore_existing_files, n_jobs=n_jobs)
-            self.op_info_dict.update({op.get_params(): op.get_info()})
+            op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
 
-    def build(self, ignore_existing_files=True, n_jobs=1):
-        self.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
-        self.build_operator_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
+    def build(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+        self.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
+        self.build_operator_matrix(ignore_existing_files=ignore_existing_files,
+                                   n_jobs=n_jobs, progress_bar=progress_bar)
 
     def sort_vs(self, work_estimate=True):
         if work_estimate:
@@ -159,11 +142,10 @@ class GraphComplex():
               for op in self.op_list)
         else:
             for op in self.op_list:
-                self._compute_single_rank(op,  ignore_existing_file=ignore_existing_files)
+                self._compute_single_rank(op, ignore_existing_files=ignore_existing_files)
 
-    def _compute_single_rank(self, op, ignore_existing_file=True):
-        op.compute_rank(ignore_existing_file=ignore_existing_file)
-        self.op_info_dict.update({op.get_params(): op.get_info()})
+    def _compute_single_rank(self, op, ignore_existing_files=True):
+        op.compute_rank(ignore_existing_files=ignore_existing_files)
 
     #Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
