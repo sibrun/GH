@@ -64,14 +64,7 @@ class GraphComplex():
         opTable.reset_index()
         Display.display_pandas_dfs([vsTable, opTable], self.get_info_file_path())
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
-        self.plot_info()
-        self.sort_vs()
-        PP.parallel_individual_progress(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
-                                        ignore_existing_files=ignore_existing_files)
 
-    def _build_single_basis(self, vs, pbar_info, ignore_existing_files=True):
-        vs.build_basis(pbar_info, ignore_existing_files=ignore_existing_files)
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()

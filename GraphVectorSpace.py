@@ -184,3 +184,13 @@ class GraphVectorSpace():
         SL.generate_path(path)
         P = G.plot(partition=self.partition, vertex_labels=False)
         P.save(path)
+
+
+class VectorSpaceCollection:
+
+    def __init__(self, vs_list):
+        self.vs_list = vs_list
+
+
+    def
+
