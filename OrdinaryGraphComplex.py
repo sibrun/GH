@@ -90,6 +90,27 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
+class OrdinaryVSCollection(GVS.VectorSpaceCollection):
+    def __init__(self, v_range, l_range, even_edges):
+        self.v_range = v_range
+        self.l_range = l_range
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(self.even_edges)
+
+        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in
+                   itertools.product(self.v_range, self.l_range)]
+        super(OrdinaryVSCollection, self).__init__(vs_list)
+
+    def get_type(self):
+        return 'even edges' if self.even_edges else 'odd edges'
+
+    def get_params_range(self):
+        return (self.v_range, self.l_range)
+
+    def get_params_names(self):
+        return ('vertices', 'loops')
+
+
 # ------- Contraction Operator --------
 class ContractDOrdinary(GO.GraphOperator):
 
@@ -101,18 +122,13 @@ class ContractDOrdinary(GO.GraphOperator):
         super(ContractDOrdinary, self).__init__(domain, target)
 
     @classmethod
-    def generate_operators(cls, vs_list):
+    def generate_operators(cls, vs_collection):
+        vs_list = vs_collection.vs_list
         op_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
                 op_list.append(cls(domain, target))
         return op_list
-
-    @classmethod
-    def generate_operator(cls, n_vertices, n_loops, even_edges):
-        domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
-        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
-        return cls(domain, target)
 
     def get_params(self):
         return self.domain.get_params()
@@ -186,6 +202,12 @@ class ContractDOrdinary(GO.GraphOperator):
     def transform_param_range(param_range):
         (v_range, l_range) = param_range
         return (range(min(v_range) + 1, max(v_range)), l_range)
+
+
+class ContractDCollection(GO.OperatorCollection):
+    def __init__(self, vs_collection):
+        op_list = ContractDOrdinary.generate_operators(vs_collection)
+        super(ContractDCollection, self).__init__(op_list, vs_collection)
 
 
 # ------- Ordinary Graph Complex --------

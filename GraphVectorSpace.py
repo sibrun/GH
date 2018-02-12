@@ -2,7 +2,11 @@ from abc import ABCMeta, abstractmethod
 import logging
 from tqdm import tqdm
 from sage.all import *
+import operator
+import pandas
 import StoreLoad as SL
+import Display
+import ParallelProgress as PP
 import Parameters
 
 
@@ -187,10 +191,47 @@ class GraphVectorSpace():
 
 
 class VectorSpaceCollection:
+    __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
         self.vs_list = vs_list
 
+    @abstractmethod
+    def get_type(self):
+        pass
 
-    def
+    @abstractmethod
+    def get_params_range(self):
+        pass
 
+    @abstractmethod
+    def get_params_names(self):
+        pass
+
+    @classmethod
+    def sum(cls, vs_collections_1, vs_collections_2):
+        return cls(vs_collections_1.vs_list + vs_collections_2.vs_list)
+
+    def sort(self, work_estimate=True):
+        if work_estimate:
+            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+        else:
+            self.vs_list.sort(key=operator.methodcaller('get_sort_value'))
+
+    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+        self.plot_info()
+        self.sort()
+        PP.parallel_individual_progress(self._build_single_basis, self.vs_list, n_jobs=n_jobs,
+                                        progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
+
+    def _build_single_basis(self, vs, pbar_info, ignore_existing_files=True):
+        vs.build_basis(pbar_info, ignore_existing_files=ignore_existing_files)
+
+    def plot_info(self):
+        vsList = []
+        for vs in self.vs_list:
+            vsList.append(list(vs.get_params()) + list(vs.get_info()))
+        vsColumns = list(self.get_params_names()) + ['valid', 'dimension']
+        vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
+        vsTable.sort_values(by=['valid', 'dimension'], inplace=True, na_position='last')
+        Display.display_pandas_df(vsTable)
