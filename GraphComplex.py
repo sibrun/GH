@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 import logging
 import operator
 import itertools
-import multiprocessing
 import pandas
 import StoreLoad as SL
 import Display
@@ -68,11 +67,11 @@ class GraphComplex():
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
         self.sort_vs()
-        PP.parallel_progress(self._build_single_basis, self.vs_list, progress_bar=progress_bar,
-                             ignore_existing_files=ignore_existing_files)
+        PP.parallel_individual_progress(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+                                        ignore_existing_files=ignore_existing_files)
 
-    def _build_single_basis(self, vs, pbar_pos, ignore_existing_files=True):
-        vs.build_basis(pbar_pos, ignore_existing_files=ignore_existing_files)
+    def _build_single_basis(self, vs, pbar_info, ignore_existing_files=True):
+        vs.build_basis(pbar_info, ignore_existing_files=ignore_existing_files)
 
     def build_operator_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
@@ -136,13 +135,7 @@ class GraphComplex():
     def compute_ranks(self, ignore_existing_files=True, n_jobs=1):
         self.plot_info()
         self.sort_op(work_estimate=False)
-        if n_jobs > 1:
-            P = Parallel(n_jobs=n_jobs)
-            P(delayed(self._compute_single_rank)(op, ignore_existing_file=ignore_existing_files)
-              for op in self.op_list)
-        else:
-            for op in self.op_list:
-                self._compute_single_rank(op, ignore_existing_files=ignore_existing_files)
+        PP.parallel(self._compute_single_rank, self.op_list, n_jobs=n_jobs, ignore_existing_files=ignore_existing_files)
 
     def _compute_single_rank(self, op, ignore_existing_files=True):
         op.compute_rank(ignore_existing_files=ignore_existing_files)

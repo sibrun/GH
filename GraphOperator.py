@@ -119,8 +119,8 @@ class GraphOperator():
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
 
         desc = 'Build matrix: ' + self.get_type() + ', ' + self.get_params_string()
-        listOfLists = PP.map_parallel(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
-                                      n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
+        listOfLists = PP.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
+                                                  n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix(matrixList, shape)

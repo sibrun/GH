@@ -75,7 +75,7 @@ class GraphVectorSpace():
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, pbar_pos, ignore_existing_files=False):
+    def build_basis(self, pbar_info, ignore_existing_files=False):
         if not self.valid:
             logging.info("Skip building basis: %s is not valid" % str(self))
             return
@@ -84,37 +84,41 @@ class GraphVectorSpace():
         logging.info('Build basis for graph vector space with ' + self.get_params_string())
         generatingList = self._generating_graphs()
 
-        total = len(generatingList)
-        if total == 0:
-            self._store_basis_g6([])
-            logging.info("Trivial basis with dimension 0 built for %s" % str(self))
-            return
-
-        disable = True
-        position = 0
-        miniters = 0
-        desc = None
-        if pbar_pos is not None:
-            disable = False
-            position = pbar_pos
-            miniters = int(len(generatingList) / Parameters.pbar_steps)
+        (progress_bar, message, idx, queue) = pbar_info
+        if progress_bar:
+            total = len(generatingList)
+            miniters = int(total / Parameters.pbar_steps)
             desc = 'Build basis: ' + self.get_params_string()
-
+            if message:
+                queue.put((idx, 'start', total, desc))
+                count = 0
+            else:
+                pbar = tqdm(total=total, desc=desc, miniters=miniters)
         basisSet = set()
-        with tqdm(total=total, desc=desc, miniters=miniters, position=position, disable=disable) as pbar:
-            for G in generatingList:
-                if self.partition is None:
-                    automList = G.automorphism_group().gens()
-                    canonG = G.canonical_label()
+        for G in generatingList:
+            if self.partition is None:
+                automList = G.automorphism_group().gens()
+                canonG = G.canonical_label()
+            else:
+                automList = G.automorphism_group(partition=self.partition).gens()
+                canonG = G.canonical_label(partition=self.partition)
+            if len(automList):
+                canon6=canonG.graph6_string()
+                if not canon6 in basisSet:
+                    if not self._has_odd_automorphisms(G, automList):
+                        basisSet.add(canon6)
+            if progress_bar:
+                if message:
+                    count += 1
+                    if count % miniters == 0:
+                        queue.put((idx, 'step', miniters, None))
                 else:
-                    automList = G.automorphism_group(partition=self.partition).gens()
-                    canonG = G.canonical_label(partition=self.partition)
-                if len(automList):
-                    canon6=canonG.graph6_string()
-                    if not canon6 in basisSet:
-                        if not self._has_odd_automorphisms(G, automList):
-                            basisSet.add(canon6)
-                pbar.update()
+                    pbar.update()
+        if progress_bar:
+            if message:
+                queue.put((idx, 'stop', None, None))
+            else:
+                pbar.close()
 
         self._store_basis_g6(list(basisSet))
         logging.info("Basis built for %s" % str(self))

@@ -1,9 +1,10 @@
 import multiprocessing as mp
+import Queue
 from tqdm import tqdm
 import Parameters
 
 
-def map_parallel(func, iter_arg, common_arg, n_jobs=1, progress_bar=False, desc=None):
+def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=False, desc=None):
     if n_jobs == 1:
         if progress_bar:
             miniters = int(len(iter_arg) / Parameters.pbar_steps)
@@ -39,27 +40,59 @@ def map_parallel(func, iter_arg, common_arg, n_jobs=1, progress_bar=False, desc=
             return [x.get() for x in results]
 
 
-def parallel_progress(func, iter_arg, n_jobs=1, progress_bar=False, *args, **kwargs):
+def parallel_individual_progress(func, iter_arg, n_jobs=1, progress_bar=False, **kwargs):
     if n_jobs == 1:
-        if progress_bar:
-            for x in iter_arg:
-                pbar = tqdm()
-                func(x, 0, *args, **kwargs)
-        else:
-            for x in iter_arg:
-                func(x, None, *args, **kwargs)
+        pbar_info = (True if progress_bar else False, False, None, None)
+        for x in iter_arg:
+            func(x, pbar_info, **kwargs)
 
     else:
+        pool = mp.Pool(n_jobs)
         if progress_bar:
-            pool = mp.Pool(n_jobs)
-            pbar_positions = range(len(iter_arg))
-            [pool.apply_async(func, args=(x, pbar_pos, args, kwargs)) for pbar_pos, x in enumerate(iter_arg)]
+            results = []
+            iter_arg_l = len(iter_arg)
+            pbars = [None] * iter_arg_l
+            manager = mp.Manager()
+            queue = manager.Queue()
+
+            for (idx, x) in enumerate(iter_arg):
+                pbar_info = (True, True, idx, queue)
+                pool.apply_async(func, args=(x, pbar_info, kwargs), callback=results.append)
             pool.close()
+
+            while len(results) != iter_arg_l:
+                try:
+                    update_pbars(pbars, queue.get(timeout=Parameters.timeout))
+                except Queue.Empty:
+                    continue
             pool.join()
 
         else:
-            pool = mp.Pool(n_jobs)
-            [pool.apply_async(func, args=(x, None, args, kwargs)) for x in iter_arg]
+            pbar_info = (False, False, None, None)
+            [pool.apply_async(func, args=(x, pbar_info, kwargs)) for x in iter_arg]
             pool.close()
             pool.join()
 
+
+def update_pbars(pbars, message):
+    (idx, mes, v, desc) = message
+    if mes == 'start':
+        pbars[idx] = tqdm(desc=desc, position=idx, total=v)
+    if mes == 'step':
+        pbars[idx].update(v)
+    if mes == 'stop':
+        pbar = pbars[idx]
+        pbar.n = pbar.total
+        pbar.close()
+
+
+def parallel(func, iter_arg, n_jobs=1, **kwargs):
+    if n_jobs == 1:
+        for x in iter_arg:
+            func(x, **kwargs)
+
+    else:
+        pool = mp.Pool(n_jobs)
+        [pool.apply_async(func, args=(x, kwargs)) for x in iter_arg]
+        pool.close()
+        pool.join()
