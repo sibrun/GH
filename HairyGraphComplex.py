@@ -285,5 +285,3 @@ class HairyContractEdgesGC(HairyGC):
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-

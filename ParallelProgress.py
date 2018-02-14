@@ -67,6 +67,9 @@ def parallel_individual_progress(func, iter_arg, n_jobs=1, progress_bar=False, *
                     continue
             pool.join()
 
+            for pbar in pbars:
+                pbar.close()
+
         else:
             pbar_info = (False, False, None, None)
             [pool.apply_async(func, args=(x,), kwds=dict({'parallel_progress_bar_info': pbar_info}, **kwargs))
@@ -83,9 +86,7 @@ def update_pbars(pbars, message):
         pbars[idx].update(v)
     if mes == 'stop':
         pbar = pbars[idx]
-        pbar.n = pbar.total
-        pbar.close()
-
+        #pbar.n = pbar.total
 
 def parallel(func, iter_arg, n_jobs=1, **kwargs):
     if n_jobs == 1:
