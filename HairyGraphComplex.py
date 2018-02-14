@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
@@ -118,24 +119,39 @@ class HairyGVS(GVS.GraphVectorSpace):
         # give estimate of number of graphs
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
+class HairyGVSCollection(GVS.VectorSpaceCollection):
+    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
+        self.v_range = v_range
+        self.l_range = l_range
+        self.h_range = h_range
+        self.even_edges = even_edges
+        self.even_hairs = even_hairs
+        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
+
+        vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
+                   (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
+        super(HairyGVSCollection, self).__init__(vs_list)
+
+    def get_type(self):
+        e = 'even edges' if self.even_edges else 'odd edges'
+        h = 'even hairs' if self.even_hairs else 'odd hairs'
+        return e + ', ' + h
+
+    def get_params_range(self):
+        return [self.v_range, self.l_range, self.h_range]
+
+    def get_params_names(self):
+        return ('vertices', 'loops', 'hairs')
+
 
 # ------- Ordinary Graph Complex --------
-class ContractDHairy(GO.GraphOperator):
+class ContractEdges(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices + 1 or domain.n_loops != target.n_loops  or \
                         domain.n_hairs != target.n_hairs or domain.sub_type != target.sub_type:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
-        super(ContractDHairy, self).__init__(domain, target)
-
-    @classmethod
-    def generate_operators(cls, vs_list):
-        op_list = []
-        for (domain, target) in itertools.product(vs_list, vs_list):
-            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
-                    and domain.n_hairs == target.n_hairs:
-                op_list.append(cls(domain, target))
-        return op_list
+        super(ContractEdges, self).__init__(domain, target)
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -216,14 +232,40 @@ class ContractDHairy(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
-    @staticmethod
-    def transform_param_range(param_range):
-        (v_range, l_range, h_range) = param_range
-        return (range(min(v_range) + 1, max(v_range)), l_range, h_range)
+class ContractEdgesCollection(GO.OperatorCollection):
+    def __init__(self, vs_collection):
+        vs_list = vs_collection.vs_list
+        op_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
+                    and domain.n_hairs == target.n_hairs:
+                op_list.append(ContractEdges(domain, target))
+        super(ContractEdgesCollection, self).__init__(op_list, vs_collection)
 
 
 # ------- Ordinary Graph Complex --------
 class HairyGC(GC.GraphComplex):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, op_collection):
+        super(HairyGC, self).__init__(op_collection)
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
+    def get_cohomology_plot_path(self):
+        pass
+
+    def plot_cohomology_dim(self):
+        (dim_dict, param_range) = self.get_cohomology_dim()
+        (v_range, l_range, h_range) = param_range
+        path = self.get_cohomology_plot_path()
+        Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range, path)
+
+
+class HairyContractEdgesGC(HairyGC):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -232,44 +274,16 @@ class HairyGC(GC.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
-                   (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        op_list = ContractDHairy.generate_operators(vs_list)
-        super(HairyGC, self).__init__(vs_list, op_list)
-
-    def get_type(self):
-        e = 'even edges' if self.even_edges else 'odd edges'
-        h = 'even hairs' if self.even_hairs else 'odd hairs'
-        return e + ', ' + h
-
-    def get_params_range(self):
-        return [self.v_range, self.l_range, self.h_range]
-
-    def get_params_names(self):
-        return ('vertices', 'loops', 'hairs')
+        vs_collection = HairyGVSCollection(v_range, l_range, h_range, even_edges, even_hairs)
+        op_collection = ContractEdgesCollection(vs_collection)
+        super(HairyContractEdgesGC, self).__init__(op_collection)
 
     def __str__(self):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
                % (self.sub_type, str(self.v_range), str(self.l_range), str(self.h_range))
 
-    def get_info_file_path(self):
-        s = "graph_complex.html"
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
-    def get_cohomology_dim(self):
-        cohomology_dim = self.get_general_cohomology_dim_dict()
-        dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({(vs.n_vertices, vs.n_loops, vs.n_hairs): cohomology_dim.get(vs)})
-        param_range = ContractDHairy.transform_param_range((self.v_range, self.l_range, self.h_range))
-        return (dim_dict, param_range)
 
-    def plot_cohomology_dim(self):
-        (dim_dict, param_range) = self.get_cohomology_dim()
-        (v_range, l_range, h_range) = param_range
-        path = self.get_cohomology_plot_path()
-        Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range, path)

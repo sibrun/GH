@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
@@ -15,14 +16,13 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 
 # ------- Ordinary Graph Vector Space --------
 class OrdinaryGVS(GVS.GraphVectorSpace):
-
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get(self.even_edges)
-        super(OrdinaryGVS,self).__init__()
+        super(OrdinaryGVS, self).__init__()
 
     def get_params(self):
         return (self.n_vertices, self.n_loops)
@@ -90,16 +90,15 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-class OrdinaryVSCollection(GVS.VectorSpaceCollection):
+class OrdinaryGVSCollection(GVS.VectorSpaceCollection):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in
-                   itertools.product(self.v_range, self.l_range)]
-        super(OrdinaryVSCollection, self).__init__(vs_list)
+        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        super(OrdinaryGVSCollection, self).__init__(vs_list)
 
     def get_type(self):
         return 'even edges' if self.even_edges else 'odd edges'
@@ -112,32 +111,22 @@ class OrdinaryVSCollection(GVS.VectorSpaceCollection):
 
 
 # ------- Contraction Operator --------
-class ContractDOrdinary(GO.GraphOperator):
-
+class ContractEdges(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
                 or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get(domain.even_edges)
-        super(ContractDOrdinary, self).__init__(domain, target)
+        super(ContractEdges, self).__init__(domain, target)
 
     @classmethod
-    def generate_operators(cls, vs_collection):
-        vs_list = vs_collection.vs_list
-        op_list = []
-        for (domain, target) in itertools.product(vs_list, vs_list):
-            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
-                op_list.append(cls(domain, target))
-        return op_list
-
-    def get_params(self):
-        return self.domain.get_params()
-
-    def get_params_string(self):
-        return self.domain.get_params_string()
+    def generate_operator(cls, n_vertices, n_loops, even_edges):
+        domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
+        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
+        return cls(domain, target)
 
     def get_type(self):
-        return 'contract edge'
+        return 'contract edges'
 
     def set_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
@@ -161,7 +150,7 @@ class ContractDOrdinary(GO.GraphOperator):
         return self.domain.n_edges * sqrt(self.target.get_dimension())
 
     def __str__(self):
-        return "<Contract edges: domain: %s>" % str(self.domain)
+        return "<%s: domain: %s>" % (self.get_type(), str(self.domain))
 
     def _operate_on(self,G):
         image=[]
@@ -198,61 +187,54 @@ class ContractDOrdinary(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
-    @staticmethod
-    def transform_param_range(param_range):
-        (v_range, l_range) = param_range
-        return (range(min(v_range) + 1, max(v_range)), l_range)
 
-
-class ContractDCollection(GO.OperatorCollection):
+class ContractEdgesCollection(GO.OperatorCollection):
     def __init__(self, vs_collection):
-        op_list = ContractDOrdinary.generate_operators(vs_collection)
-        super(ContractDCollection, self).__init__(op_list, vs_collection)
+        vs_list = vs_collection.vs_list
+        op_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
+                op_list.append(ContractEdges(domain, target))
+        super(ContractEdgesCollection, self).__init__(op_list, vs_collection)
 
 
 # ------- Ordinary Graph Complex --------
 class OrdinaryGC(GC.GraphComplex):
-    def __init__(self, v_range, l_range, even_edges):
-        self.v_range = v_range
-        self.l_range = l_range
-        self.even_edges = even_edges
-        self.sub_type = sub_types.get(self.even_edges)
+    __metaclass__ = ABCMeta
 
-        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        op_list = ContractDOrdinary.generate_operators(vs_list)
-        super(OrdinaryGC, self).__init__(vs_list, op_list)
+    def __init__(self, op_collection):
+        super(OrdinaryGC, self).__init__(op_collection)
 
-    def get_type(self):
-        return 'even edges' if self.even_edges else 'odd edges'
-
-    def get_params_range(self):
-        return (self.v_range, self.l_range)
-
-    def get_params_names(self):
-        return('vertices', 'loops')
-
+    @abstractmethod
     def __str__(self):
-        return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
-               % (self.sub_type, str(self.v_range), str(self.l_range))
+        pass
 
-    def get_info_file_path(self):
-        s = "graph_complex.txt"
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
+    @abstractmethod
     def get_cohomology_plot_path(self):
-        s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-    def get_cohomology_dim(self):
-        cohomology_dim = self.get_general_cohomology_dim_dict()
-        dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({(vs.n_vertices, vs.n_loops): cohomology_dim.get(vs)})
-        param_range = ContractDOrdinary.transform_param_range((self.v_range, self.l_range))
-        return(dim_dict, param_range)
+        pass
 
     def plot_cohomology_dim(self):
         (dim_dict, param_range) = self.get_cohomology_dim()
         (v_range, l_range) = param_range
         path = self.get_cohomology_plot_path()
         Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range, path)
+
+
+class OrdinaryContractEdgesGC(OrdinaryGC):
+    def __init__(self, v_range, l_range, even_edges):
+        self.v_range = v_range
+        self.l_range = l_range
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(self.even_edges)
+
+        vs_collection = OrdinaryGVSCollection(v_range, l_range, even_edges)
+        op_collection = ContractEdgesCollection(vs_collection)
+        super(OrdinaryContractEdgesGC, self).__init__(op_collection)
+
+    def __str__(self):
+        return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
+               % (self.sub_type, str(self.v_range), str(self.l_range))
+
+    def get_cohomology_plot_path(self):
+        s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)

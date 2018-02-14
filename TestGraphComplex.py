@@ -174,7 +174,7 @@ class GraphComplexTest(unittest.TestCase):
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(gc),fail_l))
 
             gc.sort_member(work_estimate=False)
-            gc.compute_ranks(ignore_existing_files=True)
+            gc.compute_rank(ignore_existing_files=True)
             gc.plot_cohomology_dim()
             self.assertTrue(os.path.isfile(gc.get_cohomology_plot_path()),
                             'Cohomology plot should exist for %s' % str(gc))
@@ -185,7 +185,7 @@ class GraphComplexTest(unittest.TestCase):
             ref_gc = REF.RefGraphComplex(gc)
             gc.build(ignore_existing_files=True, n_jobs=4)
             gc.sort_member(work_estimate=False)
-            gc.compute_ranks(ignore_existing_files=True)
+            gc.compute_rank(ignore_existing_files=True)
             (n_succ, n_fail, n_inc) = ref_gc.compare_cohomology_dim()
             self.assertTrue(n_fail == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
             if n_succ == 0:

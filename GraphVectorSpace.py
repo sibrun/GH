@@ -3,6 +3,7 @@ import logging
 from tqdm import tqdm
 from sage.all import *
 import operator
+import itertools
 import pandas
 import StoreLoad as SL
 import Display
@@ -10,7 +11,7 @@ import ParallelProgress as PP
 import Parameters
 
 
-class GraphVectorSpace():
+class GraphVectorSpace(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -79,16 +80,14 @@ class GraphVectorSpace():
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, pbar_info, ignore_existing_files=False):
+    def build_basis(self, parallel_progress_bar, ignore_existing_files=False):
         if not self.valid:
-            logging.info("Skip building basis: %s is not valid" % str(self))
             return
         if not ignore_existing_files and self.exists_basis_file():
             return
-        logging.info('Build basis for graph vector space with ' + self.get_params_string())
         generatingList = self._generating_graphs()
 
-        (progress_bar, message, idx, queue) = pbar_info
+        (progress_bar, message, idx, queue) = parallel_progress_bar
         if progress_bar:
             total = len(generatingList)
             miniters = int(total / Parameters.pbar_steps)
@@ -125,7 +124,6 @@ class GraphVectorSpace():
                 pbar.close()
 
         self._store_basis_g6(list(basisSet))
-        logging.info("Basis built for %s" % str(self))
 
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:
@@ -153,14 +151,12 @@ class GraphVectorSpace():
         return dim
 
     def _store_basis_g6(self, basisList):
-        logging.info("Store basis in file: %s" % str(self.basis_file_path))
         basisList.insert(0, str(len(basisList)))
         SL.store_string_list(basisList, self.basis_file_path)
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
-            raise SL.FileNotFoundError("Cannot load basis, No Basis file found for %s: " % str(self))
-        logging.info("Load basis from file: %s" % str(self.basis_file_path))
+            raise SL.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
         basisList = SL.load_string_list(self.basis_file_path)
         dim = int(basisList.pop(0))
         if len(basisList) != dim:
@@ -172,7 +168,6 @@ class GraphVectorSpace():
             logging.warn("Empty basis: %s is not valid" % str(self))
             return []
         basis_g6 = self._load_basis_g6()
-        logging.info("Get basis of %s with dimension %d" % (str(self), len(basis_g6)))
         if g6:
             return basis_g6
         else:
@@ -190,7 +185,7 @@ class GraphVectorSpace():
         P.save(path)
 
 
-class VectorSpaceCollection:
+class VectorSpaceCollection(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
@@ -208,9 +203,14 @@ class VectorSpaceCollection:
     def get_params_names(self):
         pass
 
-    @classmethod
-    def sum(cls, vs_collections_1, vs_collections_2):
-        return cls(vs_collections_1.vs_list + vs_collections_2.vs_list)
+    def __eq__(self, other):
+        if len(self.vs_list) != len(other.vs_list):
+            return False
+        eq_l = 0
+        for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
+            if vs1 == vs2:
+                eq_l +=1
+        return eq_l == len(self.vs_list)
 
     def sort(self, work_estimate=True):
         if work_estimate:

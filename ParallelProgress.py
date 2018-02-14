@@ -42,7 +42,7 @@ def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=
 
 def parallel_individual_progress(func, iter_arg, n_jobs=1, progress_bar=False, **kwargs):
     if n_jobs == 1:
-        pbar_info = (True if progress_bar else False, False, None, None)
+        pbar_info = (progress_bar, False, None, None)
         for x in iter_arg:
             func(x, pbar_info, **kwargs)
 
@@ -69,7 +69,8 @@ def parallel_individual_progress(func, iter_arg, n_jobs=1, progress_bar=False, *
 
         else:
             pbar_info = (False, False, None, None)
-            [pool.apply_async(func, args=(x, pbar_info, kwargs)) for x in iter_arg]
+            [pool.apply_async(func, args=(x,), kwds=dict({'parallel_progress_bar_info': pbar_info}, **kwargs))
+             for x in iter_arg]
             pool.close()
             pool.join()
 

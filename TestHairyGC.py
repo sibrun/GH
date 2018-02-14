@@ -32,7 +32,7 @@ class HGCBasisTest(TGC.BasisTest):
 
 class HGCOperatorTest(TGC.OperatorTest):
     def setUp(self):
-        self.op_list = [HGC.ContractDHairy.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.op_list = [HGC.ContractEdges.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):
