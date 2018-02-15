@@ -86,7 +86,7 @@ def update_pbars(pbars, message):
         pbars[idx].update(v)
     if mes == 'stop':
         pbar = pbars[idx]
-        #pbar.n = pbar.total
+        pbar.n = pbar.total
 
 def parallel(func, iter_arg, n_jobs=1, **kwargs):
     if n_jobs == 1:
@@ -98,3 +98,34 @@ def parallel(func, iter_arg, n_jobs=1, **kwargs):
         [pool.apply_async(func, args=(x, kwargs)) for x in iter_arg]
         pool.close()
         pool.join()
+
+
+class ParallelTqdm(object):
+    def __init__(self, n_bars):
+        self.pbars = [None] * n_bars
+        self.position = 0
+
+    def start(self, idx, desc, total):
+        self.pbars[idx] = tqdm(desc=desc, position=self.position, total=total, smoothing=0)
+        self.position += 1
+
+    def update(self, idx, step):
+        self.pbars[idx].update(step)
+
+    def stop(self, idx):
+        pbar = self.pbars[idx]
+        pbar.update()
+        pbar.close()
+
+    def close(self):
+        for pbar in self.pbars:
+            pbar.close()
+
+    def update_bars(self, message):
+        (idx, mes, v, desc) = message
+        if mes == 'start':
+            self.start(idx, desc, v)
+        if mes == 'step':
+            self.update(idx, v)
+        if mes == 'stop':
+            self.stop(idx)
