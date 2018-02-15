@@ -7,7 +7,7 @@ import Parameters
 def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=False, desc=None):
     if n_jobs == 1:
         if progress_bar:
-            miniters = int(len(iter_arg) / Parameters.pbar_steps)
+            miniters = max(1, int(len(iter_arg) / Parameters.pbar_steps))
             return [func(x, common_arg) for x in tqdm(iter_arg, miniters=miniters, desc=desc)]
         else:
             return [func(x, common_arg) for x in iter_arg]
@@ -21,7 +21,7 @@ def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=
 
         if progress_bar:
             total = len(iter_arg)
-            miniters = int(total/Parameters.pbar_steps)
+            miniters = max(1, int(total/Parameters.pbar_steps))
 
             def update(res):
                 pbar.update()
@@ -50,63 +50,50 @@ def parallel_individual_progress(func, iter_arg, n_jobs=1, progress_bar=False, *
         pool = mp.Pool(n_jobs)
         if progress_bar:
             results = []
-            iter_arg_l = len(iter_arg)
-            pbars = [None] * iter_arg_l
-            manager = mp.Manager()
-            queue = manager.Queue()
-
+            ptqdm = ParallelTqdm(iter_arg, results)
+            queue = ptqdm.get_queue()
             for (idx, x) in enumerate(iter_arg):
                 pbar_info = (True, True, idx, queue)
-                pool.apply_async(func, args=(x, pbar_info, kwargs), callback=results.append)
+                pool.apply_async(func, args=(x,), kwds=dict({'pbar_info': pbar_info}, **kwargs),
+                                 callback=results.append)
             pool.close()
-
-            while len(results) != iter_arg_l:
-                try:
-                    update_pbars(pbars, queue.get(timeout=Parameters.timeout))
-                except Queue.Empty:
-                    continue
+            ptqdm.tqdm()
             pool.join()
-
-            for pbar in pbars:
-                pbar.close()
 
         else:
             pbar_info = (False, False, None, None)
-            [pool.apply_async(func, args=(x,), kwds=dict({'parallel_progress_bar_info': pbar_info}, **kwargs))
+            [pool.apply_async(func, args=(x,), kwds=dict({'pbar_info': pbar_info}, **kwargs))
              for x in iter_arg]
             pool.close()
             pool.join()
 
 
-def update_pbars(pbars, message):
-    (idx, mes, v, desc) = message
-    if mes == 'start':
-        pbars[idx] = tqdm(desc=desc, position=idx, total=v)
-    if mes == 'step':
-        pbars[idx].update(v)
-    if mes == 'stop':
-        pbar = pbars[idx]
-        pbar.n = pbar.total
-
-def parallel(func, iter_arg, n_jobs=1, **kwargs):
+def parallel(func, iter_arg, n_jobs=1, *args, **kwargs):
     if n_jobs == 1:
         for x in iter_arg:
             func(x, **kwargs)
 
     else:
         pool = mp.Pool(n_jobs)
-        [pool.apply_async(func, args=(x, kwargs)) for x in iter_arg]
+        [pool.apply_async(func, args=(x, args), kwds=kwargs) for x in iter_arg]
         pool.close()
         pool.join()
 
 
 class ParallelTqdm(object):
-    def __init__(self, n_bars):
-        self.pbars = [None] * n_bars
+    def __init__(self, iter_arg, results):
+        self.n_bars = len(iter_arg)
+        self.results = results
+        manager = mp.Manager()
+        self.queue = manager.Queue()
+        self.pbars = [None] * self.n_bars
         self.position = 0
 
+    def get_queue(self):
+        return self.queue
+
     def start(self, idx, desc, total):
-        self.pbars[idx] = tqdm(desc=desc, position=self.position, total=total, smoothing=0)
+        self.pbars[idx] = tqdm(desc=desc, position=self.position, total=total)
         self.position += 1
 
     def update(self, idx, step):
@@ -114,7 +101,6 @@ class ParallelTqdm(object):
 
     def stop(self, idx):
         pbar = self.pbars[idx]
-        pbar.update()
         pbar.close()
 
     def close(self):
@@ -129,3 +115,45 @@ class ParallelTqdm(object):
             self.update(idx, v)
         if mes == 'stop':
             self.stop(idx)
+
+    def tqdm(self):
+        while len(self.results) != self.n_bars:
+            try:
+                self.update_bars(self.queue.get(timeout=Parameters.timeout))
+            except Queue.Empty:
+                continue
+        self.close()
+
+
+def parallel_progress_messaging(func, iter_arg, arg, pbar_info=False, desc=None):
+    if pbar_info is False:
+        progress_bar = False
+    else:
+        (progress_bar, message, idx, queue) = pbar_info
+    if progress_bar:
+        total = len(iter_arg)
+        miniters = max(4, int(total / Parameters.pbar_steps))
+
+        if message:
+            queue.put((idx, 'start', total, desc))
+            it_count = 0
+        else:
+            pbar = tqdm(total=total, desc=desc, miniters=miniters)
+
+    for x in iter_arg:
+        func(x, arg)
+        if progress_bar:
+            if message:
+                it_count += 1
+                if it_count % miniters == 0:
+                    queue.put((idx, 'step', miniters, None))
+            else:
+                pbar.update()
+
+    if progress_bar:
+        if message:
+            remaining = total - int(total / miniters) * miniters
+            queue.put((idx, 'step', remaining, None))
+            queue.put((idx, 'stop', None, None))
+        else:
+            pbar.close()

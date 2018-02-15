@@ -20,11 +20,6 @@ x_plots = 2
 #---- Progress Bar Parameters ----
 pbar_steps = 200
 timeout = 0.1
-# Minimum progress display update interval, in iterations.
-# If 0 and ``dynamic_miniters``, will automatically adjust to equal
-# ``mininterval`` (more CPU efficient, good for tight loops).
-# If > 0, will skip display of specified number of iterations.
-
 
 #---- Max Values for Sorting ----
 MAX_ENTRIES = sys.maxint  # return value if number of entries is unkown, i.e. if no matrix file

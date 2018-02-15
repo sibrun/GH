@@ -80,23 +80,31 @@ class GraphVectorSpace(object):
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, parallel_progress_bar, ignore_existing_files=False):
+    def build_basis(self, pbar_info=False, ignore_existing_files=False):
         if not self.valid:
             return
         if not ignore_existing_files and self.exists_basis_file():
             return
         generatingList = self._generating_graphs()
 
-        (progress_bar, message, idx, queue) = parallel_progress_bar
+        desc = 'Build basis: ' + self.get_params_string()
+        basisSet = set()
+        PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet,
+                                       pbar_info=pbar_info, desc=desc)
+        '''if pbar_info is False:
+            progress_bar = False
+        else:
+            (progress_bar, message, idx, queue) = pbar_info
         if progress_bar:
             total = len(generatingList)
-            miniters = int(total / Parameters.pbar_steps)
+            miniters = max(4, int(total / Parameters.pbar_steps))
             desc = 'Build basis: ' + self.get_params_string()
             if message:
                 queue.put((idx, 'start', total, desc))
-                count = 0
+                it_count = 0
             else:
                 pbar = tqdm(total=total, desc=desc, miniters=miniters)
+
         basisSet = set()
         for G in generatingList:
             if self.partition is None:
@@ -110,20 +118,36 @@ class GraphVectorSpace(object):
                 if not canon6 in basisSet:
                     if not self._has_odd_automorphisms(G, automList):
                         basisSet.add(canon6)
+
             if progress_bar:
                 if message:
-                    count += 1
-                    if count % miniters == 0:
+                    it_count += 1
+                    if it_count % miniters == 0:
                         queue.put((idx, 'step', miniters, None))
                 else:
                     pbar.update()
+
         if progress_bar:
             if message:
+                remaining = total - int(total / miniters) * miniters
+                queue.put((idx, 'step', remaining, None))
                 queue.put((idx, 'stop', None, None))
             else:
-                pbar.close()
-
+                pbar.close()'''
         self._store_basis_g6(list(basisSet))
+
+    def _generate_basis_set(self, G, basis_set):
+        if self.partition is None:
+            automList = G.automorphism_group().gens()
+            canonG = G.canonical_label()
+        else:
+            automList = G.automorphism_group(partition=self.partition).gens()
+            canonG = G.canonical_label(partition=self.partition)
+        if len(automList):
+            canon6 = canonG.graph6_string()
+            if not canon6 in basis_set:
+                if not self._has_odd_automorphisms(G, automList):
+                    basis_set.add(canon6)
 
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:
@@ -224,8 +248,8 @@ class VectorSpaceCollection(object):
         PP.parallel_individual_progress(self._build_single_basis, self.vs_list, n_jobs=n_jobs,
                                         progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
 
-    def _build_single_basis(self, vs, pbar_info, ignore_existing_files=True):
-        vs.build_basis(pbar_info, ignore_existing_files=ignore_existing_files)
+    def _build_single_basis(self, vs, pbar_info=False, ignore_existing_files=True):
+        vs.build_basis(pbar_info=pbar_info, ignore_existing_files=ignore_existing_files)
 
     def plot_info(self):
         vsList = []
