@@ -18,8 +18,8 @@ class GraphOperator(object):
         self.domain = domain
         self.target = target
 
-    def get_validity(self):
-        return self.domain.get_validity() and self.target.get_validity()
+    def is_valid(self):
+        return self.domain.is_valid() and self.target.is_valid()
 
     @abstractmethod
     def get_type(self):
@@ -69,10 +69,10 @@ class GraphOperator(object):
             m_rank = self.get_matrix_rank()
         except SL.FileNotFoundError:
             m_rank = None
-        return {'valid': self.get_validity(), 'shape': shape, 'entries': entries, 'rank': m_rank}
+        return {'valid': self.is_valid(), 'shape': shape, 'entries': entries, 'rank': m_rank}
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
-        if not self.get_validity():
+        if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_matrix_file():
             return
@@ -153,7 +153,7 @@ class GraphOperator(object):
         return (t, d)
 
     def get_matrix_entries(self):
-        if not self.get_validity():
+        if not self.is_valid():
             return 0
         try:
             (matrixList, shape) = self._load_matrix()
@@ -169,7 +169,7 @@ class GraphOperator(object):
         return entries
 
     def is_trivial(self):
-        if not self.get_validity():
+        if not self.is_valid():
             return True
         (t, d) = self.get_matrix_shape()
         if t == 0 or d == 0:
@@ -210,7 +210,7 @@ class GraphOperator(object):
         return (matrixList, shape)
 
     def get_matrix_transposed(self):
-        if not self.get_validity():
+        if not self.is_valid():
             logging.warn("No matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
             entriesList = []
@@ -226,7 +226,7 @@ class GraphOperator(object):
         return self.get_matrix_transposed().transpose()
 
     def compute_rank(self, ignore_existing_files=False, skip_if_no_matrix=True):
-        if not self.get_validity():
+        if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_rank_file():
             return
@@ -241,7 +241,7 @@ class GraphOperator(object):
         SL.store_line(str(M.rank()), self.get_rank_file_path())
 
     def get_matrix_rank(self):
-        if not self.get_validity():
+        if not self.is_valid():
             logging.warn("Matrix rank 0: %s is not valid" % str(self))
             return 0
         try:
@@ -261,12 +261,12 @@ class GraphOperator(object):
 class GraphDifferential(GraphOperator):
     __metaclass__ = ABCMeta
 
-    def __init__(self, domain, target, deg_param_name, increase):
+    def __init__(self, domain, target, deg_param, increase):
         try:
-            domain_deg = getattr(domain, deg_param_name)
-            target_deg = getattr(target, deg_param_name)
+            domain_deg = getattr(domain, deg_param)
+            target_deg = getattr(target, deg_param)
         except AttributeError:
-            raise AttributeError('Domain or target does not have the attribute ' + deg_param_name)
+            raise AttributeError('Domain or target does not have the attribute ' + deg_param)
         if (increase and domain_deg + 1 != target_deg) or ((not increase) and domain_deg - 1 != target_deg):
             raise ValueError('domain and target degree not consistent with differential direction')
         super(GraphDifferential, self).__init__(domain, target)
@@ -316,7 +316,7 @@ class GraphDifferential(GraphOperator):
             return None
         if dimV == 0:
             return 0
-        if not opD.get_validity():
+        if not opD.is_valid():
             rankD = 0
         else:
             try:
@@ -324,7 +324,7 @@ class GraphDifferential(GraphOperator):
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
-        if not opDD.get_validity():
+        if not opDD.is_valid():
             rankDD = 0
         else:
             try:
@@ -429,4 +429,6 @@ class Differential(VectorSpaceOperator):
             dim_dict.update({vs.get_params_dict(): cohomology_dim.get(vs)})
         param_range = self.vector_space.get_params_range_dict()
         return(dim_dict, param_range)
+
+
 

@@ -34,7 +34,7 @@ class GraphVectorSpace(object):
         pass
 
     @abstractmethod
-    def get_validity(self, ):
+    def is_valid(self, ):
         pass
 
     @abstractmethod
@@ -62,7 +62,7 @@ class GraphVectorSpace(object):
             dim = self.get_dimension()
         except SL.FileNotFoundError:
             dim = None
-        return {'valid': self.get_validity(), 'dimension': dim}
+        return {'valid': self.is_valid(), 'dimension': dim}
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
@@ -70,7 +70,7 @@ class GraphVectorSpace(object):
         return (canonG.graph6_string(), sgn)
 
     def build_basis(self, pbar_info=False, ignore_existing_files=False):
-        if not self.get_validity():
+        if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_basis_file():
             return
@@ -105,7 +105,7 @@ class GraphVectorSpace(object):
         return os.path.isfile(self.get_basis_file_path())
 
     def get_dimension(self):
-        if not self.get_validity():
+        if not self.is_valid():
             return 0
         try:
             header = SL.load_line(self.get_basis_file_path())
@@ -134,7 +134,7 @@ class GraphVectorSpace(object):
         return basisList
 
     def get_basis(self, g6=True):
-        if not self.get_validity():
+        if not self.is_valid():
             logging.warn("Empty basis: %s is not valid" % str(self))
             return []
         basis_g6 = self._load_basis_g6()
@@ -206,11 +206,13 @@ class VectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
-class GradedVectorSpace(VectorSpace):
+class URBiGradedVectorSpace(VectorSpace):
     __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
-        super(GradedVectorSpace, self).__init__(vs_list)
+        super(URBiGradedVectorSpace, self).__init__(vs_list)
+        self.graded_vs_list = []
+        self.build_grading()
 
     @abstractmethod
     def get_type(self):
@@ -221,6 +223,53 @@ class GradedVectorSpace(VectorSpace):
         pass
 
     @abstractmethod
-    def get_deg_param_name(self):
+    def get_deg_params(self):
         pass
 
+    def build_grading_dict(self):
+        deg_params = self.get_deg_params()
+        grading_dict = {}
+        if len(deg_params) != 2:
+            raise ValueError('Bigraded vector space needs two degree parameters')
+        for vs in self.vs_list:
+            try:
+                tot_deg = getattr(vs, deg_params[0]) + getattr(vs, deg_params[1])
+            except AttributeError:
+                raise AttributeError('Vector space %s does not have the expected degree parameters %s, %s'
+                                     % (str(vs), deg_params[0], deg_params[1]))
+            deg_slice = grading_dict.get(tot_deg)
+            if deg_slice is None:
+                grading_dict.update({tot_deg, DegSliceURBiGradedVS(tot_deg, deg_params[0])})
+            else:
+                grading_dict[tot_deg].append(vs)
+        graded_vs_list = grading_dict.values()
+        for degSlice in graded_vs_list:
+            degSlice.test_completeness()
+        self.graded_vs_list = graded_vs_list
+
+
+class DegSliceURBiGradedVS(object):
+    def __init__(self, tot_deg, idx_deg):
+        self.vs_list = [None] * tot_deg + 1
+        self.idx_deg = idx_deg
+
+    def get_dimension(self):
+        dim = 0
+        for vs in self.vs_list:
+            dim += vs.get_dimension()
+
+    def append(self, vs):
+        try:
+            idx = vs.getattr(self.idx_deg)
+        except AttributeError:
+            raise AttributeError('Vector space %s does not hav the expectet degree %s' % (str(vs), self.idx_deg))
+        try:
+            self.vs_list[idx] = vs
+        except IndexError:
+            raise ValueError('Vector space %s does not have a valid index in the degree slice' % str(vs))
+
+    def test_completeness(self):
+        for vs in self.vs_list:
+            if vs is None or (vs.is_valid() and vs.exists_bsis_file()):
+                raise AssertionError('Degree slice %s is not complete: Build complete basis first' % str(self))
+        return True
