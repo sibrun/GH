@@ -29,7 +29,7 @@ class BasisTest(unittest.TestCase):
             self.assertRaises(SL.FileNotFoundError, vs.get_basis)
             vs.build_basis(ignore_existing_files=True)
             self.assertTrue(vs.exists_basis_file(), 'basis should exist')
-            logging.info("%s: %s" % (str(vs), vs.get_info()))
+            logging.info("%s: %s" % (str(vs), vs.get_info_dict()))
             basis_g6 = vs.get_basis()
             if len(basis_g6) == 0:
                 logging.warn('len(basis_g6) == 0 for %s' % str(vs))
@@ -59,7 +59,7 @@ class BasisTest(unittest.TestCase):
                 logging.info('%s: no basis test, since not valid' % str(vs))
                 continue
             vs.build_basis(ignore_existing_files=True)
-            logging.info("%s: %s" % (str(vs), vs.get_info()))
+            logging.info("%s: %s" % (str(vs), vs.get_info_dict()))
             basis_g6 = vs.get_basis(g6=True)
             ref_vs = REF.RefVectorSpace(vs)
             if not ref_vs.exists_basis_file():
@@ -95,7 +95,7 @@ class OperatorTest(unittest.TestCase):
             self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
             op.build_matrix(ignore_existing_files=True, n_jobs=1)
             self.assertTrue(op.exists_matrix_file(), '%s matrix file should exist' % str(op))
-            logging.info("%s: %s" % (str(op), op.get_info()))
+            logging.info("%s: %s" % (str(op), op.get_info_dict()))
             M = op.get_matrix()
             shape = (m, n) = (M.nrows(), M.ncols())
             rank = M.rank()

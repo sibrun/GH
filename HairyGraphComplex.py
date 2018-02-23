@@ -119,7 +119,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         # give estimate of number of graphs
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-class HairyGVSCollection(GVS.VectorSpaceCollection):
+class HairyGVSCollection(GVS.VectorSpace):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -160,10 +160,10 @@ class ContractEdges(GO.GraphOperator):
         return cls(domain, target)
 
     def get_params(self):
-        return self.domain.get_params()
+        return self.domain.get_params_dict()
 
     def get_params_string(self):
-        return self.domain.get_params_string()
+        return self.domain.get_params_names()
 
     def get_type(self):
         return 'contract edge'
@@ -232,7 +232,7 @@ class ContractEdges(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
-class ContractEdgesCollection(GO.OperatorCollection):
+class ContractEdgesCollection(GO.VectorSpaceOperator):
     def __init__(self, vs_collection):
         vs_list = vs_collection.vs_list
         op_list = []

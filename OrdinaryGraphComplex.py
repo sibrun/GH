@@ -90,7 +90,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-class OrdinaryGVSCollection(GVS.VectorSpaceCollection):
+class OrdinaryGVSCollection(GVS.VectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
@@ -188,7 +188,7 @@ class ContractEdges(GO.GraphOperator):
         return image
 
 
-class ContractEdgesCollection(GO.OperatorCollection):
+class ContractEdgesCollection(GO.VectorSpaceOperator):
     def __init__(self, vs_collection):
         vs_list = vs_collection.vs_list
         op_list = []
