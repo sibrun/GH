@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 import itertools
 import pandas
+import os
 from sage.all import *
 import StoreLoad as SL
 import ParallelProgress as PP
@@ -9,7 +10,7 @@ import Parameters
 import Display
 
 
-class GraphOperator(object):
+class OperatorMatrix(object):
     __metaclass__ = ABCMeta
 
     data_type = "M"
@@ -18,12 +19,11 @@ class GraphOperator(object):
         self.domain = domain
         self.target = target
 
-    def is_valid(self):
-        return self.domain.is_valid() and self.target.is_valid()
+    def get_domain(self):
+        return self.domain
 
-    @abstractmethod
-    def get_type(self):
-        pass
+    def get_target(self):
+        return self.target
 
     @abstractmethod
     def get_matrix_file_path(self):
@@ -33,101 +33,22 @@ class GraphOperator(object):
     def get_rank_file_path(self):
         pass
 
-    @abstractmethod
     def get_ref_matrix_file_path(self):
         pass
 
-    @abstractmethod
     def get_ref_rank_file_path(self):
         pass
+
+    def is_valid(self):
+        return True
 
     @abstractmethod
     def get_work_estimate(self):
         pass
 
     @abstractmethod
-    def operate_on(self, graph):
+    def build_matrix(self):
         pass
-
-    @abstractmethod
-    def __str__(self):
-        pass
-
-    def get_params_dict(self):
-        return self.domain.get_params_dict()
-
-    def get_info_dict(self):
-        try:
-            shape = self.get_matrix_shape()
-        except SL.FileNotFoundError:
-            shape = None
-        try:
-            entries = self.get_matrix_entries()
-        except SL.FileNotFoundError:
-            entries = None
-        try:
-            m_rank = self.get_matrix_rank()
-        except SL.FileNotFoundError:
-            m_rank = None
-        return {'valid': self.is_valid(), 'shape': shape, 'entries': entries, 'rank': m_rank}
-
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
-        if not self.is_valid():
-            return
-        if not ignore_existing_files and self.exists_matrix_file():
-            return
-        try:
-            domainBasis = self.domain.get_basis(g6=False)
-        except SL.FileNotFoundError:
-            if not skip_if_no_basis:
-                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
-                                           "First build basis of the domain %s" % (str(self), str(self.domain)))
-            else:
-                logging.warn("Skip building operator matrix of %s "
-                             "since basis of the domain %s is not built" % (str(self), str(self.domain)))
-                return
-        try:
-            targetBasis6 = self.target.get_basis(g6=True)
-        except SL.FileNotFoundError:
-            if not skip_if_no_basis:
-                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
-                                           "First build basis of the target %s" % (str(self), str(self.target)))
-            else:
-                logging.warn("Skip building operator matrix of %s "
-                             "since basis of the target %s is not built" % (str(self), str(self.target)))
-                return
-
-        shape = (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
-        if d == 0 or t == 0:
-            self._store_matrix([], shape)
-            return
-
-        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-
-        desc = 'Build matrix: ' + self.get_type() + ', ' + str(self.get_params_dict())
-        listOfLists = PP.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
-                                                  n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
-
-        matrixList = list(itertools.chain.from_iterable(listOfLists))
-        self._store_matrix(matrixList, shape)
-        logging.info("Operator matrix built for %s" % str(self))
-
-    def _generate_matrix_list(self, domainBasisElement, lookup):
-        (domainIndex, G) = domainBasisElement
-        imageList = self.operate_on(G)
-        canonImages = dict()
-        for (GG, prefactor) in imageList:
-            (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
-            sgn0 = canonImages.get(GGcanon6)
-            sgn0 = sgn0 if sgn0 is not None else 0
-            canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
-        matrixList = []
-        for (image, factor) in canonImages.items():
-            if factor:
-                targetIndex = lookup.get(image)
-                if targetIndex is not None:
-                    matrixList.append((domainIndex, targetIndex, factor))
-        return matrixList
 
     def exists_matrix_file(self):
         return os.path.isfile(self.get_matrix_file_path())
@@ -135,46 +56,13 @@ class GraphOperator(object):
     def exists_rank_file(self):
         return os.path.isfile(self.get_rank_file_path())
 
-    def exist_domain_target_files(self):
-        return self.domain.exists_basis_file() and self.target.exists_basis_file()
+    def delete_matrix_file(self):
+        if os.path.isfile(self.get_matrix_file_path()):
+            os.remove(self.get_matrix_file_path())
 
-    def get_matrix_shape(self):
-        try:
-            header = SL.load_line(self.get_matrix_file_path())
-            (d, t, data_type) = header.split(" ")
-            (d, t) = (int(d), int(t))
-        except SL.FileNotFoundError:
-            try:
-                t = self.target.get_dimension()
-                d = self.domain.get_dimension()
-            except SL.FileNotFoundError:
-                raise SL.FileNotFoundError("Matrix shape of %s unknown: "
-                                           "Build matrix or domain and target basis first" % str(self))
-        return (t, d)
-
-    def get_matrix_entries(self):
-        if not self.is_valid():
-            return 0
-        try:
-            (matrixList, shape) = self._load_matrix()
-            return len(matrixList)
-        except SL.FileNotFoundError:
-            raise SL.FileNotFoundError("Matrix entries unknown for %s: No matrix file" % str(self))
-
-    def get_sort_value(self):
-        try:
-            entries = self.get_matrix_entries()
-        except SL.FileNotFoundError:
-            entries = Parameters.MAX_ENTRIES
-        return entries
-
-    def is_trivial(self):
-        if not self.is_valid():
-            return True
-        (t, d) = self.get_matrix_shape()
-        if t == 0 or d == 0:
-            return True
-        return self.get_matrix_entries() == 0
+    def delete_rank_file(self):
+        if os.path.isfile(self.get_rank_file_path()):
+            os.remove(self.get_rank_file_path())
 
     def _store_matrix(self, matrixList, shape, data_type=data_type):
         (d, t) = shape
@@ -208,6 +96,37 @@ class GraphOperator(object):
                                  " %d %d" % (str(self.get_matrix_file_path()), i, j))
             matrixList.append((i - 1, j - 1, v))
         return (matrixList, shape)
+
+    def get_matrix_shape(self):
+        try:
+            header = SL.load_line(self.get_matrix_file_path())
+            (d, t, data_type) = header.split(" ")
+            (d, t) = (int(d), int(t))
+        except SL.FileNotFoundError:
+            try:
+                d = self.domain.get_dimension()
+                t = self.target.get_dimension()
+            except SL.FileNotFoundError:
+                raise SL.FileNotFoundError("Matrix shape of %s unknown: "
+                                           "Build matrix or domain and target basis first" % str(self))
+        return (t, d)
+
+    def get_matrix_entries(self):
+        if not self.is_valid():
+            return 0
+        try:
+            (matrixList, shape) = self._load_matrix()
+            return len(matrixList)
+        except SL.FileNotFoundError:
+            raise SL.FileNotFoundError("Matrix entries unknown for %s: No matrix file" % str(self))
+
+    def is_trivial(self):
+        if not self.is_valid():
+            return True
+        (t, d) = self.get_matrix_shape()
+        if t == 0 or d == 0:
+            return True
+        return self.get_matrix_entries() == 0
 
     def get_matrix_transposed(self):
         if not self.is_valid():
@@ -249,99 +168,144 @@ class GraphOperator(object):
         except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Cannot load matrix rank, No rank file found for %s: " % str(self))
 
-    def delete_matrix_file(self):
-        if os.path.isfile(self.get_matrix_file_path()):
-            os.remove(self.get_matrix_file_path())
-
-    def delete_rank_file(self):
-        if os.path.isfile(self.get_rank_file_path()):
-            os.remove(self.get_rank_file_path())
-
-
-class GraphDifferential(GraphOperator):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, domain, target, deg_param, increase):
+    def get_sort_value(self):
         try:
-            domain_deg = getattr(domain, deg_param)
-            target_deg = getattr(target, deg_param)
-        except AttributeError:
-            raise AttributeError('Domain or target does not have the attribute ' + deg_param)
-        if (increase and domain_deg + 1 != target_deg) or ((not increase) and domain_deg - 1 != target_deg):
-            raise ValueError('domain and target degree not consistent with differential direction')
-        super(GraphDifferential, self).__init__(domain, target)
+            entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            entries = Parameters.MAX_ENTRIES
+        return entries
 
-    @abstractmethod
-    def get_type(self):
-        pass
+    def get_params_dict(self):
+        return self.domain.get_params_dict()
 
-    @abstractmethod
-    def get_matrix_file_path(self):
-        pass
+    def get_info_dict(self):
+        try:
+            shape = self.get_matrix_shape()
+        except SL.FileNotFoundError:
+            shape = None
+        try:
+            entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            entries = None
+        try:
+            m_rank = self.get_matrix_rank()
+        except SL.FileNotFoundError:
+            m_rank = None
+        return {'valid': self.is_valid(), 'shape': shape, 'entries': entries, 'rank': m_rank}
 
-    @abstractmethod
-    def get_rank_file_path(self):
-        pass
 
-    @abstractmethod
-    def get_ref_matrix_file_path(self):
-        pass
-
-    @abstractmethod
-    def get_ref_rank_file_path(self):
-        pass
-
-    @abstractmethod
-    def get_work_estimate(self):
-        pass
+class Operator(object):
+    __metaclass__ = ABCMeta
 
     @abstractmethod
     def operate_on(self, graph):
         pass
 
-    @abstractmethod
-    def __str__(self):
+
+class GraphOperator(Operator, OperatorMatrix):
+    def __init__(self, domain, target):
+        super(GraphOperator, self).__init__(domain, target)
+
+    def is_valid(self):
+        return self.domain.is_valid() and self.target.is_valid()
+
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+        if not self.is_valid():
+            return
+        if not ignore_existing_files and self.exists_matrix_file():
+            return
+        try:
+            domainBasis = self.domain.get_basis(g6=False)
+        except SL.FileNotFoundError:
+            if not skip_if_no_basis:
+                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
+                                           "First build basis of the domain %s" % (str(self), str(self.domain)))
+            else:
+                logging.warn("Skip building operator matrix of %s "
+                             "since basis of the domain %s is not built" % (str(self), str(self.domain)))
+                return
+        try:
+            targetBasis6 = self.target.get_basis(g6=True)
+        except SL.FileNotFoundError:
+            if not skip_if_no_basis:
+                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
+                                           "First build basis of the target %s" % (str(self), str(self.target)))
+            else:
+                logging.warn("Skip building operator matrix of %s "
+                             "since basis of the target %s is not built" % (str(self), str(self.target)))
+                return
+
+        shape = (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
+        if d == 0 or t == 0:
+            self._store_matrix([], shape)
+            return
+
+        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
+
+        desc = 'Build matrix: Domain: ' + str(self.get_params_dict())
+        listOfLists = PP.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
+                                                  n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
+
+        matrixList = list(itertools.chain.from_iterable(listOfLists))
+        self._store_matrix(matrixList, shape)
+        logging.info("Operator matrix built for %s" % str(self))
+
+    def _generate_matrix_list(self, domainBasisElement, lookup):
+        (domainIndex, G) = domainBasisElement
+        imageList = self.operate_on(G)
+        canonImages = dict()
+        for (GG, prefactor) in imageList:
+            (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
+            sgn0 = canonImages.get(GGcanon6)
+            sgn0 = sgn0 if sgn0 is not None else 0
+            canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
+        matrixList = []
+        for (image, factor) in canonImages.items():
+            if factor:
+                targetIndex = lookup.get(image)
+                if targetIndex is not None:
+                    matrixList.append((domainIndex, targetIndex, factor))
+        return matrixList
+
+
+class BiOperatorMatrix(OperatorMatrix):
+    def __init__(self, domain, target, increase, op_collection1, op_collection2):
+        super(BiOperatorMatrix, self).__init__(domain, target)
+        self.increase = increase
+        self.op_collection1 = op_collection1
+        self.op_collection2 = op_collection2
+
+    def get_matrix_file_path(self):
         pass
 
-    # Check whether opD.domain == opDD.target
-    def matches(opD, opDD):
-        return opD.domain == opDD.target
+    def get_rank_file_path(self):
+        pass
 
-    # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
-    def cohomology_dim(opD, opDD):
-        try:
-            dimV = opD.domain.get_dimension()
-        except SL.FileNotFoundError:
-            logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.domain))
-            return None
-        if dimV == 0:
-            return 0
-        if not opD.is_valid():
-            rankD = 0
-        else:
-            try:
-                rankD = opD.get_matrix_rank()
-            except SL.FileNotFoundError:
-                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
-                return None
-        if not opDD.is_valid():
-            rankDD = 0
-        else:
-            try:
-                rankDD = opDD.get_matrix_rank()
-            except SL.FileNotFoundError:
-                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
-                return None
-        cohomologyDim = dimV - rankD - rankDD
-        if cohomologyDim < 0:
-            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
-        return cohomologyDim
+    def get_work_estimate(self):
+        return len(self.domain.get_vs_list())
 
+    def build_matrix(self):
+        matrix_dict = dict()
+        for op in self.op_collection1.get_op_list() + self.op_collection1.get_op_list():
+            d_idx = self.domain.get_idx(op.domain)
+            t_idx = self.target.get_idx(op.target)
+            matrix_dict.update({(t_idx, d_idx): op.get_matrix()})
+            
 
-class VectorSpaceOperator(object):
+class OperatorCollection(object):
     def __init__(self, op_list, vector_space):
         self.op_list = op_list
         self.vector_space = vector_space
+
+    @abstractmethod
+    def get_type(self):
+        pass
+
+    def get_op_list(self):
+        return self.op_list
+
+    def get_vector_space(self):
+        return self.vector_space
 
     def sort(self, work_estimate=True):
         if work_estimate:
@@ -373,9 +337,59 @@ class VectorSpaceOperator(object):
         Display.display_pandas_df(opTable)
 
 
-class Differential(VectorSpaceOperator):
-    def __init__(self, differential_list, graded_vector_space):
-        super(Differential, self).__init__(differential_list, graded_vector_space)
+class Differential(OperatorCollection):
+    @staticmethod
+    # Check whether opD.domain == opDD.target
+    def is_match(opD, opDD):
+        return opD.get_domain() == opDD.get_target()
+
+    @staticmethod
+    # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
+    def cohomology_dim(opD, opDD):
+        try:
+            dimV = opD.get_domain().get_dimension()
+        except SL.FileNotFoundError:
+            logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+            return None
+        if dimV == 0:
+            return 0
+        if opD.is_valid():
+            rankD = 0
+        else:
+            try:
+                rankD = opD.get_matrix_rank()
+            except SL.FileNotFoundError:
+                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+                return None
+        if opDD.is_valid():
+            rankDD = 0
+        else:
+            try:
+                rankDD = opDD.get_matrix_rank()
+            except SL.FileNotFoundError:
+                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+                return None
+        cohomologyDim = dimV - rankD - rankDD
+        if cohomologyDim < 0:
+            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
+        return cohomologyDim
+
+    # Computes the cohomology, i.e., ker(D)/im(DD)
+    def get_general_cohomology_dim_dict(self):
+        cohomology_dim = dict()
+        for (opD, opDD) in itertools.product(self.op_list, self.op_list):
+            if Differential.is_match(opD, opDD):
+                dim = Differential.cohomology_dim(opD, opDD)
+                cohomology_dim.update({opD.domain: dim})
+        return cohomology_dim
+
+    def get_cohomology_dim(self):
+        cohomology_dim = self.get_general_cohomology_dim_dict()
+        dim_dict = dict()
+        for vs in self.vector_space.vs_list:
+            dim_dict.update({vs.get_params_dict(): cohomology_dim.get(vs)})
+        param_range = self.vector_space.get_params_range_dict()
+        return (dim_dict, param_range)
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful
@@ -383,10 +397,10 @@ class Differential(VectorSpaceOperator):
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
         for (op1, op2) in itertools.product(self.op_list, self.op_list):
-            if op2.matches(op1):
+            if Differential.is_match(op2, op1):
                 # A composable pair is found
                 p = (op1, op2)
-                if not (op1.valid and op2.valid):
+                if not (op1.is_valid() and op2.is_valid()):
                     triv.append(p)
                     continue
                 try:
@@ -406,29 +420,9 @@ class Differential(VectorSpaceOperator):
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
         logging.warn("Square zero test for %s: trivial success: "
-                     "%d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l ))
+                     "%d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l))
         if inc_l:
             logging.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
         for (op1, op2) in fail:
             logging.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
-
-    #Computes the cohomology, i.e., ker(D)/im(DD)
-    def get_general_cohomology_dim_dict(self):
-        cohomology_dim = dict()
-        for (opD, opDD) in itertools.product(self.op_list, self.op_list):
-            if opD.matches(opDD):
-                dim = opD.cohomology_dim(opDD)
-                cohomology_dim.update({opD.domain: dim})
-        return cohomology_dim
-
-    def get_cohomology_dim(self):
-        cohomology_dim = self.get_general_cohomology_dim_dict()
-        dim_dict = dict()
-        for vs in self.vector_space.vs_list:
-            dim_dict.update({vs.get_params_dict(): cohomology_dim.get(vs)})
-        param_range = self.vector_space.get_params_range_dict()
-        return(dim_dict, param_range)
-
-
-

@@ -10,7 +10,19 @@ import ParallelProgress as PP
 import Parameters
 
 
-class GraphVectorSpace(object):
+class SubVectorSpace(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def get_dimension(self):
+        pass
+
+
+class GraphVectorSpacePart(SubVectorSpace):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -56,6 +68,9 @@ class GraphVectorSpace(object):
     @abstractmethod
     def perm_sign(self, G, p):
         pass
+
+    def get_vs_list(self):
+        return self
 
     def get_info_dict(self):
         try:
@@ -155,7 +170,7 @@ class GraphVectorSpace(object):
         P.save(path)
 
 
-class VectorSpace(object):
+class GraphVectorSpace(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
@@ -206,70 +221,74 @@ class VectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
-class URBiGradedVectorSpace(VectorSpace):
-    __metaclass__ = ABCMeta
+class DegSlice(SubVectorSpace):
+    def __init__(self, deg):
+        self.deg = deg
+        self.vs_dict = dict()
 
-    def __init__(self, vs_list):
-        super(URBiGradedVectorSpace, self).__init__(vs_list)
-        self.graded_vs_list = []
-        self.build_grading()
-
-    @abstractmethod
-    def get_type(self):
-        pass
-
-    @abstractmethod
-    def get_params_range_dict(self):
-        pass
-
-    @abstractmethod
-    def get_deg_params(self):
-        pass
-
-    def build_grading_dict(self):
-        deg_params = self.get_deg_params()
-        grading_dict = {}
-        if len(deg_params) != 2:
-            raise ValueError('Bigraded vector space needs two degree parameters')
-        for vs in self.vs_list:
-            try:
-                tot_deg = getattr(vs, deg_params[0]) + getattr(vs, deg_params[1])
-            except AttributeError:
-                raise AttributeError('Vector space %s does not have the expected degree parameters %s, %s'
-                                     % (str(vs), deg_params[0], deg_params[1]))
-            deg_slice = grading_dict.get(tot_deg)
-            if deg_slice is None:
-                grading_dict.update({tot_deg, DegSliceURBiGradedVS(tot_deg, deg_params[0])})
-            else:
-                grading_dict[tot_deg].append(vs)
-        graded_vs_list = grading_dict.values()
-        for degSlice in graded_vs_list:
-            degSlice.test_completeness()
-        self.graded_vs_list = graded_vs_list
-
-
-class DegSliceURBiGradedVS(object):
-    def __init__(self, tot_deg, idx_deg):
-        self.vs_list = [None] * tot_deg + 1
-        self.idx_deg = idx_deg
+    def __str__(self):
+        return 'Degree slice of degree %d' % self.deg
 
     def get_dimension(self):
         dim = 0
-        for vs in self.vs_list:
+        for vs in self.vs_dict.values():
             dim += vs.get_dimension()
 
-    def append(self, vs):
-        try:
-            idx = vs.getattr(self.idx_deg)
-        except AttributeError:
-            raise AttributeError('Vector space %s does not hav the expectet degree %s' % (str(vs), self.idx_deg))
-        try:
-            self.vs_list[idx] = vs
-        except IndexError:
-            raise ValueError('Vector space %s does not have a valid index in the degree slice' % str(vs))
+    def get_idx(self, vs):
+        return self.vs_dict.get(vs)
 
-    def test_completeness(self):
-        for vs in self.vs_list:
-            if vs is None or (vs.is_valid() and vs.exists_bsis_file()):
-                raise AssertionError('Degree slice %s is not complete: Build complete basis first' % str(self))
+    def __eq__(self, other):
+        return self.vs_dict.items() == other.vs_dict.items()
+
+    def append(self, vs, idx):
+        self.vs_dict.update({vs: idx})
+
+    def is_complete(self):
+        for idx in range(0, self.deg + 2):
+            vs = self.vs_dict.get(idx)
+            if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
+                return False
         return True
+
+
+class Grading(object):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, graph_vector_space):
+        self.graph_vector_space = graph_vector_space
+        self.grading_dict = dict()
+        self.build_grading(graph_vector_space)
+
+    @abstractmethod
+    def get_deg_idx(self, graph_vs):
+        pass
+
+    def get_grading_list(self):
+        return self.grading_dict.items()
+
+    def build_grading(self, graph_vector_space):
+        for vs in graph_vector_space.get_vs_list():
+            (deg, idx) = self.get_deg_idx(vs)
+            deg_slice = self.grading_dict.get(deg)
+            if deg_slice is None:
+                self.grading_dict.update({deg, DegSlice(deg)})
+            self.grading_dict[deg].append(vs, idx)
+
+
+class BiGrading(Grading):
+    def __init__(self, grading1, grading2):
+        if grading1.vector_space != grading2.vector_space:
+            raise ValueError('Need common vector space for bigrading')
+        self.grading1 = grading1
+        self.grading2 = grading2
+        super(BiGrading, self).__init__(grading1.vector_space)
+        for (deg, slice) in self.grading_dict.items():
+            if not slice.is_complete():
+                self.grading_dict.pop(deg)
+
+    def get_deg_idx(self, graph_vs):
+        deg1 = self.grading1.get_deg(graph_vs)
+        deg2 = self.grading2.get_deg(graph_vs)
+        return (deg1 + deg2, deg1)
+
+
