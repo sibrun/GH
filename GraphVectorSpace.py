@@ -276,7 +276,7 @@ class Grading(object):
         return self.grading_dict.items()
 
     def build_grading(self):
-        for vs in graph_vector_space.get_vs_list():
+        for vs in self.graph_vector_space.get_vs_list():
             (deg, idx) = self.get_deg_idx(vs)
             deg_slice = self.grading_dict.get(deg)
             if deg_slice is None:
