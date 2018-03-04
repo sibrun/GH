@@ -15,14 +15,14 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 
 
 # ------- Ordinary Graph Vector Space --------
-class OrdinaryGVS(GVS.GraphVectorSpace):
+class OrdinarySubGVS(GVS.SubGraphVectorSpace):
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get(self.even_edges)
-        super(OrdinaryGVS, self).__init__()
+        super(OrdinarySubGVS, self).__init__()
 
     def get_params(self):
         return (self.n_vertices, self.n_loops)

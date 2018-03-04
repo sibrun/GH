@@ -300,16 +300,16 @@ class BiOperatorMatrix(OperatorMatrix):
         for op in self.op_collection1.get_op_list() + self.op_collection1.get_op_list():
             domain_start_idx = self.domain.get_start_idx(op.get_domain())
             target_start_idx = self.target.get_start_idx(op.get_target())
-            (subMatrixList, subShape) = op.load_matrix()
+            subMatrixList = op.get_matrix_list()
             for (i, j, v) in subMatrixList:
                 matrixList.append((i + domain_start_idx, j + target_start_idx, v))
         self._store_matrix_list(matrixList, shape)
 
 
 class OperatorMatrixCollection(object):
-    def __init__(self, op_matrix_list, vector_space):
-        self.op_matrix_list = op_matrix_list
+    def __init__(self, vector_space, op_matrix_list):
         self.vector_space = vector_space
+        self.op_matrix_list = op_matrix_list
 
     @abstractmethod
     def get_type(self):
