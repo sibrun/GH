@@ -22,7 +22,7 @@ class SubVectorSpace(object):
         pass
 
 
-class GraphVectorSpacePart(SubVectorSpace):
+class SubGraphVectorSpace(SubVectorSpace):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -173,8 +173,8 @@ class GraphVectorSpacePart(SubVectorSpace):
 class GraphVectorSpace(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, vs_list):
-        self.vs_list = vs_list
+    def __init__(self, sub_vs_list):
+        self.sub_vs_list = sub_vs_list
 
     @abstractmethod
     def get_type(self):
@@ -185,27 +185,27 @@ class GraphVectorSpace(object):
         pass
 
     def get_vs_list(self):
-        return self.vs_list
+        return self.sub_vs_list
 
     def __eq__(self, other):
-        if len(self.vs_list) != len(other.vs_list):
+        if len(self.sub_vs_list) != len(other.vs_list):
             return False
         eq_l = 0
-        for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
+        for (vs1, vs2) in itertools.product(self.sub_vs_list, other.vs_list):
             if vs1 == vs2:
                 eq_l += 1
-        return eq_l == len(self.vs_list)
+        return eq_l == len(self.sub_vs_list)
 
     def sort(self, work_estimate=True):
         if work_estimate:
-            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+            self.sub_vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         else:
-            self.vs_list.sort(key=operator.methodcaller('get_sort_value'))
+            self.sub_vs_list.sort(key=operator.methodcaller('get_sort_value'))
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
         self.sort()
-        PP.parallel_individual_progress(self._build_single_basis, self.vs_list, n_jobs=n_jobs,
+        PP.parallel_individual_progress(self._build_single_basis, self.sub_vs_list, n_jobs=n_jobs,
                                         progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
 
     def _build_single_basis(self, vs, pbar_info=False, ignore_existing_files=True):
@@ -213,7 +213,7 @@ class GraphVectorSpace(object):
 
     def plot_info(self):
         vsList = []
-        for vs in self.vs_list:
+        for vs in self.sub_vs_list:
             vsList.append(vs.get_params_dict().values() + vs.get_info_dict().values())
         vsColumns = self.get_params_range_dict().keys() + ['valid', 'dimension']
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
@@ -229,13 +229,23 @@ class DegSlice(SubVectorSpace):
     def __str__(self):
         return 'Degree slice of degree %d' % self.deg
 
+    def get_vs_list(self):
+        return self.vs_dict.values()
+
+    def get_start_idx(self, sub_vector_space):
+        if self.vs_dict.get(sub_vector_space) is None:
+            raise ValueError('sub_vector_space needs to refer on a vector space of the degree slice')
+        vs_list = self.get_vs_list()
+        start_idx = 0
+        for vs in vs_list:
+            if vs == sub_vector_space:
+                return start_idx
+            start_idx += vs.get_dimension()
+
     def get_dimension(self):
         dim = 0
         for vs in self.vs_dict.values():
             dim += vs.get_dimension()
-
-    def get_idx(self, vs):
-        return self.vs_dict.get(vs)
 
     def __eq__(self, other):
         return self.vs_dict.items() == other.vs_dict.items()
@@ -257,7 +267,6 @@ class Grading(object):
     def __init__(self, graph_vector_space):
         self.graph_vector_space = graph_vector_space
         self.grading_dict = dict()
-        self.build_grading(graph_vector_space)
 
     @abstractmethod
     def get_deg_idx(self, graph_vs):
@@ -266,7 +275,7 @@ class Grading(object):
     def get_grading_list(self):
         return self.grading_dict.items()
 
-    def build_grading(self, graph_vector_space):
+    def build_grading(self):
         for vs in graph_vector_space.get_vs_list():
             (deg, idx) = self.get_deg_idx(vs)
             deg_slice = self.grading_dict.get(deg)
@@ -282,13 +291,14 @@ class BiGrading(Grading):
         self.grading1 = grading1
         self.grading2 = grading2
         super(BiGrading, self).__init__(grading1.vector_space)
-        for (deg, slice) in self.grading_dict.items():
-            if not slice.is_complete():
-                self.grading_dict.pop(deg)
 
     def get_deg_idx(self, graph_vs):
         deg1 = self.grading1.get_deg(graph_vs)
         deg2 = self.grading2.get_deg(graph_vs)
         return (deg1 + deg2, deg1)
 
-
+    def build_grading(self):
+        super(BiGrading, self).build_grading()
+        for (deg, slice) in self.grading_dict.items():
+            if not slice.is_complete():
+                self.grading_dict.pop(deg)

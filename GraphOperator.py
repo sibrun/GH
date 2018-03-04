@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 import logging
 import itertools
 import pandas
-import os
 from sage.all import *
 import StoreLoad as SL
 import ParallelProgress as PP
@@ -47,7 +46,7 @@ class OperatorMatrix(object):
         pass
 
     @abstractmethod
-    def build_matrix(self):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         pass
 
     def exists_matrix_file(self):
@@ -64,7 +63,7 @@ class OperatorMatrix(object):
         if os.path.isfile(self.get_rank_file_path()):
             os.remove(self.get_rank_file_path())
 
-    def _store_matrix(self, matrixList, shape, data_type=data_type):
+    def _store_matrix_list(self, matrixList, shape, data_type=data_type):
         (d, t) = shape
         stringList = []
         stringList.append("%d %d %s" % (d, t, data_type))
@@ -73,7 +72,7 @@ class OperatorMatrix(object):
         stringList.append("0 0 0")
         SL.store_string_list(stringList, self.get_matrix_file_path())
 
-    def _load_matrix(self):
+    def _load_matrix_list(self):
         if not self.exists_matrix_file():
             raise SL.FileNotFoundError("Cannot load matrix, No matrix file found for %s: " % str(self))
         stringList = SL.load_string_list(self.get_matrix_file_path())
@@ -97,6 +96,17 @@ class OperatorMatrix(object):
             matrixList.append((i - 1, j - 1, v))
         return (matrixList, shape)
 
+    def get_matrix_list(self):
+        (matrixList, shape) = self._load_matrix_list()
+        return matrixList
+
+    def get_shifted_matrix_list(self, domain_start, target_start):
+        matrixList = self.get_matrix_list()
+        shiftedMatrixList = []
+        for (i, j, v) in matrixList:
+            shiftedMatrixList.append((i + domain_start, j + target_start, v))
+        return shiftedMatrixList
+
     def get_matrix_shape(self):
         try:
             header = SL.load_line(self.get_matrix_file_path())
@@ -115,7 +125,7 @@ class OperatorMatrix(object):
         if not self.is_valid():
             return 0
         try:
-            (matrixList, shape) = self._load_matrix()
+            (matrixList, shape) = self._load_matrix_list()
             return len(matrixList)
         except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Matrix entries unknown for %s: No matrix file" % str(self))
@@ -134,7 +144,7 @@ class OperatorMatrix(object):
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
             entriesList = []
         else:
-            (entriesList, shape) = self._load_matrix()
+            (entriesList, shape) = self._load_matrix_list()
             (d, t) = shape
         M = matrix(ZZ, d, t, sparse=True)
         for (i, j, v) in entriesList:
@@ -237,7 +247,7 @@ class GraphOperator(Operator, OperatorMatrix):
 
         shape = (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
         if d == 0 or t == 0:
-            self._store_matrix([], shape)
+            self._store_matrix_list([], shape)
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
@@ -247,8 +257,7 @@ class GraphOperator(Operator, OperatorMatrix):
                                                   n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
         matrixList = list(itertools.chain.from_iterable(listOfLists))
-        self._store_matrix(matrixList, shape)
-        logging.info("Operator matrix built for %s" % str(self))
+        self._store_matrix_list(matrixList, shape)
 
     def _generate_matrix_list(self, domainBasisElement, lookup):
         (domainIndex, G) = domainBasisElement
@@ -269,9 +278,8 @@ class GraphOperator(Operator, OperatorMatrix):
 
 
 class BiOperatorMatrix(OperatorMatrix):
-    def __init__(self, domain, target, increase, op_collection1, op_collection2):
+    def __init__(self, domain, target, op_collection1, op_collection2):
         super(BiOperatorMatrix, self).__init__(domain, target)
-        self.increase = increase
         self.op_collection1 = op_collection1
         self.op_collection2 = op_collection2
 
@@ -284,17 +292,23 @@ class BiOperatorMatrix(OperatorMatrix):
     def get_work_estimate(self):
         return len(self.domain.get_vs_list())
 
-    def build_matrix(self):
-        matrix_dict = dict()
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+        if not ignore_existing_files and self.exists_matrix_file():
+            return
+        shape = (self.domain.get_dimensions(), self.target.get_dimensions())
+        matrixList = []
         for op in self.op_collection1.get_op_list() + self.op_collection1.get_op_list():
-            d_idx = self.domain.get_idx(op.domain)
-            t_idx = self.target.get_idx(op.target)
-            matrix_dict.update({(t_idx, d_idx): op.get_matrix()})
-            
+            domain_start_idx = self.domain.get_start_idx(op.get_domain())
+            target_start_idx = self.target.get_start_idx(op.get_target())
+            (subMatrixList, subShape) = op.load_matrix()
+            for (i, j, v) in subMatrixList:
+                matrixList.append((i + domain_start_idx, j + target_start_idx, v))
+        self._store_matrix_list(matrixList, shape)
 
-class OperatorCollection(object):
-    def __init__(self, op_list, vector_space):
-        self.op_list = op_list
+
+class OperatorMatrixCollection(object):
+    def __init__(self, op_matrix_list, vector_space):
+        self.op_matrix_list = op_matrix_list
         self.vector_space = vector_space
 
     @abstractmethod
@@ -302,34 +316,34 @@ class OperatorCollection(object):
         pass
 
     def get_op_list(self):
-        return self.op_list
+        return self.op_matrix_list
 
     def get_vector_space(self):
         return self.vector_space
 
     def sort(self, work_estimate=True):
         if work_estimate:
-            self.op_list.sort(key=operator.methodcaller('get_work_estimate'))
+            self.op_matrix_list.sort(key=operator.methodcaller('get_work_estimate'))
         else:
-            self.op_list.sort(key=operator.methodcaller('get_sort_value'))
+            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_value'))
 
     def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.plot_info()
         self.sort()
-        for op in self.op_list:
+        for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
 
     def compute_rank(self, ignore_existing_files=True, n_jobs=1):
         self.plot_info()
         self.sort(work_estimate=False)
-        PP.parallel(self._compute_single_rank, self.op_list, n_jobs=n_jobs, ignore_existing_files=ignore_existing_files)
+        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, ignore_existing_files=ignore_existing_files)
 
     def _compute_single_rank(self, op, ignore_existing_files=True):
         op.compute_rank(ignore_existing_files=ignore_existing_files)
 
     def plot_info(self):
         opList = []
-        for op in self.op_list:
+        for op in self.op_matrix_list:
                 opList.append(op.get_params_dict().values() + op.get_info_dict().values())
         opColumns = self.vector_space.get_params_range_dict().keys() + ['valid', 'shape', 'entries', 'rank']
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
@@ -337,7 +351,7 @@ class OperatorCollection(object):
         Display.display_pandas_df(opTable)
 
 
-class Differential(OperatorCollection):
+class Differential(OperatorMatrixCollection):
     @staticmethod
     # Check whether opD.domain == opDD.target
     def is_match(opD, opDD):
@@ -377,7 +391,7 @@ class Differential(OperatorCollection):
     # Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()
-        for (opD, opDD) in itertools.product(self.op_list, self.op_list):
+        for (opD, opDD) in itertools.product(self.op_matrix_list, self.op_matrix_list):
             if Differential.is_match(opD, opDD):
                 dim = Differential.cohomology_dim(opD, opDD)
                 cohomology_dim.update({opD.domain: dim})
@@ -396,7 +410,7 @@ class Differential(OperatorCollection):
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
-        for (op1, op2) in itertools.product(self.op_list, self.op_list):
+        for (op1, op2) in itertools.product(self.op_matrix_list, self.op_matrix_list):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
                 p = (op1, op2)
