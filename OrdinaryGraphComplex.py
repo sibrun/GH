@@ -24,36 +24,6 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
         super(OrdinarySubGVS, self).__init__()
 
-    def get_params(self):
-        return (self.n_vertices, self.n_loops)
-
-    def get_params_string(self):
-        return "%d verticesn, %d loops"% self.get_params()
-
-    def set_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def set_plot_path(self):
-        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-    def get_ref_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-    def set_validity(self):
-        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
-               and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
-
-    def set_partition(self):
-        return None
-
-    def get_work_estimate(self):
-        if not self.valid:
-            return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
-
     def __str__(self):
         return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops, self.sub_type)
 
@@ -61,8 +31,35 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
                and self.even_edges == other.even_edges
 
-    def _generating_graphs(self):
-        if not self.valid:
+    def get_basis_file_path(self):
+        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_plot_path(self):
+        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+    def get_ref_basis_file_path(self):
+        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_params_dict(self):
+        return {'vertices': self.n_vertices, 'loops': self.n_loops}
+
+    def get_partition(self):
+        return None
+
+    def is_valid(self):
+        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
+               and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
+
+    def get_work_estimate(self):
+        if not self.is_valid():
+            return 0
+        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+
+    def get_generating_graphs(self):
+        if not self.is_valid():
             return []
         return NI.list_simple_graphs(self.n_vertices, self.n_edges)
 
@@ -90,34 +87,40 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-class OrdinaryGVSCollection(GVS.VectorSpace):
+class OrdinaryGVS(GVS.GraphVectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        super(OrdinaryGVSCollection, self).__init__(vs_list)
+        vs_list = [OrdinarySubGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        super(OrdinaryGVS, self).__init__(vs_list)
 
     def get_type(self):
         return 'even edges' if self.even_edges else 'odd edges'
 
-    def get_params_range(self):
-        return (self.v_range, self.l_range)
-
-    def get_params_names(self):
-        return ('vertices', 'loops')
+    def get_params_range_dict(self):
+        return {'vertices': self.v_range, 'loops': self.l_range}
 
 
-# ------- Contraction Operator --------
-class ContractEdges(GO.GraphOperator):
+# ------- Gradings --------
+class VertexGrading(GVS.Grading):
+    def __init__(self, graph_vector_space):
+        super(VertexGrading, self).__init__(graph_vector_space)
+
+    def get_deg_idx(self, ordinary_sub_gvs):
+        return ordinary_sub_gvs.n_vertices
+
+
+# ------- Operators --------
+class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
                 or domain.even_edges != target.even_edges:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get(domain.even_edges)
-        super(ContractEdges, self).__init__(domain, target)
+        super(ContractEdgesGO, self).__init__(domain, target)
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
@@ -125,14 +128,11 @@ class ContractEdges(GO.GraphOperator):
         target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
 
-    def get_type(self):
-        return 'contract edges'
-
-    def set_matrix_file_path(self):
+    def get_matrix_file_path(self):
         s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
-    def set_rank_file_path(self):
+    def get_rank_file_path(self):
         s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
@@ -145,14 +145,17 @@ class ContractEdges(GO.GraphOperator):
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
-        if not self.valid:
+        if not self.is_valid():
             return 0
         return self.domain.n_edges * sqrt(self.target.get_dimension())
 
     def __str__(self):
         return "<%s: domain: %s>" % (self.get_type(), str(self.domain))
 
-    def _operate_on(self,G):
+    def get_type(self):
+        return 'contract edges'
+
+    def operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
@@ -188,48 +191,31 @@ class ContractEdges(GO.GraphOperator):
         return image
 
 
-class ContractEdgesCollection(GO.VectorSpaceOperator):
-    def __init__(self, vs_collection):
-        vs_list = vs_collection.vs_list
-        op_list = []
+class ContractEdgesD(GO.Differential):
+    def __init__(self, vector_space):
+        vs_list = vector_space.get_vs_list()
+        op_matrix_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
-                op_list.append(ContractEdges(domain, target))
-        super(ContractEdgesCollection, self).__init__(op_list, vs_collection)
+                op_matrix_list.append(ContractEdgesGO(domain, target))
+        super(ContractEdgesD, self).__init__(vector_space, op_matrix_list)
+
+    def get_type(self):
+        return 'contract edges'
 
 
-# ------- Ordinary Graph Complex --------
-class OrdinaryGC(GC.GraphComplex):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, op_collection):
-        super(OrdinaryGC, self).__init__(op_collection)
-
-    @abstractmethod
-    def __str__(self):
-        pass
-
-    @abstractmethod
-    def get_cohomology_plot_path(self):
-        pass
-
-    def plot_cohomology_dim(self):
-        (dim_dict, param_range) = self.get_cohomology_dim()
-        (v_range, l_range) = param_range
-        path = self.get_cohomology_plot_path()
-        Display.plot_2d_array(dim_dict, 'vertices', v_range, 'loops', l_range, path)
-
-
-class OrdinaryContractEdgesGC(OrdinaryGC):
+# ------- Graph Complexes --------
+class OrdinaryContractEdgesGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_collection = OrdinaryGVSCollection(v_range, l_range, even_edges)
-        op_collection = ContractEdgesCollection(vs_collection)
-        super(OrdinaryContractEdgesGC, self).__init__(op_collection)
+        vector_space = OrdinaryGVS(v_range, l_range, even_edges)
+        grading = VertexGrading(vector_space)
+        differential = ContractEdgesD(vector_space)
+        super(OrdinaryContractEdgesGC, self).__init__(vector_space, grading, differential)
 
     def __str__(self):
         return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
@@ -238,3 +224,8 @@ class OrdinaryContractEdgesGC(OrdinaryGC):
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+    def plot_cohomology_dim(self):
+        dim_dict = self.differential.get_cohomology_dim()
+        plot_path = self.get_cohomology_plot_path()
+        Display.plot_2d_array(dim_dict, 'vertices', self.v_range, 'loops', self.l_range, plot_path)

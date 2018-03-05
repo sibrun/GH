@@ -4,7 +4,7 @@ import os
 import Profiling
 import StoreLoad as SL
 import OrdinaryGraphComplex as OGC
-import HairyGraphComplex as HGC
+#import HairyGraphComplex as HGC
 import Parameters
 
 
@@ -55,7 +55,6 @@ def cohomology_complete(graph_complex):
     graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
     graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
     graph_complex.compute_rank(ignore_existing_files=args.ignore_ex)
-    graph_complex.get_cohomology_dim()
     graph_complex.plot_cohomology_dim()
 
 
@@ -126,7 +125,8 @@ if __name__ == "__main__":
         graph_complex = OGC.OrdinaryContractEdgesGC(args.v, args.l, even_edges)
 
     elif args.graph_type == 'hce':
-        graph_complex = HGC.HairyContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
+        raise ValueError('NOT IMPLEMENTED')
+        #graph_complex = HGC.HairyContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
 
     if graph_complex is None:
         raise ValueError('graph complex not specified')

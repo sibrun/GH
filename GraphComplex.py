@@ -9,6 +9,14 @@ class GraphComplex(object):
         self.grading = grading
         self.differential = differential
 
+    @abstractmethod
+    def get_cohomology_plot_path(self):
+        pass
+
+    @abstractmethod
+    def plot_cohomology_dim(self):
+        pass
+
     def get_vector_space(self):
         return self.vector_space
 
@@ -17,14 +25,6 @@ class GraphComplex(object):
 
     def get_differential(self):
         return self.differential
-
-    @abstractmethod
-    def get_cohomology_plot_path(self):
-        pass
-
-    @abstractmethod
-    def plot_cohomology_dim(self):
-        pass
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,

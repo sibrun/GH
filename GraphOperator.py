@@ -208,11 +208,17 @@ class Operator(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
+    def get_type(self):
+        pass
+
+    @abstractmethod
     def operate_on(self, graph):
         pass
 
 
 class GraphOperator(Operator, OperatorMatrix):
+    __metaclass__ = ABCMeta
+
     def __init__(self, domain, target):
         super(GraphOperator, self).__init__(domain, target)
 
@@ -352,6 +358,11 @@ class OperatorMatrixCollection(object):
 
 
 class Differential(OperatorMatrixCollection):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, vector_space, op_matrix_list):
+        super(Differential, self).__init__(vector_space, op_matrix_list)
+
     @staticmethod
     # Check whether opD.domain == opDD.target
     def is_match(opD, opDD):
@@ -400,10 +411,9 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_dim(self):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
-        for vs in self.vector_space.vs_list:
-            dim_dict.update({vs.get_params_dict(): cohomology_dim.get(vs)})
-        param_range = self.vector_space.get_params_range_dict()
-        return (dim_dict, param_range)
+        for vs in self.vector_space.get_vs_list():
+            dim_dict.update({vs.get_params(): cohomology_dim.get(vs)})
+        return dim_dict
 
     def square_zero_test(self, eps):
         succ = []  # holds pairs for which test was successful

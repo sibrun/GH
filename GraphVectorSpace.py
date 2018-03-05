@@ -18,6 +18,13 @@ class SubVectorSpace(object):
         pass
 
     @abstractmethod
+    def get_params_dict(self):
+        pass
+
+    def get_params(self):
+        return tuple(self.get_params_dict().values())
+
+    @abstractmethod
     def get_dimension(self):
         pass
 
@@ -26,11 +33,7 @@ class SubGraphVectorSpace(SubVectorSpace):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_params_dict(self):
-        pass
-
-    @abstractmethod
-    def get_partition(self):
+    def __str__(self):
         pass
 
     @abstractmethod
@@ -46,7 +49,11 @@ class SubGraphVectorSpace(SubVectorSpace):
         pass
 
     @abstractmethod
-    def is_valid(self, ):
+    def get_partition(self):
+        pass
+
+    @abstractmethod
+    def is_valid(self):
         pass
 
     @abstractmethod
@@ -54,23 +61,12 @@ class SubGraphVectorSpace(SubVectorSpace):
         pass
 
     @abstractmethod
-    def __str__(self):
-        pass
-
-    @abstractmethod
-    def __eq__(self, other):
-        pass
-
-    @abstractmethod
-    def generating_graphs(self):
+    def get_generating_graphs(self):
         pass
 
     @abstractmethod
     def perm_sign(self, G, p):
         pass
-
-    def get_vs_list(self):
-        return self
 
     def get_info_dict(self):
         try:
@@ -89,7 +85,7 @@ class SubGraphVectorSpace(SubVectorSpace):
             return
         if not ignore_existing_files and self.exists_basis_file():
             return
-        generatingList = self.generating_graphs()
+        generatingList = self.get_generating_graphs()
 
         desc = 'Build basis: ' + str(self.get_params_dict())
         basisSet = set()
@@ -229,6 +225,14 @@ class DegSlice(SubVectorSpace):
     def __str__(self):
         return 'Degree slice of degree %d' % self.deg
 
+    def __eq__(self, other):
+        return self.vs_dict.items() == other.vs_dict.items()
+
+    def get_dimension(self):
+        dim = 0
+        for vs in self.vs_dict.values():
+            dim += vs.get_dimension()
+
     def get_vs_list(self):
         return self.vs_dict.values()
 
@@ -241,14 +245,6 @@ class DegSlice(SubVectorSpace):
             if vs == sub_vector_space:
                 return start_idx
             start_idx += vs.get_dimension()
-
-    def get_dimension(self):
-        dim = 0
-        for vs in self.vs_dict.values():
-            dim += vs.get_dimension()
-
-    def __eq__(self, other):
-        return self.vs_dict.items() == other.vs_dict.items()
 
     def append(self, vs, idx):
         self.vs_dict.update({vs: idx})
@@ -269,7 +265,7 @@ class Grading(object):
         self.grading_dict = dict()
 
     @abstractmethod
-    def get_deg_idx(self, graph_vs):
+    def get_deg_idx(self, sub_graph_vs):
         pass
 
     def get_grading_list(self):
