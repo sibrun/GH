@@ -21,8 +21,9 @@ class SubVectorSpace(object):
     def get_params_dict(self):
         pass
 
-    def get_params(self):
-        return tuple(self.get_params_dict().values())
+    @abstractmethod
+    def get_params_tuple(self):
+        pass
 
     @abstractmethod
     def get_dimension(self):
@@ -210,7 +211,8 @@ class GraphVectorSpace(object):
     def plot_info(self):
         vsList = []
         for vs in self.sub_vs_list:
-            vsList.append(vs.get_params_dict().values() + vs.get_info_dict().values())
+            info_dict = vs.get_info_dict()
+            vsList.append(vs.get_params_dict().values() + [info_dict.get('valid'), info_dict.get('dimension')])
         vsColumns = self.get_params_range_dict().keys() + ['valid', 'dimension']
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
         vsTable.sort_values(by=['valid', 'dimension'], inplace=True, na_position='last')

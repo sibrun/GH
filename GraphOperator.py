@@ -350,7 +350,9 @@ class OperatorMatrixCollection(object):
     def plot_info(self):
         opList = []
         for op in self.op_matrix_list:
-                opList.append(op.get_params_dict().values() + op.get_info_dict().values())
+            info_dict = op.get_info_dict()
+            opList.append(op.get_params_dict().values() + [info_dict.get('valid'), info_dict.get('shape'),
+                                                           info_dict.get('entries'), info_dict.get('rank')])
         opColumns = self.vector_space.get_params_range_dict().keys() + ['valid', 'shape', 'entries', 'rank']
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
         opTable.sort_values(by=['valid', 'entries'], inplace=True, na_position='last')
@@ -395,6 +397,7 @@ class Differential(OperatorMatrixCollection):
                 logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
         cohomologyDim = dimV - rankD - rankDD
+        print(str(opD.get_domain()) + str((dimV,rankD,rankDD)))
         if cohomologyDim < 0:
             raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
@@ -412,7 +415,7 @@ class Differential(OperatorMatrixCollection):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
         for vs in self.vector_space.get_vs_list():
-            dim_dict.update({vs.get_params(): cohomology_dim.get(vs)})
+            dim_dict.update({vs.get_params_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
     def square_zero_test(self, eps):

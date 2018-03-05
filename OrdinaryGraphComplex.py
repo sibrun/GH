@@ -46,6 +46,9 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
     def get_params_dict(self):
         return {'vertices': self.n_vertices, 'loops': self.n_loops}
 
+    def get_params_tuple(self):
+        return (self.n_vertices, self.n_loops)
+
     def get_partition(self):
         return None
 
