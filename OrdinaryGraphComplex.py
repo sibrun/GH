@@ -14,7 +14,7 @@ graph_type = "ordinary"
 sub_types = {True: "even_edges", False: "odd_edges"}
 
 
-# ------- Ordinary Graph Vector Space --------
+# ------- Graph Vector Space --------
 class OrdinarySubGVS(GVS.SubGraphVectorSpace):
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
@@ -119,11 +119,15 @@ class VertexGrading(GVS.Grading):
 # ------- Operators --------
 class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
-        if domain.n_vertices != target.n_vertices+1 or domain.n_loops != target.n_loops \
-                or domain.even_edges != target.even_edges:
+        if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get(domain.even_edges)
         super(ContractEdgesGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        return domain.n_vertices == target.n_vertices+1 and domain.n_loops == target.n_loops \
+                and domain.even_edges == target.even_edges
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
@@ -196,12 +200,7 @@ class ContractEdgesGO(GO.GraphOperator):
 
 class ContractEdgesD(GO.Differential):
     def __init__(self, vector_space):
-        vs_list = vector_space.get_vs_list()
-        op_matrix_list = []
-        for (domain, target) in itertools.product(vs_list, vs_list):
-            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops:
-                op_matrix_list.append(ContractEdgesGO(domain, target))
-        super(ContractEdgesD, self).__init__(vector_space, op_matrix_list)
+        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesD.generate_op_matrix_list(vector_space))
 
     def get_type(self):
         return 'contract edges'

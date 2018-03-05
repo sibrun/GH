@@ -16,7 +16,7 @@ sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_o
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
 
 
-# ------- Hairy Graph Vector Space --------
+# ------- Graph Vector Space --------
 class HairySubGVS(GVS.SubGraphVectorSpace):
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -150,14 +150,27 @@ class VertexGrading(GVS.Grading):
         return ordinary_sub_gvs.n_vertices
 
 
+class HairGrading(GVS.Grading):
+    def __init__(self, graph_vector_space):
+        super(HairGrading, self).__init__(graph_vector_space)
+
+    def get_deg_idx(self, ordinary_sub_gvs):
+        return ordinary_sub_gvs.n_hairs
+
+
 # ------- Operators --------
 class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
-        if domain.n_vertices != target.n_vertices + 1 or domain.n_loops != target.n_loops  or \
-                        domain.n_hairs != target.n_hairs or domain.sub_type != target.sub_type:
+        if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
         super(ContractEdgesGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
+               and domain.n_hairs == target.n_hairs and domain.even_edges == target.even_edges \
+               and domain.even.hairs == target.even_hairs
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -235,16 +248,97 @@ class ContractEdgesGO(GO.GraphOperator):
 
 class ContractEdgesD(GO.Differential):
     def __init__(self, vector_space):
-        vs_list = vector_space.get_vs_list()
-        op_matrix_list = []
-        for (domain, target) in itertools.product(vs_list, vs_list):
-            if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
-                    and domain.n_hairs == target.n_hairs:
-                op_matrix_list.append(ContractEdgesGO(domain, target))
-        super(ContractEdgesD, self).__init__(vector_space, op_matrix_list)
+        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesD.generate_op_matrix_list(vector_space))
 
     def get_type(self):
         return 'contract edges'
+
+
+class SplitEdgesGO(GO.GraphOperator):
+    def __init__(self, domain, target):
+        if not SplitEdgesGO.is_match(domain, target)
+            raise ValueError("Domain and target not consistent for contract edge operator")
+        self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
+        super(SplitEdgesGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        return domain.n_vertices == target.n_vertices and domain.n_loops == target.n_loops \
+               and domain.n_hairs == target.n_hairs - 1 and domain.even_edges == target.even_edges \
+               and domain.even.hairs == target.even_hairs
+
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
+        domain = HairySubGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
+        target = HairySubGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        return cls(domain, target)
+
+    def get_matrix_file_path(self):
+        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "contractD%d_%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_ref_rank_file_path(self):
+        s = "contractD%d_%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_work_estimate(self):
+        if not self.is_valid():
+            return 0
+        return self.domain.n_edges * sqrt(self.target.get_dimension())
+
+    def __str__(self):
+        return "<Contract edges: domain: %s>" % str(self.domain)
+
+    def get_type(self):
+        return 'contract edges'
+
+    '''For G a graph returns a list of pairs (GG, x),
+       such that (operator)(G) = sum x GG.'''
+    def operate_on(self,G):
+        image=[]
+        for (i, e) in enumerate(G.edges(labels=False)):
+            (u, v) = e
+            # only edges not connected to a hair-vertex can be contracted
+            if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
+                continue
+            r = range(0,self.domain.n_vertices + self.domain.n_hairs)
+            p = list(r)
+            p[0] = u
+            p[1] = v
+            idx = 2
+            for j in r:
+                if j == u or j== v:
+                    continue
+                else:
+                    p[idx] = j
+                    idx +=1
+
+            pp = SH.Perm(p).inverse()
+            sgn = self.domain.perm_sign(G, pp)
+            G1 = copy(G)
+            G1.relabel(pp, inplace=True)
+
+            for (j, ee) in enumerate(G1.edges(labels=False)):
+                a, b = ee
+                G1.set_edge_label(a,b,j)
+            previous_size = G1.size()
+            G1.merge_vertices([0,1])
+            if (previous_size - G1.size()) != 1:
+                continue
+            G1.relabel(list(range(0,G1.order())), inplace=True)
+            if not self.domain.even_edges:
+                p = [j for (a, b, j) in G1.edges()]
+                sgn *= Permutation(p).signature()
+            image.append((G1, sgn))
+        return image
 
 
 # ------- Graph Complexes --------

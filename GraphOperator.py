@@ -222,6 +222,20 @@ class GraphOperator(Operator, OperatorMatrix):
     def __init__(self, domain, target):
         super(GraphOperator, self).__init__(domain, target)
 
+    @classmethod
+    def generate_op_matrix_list(cls, vector_space):
+        vs_list = vector_space.get_vs_list()
+        op_matrix_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if cls.is_match(domain, target):
+                op_matrix_list.append(cls(domain, target))
+        return op_matrix_list
+
+    @staticmethod
+    @abstractmethod
+    def is_match(domain, target):
+        pass
+
     def is_valid(self):
         return self.domain.is_valid() and self.target.is_valid()
 
