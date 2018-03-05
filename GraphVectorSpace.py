@@ -204,6 +204,7 @@ class GraphVectorSpace(object):
         self.sort()
         PP.parallel_individual_progress(self._build_single_basis, self.sub_vs_list, n_jobs=n_jobs,
                                         progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
+        self.plot_info()
 
     def _build_single_basis(self, vs, pbar_info=False, ignore_existing_files=True):
         vs.build_basis(pbar_info=pbar_info, ignore_existing_files=ignore_existing_files)

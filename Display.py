@@ -17,7 +17,8 @@ def display_pandas_df(df):
     webbrowser.open_new_tab(url)
 
 
-def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
+def plot_2d_array(value_dict, param_labels_ranges, path):
+    (x_label, x_range, y_label, y_range) = param_labels_ranges
     if len(list(x_range)) == 0 or len(list(y_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -61,7 +62,8 @@ def plot_2d_array(value_dict, x_label, x_range, y_label, y_range, path):
     plt.savefig(path)
 
 
-def plot_3d_array(value_dict, x_label, x_range, y_label, y_range, z_label, z_range, path, x_plots=Parameters.x_plots):
+def plot_3d_array(value_dict, param_labels_ranges, path, x_plots=Parameters.x_plots):
+    (x_label, x_range, y_label, y_range, z_label, z_range) = param_labels_ranges
     if len(list(x_range)) == 0 or len(list(y_range)) == 0 or len(list(z_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return

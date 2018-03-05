@@ -10,6 +10,7 @@ def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=
             miniters = max(1, int(len(iter_arg) / Parameters.pbar_steps))
             return [func(x, common_arg) for x in tqdm(iter_arg, miniters=miniters, desc=desc)]
         else:
+            print(desc)
             return [func(x, common_arg) for x in iter_arg]
 
     else:
@@ -35,6 +36,7 @@ def parallel_common_progress(func, iter_arg, common_arg, n_jobs=1, progress_bar=
             return result
 
         else:
+            print(desc)
             pool = mp.Pool(n_jobs)
             results = [pool.apply_async(func, args=(x, common_arg)) for x in iter_arg]
             return [x.get() for x in results]
@@ -122,12 +124,12 @@ class ParallelTqdm(object):
                 self.update_bars(self.queue.get(timeout=Parameters.timeout))
             except Queue.Empty:
                 continue
-        self.close()
 
 
 def parallel_progress_messaging(func, iter_arg, arg, pbar_info=False, desc=None):
     if pbar_info is False:
         progress_bar = False
+        print(desc)
     else:
         (progress_bar, message, idx, queue) = pbar_info
     if progress_bar:

@@ -4,7 +4,7 @@ import os
 import Profiling
 import StoreLoad as SL
 import OrdinaryGraphComplex as OGC
-#import HairyGraphComplex as HGC
+import HairyGraphComplex as HGC
 import Parameters
 
 
@@ -106,6 +106,7 @@ if __name__ == "__main__":
                 even_edges = False
         else:
             raise MissingArgumentError('specify -even_e or -odd_e')
+
         if args.v is None:
             raise MissingArgumentError('specify -v: range for number of vertices')
         if args.l is None:
@@ -118,6 +119,7 @@ if __name__ == "__main__":
                 even_hairs = False
         else:
             raise MissingArgumentError('specify -even_h or -odd_h')
+
         if args.hairs is None:
             raise MissingArgumentError('specify -hairs: range for number of hairs')
 
@@ -125,8 +127,7 @@ if __name__ == "__main__":
         graph_complex = OGC.OrdinaryContractEdgesGC(args.v, args.l, even_edges)
 
     elif args.graph_type == 'hce':
-        raise ValueError('NOT IMPLEMENTED')
-        #graph_complex = HGC.HairyContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
+        graph_complex = HGC.HairyContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
 
     if graph_complex is None:
         raise ValueError('graph complex not specified')

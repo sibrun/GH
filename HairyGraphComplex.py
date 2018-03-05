@@ -16,8 +16,8 @@ sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_o
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
 
 
-# ------- Hairy Graph Complex --------
-class HairyGVS(GVS.GraphVectorSpace):
+# ------- Hairy Graph Vector Space --------
+class HairySubGVS(GVS.SubGraphVectorSpace):
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         self.n_vertices = n_vertices
@@ -27,26 +27,8 @@ class HairyGVS(GVS.GraphVectorSpace):
         self.even_hairs = even_hairs
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
-        super(HairyGVS,self).__init__()
-        self.ogvs = OGC.OrdinaryGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
-
-    def get_params(self):
-        return (self.n_vertices, self.n_loops, self.n_hairs)
-
-    def get_params_string(self):
-        return "%d vertices, %d loops, %d hairs" % self.get_params()
-
-    def set_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def set_plot_path(self):
-        s = "gra%d_%d_%d" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-    def get_ref_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+        super(HairySubGVS,self).__init__()
+        self.ogvs = OGC.OrdinarySubGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
     def __str__(self):
         return "<Hairy graphs: %d vertices, %d loops, %d hairs, %s>" \
@@ -56,7 +38,29 @@ class HairyGVS(GVS.GraphVectorSpace):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs \
                and self.sub_type == other.sub_type
 
-    def set_validity(self):
+    def get_basis_file_path(self):
+        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_plot_path(self):
+        s = "gra%d_%d_%d" % (self.n_vertices, self.n_loops, self.n_hairs)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+    def get_ref_basis_file_path(self):
+        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_params_dict(self):
+        return {'vertices': self.n_vertices, 'loops': self.n_loops, 'hairs': self.n_hairs}
+
+    def get_params_tuple(self):
+        return (self.n_vertices, self.n_loops, self.n_hairs)
+
+    def get_partition(self):
+        # all internal vertices are in color 1, the hair vertices are in color 2
+        return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+
+    def is_valid(self):
         # at least trivalent
         l = (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs)
         # all numbers positive
@@ -67,16 +71,18 @@ class HairyGVS(GVS.GraphVectorSpace):
         l = l and self.n_vertices >= self.n_hairs
         return l
 
-    def set_partition(self):
-        # all internal vertices are in color 1, the hair vertices are in color 2
-        return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+    def get_work_estimate(self):
+        if not self.is_valid():
+            return 0
+        # give estimate of number of graphs
+        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     '''Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)'''
-    def _generating_graphs(self):
+    def get_generating_graphs(self):
         # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2
         # degree 1 pieces are hairs, degree 2 vertices are edges and are removed later
         # z switch prevents multiple hairs and multiple edges
-        if not self.valid:
+        if not self.is_valid():
             return []
         n_vertices_1 = self.n_vertices
         n_vertices_2 = self.n_hairs + self.n_edges
@@ -84,6 +90,18 @@ class HairyGVS(GVS.GraphVectorSpace):
         n_edges_bip = self.n_hairs + 2 * self.n_edges
         L = NI.list_bipartite_graphs(n_vertices_1, n_vertices_2, (3, max_deg_1), (1,2), n_edges_bip)
         return [self._bip_to_ordinary(G) for G in L]
+
+    '''For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
+       Here vertex j becomes vertex p[j] in the new graph.'''
+    def perm_sign(self, G, p):
+        # the sign is the same as the corresponding sign in the
+        # ordinary graph complex, apart from an extra contribution from the hair-vertices
+        sgn = self.ogvs.perm_sign(G, p)
+        # compute the extra contribution from hairs if necessary
+        if self.even_hairs == self.even_edges:
+            hairs = p[self.n_vertices:]
+            sgn *= SH.Perm.shifted(hairs).sign()
+        return sgn
 
     def _bip_to_ordinary(self, G):
         #return G
@@ -101,25 +119,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         return G
 
 
-    '''For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
-       Here vertex j becomes vertex p[j] in the new graph.'''
-    def perm_sign(self, G, p):
-        # the sign is the same as the corresponding sign in the
-        # ordinary graph complex, apart from an extra contribution from the hair-vertices
-        sgn = self.ogvs.perm_sign(G, p)
-        # compute the extra contribution from hairs if necessary
-        if self.even_hairs == self.even_edges:
-            hairs = p[self.n_vertices:]
-            sgn *= SH.Perm.shifted(hairs).sign()
-        return sgn
-
-    def get_work_estimate(self):
-        if not self.valid:
-            return 0
-        # give estimate of number of graphs
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
-
-class HairyGVSCollection(GVS.VectorSpace):
+class HairyGVS(GVS.GraphVectorSpace):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -128,51 +128,48 @@ class HairyGVSCollection(GVS.VectorSpace):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
+        vs_list = [HairySubGVS(v, l, h, self.even_edges, self.even_hairs) for
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        super(HairyGVSCollection, self).__init__(vs_list)
+        super(HairyGVS, self).__init__(vs_list)
 
     def get_type(self):
         e = 'even edges' if self.even_edges else 'odd edges'
         h = 'even hairs' if self.even_hairs else 'odd hairs'
         return e + ', ' + h
 
-    def get_params_range(self):
-        return [self.v_range, self.l_range, self.h_range]
-
-    def get_params_names(self):
-        return ('vertices', 'loops', 'hairs')
+    def get_params_range_dict(self):
+        return {'vertices': self.v_range, 'loops': self.l_range, 'hairs': self.h_range}
 
 
-# ------- Ordinary Graph Complex --------
-class ContractEdges(GO.GraphOperator):
+# ------- Gradings --------
+class VertexGrading(GVS.Grading):
+    def __init__(self, graph_vector_space):
+        super(VertexGrading, self).__init__(graph_vector_space)
+
+    def get_deg_idx(self, ordinary_sub_gvs):
+        return ordinary_sub_gvs.n_vertices
+
+
+# ------- Operators --------
+class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if domain.n_vertices != target.n_vertices + 1 or domain.n_loops != target.n_loops  or \
                         domain.n_hairs != target.n_hairs or domain.sub_type != target.sub_type:
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
-        super(ContractEdges, self).__init__(domain, target)
+        super(ContractEdgesGO, self).__init__(domain, target)
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        domain = HairyGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairyGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        domain = HairySubGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
+        target = HairySubGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
         return cls(domain, target)
 
-    def get_params(self):
-        return self.domain.get_params_dict()
-
-    def get_params_string(self):
-        return self.domain.get_params_names()
-
-    def get_type(self):
-        return 'contract edge'
-
-    def set_matrix_file_path(self):
+    def get_matrix_file_path(self):
         s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
-    def set_rank_file_path(self):
+    def get_rank_file_path(self):
         s = "contractD%d_%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
@@ -185,16 +182,19 @@ class ContractEdges(GO.GraphOperator):
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
-        if not self.valid:
+        if not self.is_valid():
             return 0
         return self.domain.n_edges * sqrt(self.target.get_dimension())
 
     def __str__(self):
         return "<Contract edges: domain: %s>" % str(self.domain)
 
+    def get_type(self):
+        return 'contract edges'
+
     '''For G a graph returns a list of pairs (GG, x),
        such that (operator)(G) = sum x GG.'''
-    def _operate_on(self,G):
+    def operate_on(self,G):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
@@ -232,40 +232,23 @@ class ContractEdges(GO.GraphOperator):
             image.append((G1, sgn))
         return image
 
-class ContractEdgesCollection(GO.VectorSpaceOperator):
-    def __init__(self, vs_collection):
-        vs_list = vs_collection.vs_list
-        op_list = []
+
+class ContractEdgesD(GO.Differential):
+    def __init__(self, vector_space):
+        vs_list = vector_space.get_vs_list()
+        op_matrix_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
                     and domain.n_hairs == target.n_hairs:
-                op_list.append(ContractEdges(domain, target))
-        super(ContractEdgesCollection, self).__init__(op_list, vs_collection)
+                op_matrix_list.append(ContractEdgesGO(domain, target))
+        super(ContractEdgesD, self).__init__(vector_space, op_matrix_list)
+
+    def get_type(self):
+        return 'contract edges'
 
 
-# ------- Ordinary Graph Complex --------
-class HairyGC(GC.GraphComplex):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, op_collection):
-        super(HairyGC, self).__init__(op_collection)
-
-    @abstractmethod
-    def __str__(self):
-        pass
-
-    @abstractmethod
-    def get_cohomology_plot_path(self):
-        pass
-
-    def plot_cohomology_dim(self):
-        (dim_dict, param_range) = self.get_cohomology_dim()
-        (v_range, l_range, h_range) = param_range
-        path = self.get_cohomology_plot_path()
-        Display.plot_3d_array(dim_dict, 'vertices', v_range, 'loops', l_range, 'hairs', h_range, path)
-
-
-class HairyContractEdgesGC(HairyGC):
+# ------- Graph Complexes --------
+class HairyContractEdgesGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -274,9 +257,10 @@ class HairyContractEdgesGC(HairyGC):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vs_collection = HairyGVSCollection(v_range, l_range, h_range, even_edges, even_hairs)
-        op_collection = ContractEdgesCollection(vs_collection)
-        super(HairyContractEdgesGC, self).__init__(op_collection)
+        vector_space = HairyGVS(v_range, l_range, h_range, even_edges, even_hairs)
+        grading = VertexGrading(vector_space)
+        differential = ContractEdgesD(vector_space)
+        super(HairyContractEdgesGC, self).__init__(vector_space, grading, differential)
 
     def __str__(self):
         return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
@@ -285,3 +269,10 @@ class HairyContractEdgesGC(HairyGC):
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+    def plot_cohomology_dim(self):
+        dim_dict = self.differential.get_cohomology_dim()
+        plot_path = self.get_cohomology_plot_path()
+        param_labels_ranges = ('vertices', self.v_range, 'loops', self.l_range, 'hairs', self.h_range)
+        Display.plot_3d_array(dim_dict, param_labels_ranges, plot_path)
+

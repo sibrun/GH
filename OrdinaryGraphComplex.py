@@ -127,8 +127,8 @@ class ContractEdgesGO(GO.GraphOperator):
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
-        domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
-        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
+        domain = OrdinarySubGVS(n_vertices, n_loops, even_edges)
+        target = OrdinarySubGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -231,4 +231,5 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
     def plot_cohomology_dim(self):
         dim_dict = self.differential.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
-        Display.plot_2d_array(dim_dict, 'vertices', self.v_range, 'loops', self.l_range, plot_path)
+        param_labels_ranges = ('vertices', self.v_range, 'loops', self.l_range)
+        Display.plot_2d_array(dim_dict, param_labels_ranges, plot_path)

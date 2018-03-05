@@ -338,11 +338,14 @@ class OperatorMatrixCollection(object):
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
+        self.plot_info()
 
     def compute_rank(self, ignore_existing_files=True, n_jobs=1):
         self.plot_info()
         self.sort(work_estimate=False)
-        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, ignore_existing_files=ignore_existing_files)
+        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs,
+                    ignore_existing_files=ignore_existing_files)
+        self.plot_info()
 
     def _compute_single_rank(self, op, ignore_existing_files=True):
         op.compute_rank(ignore_existing_files=ignore_existing_files)
@@ -381,23 +384,22 @@ class Differential(OperatorMatrixCollection):
         if dimV == 0:
             return 0
         if opD.is_valid():
-            rankD = 0
-        else:
             try:
                 rankD = opD.get_matrix_rank()
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
-        if opDD.is_valid():
-            rankDD = 0
         else:
+            rankD = 0
+        if opDD.is_valid():
             try:
                 rankDD = opDD.get_matrix_rank()
             except SL.FileNotFoundError:
                 logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
+        else:
+            rankDD = 0
         cohomologyDim = dimV - rankD - rankDD
-        print(str(opD.get_domain()) + str((dimV,rankD,rankDD)))
         if cohomologyDim < 0:
             raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
