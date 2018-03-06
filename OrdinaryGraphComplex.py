@@ -102,7 +102,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         super(OrdinaryGVS, self).__init__(vs_list)
 
     def get_type(self):
-        return 'ordinary graphs with %s' % self.sub_type
+        return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def get_params_range_dict(self):
         return {'vertices': self.v_range, 'loops': self.l_range}

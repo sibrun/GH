@@ -32,7 +32,7 @@ class HairySubGVS(GVS.SubGraphVectorSpace):
         self.ogvs = OGC.OrdinarySubGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
     def get_type(self):
-        return 'hairy graphs with %s' % self.sub_type
+        return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs \
@@ -133,7 +133,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         super(HairyGVS, self).__init__(vs_list)
 
     def get_type(self):
-        return 'hairy graphs with %s' % self.sub_type
+        return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def get_params_range_dict(self):
         return {'vertices': self.v_range, 'loops': self.l_range, 'hairs': self.h_range}
@@ -217,11 +217,11 @@ class ContractEdgesGO(GO.GraphOperator):
             p[1] = v
             idx = 2
             for j in r:
-                if j == u or j== v:
+                if j == u or j == v:
                     continue
                 else:
                     p[idx] = j
-                    idx +=1
+                    idx += 1
 
             pp = SH.Perm(p).inverse()
             sgn = self.domain.perm_sign(G, pp)
@@ -251,12 +251,12 @@ class ContractEdgesD(GO.Differential):
         return 'contract edges'
 
 
-class SplitEdgesGO(GO.GraphOperator):
+class MergeHairsGO(GO.GraphOperator):
     def __init__(self, domain, target):
-        if not SplitEdgesGO.is_match(domain, target):
+        if not MergeHairsGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
         self.sub_type = domain.sub_type
-        super(SplitEdgesGO, self).__init__(domain, target)
+        super(MergeHairsGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -291,9 +291,6 @@ class SplitEdgesGO(GO.GraphOperator):
             return 0
         return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
 
-    def __str__(self):
-        return "<Contract edges: domain: %s>" % str(self.domain)
-
     def get_type(self):
         return 'split edges'
 
@@ -303,7 +300,7 @@ class SplitEdgesGO(GO.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a hair-vertex can be contracted
+            # only edges not connected to a hair-vertex can be split
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             r = range(0,self.domain.n_vertices + self.domain.n_hairs)
@@ -312,11 +309,11 @@ class SplitEdgesGO(GO.GraphOperator):
             p[1] = v
             idx = 2
             for j in r:
-                if j == u or j== v:
+                if j == u or j == v:
                     continue
                 else:
                     p[idx] = j
-                    idx +=1
+                    idx += 1
 
             pp = SH.Perm(p).inverse()
             sgn = self.domain.perm_sign(G, pp)
@@ -336,6 +333,14 @@ class SplitEdgesGO(GO.GraphOperator):
                 sgn *= Permutation(p).signature()
             image.append((G1, sgn))
         return image
+
+
+class SplitEdgesD(GO.Differential):
+    def __init__(self, vector_space):
+        super(SplitEdgesD, self).__init__(vector_space, SplitEdgesGO.generate_op_matrix_list(vector_space))
+
+    def get_type(self):
+        return 'split edges'
 
 
 # ------- Graph Complexes --------
