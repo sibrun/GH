@@ -25,6 +25,10 @@ class OperatorMatrix(object):
         return self.target
 
     @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
     def get_matrix_file_path(self):
         pass
 
@@ -236,6 +240,9 @@ class GraphOperator(Operator, OperatorMatrix):
     def is_match(domain, target):
         pass
 
+    def __str__(self):
+        return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
+
     def is_valid(self):
         return self.domain.is_valid() and self.target.is_valid()
 
@@ -303,6 +310,10 @@ class BiOperatorMatrix(OperatorMatrix):
         self.op_collection1 = op_collection1
         self.op_collection2 = op_collection2
 
+    def __str__(self):
+        return '<Bi operator matrix on domain: %s, and %s, %s' \
+               % (str(self.domain), str(self.op_collection1), str(self.op_collection2))
+
     def get_matrix_file_path(self):
         pass
 
@@ -334,6 +345,9 @@ class OperatorMatrixCollection(object):
     @abstractmethod
     def get_type(self):
         pass
+
+    def __str__(self):
+        return '<%s operator matrix collection>' % self.get_type()
 
     def get_op_list(self):
         return self.op_matrix_list

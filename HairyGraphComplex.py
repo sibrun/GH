@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import math
 import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
@@ -30,24 +31,23 @@ class HairySubGVS(GVS.SubGraphVectorSpace):
         super(HairySubGVS,self).__init__()
         self.ogvs = OGC.OrdinarySubGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
-    def __str__(self):
-        return "<Hairy graphs: %d vertices, %d loops, %d hairs, %s>" \
-               % (self.n_vertices, self.n_loops, self.n_hairs, self.sub_type)
+    def get_type(self):
+        return 'hairy graphs with %s' % self.sub_type
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs \
                and self.sub_type == other.sub_type
 
     def get_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
+        s = "gra%d_%d_%d.g6" % self.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_plot_path(self):
-        s = "gra%d_%d_%d" % (self.n_vertices, self.n_loops, self.n_hairs)
+        s = "gra%d_%d_%d" % self.get_params_tuple()
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % (self.n_vertices, self.n_loops, self.n_hairs)
+        s = "gra%d_%d_%d.g6" % self.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_params_dict(self):
@@ -133,9 +133,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         super(HairyGVS, self).__init__(vs_list)
 
     def get_type(self):
-        e = 'even edges' if self.even_edges else 'odd edges'
-        h = 'even hairs' if self.even_hairs else 'odd hairs'
-        return e + ', ' + h
+        return 'hairy graphs with %s' % self.sub_type
 
     def get_params_range_dict(self):
         return {'vertices': self.v_range, 'loops': self.l_range, 'hairs': self.h_range}
@@ -163,14 +161,13 @@ class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
+        self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
         return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
-               and domain.n_hairs == target.n_hairs and domain.even_edges == target.even_edges \
-               and domain.even.hairs == target.even_hairs
+               and domain.n_hairs == target.n_hairs and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -179,28 +176,28 @@ class ContractEdgesGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "contractD%d_%d_%d.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "contractD%d_%d_%d_rank.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "contractD%d_%d_%d.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "contractD%d_%d_%d.txt.rank.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        return self.domain.n_edges * sqrt(self.target.get_dimension())
-
-    def __str__(self):
-        return "<Contract edges: domain: %s>" % str(self.domain)
+        target_dim = self.target.get_dimension()
+        if target_dim == 0:
+            return 0
+        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
 
     def get_type(self):
         return 'contract edges'
@@ -248,7 +245,7 @@ class ContractEdgesGO(GO.GraphOperator):
 
 class ContractEdgesD(GO.Differential):
     def __init__(self, vector_space):
-        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesD.generate_op_matrix_list(vector_space))
+        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesGO.generate_op_matrix_list(vector_space))
 
     def get_type(self):
         return 'contract edges'
@@ -256,49 +253,49 @@ class ContractEdgesD(GO.Differential):
 
 class SplitEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
-        if not SplitEdgesGO.is_match(domain, target)
+        if not SplitEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_type = sub_types.get((domain.even_edges, domain.even_hairs))
+        self.sub_type = domain.sub_type
         super(SplitEdgesGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
-        return domain.n_vertices == target.n_vertices and domain.n_loops == target.n_loops \
-               and domain.n_hairs == target.n_hairs - 1 and domain.even_edges == target.even_edges \
-               and domain.even.hairs == target.even_hairs
+        return domain.n_vertices == target.n_vertices and domain.n_loops == target.n_loops + 1 \
+               and domain.n_hairs == target.n_hairs - 1 and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         domain = HairySubGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairySubGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        target = HairySubGVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "splitD%d_%d_%d.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
+        s = "splitD%d_%d_%d_rank.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+        pass
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops, self.domain.n_hairs)
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+        pass
 
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        return self.domain.n_edges * sqrt(self.target.get_dimension())
+        target_dim = self.target.get_dimension()
+        if target_dim == 0:
+            return 0
+        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
 
     def __str__(self):
         return "<Contract edges: domain: %s>" % str(self.domain)
 
     def get_type(self):
-        return 'contract edges'
+        return 'split edges'
 
     '''For G a graph returns a list of pairs (GG, x),
        such that (operator)(G) = sum x GG.'''
@@ -355,10 +352,6 @@ class HairyContractEdgesGC(GC.GraphComplex):
         grading = VertexGrading(vector_space)
         differential = ContractEdgesD(vector_space)
         super(HairyContractEdgesGC, self).__init__(vector_space, grading, differential)
-
-    def __str__(self):
-        return "<Hairy graph complex with %s and parameter range: vertices: %s, loops: %s, hairs: %s>" \
-               % (self.sub_type, str(self.v_range), str(self.l_range), str(self.h_range))
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)

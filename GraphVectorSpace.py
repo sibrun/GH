@@ -18,6 +18,10 @@ class SubVectorSpace(object):
         pass
 
     @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
     def get_params_dict(self):
         pass
 
@@ -34,7 +38,7 @@ class SubGraphVectorSpace(SubVectorSpace):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __str__(self):
+    def get_type(self):
         pass
 
     @abstractmethod
@@ -68,6 +72,9 @@ class SubGraphVectorSpace(SubVectorSpace):
     @abstractmethod
     def perm_sign(self, G, p):
         pass
+
+    def __str__(self):
+        return '<%s sub vector space with parameters: %s>' % (self.get_type(), str(self.get_params_dict()))
 
     def get_info_dict(self):
         try:
@@ -181,6 +188,9 @@ class GraphVectorSpace(object):
     def get_params_range_dict(self):
         pass
 
+    def __str__(self):
+        return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_params_range_dict()))
+
     def get_vs_list(self):
         return self.sub_vs_list
 
@@ -226,7 +236,7 @@ class DegSlice(SubVectorSpace):
         self.vs_dict = dict()
 
     def __str__(self):
-        return 'Degree slice of degree %d' % self.deg
+        return '<degree slice of degree %d>' % self.deg
 
     def __eq__(self, other):
         return self.vs_dict.items() == other.vs_dict.items()

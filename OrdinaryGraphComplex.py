@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import math
 import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
@@ -24,23 +25,23 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
         super(OrdinarySubGVS, self).__init__()
 
-    def __str__(self):
-        return "<Ordinary graphs: %d vertices, %d loops, %s>" % (self.n_vertices, self.n_loops, self.sub_type)
+    def get_type(self):
+        return 'ordinary graphs with %s' % self.sub_type
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
                and self.even_edges == other.even_edges
 
     def get_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        s = "gra%d_%d.g6" % self.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_plot_path(self):
-        s = "gra%d_%d" % (self.n_vertices, self.n_loops)
+        s = "gra%d_%d" % self.get_params_tuple()
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d.g6" % (self.n_vertices, self.n_loops)
+        s = "gra%d_%d.g6" % self.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_params_dict(self):
@@ -101,7 +102,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         super(OrdinaryGVS, self).__init__(vs_list)
 
     def get_type(self):
-        return 'even edges' if self.even_edges else 'odd edges'
+        return 'ordinary graphs with %s' % self.sub_type
 
     def get_params_range_dict(self):
         return {'vertices': self.v_range, 'loops': self.l_range}
@@ -121,7 +122,7 @@ class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edge operator")
-        self.sub_type = sub_types.get(domain.even_edges)
+        self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
 
     @staticmethod
@@ -136,28 +137,28 @@ class ContractEdgesGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        s = "contractD%d_%d.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        s = "contractD%d_%d_rank.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        s = "contractD%d_%d.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d.txt.rank.txt" % (self.domain.n_vertices, self.domain.n_loops)
+        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_params_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        return self.domain.n_edges * sqrt(self.target.get_dimension())
-
-    def __str__(self):
-        return "<%s: domain: %s>" % (self.get_type(), str(self.domain))
+        target_dim = self.target.get_dimension()
+        if target_dim == 0:
+            return 0
+        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
 
     def get_type(self):
         return 'contract edges'
@@ -200,7 +201,7 @@ class ContractEdgesGO(GO.GraphOperator):
 
 class ContractEdgesD(GO.Differential):
     def __init__(self, vector_space):
-        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesD.generate_op_matrix_list(vector_space))
+        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesGO.generate_op_matrix_list(vector_space))
 
     def get_type(self):
         return 'contract edges'
@@ -218,10 +219,6 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
         grading = VertexGrading(vector_space)
         differential = ContractEdgesD(vector_space)
         super(OrdinaryContractEdgesGC, self).__init__(vector_space, grading, differential)
-
-    def __str__(self):
-        return "<Ordinary graph complex with %s and parameter range: vertices: %s, loops: %s>" \
-               % (self.sub_type, str(self.v_range), str(self.l_range))
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
