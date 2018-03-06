@@ -367,4 +367,3 @@ class HairyContractEdgesGC(GC.GraphComplex):
         plot_path = self.get_cohomology_plot_path()
         param_labels_ranges = ('vertices', self.v_range, 'loops', self.l_range, 'hairs', self.h_range)
         Display.plot_3d_array(dim_dict, param_labels_ranges, plot_path)
-
