@@ -23,5 +23,5 @@ pbar_steps = 200
 timeout = 0.1
 
 #---- Max Values for Sorting ----
-MAX_ENTRIES = sys.maxint  # return value if number of entries is unkown, i.e. if no matrix file
-MAX_DIMENSION = sys.maxint  # return value if dimension is unkown, i.e. if no basis file
+MAX_ENTRIES = sys.maxint  # return value if number of entries is unknown, i.e. if no matrix file
+MAX_DIMENSION = sys.maxint  # return value if dimension is unknown, i.e. if no basis file

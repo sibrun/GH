@@ -220,12 +220,9 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
         differential = ContractEdgesD(vector_space)
         super(OrdinaryContractEdgesGC, self).__init__(vector_space, grading, differential)
 
+    def get_param_labels_ranges_tuple(self):
+        return ('vertices', self.v_range, 'loops', self.l_range)
+
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-    def plot_cohomology_dim(self):
-        dim_dict = self.differential.get_cohomology_dim()
-        plot_path = self.get_cohomology_plot_path()
-        param_labels_ranges = ('vertices', self.v_range, 'loops', self.l_range)
-        Display.plot_2d_array(dim_dict, param_labels_ranges, plot_path)
