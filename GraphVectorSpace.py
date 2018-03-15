@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-import logging
 from sage.all import *
 import operator
 import itertools
@@ -8,6 +7,9 @@ import StoreLoad as SL
 import Display
 import ParallelProgress as PP
 import Parameters
+import Log
+
+logger = Log.logger.getChild('graph_vector_space')
 
 
 class SubVectorSpace(object):
@@ -67,10 +69,13 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     @abstractmethod
     def get_generating_graphs(self):
+        """Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)"""
         pass
 
     @abstractmethod
     def perm_sign(self, G, p):
+        """For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
+           Here vertex j becomes vertex p[j] in the new graph."""
         pass
 
     def __str__(self):
@@ -154,7 +159,7 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     def get_basis(self, g6=True):
         if not self.is_valid():
-            logging.warn("Empty basis: %s is not valid" % str(self))
+            logger.warn("Empty basis: %s is not valid" % str(self))
             return []
         basis_g6 = self._load_basis_g6()
         if g6:

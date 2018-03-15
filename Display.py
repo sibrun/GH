@@ -17,6 +17,15 @@ def display_pandas_df(df):
     webbrowser.open_new_tab(url)
 
 
+def plot_array(value_dict, param_labels_ranges, path):
+    if len(param_labels_ranges) == 4:
+        plot_2d_array(value_dict, param_labels_ranges, path)
+    elif len(param_labels_ranges) == 6:
+        plot_3d_array(value_dict, param_labels_ranges, path)
+    else:
+        raise ValueError('Need 2 or 3 parameters for plotting')
+
+
 def plot_2d_array(value_dict, param_labels_ranges, path):
     (x_label, x_range, y_label, y_range) = param_labels_ranges
     if len(list(x_range)) == 0 or len(list(y_range)) == 0:

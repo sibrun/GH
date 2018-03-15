@@ -8,8 +8,9 @@ ref_data_dir = "data_ref"
 log_dir = "log"
 temp_folder = 'temp'
 
-#---- Test Parameters ----
-eps = 1e-6
+#---- Eps Parameters ----
+square_zero_test_eps = 1e-6
+estimate_rank_eps = 1e-8
 
 #---- Display Parameters ----
 x_width = 0.7

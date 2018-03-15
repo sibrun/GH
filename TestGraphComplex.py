@@ -168,7 +168,7 @@ class GraphComplexTest(unittest.TestCase):
         logging.warn('----- Test graph complex functionality -----')
         for gc in self.gc_list:
             gc.build(ignore_existing_files=True, n_jobs=1)
-            (triv_l, succ_l, inc_l, fail_l) = gc.square_zero_test(Parameters.eps)
+            (triv_l, succ_l, inc_l, fail_l) = gc.square_zero_test(Parameters.square_zero_test_eps)
             if succ_l == 0:
                 logging.warn('%s: no successful pairs in square zero test' % str(gc))
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(gc),fail_l))

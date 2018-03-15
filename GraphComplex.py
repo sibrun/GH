@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import Display
 
 
 class GraphComplex(object):
@@ -10,11 +11,11 @@ class GraphComplex(object):
         self.differential = differential
 
     @abstractmethod
-    def get_cohomology_plot_path(self):
+    def get_param_labels_ranges_tuple(self):
         pass
 
     @abstractmethod
-    def plot_cohomology_dim(self):
+    def get_cohomology_plot_path(self):
         pass
 
     def get_vector_space(self):
@@ -37,5 +38,14 @@ class GraphComplex(object):
         self.differential.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        progress_bar=progress_bar)
 
+    def square_zero_test(self):
+        self.differential.square_zero_test()
+
     def compute_rank(self, ignore_existing_files=True, n_jobs=1):
         self.differential.compute_rank(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
+
+    def plot_cohomology_dim(self):
+        dim_dict = self.differential.get_cohomology_dim()
+        plot_path = self.get_cohomology_plot_path()
+        param_labels_ranges = self.get_param_labels_ranges_tuple()
+        Display.plot_array(dim_dict, param_labels_ranges, plot_path)

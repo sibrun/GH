@@ -1,12 +1,17 @@
 from abc import ABCMeta, abstractmethod
-import logging
 import itertools
 import pandas
+import scipy.sparse as sparse
+from scipy.sparse.linalg import aslinearoperator as aslinearoperator
+from scipy.linalg.interpolative import estimate_rank as estimate_rank
 from sage.all import *
+import Log
 import StoreLoad as SL
 import ParallelProgress as PP
 import Parameters
 import Display
+
+logger = Log.logger.getChild('graph_operator')
 
 
 class OperatorMatrix(object):
@@ -15,6 +20,9 @@ class OperatorMatrix(object):
     data_type = "M"
 
     def __init__(self, domain, target):
+        if not self.is_match(domain, target):
+            raise ValueError("Domain %s and target %s don't match to build the operator matrix %s"
+                             % (str(domain), str(target), str(self)))
         self.domain = domain
         self.target = target
 
@@ -51,6 +59,11 @@ class OperatorMatrix(object):
 
     @abstractmethod
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def is_match(domain, target):
         pass
 
     def exists_matrix_file(self):
@@ -139,12 +152,12 @@ class OperatorMatrix(object):
             return True
         (t, d) = self.get_matrix_shape()
         if t == 0 or d == 0:
-            return True
-        return self.get_matrix_entries() == 0
+            return true
+        return self.get_matrix_entries()
 
     def get_matrix_transposed(self):
         if not self.is_valid():
-            logging.warn("No matrix: %s is not valid" % str(self))
+            logger.warn("No matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
             entriesList = []
         else:
@@ -158,24 +171,51 @@ class OperatorMatrix(object):
     def get_matrix(self):
         return self.get_matrix_transposed().transpose()
 
-    def compute_rank(self, ignore_existing_files=False, skip_if_no_matrix=True):
+    def get_matrix_scipy(self):
+        data = []
+        row_ind = []
+        col_ind = []
+        (matrixList, shape) = self._load_matrix_list()
+        for (r, c, d) in matrixList:
+            row_ind.append(r)
+            col_ind.append(c)
+            data.append(d)
+        return sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape)
+
+    def rank(self, exact=False, eps=Parameters.estimate_rank_eps):
+        if not self.is_valid():
+            return 0
+        try:
+            if exact:
+                M = self.get_matrix_transposed()
+            else:
+                M = self.get_matrix_scipy()
+        except SL.FileNotFoundError:
+            raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
+        if exact:
+            return M.rank()
+        else:
+            return estimate_rank(aslinearoperator(M), eps)
+
+    def compute_rank(self, exact=False, eps=Parameters.estimate_rank_eps, ignore_existing_files=False,
+                     skip_if_no_matrix=True):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_rank_file():
             return
         try:
-            M = self.get_matrix_transposed()
-        except SL.FileNotFoundError:
+            rank = self.rank(exact=exact, eps=eps)
+        except SL.FileNotFoundError as error:
             if not skip_if_no_matrix:
-                raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
+                raise error
             else:
-                logging.warn("Skip computing rank of %s, since matrix is not built" % str(self))
+                logger.warn("Skip computing rank of %s, since matrix is not built" % str(self))
                 return
-        SL.store_line(str(M.rank()), self.get_rank_file_path())
+        SL.store_line(rank, self.get_rank_file_path())
 
     def get_matrix_rank(self):
         if not self.is_valid():
-            logging.warn("Matrix rank 0: %s is not valid" % str(self))
+            logger.warn("Matrix rank 0: %s is not valid" % str(self))
             return 0
         try:
             return int(SL.load_line(self.get_rank_file_path()))
@@ -217,6 +257,7 @@ class Operator(object):
 
     @abstractmethod
     def operate_on(self, graph):
+        """For G a graph returns a list of pairs (GG, x), such that (operator)(G) = sum x GG."""
         pass
 
 
@@ -234,11 +275,6 @@ class GraphOperator(Operator, OperatorMatrix):
             if cls.is_match(domain, target):
                 op_matrix_list.append(cls(domain, target))
         return op_matrix_list
-
-    @staticmethod
-    @abstractmethod
-    def is_match(domain, target):
-        pass
 
     def __str__(self):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
@@ -258,7 +294,7 @@ class GraphOperator(Operator, OperatorMatrix):
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
-                logging.warn("Skip building operator matrix of %s "
+                logger.warn("Skip building operator matrix of %s "
                              "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
@@ -268,7 +304,7 @@ class GraphOperator(Operator, OperatorMatrix):
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the target %s" % (str(self), str(self.target)))
             else:
-                logging.warn("Skip building operator matrix of %s "
+                logger.warn("Skip building operator matrix of %s "
                              "since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
@@ -407,7 +443,7 @@ class Differential(OperatorMatrixCollection):
         try:
             dimV = opD.get_domain().get_dimension()
         except SL.FileNotFoundError:
-            logging.warn("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+            logger.warn("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
         if dimV == 0:
             return 0
@@ -415,7 +451,7 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankD = opD.get_matrix_rank()
             except SL.FileNotFoundError:
-                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+                logger.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
         else:
             rankD = 0
@@ -423,7 +459,7 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankDD = opDD.get_matrix_rank()
             except SL.FileNotFoundError:
-                logging.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+                logger.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
         else:
             rankDD = 0
@@ -448,7 +484,7 @@ class Differential(OperatorMatrixCollection):
             dim_dict.update({vs.get_params_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
-    def square_zero_test(self, eps):
+    def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
@@ -464,7 +500,7 @@ class Differential(OperatorMatrixCollection):
                     M1 = op1.get_matrix()
                     M2 = op2.get_matrix()
                 except SL.FileNotFoundError:
-                    logging.warn("Cannot test square zero: "
+                    logger.warn("Cannot test square zero: "
                                  "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
                     inc.append(p)
                     continue
@@ -476,10 +512,10 @@ class Differential(OperatorMatrixCollection):
                 else:
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        logging.warn("Square zero test for %s: trivial success: "
+        logger.warn("Square zero test for %s: trivial success: "
                      "%d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l))
         if inc_l:
-            logging.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
+            logger.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
         for (op1, op2) in fail:
-            logging.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+            logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
