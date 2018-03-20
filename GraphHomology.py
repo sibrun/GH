@@ -54,7 +54,7 @@ args = parser.parse_args()
 def cohomology_complete(graph_complex):
     graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
     graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
-    graph_complex.store_rank(ignore_existing_files=args.ignore_ex)
+    graph_complex.compute_rank(ignore_existing_files=args.ignore_ex)
     graph_complex.plot_cohomology_dim()
 
 

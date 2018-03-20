@@ -104,7 +104,7 @@ class OperatorTest(unittest.TestCase):
                              '%s: matrix shape not consistent with vector space dimensions' % str(op))
             op.delete_rank_file()
             self.assertFalse(op.exists_rank_file(), '%s rank file should have been deleted' % str(op))
-            op.store_rank()
+            op.compute_rank()
             self.assertTrue(op.exists_rank_file(), '%s rank file should exist' % str(op))
             self.assertEqual(op.get_matrix_rank(), rank, '%s: inconsistent rank' % str(op))
             entries = op.get_matrix_entries()
@@ -125,7 +125,7 @@ class OperatorTest(unittest.TestCase):
                 logging.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
             op.build_matrix(ignore_existing_files=True, n_jobs=1)
-            op.store_rank(ignore_existing_files=True)
+            op.compute_rank(ignore_existing_files=True)
             M = op.get_matrix()
             shape = op.get_matrix_shape()
             rank = op.get_matrix_rank()
@@ -174,7 +174,7 @@ class GraphComplexTest(unittest.TestCase):
             self.assertTrue(fail_l == 0, "%s: square zero test failed for %d pairs" % (str(gc),fail_l))
 
             gc.sort_member(work_estimate=False)
-            gc.store_rank(ignore_existing_files=True)
+            gc.compute_rank(ignore_existing_files=True)
             gc.plot_cohomology_dim()
             self.assertTrue(os.path.isfile(gc.get_cohomology_plot_path()),
                             'Cohomology plot should exist for %s' % str(gc))
@@ -185,7 +185,7 @@ class GraphComplexTest(unittest.TestCase):
             ref_gc = REF.RefGraphComplex(gc)
             gc.build(ignore_existing_files=True, n_jobs=4)
             gc.sort_member(work_estimate=False)
-            gc.store_rank(ignore_existing_files=True)
+            gc.compute_rank(ignore_existing_files=True)
             (n_succ, n_fail, n_inc) = ref_gc.compare_cohomology_dim()
             self.assertTrue(n_fail == 0, 'Cohomology dimensions not equal with reference for %s' % str(gc))
             if n_succ == 0:
