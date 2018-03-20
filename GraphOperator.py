@@ -177,17 +177,17 @@ class OperatorMatrix(object):
         data = []
         row_ind = []
         col_ind = []
-        (matrixList, shape) = self._load_matrix_list()
-        for (r, c, d) in matrixList:
+        (entriesList, shape) = self._load_matrix_list()
+        for (r, c, d) in entriesList:
             row_ind.append(r)
             col_ind.append(c)
             data.append(d)
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, mode='est', primes=[], eps=Parameters.estimate_rank_eps):
+    def compute_rank(self, mode='est', n_primes=2, primes=Parameters.primes, eps=Parameters.estimate_rank_eps):
         if (not self.is_valid()) or self.is_trivial():
-            rank_dict = {'exact': 0, 'est': 0}
+            rank_dict = {'exact': 0}
         else:
             rank_dict = {}
             try:
@@ -196,6 +196,13 @@ class OperatorMatrix(object):
                 if mode in {'exact', 'all'}:
                     rank_exact = M.rank()
                     rank_dict.update({'exact': rank_exact})
+                if mode in {'mod_p', 'all'}:
+                    n = min(n_primes, len(primes))
+                    for p in primes[0:n]:
+                        M.change_ring(GF(p))
+                        rank_mod_p = M.rank()
+                        info = 'mod_%d' % p
+                        rank_dict.update({info: rank_mod_p})
                 if mode in {'est', 'all'}:
                     rank_est = estimate_rank(aslinearoperator(self.get_matrix_scipy_transposed()), eps=eps)
                     rank_dict.update({'est': rank_est})
@@ -203,12 +210,11 @@ class OperatorMatrix(object):
                 raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
 
-    def store_rank(self, mode='est', eps=Parameters.estimate_rank_eps, ignore_existing_files=False,
-                   skip_if_no_matrix=True):
+    def store_rank(self, mode='est', n_primes=2, ignore_existing_files=False, skip_if_no_matrix=True):
         if not ignore_existing_files and self.exists_rank_file():
             return
         try:
-            rank_dict = self.compute_rank(mode=mode, eps=eps)
+            rank_dict = self.compute_rank(mode=mode, n_primes=2)
         except SL.FileNotFoundError as error:
             if not skip_if_no_matrix:
                 raise error
@@ -219,14 +225,14 @@ class OperatorMatrix(object):
         SL.store_string_list(rank_list, self.get_rank_file_path())
 
     def get_matrix_rank(self):
+        return 0
         if not self.is_valid():
-            logger.warn("Matrix rank 0: %s is not valid" % str(self))
             return 0
         try:
             (rank, info) = SL.load_string_list(self.get_rank_file_path())
         except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Cannot load matrix rank, No rank file found for %s: " % str(self))
-        return int(0)
+        return int(rank)
 
     def get_sort_value(self):
         try:
@@ -410,15 +416,15 @@ class OperatorMatrixCollection(object):
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
         self.plot_info()
 
-    def compute_rank(self, ignore_existing_files=True, n_jobs=1):
+    def compute_rank(self, mode='est', n_primes=2, ignore_existing_files=True, n_jobs=1):
         self.plot_info()
         self.sort(work_estimate=False)
-        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs,
+        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, mode=mode, n_primes=n_primes,
                     ignore_existing_files=ignore_existing_files)
         self.plot_info()
 
-    def _compute_single_rank(self, op, ignore_existing_files=True):
-        op.store_rank(ignore_existing_files=ignore_existing_files)
+    def _compute_single_rank(self, op, mode='est', n_primes=2, ignore_existing_files=True):
+        op.store_rank(mode=mode, n_primes=n_primes, ignore_existing_files=ignore_existing_files)
 
     def plot_info(self):
         opList = []
