@@ -41,7 +41,7 @@ class GraphComplex(object):
     def square_zero_test(self):
         self.differential.square_zero_test()
 
-    def compute_rank(self, mode='all', n_primes=2, ignore_existing_files=True, n_jobs=1):
+    def compute_rank(self, mode='mod_p', n_primes=2, ignore_existing_files=True, n_jobs=1):
         self.differential.compute_rank(mode=mode, n_primes=n_primes, ignore_existing_files=ignore_existing_files,
                                        n_jobs=n_jobs)
 

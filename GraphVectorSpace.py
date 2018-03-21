@@ -12,8 +12,28 @@ import Log
 logger = Log.logger.getChild('graph_vector_space')
 
 
+class VectorSpaceProperties(object):
+    def __init__(self):
+        self.valid = None
+        self.dimension = None
+
+    @staticmethod
+    def names():
+        return ['valid', 'dimension']
+
+    @staticmethod
+    def sort_variables():
+        return VectorSpaceProperties.names()
+
+    def list(self):
+        return [self.valid, self.dimension]
+
+
 class SubVectorSpace(object):
     __metaclass__ = ABCMeta
+
+    def __init__(self):
+        self.properties = VectorSpaceProperties()
 
     @abstractmethod
     def __eq__(self, other):
@@ -32,12 +52,22 @@ class SubVectorSpace(object):
         pass
 
     @abstractmethod
+    def is_valid(self):
+        pass
+
+    @abstractmethod
     def get_dimension(self):
         pass
+
+    def get_properties(self):
+        return self.properties
 
 
 class SubGraphVectorSpace(SubVectorSpace):
     __metaclass__ = ABCMeta
+
+    def __init__(self):
+        super(SubGraphVectorSpace, self).__init__()
 
     @abstractmethod
     def get_type(self):
@@ -60,10 +90,6 @@ class SubGraphVectorSpace(SubVectorSpace):
         pass
 
     @abstractmethod
-    def is_valid(self):
-        pass
-
-    @abstractmethod
     def get_work_estimate(self):
         pass
 
@@ -80,13 +106,6 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     def __str__(self):
         return '<%s sub vector space with parameters: %s>' % (self.get_type(), str(self.get_params_dict()))
-
-    def get_info_dict(self):
-        try:
-            dim = self.get_dimension()
-        except SL.FileNotFoundError:
-            dim = None
-        return {'valid': self.is_valid(), 'dimension': dim}
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
@@ -139,10 +158,10 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     def get_sort_value(self):
         try:
-            dim = self.get_dimension()
+            sort_vlaue = self.get_dimension()
         except SL.FileNotFoundError:
-            dim = Parameters.MAX_DIMENSION
-        return dim
+            sort_vlaue = Parameters.MAX_DIMENSION
+        return sort_vlaue
 
     def _store_basis_g6(self, basisList):
         basisList.insert(0, str(len(basisList)))
@@ -170,6 +189,16 @@ class SubGraphVectorSpace(SubVectorSpace):
     def delete_basis_file(self):
         if os.path.isfile(self.get_basis_file_path()):
             os.remove(self.get_basis_file_path())
+
+    def update_properties(self):
+        self.properties.valid = self.is_valid()
+        if not self.properties.valid:
+            self.properties.dimension = 0
+        elif self.exists_basis_file():
+            self.properties.dimension = self.get_dimension()
+
+    def get_properties(self):
+        return self.properties
 
     def plot_graph(self, G):
         g6 = G.graph6_string()
@@ -227,11 +256,11 @@ class GraphVectorSpace(object):
     def plot_info(self):
         vsList = []
         for vs in self.sub_vs_list:
-            info_dict = vs.get_info_dict()
-            vsList.append(vs.get_params_dict().values() + [info_dict.get('valid'), info_dict.get('dimension')])
-        vsColumns = self.get_params_range_dict().keys() + ['valid', 'dimension']
+            vs.update_properties()
+            vsList.append(vs.get_params_dict().values() + vs.get_properties().list())
+        vsColumns = self.get_params_range_dict().keys() + VectorSpaceProperties.names()
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
-        vsTable.sort_values(by=['valid', 'dimension'], inplace=True, na_position='last')
+        vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(vsTable)
 
 
@@ -239,6 +268,7 @@ class DegSlice(SubVectorSpace):
     def __init__(self, deg):
         self.deg = deg
         self.vs_dict = dict()
+        super(DegSlice, self).__init__()
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
@@ -246,13 +276,20 @@ class DegSlice(SubVectorSpace):
     def __eq__(self, other):
         return self.vs_dict.items() == other.vs_dict.items()
 
+    def is_valid(self):
+        all_not_valid = True
+        for vs in self.vs_dict.keys():
+            if vs.is_valid():
+                all_not_valid = False
+        return not all_not_valid
+
     def get_dimension(self):
         dim = 0
-        for vs in self.vs_dict.values():
+        for vs in self.vs_dict.keys():
             dim += vs.get_dimension()
 
     def get_vs_list(self):
-        return self.vs_dict.values()
+        return self.vs_dict.keys()
 
     def get_start_idx(self, sub_vector_space):
         if self.vs_dict.get(sub_vector_space) is None:

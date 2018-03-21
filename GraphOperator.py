@@ -27,6 +27,10 @@ class MatrixProperties(object):
     def names():
         return ['valid', 'shape', 'entries', 'rank', 'rank_mod_p', 'rank_estimate']
 
+    @staticmethod
+    def sort_variables():
+        return ['valid', 'entries']
+
     def list(self):
         return [self.valid, self.shape, self.entries, self.rank, self.rank_mod_p, self.rank_est]
 
@@ -42,7 +46,7 @@ class OperatorMatrix(object):
                              % (str(domain), str(target), str(self)))
         self.domain = domain
         self.target = target
-        self.matrix_properties = MatrixProperties()
+        self.properties = MatrixProperties()
 
     def get_domain(self):
         return self.domain
@@ -69,7 +73,7 @@ class OperatorMatrix(object):
         pass
 
     def is_valid(self):
-        return True
+        return self.domain.is_valid() and self.target.is_valid()
 
     @abstractmethod
     def get_work_estimate(self):
@@ -156,7 +160,7 @@ class OperatorMatrix(object):
                                            "Build matrix or domain and target basis first" % str(self))
         return (t, d)
 
-    def _get_matrix_shape_entries(self):
+    def get_matrix_shape_entries(self):
         try:
             (matrixList, shape) = self._load_matrix_list()
             (d, t) = shape
@@ -165,7 +169,7 @@ class OperatorMatrix(object):
             raise SL.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
 
     def get_matrix_entries(self):
-        (shape, entries) = self._get_matrix_shape_entries()
+        (shape, entries) = self.get_matrix_shape_entries()
         return entries
 
     def is_trivial(self):
@@ -206,9 +210,24 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
+    def compute_rank(self, mode='mod_p', n_primes=2, ignore_existing_files=False, skip_if_no_matrix=True):
+        if not self.is_valid():
+            return
+        if not ignore_existing_files and self.exists_rank_file():
+            return
+        try:
+            rank_dict = self._compute_rank(mode=mode, n_primes=n_primes)
+        except SL.FileNotFoundError as error:
+            if skip_if_no_matrix:
+                logger.warn("Skip computing rank of %s, since matrix is not built" % str(self))
+                return
+            else:
+                raise error
+        self._store_rank_dict(rank_dict)
+
     def _compute_rank(self, mode='mod_p', n_primes=2, primes=Parameters.primes, eps=Parameters.estimate_rank_eps):
         print('COMPUTE RANK')
-        if (not self.is_valid()) or self.is_trivial():
+        if self.is_trivial():
             rank_dict = {'exact': 0}
         else:
             rank_dict = {}
@@ -231,19 +250,6 @@ class OperatorMatrix(object):
             except SL.FileNotFoundError:
                 raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
-
-    def compute_rank(self, mode='mod_p', n_primes=2, ignore_existing_files=False, skip_if_no_matrix=True):
-        if not ignore_existing_files and self.exists_rank_file():
-            return
-        try:
-            rank_dict = self._compute_rank(mode=mode, n_primes=n_primes)
-        except SL.FileNotFoundError as error:
-            if not skip_if_no_matrix:
-                raise error
-            else:
-                logger.warn("Skip computing rank of %s, since matrix is not built" % str(self))
-                return
-        self._store_rank_dict(rank_dict)
 
     def _store_rank_dict(self, update_rank_dict):
         try:
@@ -291,29 +297,30 @@ class OperatorMatrix(object):
 
     def get_sort_value(self):
         try:
-            entries = self.get_matrix_entries()
+            sort_value = self.get_matrix_entries()
         except SL.FileNotFoundError:
-            entries = Parameters.MAX_ENTRIES
-        return entries
+            sort_value = Parameters.MAX_ENTRIES
+        return sort_value
 
     def get_params_dict(self):
         return self.domain.get_params_dict()
 
-    def update_matrix_properties(self):
-        self.matrix_properties.valid = self.is_valid()
-        if self.matrix_properties.valid:
-            try:
-                (self.matrix_properties.shape, self.matrix_properties.entries) = self._get_matrix_shape_entries()
-            except SL.FileNotFoundError:
-                pass
-            try:
-                (self.matrix_properties.rank, self.matrix_properties.rank_mod_p, self.matrix_properties.rank_est) \
-                    = self._get_ranks()
-            except SL.FileNotFoundError:
-                pass
+    def update_properties(self):
+        self.properties.valid = self.is_valid()
+        try:
+            self.properties.shape = self.get_matrix_shape()
+        except SL.FileNotFoundError:
+            pass
+        if not self.properties.valid:
+            self.properties.entries = 0
+        else:
+            if self.exists_matrix_file():
+                self.properties.entries = self.get_matrix_entries()
+            if self.exists_rank_file():
+                (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_ranks()
 
-    def get_matrix_properties(self):
-        return self.matrix_properties
+    def get_properties(self):
+        return self.properties
 
 
 class Operator(object):
@@ -346,9 +353,6 @@ class GraphOperator(Operator, OperatorMatrix):
 
     def __str__(self):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
-
-    def is_valid(self):
-        return self.domain.is_valid() and self.target.is_valid()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         if not self.is_valid():
@@ -485,11 +489,11 @@ class OperatorMatrixCollection(object):
     def plot_info(self):
         opList = []
         for op in self.op_matrix_list:
-            op.update_matrix_properties()
-            opList.append(op.get_params_dict().values() + op.get_matrix_properties().list())
+            op.update_properties()
+            opList.append(op.get_params_dict().values() + op.get_properties().list())
         opColumns = self.vector_space.get_params_range_dict().keys() + MatrixProperties.names()
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
-        opTable.sort_values(by=['valid', 'entries'], inplace=True, na_position='last')
+        opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(opTable)
 
 
