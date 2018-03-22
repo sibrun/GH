@@ -1,5 +1,3 @@
-from abc import ABCMeta, abstractmethod
-import math
 import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
@@ -7,7 +5,6 @@ import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
 import NautyInterface as NI
-import Display
 import Parameters
 
 

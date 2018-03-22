@@ -15,13 +15,18 @@ def positive_int(value):
         raise argparse.ArgumentTypeError('positive integer expected')
     return value
 
+def non_negative_int(value):
+    value = int(value)
+    if value < 0:
+        raise argparse.ArgumentTypeError('non negative integer expected')
+    return value
+
 
 def positive_range_type(arg):
     (min, max) = map(positive_int, arg.split(','))
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
     return range(min, max)
-
 
 graph_complex_types = ['o_ce', 'h_ce', 'h_etoh']
 
@@ -40,6 +45,9 @@ parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of par
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
+parser.add_argument('-exact_rank', action='store_true', help='exact matrix rank computation')
+parser.add_argument('-n_primes', type=non_negative_int, default=1, help='compute matrix rank modulo n_primes different prime numbers')
+parser.add_argument('-no_est_rank', action='store_false', help="don't estimate matrix rank")
 parser.add_argument('-build', action='store_true', help='just build vector space basis and operator matrix')
 parser.add_argument('-build_b', action='store_true', help='just build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='just build operator matrix')
@@ -82,7 +90,8 @@ def square_zero_test(graph_complex):
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
-    graph_complex.compute_rank(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.compute_rank(exact=args.exact_rank, n_primes=args.n_primes, estimate=args.no_est_rank,
+                               ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))

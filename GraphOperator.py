@@ -550,8 +550,8 @@ class Differential(OperatorMatrixCollection):
         else:
             rankDD = 0
         cohomologyDim = dimV - rankD - rankDD
-        #if cohomologyDim < 0:
-            #raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
+        if cohomologyDim < 0:
+            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
