@@ -184,7 +184,7 @@ class OperatorMatrix(object):
             return True
         return False
 
-    def get_matrix_transposed(self):
+    def get_matrix_transposed(self, prime=None):
         if not self.is_valid():
             logger.warn("No matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
@@ -192,7 +192,10 @@ class OperatorMatrix(object):
         else:
             (entriesList, shape) = self._load_matrix_list()
             (d, t) = shape
-        M = matrix(ZZ, d, t, sparse=True)
+        if prime is None:
+            M = matrix(ZZ, d, t, sparse=True)
+        else:
+            M = matrix(GF(prime), d, t, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
         return M
@@ -233,22 +236,21 @@ class OperatorMatrix(object):
         else:
             rank_dict = {}
             try:
-                if mode in {'exact', 'mod_p', 'all'}:
-                    M = self.get_matrix_transposed()
                 if mode in {'exact', 'all'}:
+                    M = self.get_matrix_transposed()
                     rank_exact = M.rank()
                     rank_dict.update({'exact': rank_exact})
                 if mode in {'mod_p', 'all'}:
                     n = min(n_primes, len(primes))
                     for p in primes[0:n]:
-                        M.change_ring(GF(p))
+                        M = self.get_matrix_transposed(p)
+                        print(M)
                         rank_mod_p = M.rank()
                         info = 'mod_%d' % p
                         rank_dict.update({info: rank_mod_p})
                 if mode in {'est', 'all'}:
                     rank_est = estimate_rank(aslinearoperator(self.get_matrix_scipy_transposed()), eps=eps)
-                    (t, d) = self.get_matrix_shape()
-                    if rank_est != max(t,d):
+                    if rank_est != min(self.get_matrix_shape()):
                         rank_est -= 1
                     rank_dict.update({'est': rank_est})
             except SL.FileNotFoundError:
@@ -305,9 +307,9 @@ class OperatorMatrix(object):
 
     def get_sort_value(self):
         try:
-            sort_value = self.get_matrix_entries()
+            sort_value = min(self.get_matrix_shape())
         except SL.FileNotFoundError:
-            sort_value = Parameters.MAX_ENTRIES
+            sort_value = Parameters.max_sort_value
         return sort_value
 
     def get_params_dict(self):

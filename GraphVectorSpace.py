@@ -158,10 +158,10 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     def get_sort_value(self):
         try:
-            sort_vlaue = self.get_dimension()
+            sort_value = self.get_dimension()
         except SL.FileNotFoundError:
-            sort_vlaue = Parameters.MAX_DIMENSION
-        return sort_vlaue
+            sort_value = Parameters.max_sort_value
+        return sort_value
 
     def _store_basis_g6(self, basisList):
         basisList.insert(0, str(len(basisList)))

@@ -155,10 +155,10 @@ class ContractEdgesGO(GO.GraphOperator):
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        target_dim = self.target.get_dimension()
-        if target_dim == 0:
+        target_dim_sort = self.target.get_sort_value()
+        if target_dim_sort == 0:
             return 0
-        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
+        return self.domain.n_edges * math.log(target_dim_sort, 2)
 
     def get_type(self):
         return 'contract edges'
