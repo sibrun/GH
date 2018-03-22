@@ -41,9 +41,9 @@ class GraphComplex(object):
     def square_zero_test(self):
         self.differential.square_zero_test()
 
-    def compute_rank(self, mode='est', n_primes=1, ignore_existing_files=True, n_jobs=1):
-        self.differential.compute_rank(mode=mode, n_primes=n_primes, ignore_existing_files=ignore_existing_files,
-                                       n_jobs=n_jobs)
+    def compute_rank(self, exact=False, n_primes=0, estimate=True, ignore_existing_files=True, n_jobs=1):
+        self.differential.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
+                                       ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
     def plot_cohomology_dim(self):
         dim_dict = self.differential.get_cohomology_dim()

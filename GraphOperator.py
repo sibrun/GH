@@ -184,18 +184,15 @@ class OperatorMatrix(object):
             return True
         return False
 
-    def get_matrix_transposed(self, prime=None):
+    def get_matrix_transposed(self):
         if not self.is_valid():
-            logger.warn("No matrix: %s is not valid" % str(self))
+            logger.warn("Zero matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
             entriesList = []
         else:
             (entriesList, shape) = self._load_matrix_list()
             (d, t) = shape
-        if prime is None:
-            M = matrix(ZZ, d, t, sparse=True)
-        else:
-            M = matrix(GF(prime), d, t, sparse=True)
+        M = matrix(ZZ, d, t, sparse=True)
         for (i, j, v) in entriesList:
             M.add_to_entry(i, j, v)
         return M
@@ -215,13 +212,14 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, mode='exact', n_primes=2, ignore_existing_files=False, skip_if_no_matrix=True):
+    def compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=True,
+                     eps=Parameters.estimate_rank_eps, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.is_valid():
             return
         if ignore_existing_files and self.exists_rank_file():
             self.delete_rank_file()
         try:
-            rank_dict = self._compute_rank(mode=mode, n_primes=n_primes)
+            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, primes=primes, estimate=estimate, eps=eps)
         except SL.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.warn("Skip computing rank of %s, since matrix is not built" % str(self))
@@ -230,29 +228,30 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, mode='exact', n_primes=2, primes=Parameters.primes, eps=Parameters.estimate_rank_eps):
+    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=True,
+                      eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
             rank_dict = {'exact': 0}
         else:
             rank_dict = {}
             try:
-                if mode in {'exact', 'all'}:
+                if exact:
                     M = self.get_matrix_transposed()
                     rank_exact = M.rank()
                     rank_dict.update({'exact': rank_exact})
-                if mode in {'mod_p', 'all'}:
+                if n_primes >= 1:
                     n = min(n_primes, len(primes))
                     for p in primes[0:n]:
-                        M = self.get_matrix_transposed(p)
-                        print(M)
+                        M = self.get_matrix_transposed()
+                        M.change_ring(GF(p))
                         rank_mod_p = M.rank()
                         info = 'mod_%d' % p
                         rank_dict.update({info: rank_mod_p})
-                if mode in {'est', 'all'}:
+                if estimate and min(self.get_matrix_shape()) >= Parameters.min_size_for_rank_estimate:
                     rank_est = estimate_rank(aslinearoperator(self.get_matrix_scipy_transposed()), eps=eps)
                     if rank_est != min(self.get_matrix_shape()):
                         rank_est -= 1
-                    rank_dict.update({'est': rank_est})
+                    rank_dict.update({'estimate': rank_est})
             except SL.FileNotFoundError:
                 raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
@@ -280,18 +279,22 @@ class OperatorMatrix(object):
         return rank_dict
 
     def _get_ranks(self):
+        if not self.is_valid():
+            return (0, 0, 0)
         rank_dict = self._load_rank_dict()
         rank_exact = rank_dict.pop('exact', None)
-        rank_est = rank_dict.pop('est', None)
+        if rank_exact == 0:
+            return (0, 0, 0)
+        rank_est = rank_dict.pop('estimate', None)
         rank_mod_p = None
         ranks_mod_p = rank_dict.values()
         if len(ranks_mod_p) >= 1:
-            #if len(ranks_mod_p) == 1:
-                #logger.warn('Rank modulo a single prime number might differ from true rank for %s' % str(self))
             if len(set(ranks_mod_p)) == 1:
                 rank_mod_p = ranks_mod_p[0]
             else:
-                raise ValueError('Ranks modulo different primes not equal for %s' % str(self))
+                logger.warn('Ranks modulo different primes not equal for %s' % str(self))
+            if rank_est is not None and rank_mod_p != rank_est:
+                logger.warn('Rank modulo a prime and estimated rank not equal for %s' % str(self))
         return (rank_exact, rank_mod_p, rank_est)
 
     def get_matrix_rank(self):
@@ -302,7 +305,7 @@ class OperatorMatrix(object):
             return rank_exact
         if rank_mod_p is not None:
             return rank_mod_p
-        #logger.warn('Estimated rank for %s' % str(self))
+        logger.warn('Estimated rank for %s' % str(self))
         return rank_est
 
     def get_sort_value(self):
@@ -321,14 +324,14 @@ class OperatorMatrix(object):
             self.properties.shape = self.get_matrix_shape()
         except SL.FileNotFoundError:
             pass
-        if not self.properties.valid:
-            self.properties.entries = 0
-            self.properties.rank = 0
-        else:
-            if self.exists_matrix_file():
-                self.properties.entries = self.get_matrix_entries()
-            if self.exists_rank_file():
-                (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_ranks()
+        try:
+            self.properties.entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            pass
+        try:
+            (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_ranks()
+        except SL.FileNotFoundError:
+            pass
 
     def get_properties(self):
         return self.properties
@@ -487,15 +490,16 @@ class OperatorMatrixCollection(object):
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
         self.plot_info()
 
-    def compute_rank(self, mode='exact', n_primes=1, ignore_existing_files=False, n_jobs=1):
+    def compute_rank(self, exact=False, n_primes=1, estimate=True,
+                     ignore_existing_files=False, n_jobs=1):
         self.plot_info()
         self.sort(work_estimate=False)
-        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, mode=mode, n_primes=n_primes,
-                    ignore_existing_files=ignore_existing_files)
+        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
+                    estimate=estimate, ignore_existing_files=ignore_existing_files)
         self.plot_info()
 
-    def _compute_single_rank(self, op, mode='exact', n_primes=2, ignore_existing_files=False):
-        op.compute_rank(mode=mode, n_primes=n_primes, ignore_existing_files=ignore_existing_files)
+    def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=True, ignore_existing_files=False):
+        op.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, ignore_existing_files=ignore_existing_files)
 
     def plot_info(self):
         opList = []
