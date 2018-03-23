@@ -281,6 +281,7 @@ class GraphVectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
+
 class DegSlice(SubVectorSpace):
     def __init__(self, deg):
         self.deg = deg
