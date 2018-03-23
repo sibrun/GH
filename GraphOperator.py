@@ -308,15 +308,19 @@ class OperatorMatrix(object):
         logger.warn('Estimated rank for %s' % str(self))
         return rank_est
 
-    def get_sort_value(self):
+    def get_sort_size(self):
         try:
-            sort_value = min(self.get_matrix_shape())
+            sort_size = min(self.get_matrix_shape())
         except SL.FileNotFoundError:
-            sort_value = Parameters.max_sort_value
-        return sort_value
+            sort_size = Parameters.max_sort_value
+        return sort_size
 
-    def get_params_dict(self):
-        return self.domain.get_params_dict()
+    def get_sort_entries(self):
+        try:
+            sort_entries = self.get_matrix_entries()
+        except SL.FileNotFoundError:
+            sort_entries = Parameters.max_sort_value
+        return sort_entries
 
     def update_properties(self):
         self.properties.valid = self.is_valid()
@@ -401,7 +405,7 @@ class GraphOperator(Operator, OperatorMatrix):
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
 
-        desc = 'Build matrix: Domain: ' + str(self.get_params_dict())
+        desc = 'Build matrix: Domain: ' + str(self.domain.get_ordered_param_dict())
         listOfLists = PP.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
                                                   n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
@@ -469,7 +473,8 @@ class OperatorMatrixCollection(object):
         pass
 
     def __str__(self):
-        return '<%s operator matrix collection>' % self.get_type()
+        return '<%s operator matrix collection with parameters %s>' % \
+               (self.get_type(), str(self.vector_space.get_ordered_param_range_dict()))
 
     def get_op_list(self):
         return self.op_matrix_list
@@ -477,23 +482,36 @@ class OperatorMatrixCollection(object):
     def get_vector_space(self):
         return self.vector_space
 
-    def sort(self, work_estimate=True):
-        if work_estimate:
+    def sort(self, key='work_estimate'):
+        if key == 'work_estimate':
             self.op_matrix_list.sort(key=operator.methodcaller('get_work_estimate'))
+        elif key == 'size':
+            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_size'))
+        elif key == 'entries':
+            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_entries'))
         else:
-            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_value'))
+            raise ValueError("Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False):
+        print(' ')
+        print('Build matrices of %s' % str(self))
         self.plot_info()
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
         self.plot_info()
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=True,
-                     ignore_existing_files=False, n_jobs=1):
+    def compute_rank(self, exact=False, n_primes=1, estimate=True, sort_key='size', ignore_existing_files=False,
+                     n_jobs=1):
+        print(' ')
+        print('Compute ranks of %s' % str(self))
         self.plot_info()
-        self.sort(work_estimate=False)
+        if sort_key == 'size':
+            self.sort(key='size')
+        elif sort_key == 'entries':
+            self.sort(key='entries')
+        elif sort_key == 'work_estimate':
+            self.sort(key='work_estimate')
         PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
                     estimate=estimate, ignore_existing_files=ignore_existing_files)
         self.plot_info()
@@ -505,10 +523,10 @@ class OperatorMatrixCollection(object):
         opList = []
         for op in self.op_matrix_list:
             op.update_properties()
-            opList.append(op.get_params_dict().values() + op.get_properties().list())
-        opColumns = self.vector_space.get_params_range_dict().keys() + MatrixProperties.names()
+            opList.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
+        opColumns = self.vector_space.get_ordered_param_range_dict().keys() + MatrixProperties.names()
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
-        opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
+        #opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(opTable)
 
 
@@ -567,7 +585,7 @@ class Differential(OperatorMatrixCollection):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
         for vs in self.vector_space.get_vs_list():
-            dim_dict.update({vs.get_params_tuple(): cohomology_dim.get(vs)})
+            dim_dict.update({vs.get_param_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):

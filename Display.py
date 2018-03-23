@@ -17,17 +17,18 @@ def display_pandas_df(df):
     webbrowser.open_new_tab(url)
 
 
-def plot_array(value_dict, param_labels_ranges, path):
-    if len(param_labels_ranges) == 4:
-        plot_2d_array(value_dict, param_labels_ranges, path)
-    elif len(param_labels_ranges) == 6:
-        plot_3d_array(value_dict, param_labels_ranges, path)
+def plot_array(value_dict, ordered_param_range_dict, path):
+    if len(ordered_param_range_dict) == 2:
+        plot_2d_array(value_dict, ordered_param_range_dict, path)
+    elif len(ordered_param_range_dict) == 3:
+        plot_3d_array(value_dict, ordered_param_range_dict, path)
     else:
         raise ValueError('Need 2 or 3 parameters for plotting')
 
 
-def plot_2d_array(value_dict, param_labels_ranges, path):
-    (x_label, x_range, y_label, y_range) = param_labels_ranges
+def plot_2d_array(value_dict, ordered_param_range_dict, path):
+    (x_label, x_range) = ordered_param_range_dict.items()[0]
+    (y_label, y_range) = ordered_param_range_dict.items()[1]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -71,8 +72,10 @@ def plot_2d_array(value_dict, param_labels_ranges, path):
     plt.savefig(path)
 
 
-def plot_3d_array(value_dict, param_labels_ranges, path, x_plots=Parameters.x_plots):
-    (x_label, x_range, y_label, y_range, z_label, z_range) = param_labels_ranges
+def plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=Parameters.x_plots):
+    (x_label, x_range) = ordered_param_range_dict.items()[0]
+    (y_label, y_range) = ordered_param_range_dict.items()[1]
+    (z_label, z_range) = ordered_param_range_dict.items()[2]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0 or len(list(z_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return

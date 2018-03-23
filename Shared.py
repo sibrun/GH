@@ -1,4 +1,5 @@
 from sage.all import *
+import collections
 
 
 class Perm:
@@ -19,3 +20,15 @@ class Perm:
     def shifted(cls, p):
         pmin = min(p)
         return cls([j - pmin for j in p])
+
+
+class OrderedDict(collections.OrderedDict):
+    def __init__(self, *args):
+        super(OrderedDict, self).__init__(*args)
+
+    def __str__(self):
+        s = '('
+        for (key, value) in self.items():
+            s += '%s: %s ' % (key, str(value))
+        s += ')'
+        return s

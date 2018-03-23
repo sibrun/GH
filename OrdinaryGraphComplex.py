@@ -30,21 +30,21 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
                and self.even_edges == other.even_edges
 
     def get_basis_file_path(self):
-        s = "gra%d_%d.g6" % self.get_params_tuple()
+        s = "gra%d_%d.g6" % self.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_plot_path(self):
-        s = "gra%d_%d" % self.get_params_tuple()
+        s = "gra%d_%d" % self.get_param_tuple()
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d.g6" % self.get_params_tuple()
+        s = "gra%d_%d.g6" % self.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
-    def get_params_dict(self):
-        return {'vertices': self.n_vertices, 'loops': self.n_loops}
+    def get_ordered_param_dict(self):
+        return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
 
-    def get_params_tuple(self):
+    def get_param_tuple(self):
         return (self.n_vertices, self.n_loops)
 
     def get_partition(self):
@@ -101,17 +101,8 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
-    def get_params_range_dict(self):
-        return {'vertices': self.v_range, 'loops': self.l_range}
-
-
-# ------- Gradings --------
-class VertexGrading(GVS.Grading):
-    def __init__(self, graph_vector_space):
-        super(VertexGrading, self).__init__(graph_vector_space)
-
-    def get_deg_idx(self, ordinary_sub_gvs):
-        return ordinary_sub_gvs.n_vertices
+    def get_ordered_param_range_dict(self):
+        return SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
 
 
 # ------- Operators --------
@@ -134,25 +125,25 @@ class ContractEdgesGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_rank.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d_rank.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        target_dim_sort = self.target.get_sort_value()
+        target_dim_sort = self.target.get_sort_dim()
         if target_dim_sort == 0:
             return 0
         return self.domain.n_edges * math.log(target_dim_sort, 2)
@@ -213,12 +204,8 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
         self.sub_type = sub_types.get(self.even_edges)
 
         vector_space = OrdinaryGVS(v_range, l_range, even_edges)
-        grading = VertexGrading(vector_space)
         differential = ContractEdgesD(vector_space)
-        super(OrdinaryContractEdgesGC, self).__init__(vector_space, grading, differential)
-
-    def get_param_labels_ranges_tuple(self):
-        return ('vertices', self.v_range, 'loops', self.l_range)
+        super(OrdinaryContractEdgesGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)

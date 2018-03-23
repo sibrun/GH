@@ -3,6 +3,7 @@ from sage.all import *
 import operator
 import itertools
 import pandas
+from tqdm import tqdm
 import StoreLoad as SL
 import Display
 import ParallelProgress as PP
@@ -44,11 +45,7 @@ class SubVectorSpace(object):
         pass
 
     @abstractmethod
-    def get_params_dict(self):
-        pass
-
-    @abstractmethod
-    def get_params_tuple(self):
+    def get_ordered_param_dict(self):
         pass
 
     @abstractmethod
@@ -105,27 +102,41 @@ class SubGraphVectorSpace(SubVectorSpace):
         pass
 
     def __str__(self):
-        return '<%s sub vector space with parameters: %s>' % (self.get_type(), str(self.get_params_dict()))
+        return '<%s sub vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, pbar_info=False, ignore_existing_files=False):
+    def build_basis(self, pbar_info=False, progress_bar=False, ignore_existing_files=False):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_basis_file():
             return
         generatingList = self.get_generating_graphs()
 
-        desc = 'Build basis: ' + str(self.get_params_dict())
+        desc = 'Build basis: ' + str(self.get_ordered_param_dict())
+        if not progress_bar:
+            print(desc)
         basisSet = set()
-        PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet,
-                                       pbar_info=pbar_info, desc=desc)
+        for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
+            if self.get_partition() is None:
+                automList = G.automorphism_group().gens()
+                canonG = G.canonical_label()
+            else:
+                automList = G.automorphism_group(partition=self.get_partition()).gens()
+                canonG = G.canonical_label(partition=self.get_partition())
+            if len(automList):
+                canon6 = canonG.graph6_string()
+                if not canon6 in basisSet:
+                    if not self._has_odd_automorphisms(G, automList):
+                        basisSet.add(canon6)
+
+        #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet, pbar_info=pbar_info, desc=desc)
         self._store_basis_g6(list(basisSet))
 
-    def _generate_basis_set(self, G, basis_set):
+    '''def _generate_basis_set(self, G, basis_set):
         if self.get_partition() is None:
             automList = G.automorphism_group().gens()
             canonG = G.canonical_label()
@@ -136,7 +147,7 @@ class SubGraphVectorSpace(SubVectorSpace):
             canon6 = canonG.graph6_string()
             if not canon6 in basis_set:
                 if not self._has_odd_automorphisms(G, automList):
-                    basis_set.add(canon6)
+                    basis_set.add(canon6)'''
 
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:
@@ -156,12 +167,12 @@ class SubGraphVectorSpace(SubVectorSpace):
         except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
-    def get_sort_value(self):
+    def get_sort_dim(self):
         try:
-            sort_value = self.get_dimension()
+            sort_dim = self.get_dimension()
         except SL.FileNotFoundError:
-            sort_value = Parameters.max_sort_value
-        return sort_value
+            sort_dim = Parameters.max_sort_value
+        return sort_dim
 
     def _store_basis_g6(self, basisList):
         basisList.insert(0, str(len(basisList)))
@@ -219,11 +230,11 @@ class GraphVectorSpace(object):
         pass
 
     @abstractmethod
-    def get_params_range_dict(self):
+    def get_ordered_param_range_dict(self):
         pass
 
     def __str__(self):
-        return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_params_range_dict()))
+        return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_range_dict()))
 
     def get_vs_list(self):
         return self.sub_vs_list
@@ -237,30 +248,36 @@ class GraphVectorSpace(object):
                 eq_l += 1
         return eq_l == len(self.sub_vs_list)
 
-    def sort(self, work_estimate=True):
-        if work_estimate:
+    def sort(self, key='work_estimate'):
+        if key == 'work_estimate':
             self.sub_vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+        elif key == 'dim':
+            self.sub_vs_list.sort(key=operator.methodcaller('get_sort_dim'))
         else:
-            self.sub_vs_list.sort(key=operator.methodcaller('get_sort_value'))
+            raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+        print(' ')
+        print('Build basis of %s' % str(self))
         self.plot_info()
         self.sort()
-        PP.parallel_individual_progress(self._build_single_basis, self.sub_vs_list, n_jobs=n_jobs,
-                                        progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
+        if n_jobs > 1:
+            progress_bar = False
+        PP.parallel(self._build_single_basis, self.sub_vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+                    ignore_existing_files=ignore_existing_files)
         self.plot_info()
 
-    def _build_single_basis(self, vs, pbar_info=False, ignore_existing_files=True):
-        vs.build_basis(pbar_info=pbar_info, ignore_existing_files=ignore_existing_files)
+    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True):
+        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
 
     def plot_info(self):
         vsList = []
         for vs in self.sub_vs_list:
             vs.update_properties()
-            vsList.append(vs.get_params_dict().values() + vs.get_properties().list())
-        vsColumns = self.get_params_range_dict().keys() + VectorSpaceProperties.names()
+            vsList.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
+        vsColumns = self.get_ordered_param_range_dict().keys() + VectorSpaceProperties.names()
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
-        vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
+        #vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(vsTable)
 
 

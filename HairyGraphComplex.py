@@ -37,21 +37,21 @@ class HairySubGVS(GVS.SubGraphVectorSpace):
                and self.sub_type == other.sub_type
 
     def get_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % self.get_params_tuple()
+        s = "gra%d_%d_%d.g6" % self.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_plot_path(self):
-        s = "gra%d_%d_%d" % self.get_params_tuple()
+        s = "gra%d_%d_%d" % self.get_param_tuple()
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d_%d.g6" % self.get_params_tuple()
+        s = "gra%d_%d_%d.g6" % self.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
-    def get_params_dict(self):
-        return {'vertices': self.n_vertices, 'loops': self.n_loops, 'hairs': self.n_hairs}
+    def get_ordered_param_dict(self):
+        return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('hairs', self.n_hairs)])
 
-    def get_params_tuple(self):
+    def get_param_tuple(self):
         return (self.n_vertices, self.n_loops, self.n_hairs)
 
     def get_partition(self):
@@ -129,8 +129,8 @@ class HairyGVS(GVS.GraphVectorSpace):
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
-    def get_params_range_dict(self):
-        return {'vertices': self.v_range, 'loops': self.l_range, 'hairs': self.h_range}
+    def get_ordered_param_range_dict(self):
+        return SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range)])
 
 
 # ------- Gradings --------
@@ -168,19 +168,19 @@ class ContractEdgesGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d_%d.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_%d_rank.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d_%d_rank.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d_%d.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d_%d.txt.rank.txt" % self.domain.get_params_tuple()
+        s = "contractD%d_%d_%d.txt.rank.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -261,11 +261,11 @@ class EdgeToOneHairGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "edge_to_one_hairD%d_%d_%d.txt" % self.domain.get_params_tuple()
+        s = "edge_to_one_hairD%d_%d_%d.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "edge_to_one_hairD%d_%d_%d_rank.txt" % self.domain.get_params_tuple()
+        s = "edge_to_one_hairD%d_%d_%d_rank.txt" % self.domain.get_param_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
@@ -340,12 +340,8 @@ class ContractEdgesGC(GC.GraphComplex):
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
         vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        grading = VertexGrading(vector_space)
         differential = ContractEdgesD(vector_space)
-        super(ContractEdgesGC, self).__init__(vector_space, grading, differential)
-
-    def get_param_labels_ranges_tuple(self):
-        return ('vertices', self.v_range, 'loops', self.l_range, 'hairs', self.h_range)
+        super(ContractEdgesGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_contract_edges_%s_%s.png" % (graph_type, self.sub_type)
@@ -362,12 +358,8 @@ class EdgeToOneHairGC(GC.GraphComplex):
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
         vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        grading = HairGrading(vector_space)
         differential = EdgeToOneHairD(vector_space)
-        super(EdgeToOneHairGC, self).__init__(vector_space, grading, differential)
-
-    def get_param_labels_ranges_tuple(self):
-        return ('vertices', self.v_range, 'loops', self.l_range, 'hairs', self.h_range)
+        super(EdgeToOneHairGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)
