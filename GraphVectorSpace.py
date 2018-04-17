@@ -109,7 +109,7 @@ class SubGraphVectorSpace(SubVectorSpace):
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, pbar_info=False, progress_bar=False, ignore_existing_files=False):
+    def build_basis(self, progress_bar=False, ignore_existing_files=False):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_basis_file():
@@ -136,18 +136,18 @@ class SubGraphVectorSpace(SubVectorSpace):
         #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet, pbar_info=pbar_info, desc=desc)
         self._store_basis_g6(list(basisSet))
 
-    '''def _generate_basis_set(self, G, basis_set):
-        if self.get_partition() is None:
-            automList = G.automorphism_group().gens()
-            canonG = G.canonical_label()
-        else:
-            automList = G.automorphism_group(partition=self.get_partition()).gens()
-            canonG = G.canonical_label(partition=self.get_partition())
-        if len(automList):
-            canon6 = canonG.graph6_string()
-            if not canon6 in basis_set:
-                if not self._has_odd_automorphisms(G, automList):
-                    basis_set.add(canon6)'''
+    #def _generate_basis_set(self, G, basis_set):
+        #if self.get_partition() is None:
+            #automList = G.automorphism_group().gens()
+            #canonG = G.canonical_label()
+        #else:
+            #automList = G.automorphism_group(partition=self.get_partition()).gens()
+            #canonG = G.canonical_label(partition=self.get_partition())
+        #if len(automList):
+            #canon6 = canonG.graph6_string()
+            #if not canon6 in basis_set:
+                #if not self._has_odd_automorphisms(G, automList):
+                    #basis_set.add(canon6)
 
     def _has_odd_automorphisms(self, G, automList):
         for g in automList:

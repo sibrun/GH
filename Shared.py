@@ -32,3 +32,24 @@ class OrderedDict(collections.OrderedDict):
             s += '%s: %s ' % (key, str(value))
         s += ')'
         return s
+
+
+def enumerate_edges(graph):
+    for (j, e) in enumerate(graph.edges(labels=False)):
+        a, b = e
+        graph.set_edge_label(a, b, j)
+
+
+def permute_to_left((u, v), vertex_range):
+    p = list(vertex_range)
+    min_index = min(vertex_range)
+    p[min_index] = u
+    p[min_index + 1] = v
+    idx = 2
+    for j in vertex_range:
+        if j == u or j == v:
+            continue
+        else:
+            p[idx] = j
+            idx += 1
+    return Perm(p).inverse()

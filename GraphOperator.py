@@ -218,6 +218,7 @@ class OperatorMatrix(object):
             return
         if ignore_existing_files and self.exists_rank_file():
             self.delete_rank_file()
+        print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
             rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, primes=primes, estimate=estimate, eps=eps)
         except SL.FileNotFoundError as error:
@@ -436,6 +437,15 @@ class BiOperatorMatrix(OperatorMatrix):
         self.op_collection1 = op_collection1
         self.op_collection2 = op_collection2
 
+    @classmethod
+    def generate_op_matrix_list(cls, bigrading, op_collection1, op_collection2):
+        vs_list = vector_space.get_vs_list()
+        op_matrix_list = []
+        for (domain, target) in itertools.product(vs_list, vs_list):
+            if cls.is_match(domain, target):
+                op_matrix_list.append(cls(domain, target))
+        return op_matrix_list
+
     def __str__(self):
         return '<Bi operator matrix on domain: %s, and %s, %s' \
                % (str(self.domain), str(self.op_collection1), str(self.op_collection2))
@@ -506,12 +516,7 @@ class OperatorMatrixCollection(object):
         print(' ')
         print('Compute ranks of %s' % str(self))
         self.plot_info()
-        if sort_key == 'size':
-            self.sort(key='size')
-        elif sort_key == 'entries':
-            self.sort(key='entries')
-        elif sort_key == 'work_estimate':
-            self.sort(key='work_estimate')
+        self.sort(key=sort_key)
         PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
                     estimate=estimate, ignore_existing_files=ignore_existing_files)
         self.plot_info()
@@ -616,8 +621,8 @@ class Differential(OperatorMatrixCollection):
                 else:
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        logger.warn("Square zero test for %s: trivial success: "
-                     "%d, success: %d, inconclusive: %d, failed: %d pairs" % (str(self), triv_l, succ_l, inc_l, fail_l))
+        print("Square zero test for %s:" % str(self))
+        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
         if inc_l:
             logger.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
         for (op1, op2) in fail:

@@ -204,31 +204,16 @@ class ContractEdgesGO(GO.GraphOperator):
             # only edges not connected to a hair-vertex can be contracted
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
-            r = range(0,self.domain.n_vertices + self.domain.n_hairs)
-            p = list(r)
-            p[0] = u
-            p[1] = v
-            idx = 2
-            for j in r:
-                if j == u or j == v:
-                    continue
-                else:
-                    p[idx] = j
-                    idx += 1
-
-            pp = SH.Perm(p).inverse()
+            pp = SH.permute_to_left((u, v), range(0, self.domain.n_vertices + self.domain.n_hairs))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
-
-            for (j, ee) in enumerate(G1.edges(labels=False)):
-                a, b = ee
-                G1.set_edge_label(a,b,j)
+            SH.enumerate_edges(G1)
             previous_size = G1.size()
-            G1.merge_vertices([0,1])
+            G1.merge_vertices([0, 1])
             if (previous_size - G1.size()) != 1:
                 continue
-            G1.relabel(list(range(0,G1.order())), inplace=True)
+            G1.relabel(list(range(0, G1.order())), inplace=True)
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 sgn *= Permutation(p).signature()
@@ -292,32 +277,18 @@ class EdgeToOneHairGO(GO.GraphOperator):
             # only edges not connected to a hair-vertex can be split
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
-            r = range(0,self.domain.n_vertices + self.domain.n_hairs)
-            p = list(r)
-            p[0] = u
-            p[1] = v
-            idx = 2
-            for j in r:
-                if j == u or j == v:
-                    continue
-                else:
-                    p[idx] = j
-                    idx += 1
-
-            pp = SH.Perm(p).inverse()
+            pp = SH.permute_to_left((u, v), range(0, self.domain.n_vertices + self.domain.n_hairs))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
-            G1.delete_edge(0, 1)
-            if not G1.is_connected():
-                continue
+            G1.delete_edge((0,1))
             new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
             G1.add_vertex(new_hair_idx)
-            G2 = copy(G1)
             G1.add_edge((0, new_hair_idx))
-            image.append((G1, sgn))
-            G2.add_edge((new_hair_idx, 1))
-            image.append((G2, sgn))
+            image.append((G1, 1))
+            G2 = copy(G1)
+            G2.add_edge((1, new_hair_idx))
+            image.append((G2, 1))
         return image
 
 
