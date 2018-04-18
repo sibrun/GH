@@ -149,7 +149,6 @@ class HairGrading(GVS.Grading):
     def get_deg_idx(self, ordinary_sub_gvs):
         return ordinary_sub_gvs.n_hairs
 
-
 # ------- Operators --------
 class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
@@ -300,6 +299,38 @@ class EdgeToOneHairD(GO.Differential):
         return 'edge to one hair'
 
 
+class CeEt1hBiOM(GO.BiOperatorMatrix):
+    def __init__(self, domain, target, op_collection1, op_collection2):
+        self.sub_type = domain.get_vs_list()[0].sub_type
+        super(CeEt1hBiOM, self).__init__(domain, target, op_collection1, op_collection2)
+
+    @staticmethod
+    def is_match(domain, target):
+        return domain.get_deg() + 1 == target.get_deg()
+
+    def get_matrix_file_path(self):
+        s = "bi_D_ce_et1h_%d.txt" % self.domain.get_deg()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "bi_D_ce_et1h_%d_rank.txt" % self.domain.get_deg()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_ref_matrix_file_path(self):
+        pass
+
+    def get_ref_rank_file_path(self):
+        pass
+
+class CeEt1hBiD(GO.Differential):
+    def __init__(self, vector_space, bigrading, differential1, differential2):
+        super(CeEt1hBiD, self).__init__(vector_space, CeEt1hBiOM.generate_op_matrix_list
+        (bigrading, differential1, differential2))
+
+    def get_type(self):
+        return 'contract edges and edge to one hair bi'
+
+
 # ------- Graph Complexes --------#
 class ContractEdgesGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
@@ -331,6 +362,29 @@ class EdgeToOneHairGC(GC.GraphComplex):
         vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
         differential = EdgeToOneHairD(vector_space)
         super(EdgeToOneHairGC, self).__init__(vector_space, differential)
+
+    def get_cohomology_plot_path(self):
+        s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class BiDCeEt1HGC(GC.GraphComplex):
+    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
+        self.v_range = v_range
+        self.l_range = l_range
+        self.h_range = h_range
+        self.even_edges = even_edges
+        self.even_hairs = even_hairs
+        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
+
+        vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        grading1 = VertexGrading(vector_space)
+        grading2 = HairGrading(vector_space)
+        bigrading = GVS.BiGrading(grading1, grading2)
+        differential1 = ContractEdgesD(vector_space)
+        differential2 = EdgeToOneHairD(vector_space)
+        differential_tot = BiCeEt1hD
+        super(BiDCeEt1HGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)

@@ -432,6 +432,8 @@ class GraphOperator(Operator, OperatorMatrix):
 
 
 class BiOperatorMatrix(OperatorMatrix):
+    __metaclass__ = ABCMeta
+
     def __init__(self, domain, target, op_collection1, op_collection2):
         super(BiOperatorMatrix, self).__init__(domain, target)
         self.op_collection1 = op_collection1
@@ -439,32 +441,26 @@ class BiOperatorMatrix(OperatorMatrix):
 
     @classmethod
     def generate_op_matrix_list(cls, bigrading, op_collection1, op_collection2):
-        vs_list = vector_space.get_vs_list()
-        op_matrix_list = []
+        vs_list = bigrading.get_vs_list()
+        bi_op_matrix_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if cls.is_match(domain, target):
-                op_matrix_list.append(cls(domain, target))
-        return op_matrix_list
+                bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
+        return bi_op_matrix_list
 
     def __str__(self):
         return '<Bi operator matrix on domain: %s, and %s, %s' \
                % (str(self.domain), str(self.op_collection1), str(self.op_collection2))
 
-    def get_matrix_file_path(self):
-        pass
-
-    def get_rank_file_path(self):
-        pass
-
     def get_work_estimate(self):
-        return len(self.domain.get_vs_list())
+        return self.domain.get_dimension() * self.target.get_dimension()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         if not ignore_existing_files and self.exists_matrix_file():
             return
         shape = (self.domain.get_dimensions(), self.target.get_dimensions())
         matrixList = []
-        for op in self.op_collection1.get_op_list() + self.op_collection1.get_op_list():
+        for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
             domain_start_idx = self.domain.get_start_idx(op.get_domain())
             target_start_idx = self.target.get_start_idx(op.get_target())
             subMatrixList = op.get_matrix_list()

@@ -45,10 +45,6 @@ class SubVectorSpace(object):
         pass
 
     @abstractmethod
-    def get_ordered_param_dict(self):
-        pass
-
-    @abstractmethod
     def is_valid(self):
         pass
 
@@ -68,6 +64,10 @@ class SubGraphVectorSpace(SubVectorSpace):
 
     @abstractmethod
     def get_type(self):
+        pass
+
+    @abstractmethod
+    def get_ordered_param_dict(self):
         pass
 
     @abstractmethod
@@ -281,7 +281,6 @@ class GraphVectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
-
 class DegSlice(SubVectorSpace):
     def __init__(self, deg):
         self.deg = deg
@@ -300,6 +299,9 @@ class DegSlice(SubVectorSpace):
             if vs.is_valid():
                 all_not_valid = False
         return not all_not_valid
+
+    def get_deg(self):
+        return self.deg
 
     def get_dimension(self):
         dim = 0
@@ -341,15 +343,15 @@ class Grading(object):
     def get_deg_idx(self, sub_graph_vs):
         pass
 
-    def get_grading_list(self):
-        return self.grading_dict.items()
+    def get_vs_list(self):
+        return self.grading_dict.values()
 
     def build_grading(self):
         for vs in self.graph_vector_space.get_vs_list():
             (deg, idx) = self.get_deg_idx(vs)
             deg_slice = self.grading_dict.get(deg)
             if deg_slice is None:
-                self.grading_dict.update({deg, DegSlice(deg)})
+                self.grading_dict.update(deg, {DegSlice(deg)})
             self.grading_dict[deg].append(vs, idx)
 
 
@@ -368,6 +370,6 @@ class BiGrading(Grading):
 
     def build_grading(self):
         super(BiGrading, self).build_grading()
-        for (deg, slice) in self.grading_dict.items():
-            if not slice.is_complete():
+        for (deg, deg_slice) in self.grading_dict.items():
+            if not deg_slice.is_complete():
                 self.grading_dict.pop(deg)
