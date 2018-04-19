@@ -331,45 +331,28 @@ class DegSlice(SubVectorSpace):
                 return False
         return True
 
-
-class Grading(object):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, graph_vector_space):
-        self.graph_vector_space = graph_vector_space
+class BiGrading(object):
+    def __init__(self, vector_space):
+        self.vector_space = vector_space
         self.grading_dict = dict()
+        self.build_grading()
 
     @abstractmethod
-    def get_deg_idx(self, sub_graph_vs):
+    def get_degs(self, graph_vs):
         pass
 
     def get_vs_list(self):
         return self.grading_dict.values()
 
     def build_grading(self):
-        for vs in self.graph_vector_space.get_vs_list():
-            (deg, idx) = self.get_deg_idx(vs)
-            deg_slice = self.grading_dict.get(deg)
+        for vs in self.vector_space.get_vs_list():
+            (deg1, deg2) = self.get_degs(vs)
+            deg_tot = deg1 + deg2
+            idx = deg1
+            deg_slice = self.grading_dict.get(deg_tot)
             if deg_slice is None:
-                self.grading_dict.update(deg, {DegSlice(deg)})
-            self.grading_dict[deg].append(vs, idx)
-
-
-class BiGrading(Grading):
-    def __init__(self, grading1, grading2):
-        if grading1.vector_space != grading2.vector_space:
-            raise ValueError('Need common vector space for bigrading')
-        self.grading1 = grading1
-        self.grading2 = grading2
-        super(BiGrading, self).__init__(grading1.vector_space)
-
-    def get_deg_idx(self, graph_vs):
-        deg1 = self.grading1.get_deg(graph_vs)
-        deg2 = self.grading2.get_deg(graph_vs)
-        return (deg1 + deg2, deg1)
-
-    def build_grading(self):
-        super(BiGrading, self).build_grading()
+                self.grading_dict.update({deg_tot: DegSlice(deg_tot)})
+            self.grading_dict[deg_tot].append(vs, idx)
         for (deg, deg_slice) in self.grading_dict.items():
             if not deg_slice.is_complete():
                 self.grading_dict.pop(deg)

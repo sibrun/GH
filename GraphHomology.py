@@ -28,7 +28,7 @@ def positive_range_type(arg):
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
     return range(min, max)
 
-graph_complex_types = ['o_ce', 'h_ce', 'h_etoh']
+graph_complex_types = ['o_ce', 'h_ce', 'h_etoh', 'h_ce_etoh']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     if args.l is None:
         raise MissingArgumentError('specify -l: range for number of loops')
 
-    if args.graph_complex_type in {'h_ce', 'h_etoh'}:
+    if args.graph_complex_type in {'h_ce', 'h_etoh', 'h_ce_etoh'}:
         if args.even_h:
                 even_hairs = True
         elif args.odd_h:
@@ -142,6 +142,8 @@ if __name__ == "__main__":
         graph_complex = HGC.ContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
     elif args.graph_complex_type == 'h_etoh':
         graph_complex = HGC.EdgeToOneHairGC(args.v, args.l, args.hairs, even_edges, even_hairs)
+    elif args.graph_complex_type == 'h_ce_etoh':
+        graph_complex = HGC.CeEt1hBiGC(args.v, args.l, args.hairs, even_edges, even_hairs)
 
     if not (args.build or args.build_b or args.build_op or args.square_zero or args.rank or args.coho):
         cohomology_complete(graph_complex)

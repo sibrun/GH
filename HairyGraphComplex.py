@@ -134,20 +134,13 @@ class HairyGVS(GVS.GraphVectorSpace):
 
 
 # ------- Gradings --------
-class VertexGrading(GVS.Grading):
-    def __init__(self, graph_vector_space):
-        super(VertexGrading, self).__init__(graph_vector_space)
+class VertexHairBiGrading(GVS.BiGrading):
+    def __init__(self, vector_space):
+        super(VertexHairBiGrading, self).__init__(vector_space)
 
-    def get_deg_idx(self, ordinary_sub_gvs):
-        return ordinary_sub_gvs.n_vertices
+    def get_degs(self, ordinary_sub_gvs):
+        return (ordinary_sub_gvs.n_vertices, ordinary_sub_gvs.n_hairs)
 
-
-class HairGrading(GVS.Grading):
-    def __init__(self, graph_vector_space):
-        super(HairGrading, self).__init__(graph_vector_space)
-
-    def get_deg_idx(self, ordinary_sub_gvs):
-        return ordinary_sub_gvs.n_hairs
 
 # ------- Operators --------
 class ContractEdgesGO(GO.GraphOperator):
@@ -323,7 +316,10 @@ class CeEt1hBiOM(GO.BiOperatorMatrix):
         pass
 
 class CeEt1hBiD(GO.Differential):
-    def __init__(self, vector_space, bigrading, differential1, differential2):
+    def __init__(self, vector_space):
+        bigrading = VertexHairBiGrading(vector_space)
+        differential1 = ContractEdgesD(vector_space)
+        differential2 = EdgeToOneHairD(vector_space)
         super(CeEt1hBiD, self).__init__(vector_space, CeEt1hBiOM.generate_op_matrix_list
         (bigrading, differential1, differential2))
 
@@ -368,7 +364,7 @@ class EdgeToOneHairGC(GC.GraphComplex):
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
 
-class BiDCeEt1HGC(GC.GraphComplex):
+class CeEt1hBiGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -378,13 +374,8 @@ class BiDCeEt1HGC(GC.GraphComplex):
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
         vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        grading1 = VertexGrading(vector_space)
-        grading2 = HairGrading(vector_space)
-        bigrading = GVS.BiGrading(grading1, grading2)
-        differential1 = ContractEdgesD(vector_space)
-        differential2 = EdgeToOneHairD(vector_space)
-        differential_tot = BiCeEt1hD
-        super(BiDCeEt1HGC, self).__init__(vector_space, differential)
+        differential = CeEt1hBiD(vector_space)
+        super(CeEt1hBiGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)
