@@ -1,6 +1,6 @@
 import itertools
 from sage.all import *
-import SumVectorSpace as GVS
+import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
@@ -13,14 +13,14 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 
 
 # ------- Graph Vector Space --------
-class OrdinarySubGVS(GVS.GraphVectorSpace):
+class OrdinaryGVS(GVS.GraphVectorSpace):
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get(self.even_edges)
-        super(OrdinarySubGVS, self).__init__()
+        super(OrdinaryGVS, self).__init__()
 
     def get_type(self):
         return 'ordinary graphs with %s' % self.sub_type
@@ -88,15 +88,15 @@ class OrdinarySubGVS(GVS.GraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-class OrdinaryGVS(GVS.SumVectorSpace):
+class SumOrdinaryGVS(GVS.SumVectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinarySubGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        super(OrdinaryGVS, self).__init__(vs_list)
+        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        super(SumOrdinaryGVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -120,8 +120,8 @@ class ContractEdgesGO(GO.GraphOperator):
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
-        domain = OrdinarySubGVS(n_vertices, n_loops, even_edges)
-        target = OrdinarySubGVS(n_vertices - 1, n_loops, even_edges)
+        domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
+        target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -203,7 +203,7 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vector_space = OrdinaryGVS(v_range, l_range, even_edges)
+        vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
         differential = ContractEdgesD(vector_space)
         super(OrdinaryContractEdgesGC, self).__init__(vector_space, differential)
 

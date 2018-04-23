@@ -440,10 +440,9 @@ class BiOperatorMatrix(OperatorMatrix):
         self.op_collection2 = op_collection2
 
     @classmethod
-    def generate_op_matrix_list(cls, bigrading, op_collection1, op_collection2):
-        deg_slices_list = bigrading.get_deg_slices()
+    def generate_op_matrix_list(cls, graded_vs, op_collection1, op_collection2):
         bi_op_matrix_list = []
-        for (domain, target) in itertools.product(deg_slices_list, deg_slices_list):
+        for (domain, target) in itertools.product(graded_vs, graded_vs):
             if cls.is_match(domain, target):
                 bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
         return bi_op_matrix_list
@@ -461,11 +460,14 @@ class BiOperatorMatrix(OperatorMatrix):
         shape = (self.domain.get_dimensions(), self.target.get_dimensions())
         matrixList = []
         for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
-            domain_start_idx = self.domain.get_start_idx(op.get_domain())
-            target_start_idx = self.target.get_start_idx(op.get_target())
-            subMatrixList = op.get_matrix_list()
-            for (i, j, v) in subMatrixList:
-                matrixList.append((i + domain_start_idx, j + target_start_idx, v))
+            op_domain = op.get_domain()
+            op_target = op.get_target()
+            if self.domain.containes(op_domain) and self.target.containes(op.target):
+                domain_start_idx = self.domain.get_start_idx(op.get_domain())
+                target_start_idx = self.target.get_start_idx(op.get_target())
+                subMatrixList = op.get_matrix_list()
+                for (i, j, v) in subMatrixList:
+                    matrixList.append((i + domain_start_idx, j + target_start_idx, v))
         self._store_matrix_list(matrixList, shape)
 
 

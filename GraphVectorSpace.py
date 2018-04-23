@@ -45,10 +45,6 @@ class VectorSpace(object):
         pass
 
     @abstractmethod
-    def is_valid(self):
-        pass
-
-    @abstractmethod
     def get_dimension(self):
         pass
 
@@ -84,6 +80,10 @@ class GraphVectorSpace(VectorSpace):
 
     @abstractmethod
     def get_partition(self):
+        pass
+
+    @abstractmethod
+    def is_valid(self):
         pass
 
     @abstractmethod
@@ -219,7 +219,7 @@ class GraphVectorSpace(VectorSpace):
         P.save(path)
 
 
-class SumVectorSpace(object):
+class SumVectorSpace(VectorSpace):
     __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
@@ -238,6 +238,18 @@ class SumVectorSpace(object):
 
     def get_vs_list(self):
         return self.vs_list
+
+    def get_dimension(self):
+        dim = 0
+        for vs in self.vs_list:
+            dim += vs.get_dimension
+        return dim
+
+    def containes(self, vector_space):
+        for vs in self.vs_list:
+            if vs == vector_space:
+                return True
+        return False
 
     def __eq__(self, other):
         if len(self.vs_list) != len(other.vs_list):
@@ -281,57 +293,34 @@ class SumVectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
-class DegSlice(VectorSpace):
-    def __init__(self, deg):
+class DegSlice(SumVectorSpace):
+    def __init__(self, vs_list, deg):
         self.deg = deg
-        self.vs_dict = dict()
-        super(DegSlice, self).__init__()
+        super(DegSlice, self).__init__(vs_list)
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
 
-    def __eq__(self, other):
-        return self.vs_dict.items() == other.vs_dict.items()
-
-    def is_valid(self):
-        all_not_valid = True
-        for vs in self.vs_dict.keys():
-            if vs.is_valid():
-                all_not_valid = False
-        return not all_not_valid
-
     def get_deg(self):
         return self.deg
 
-    def get_dimension(self):
-        dim = 0
-        for vs in self.vs_dict.keys():
-            dim += vs.get_dimension()
-
-    def get_vs_list(self):
-        return self.vs_dict.keys()
-
-    def get_start_idx(self, sub_vector_space):
-        if self.vs_dict.get(sub_vector_space) is None:
-            raise ValueError('sub_vector_space needs to refer on a vector space of the degree slice')
-        vs_list = self.get_vs_list()
+    def get_start_idx(self, vector_space):
         start_idx = 0
-        for vs in vs_list:
-            if vs == sub_vector_space:
+        for vs in self.vs_list:
+            if vs == vector_space:
                 return start_idx
             start_idx += vs.get_dimension()
-
-    def append(self, vs, idx):
-        self.vs_dict.update({vs: idx})
+        raise ValueError('vector_space needs to refer on a vector space of the degree slice')
 
     def is_complete(self):
-        for idx in range(0, self.deg + 2):
-            vs = self.vs_dict.get(idx)
+        if len(self.vs_list) != self.deg + 1:
+            return False
+        for vs in self.vs_list:
             if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
                 return False
         return True
 
-class BiGrading(object):
+'''class BiGrading(object):
     def __init__(self, vector_space):
         self.vector_space = vector_space
         self.grading_dict = dict()
@@ -357,5 +346,5 @@ class BiGrading(object):
             print(str(deg) + ' '+ str(len(deg_slice.get_vs_list())))
         for (deg, deg_slice) in self.grading_dict.items():
             if not deg_slice.is_complete():
-                self.grading_dict.pop(deg)
+                self.grading_dict.pop(deg)'''
 

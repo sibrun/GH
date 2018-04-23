@@ -39,3 +39,4 @@ class GraphComplex(object):
         plot_path = self.get_cohomology_plot_path()
         param_range_dict = self.vector_space.get_ordered_param_range_dict()
         Display.plot_array(dim_dict, param_range_dict, plot_path)
+

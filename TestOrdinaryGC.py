@@ -17,7 +17,7 @@ edges_types = [True, False]
 
 class OGCBasisTest(TGC.BasisTest):
     def setUp(self):
-        self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
+        self.vs_list = [OGC.SumOrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
 
     def tearDown(self):
@@ -26,8 +26,8 @@ class OGCBasisTest(TGC.BasisTest):
     def test_perm_sign(self):
         logging.warn('----- Test permutation sign -----')
 
-        vs_even = OGC.OrdinaryGVS(6, 5, even_edges=True)
-        vs_odd = OGC.OrdinaryGVS(6, 5, even_edges=False)
+        vs_even = OGC.SumOrdinaryGVS(6, 5, even_edges=True)
+        vs_odd = OGC.SumOrdinaryGVS(6, 5, even_edges=False)
         G = graphs.WheelGraph(5)
         p = [0, 2, 3, 4, 5, 1]
         self.assertTrue(vs_odd.perm_sign(G, p) == 1, 'incorrect permutation sign')

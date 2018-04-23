@@ -19,7 +19,7 @@ hairs_types = [True, False]
 
 class HGCBasisTest(TGC.BasisTest):
     def setUp(self):
-        self.vs_list = [HGC.HairyGVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.vs_list = [HGC.SumHairyGVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):

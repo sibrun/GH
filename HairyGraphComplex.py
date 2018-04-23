@@ -1,6 +1,6 @@
 import itertools
 from sage.all import *
-import SumVectorSpace as GVS
+import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
@@ -16,7 +16,7 @@ sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_o
 
 
 # ------- Graph Vector Space --------
-class HairySubGVS(GVS.GraphVectorSpace):
+class HairyGVS(GVS.GraphVectorSpace):
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         self.n_vertices = n_vertices
@@ -26,8 +26,8 @@ class HairySubGVS(GVS.GraphVectorSpace):
         self.even_hairs = even_hairs
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
-        super(HairySubGVS,self).__init__()
-        self.ogvs = OGC.OrdinarySubGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
+        super(HairyGVS, self).__init__()
+        self.ogvs = OGC.OrdinaryGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -113,7 +113,7 @@ class HairySubGVS(GVS.GraphVectorSpace):
         return G
 
 
-class HairyGVS(GVS.SumVectorSpace):
+class SumHairyGVS(GVS.SumVectorSpace):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range
@@ -122,9 +122,9 @@ class HairyGVS(GVS.SumVectorSpace):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vs_list = [HairySubGVS(v, l, h, self.even_edges, self.even_hairs) for
+        vs_list = [HairyGVS(v, l, h, self.even_edges, self.even_hairs) for
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        super(HairyGVS, self).__init__(vs_list)
+        super(SumHairyGVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -133,13 +133,13 @@ class HairyGVS(GVS.SumVectorSpace):
         return SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range)])
 
 
-# ------- Gradings --------
+"""# ------- Gradings --------
 class VertexHairBiGrading(GVS.BiGrading):
     def __init__(self, vector_space):
         super(VertexHairBiGrading, self).__init__(vector_space)
 
     def get_degs(self, ordinary_sub_gvs):
-        return (ordinary_sub_gvs.n_vertices, ordinary_sub_gvs.n_hairs)
+        return (ordinary_sub_gvs.n_vertices, ordinary_sub_gvs.n_hairs)"""
 
 
 # ------- Operators --------
@@ -155,8 +155,8 @@ class ContractEdgesGO(GO.GraphOperator):
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        domain = HairySubGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairySubGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        domain = HairyGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
+        target = HairyGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -233,8 +233,8 @@ class EdgeToOneHairGO(GO.GraphOperator):
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        domain = HairySubGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairySubGVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
+        domain = HairyGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
+        target = HairyGVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -292,41 +292,6 @@ class EdgeToOneHairD(GO.Differential):
         return 'edge to one hair'
 
 
-class CeEt1hBiOM(GO.BiOperatorMatrix):
-    def __init__(self, domain, target, op_collection1, op_collection2):
-        self.sub_type = domain.get_vs_list()[0].sub_type
-        super(CeEt1hBiOM, self).__init__(domain, target, op_collection1, op_collection2)
-
-    @staticmethod
-    def is_match(domain, target):
-        return domain.get_deg() + 1 == target.get_deg()
-
-    def get_matrix_file_path(self):
-        s = "bi_D_ce_et1h_%d.txt" % self.domain.get_deg()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_rank_file_path(self):
-        s = "bi_D_ce_et1h_%d_rank.txt" % self.domain.get_deg()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_ref_matrix_file_path(self):
-        pass
-
-    def get_ref_rank_file_path(self):
-        pass
-
-class CeEt1hBiD(GO.Differential):
-    def __init__(self, vector_space):
-        bigrading = VertexHairBiGrading(vector_space)
-        differential1 = ContractEdgesD(vector_space)
-        differential2 = EdgeToOneHairD(vector_space)
-        super(CeEt1hBiD, self).__init__(vector_space, CeEt1hBiOM.generate_op_matrix_list
-        (bigrading, differential1, differential2))
-
-    def get_type(self):
-        return 'contract edges and edge to one hair bi'
-
-
 # ------- Graph Complexes --------#
 class ContractEdgesGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
@@ -337,7 +302,7 @@ class ContractEdgesGC(GC.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        vector_space = SumHairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
         differential = ContractEdgesD(vector_space)
         super(ContractEdgesGC, self).__init__(vector_space, differential)
 
@@ -355,27 +320,9 @@ class EdgeToOneHairGC(GC.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        vector_space = SumHairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
         differential = EdgeToOneHairD(vector_space)
         super(EdgeToOneHairGC, self).__init__(vector_space, differential)
-
-    def get_cohomology_plot_path(self):
-        s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
-
-class CeEt1hBiGC(GC.GraphComplex):
-    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
-        self.v_range = v_range
-        self.l_range = l_range
-        self.h_range = h_range
-        self.even_edges = even_edges
-        self.even_hairs = even_hairs
-        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
-
-        vector_space = HairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        differential = CeEt1hBiD(vector_space)
-        super(CeEt1hBiGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
         s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (graph_type, self.sub_type)
