@@ -441,8 +441,9 @@ class BiOperatorMatrix(OperatorMatrix):
 
     @classmethod
     def generate_op_matrix_list(cls, graded_vs, op_collection1, op_collection2):
+        graded_vs_list = graded_vs.get_vs_list()
         bi_op_matrix_list = []
-        for (domain, target) in itertools.product(graded_vs, graded_vs):
+        for (domain, target) in itertools.product(graded_vs_list, graded_vs_list):
             if cls.is_match(domain, target):
                 bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
         return bi_op_matrix_list
@@ -457,7 +458,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         if not ignore_existing_files and self.exists_matrix_file():
             return
-        shape = (self.domain.get_dimensions(), self.target.get_dimensions())
+        shape = (self.domain.get_dimension(), self.target.get_dimension())
         matrixList = []
         for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
             op_domain = op.get_domain()

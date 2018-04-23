@@ -49,18 +49,18 @@ class CeEt1hD(GO.Differential):
         return 'contract edges and edge to one hair'
 
 
-class EdgeToOneHairGC(GC.GraphComplex):
+class CeEt1hGC(GC.GraphComplex):
     def __init__(self, vector_space, differential):
         self.sub_type = HGC.sub_types.get(even_edges, even_hairs)
-        super(EdgeToOneHairGC, self).__init__(vector_space, differential)
+        super(CeEt1hGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
-        s = "cohomology_dim_edge_to_one_hair_%s_%s.png" % (HGC.graph_type, self.sub_type)
+        s = "cohomology_dim_contract_edges_edge_to_one_hair_%s_%s.png" % (HGC.graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, HGC.graph_type, self.sub_type, s)
 
 
 def generate_deg_slice(deg, h_min):
-    return GVS.DegSlice([HGC.HairyGVS(n, deg - n, h_min) for n in range(deg)], deg)
+    return GVS.DegSlice([HGC.HairyGVS(n, deg - n, h_min, even_edges, even_hairs) for n in range(deg)], deg)
 
 
 vector_space = HGC.SumHairyGVS(v_range, l_range, h_range, even_edges, even_hairs)
@@ -70,6 +70,11 @@ dif_2 = HGC.EdgeToOneHairD(vector_space)
 graded_vs = GVS.SumVectorSpace([generate_deg_slice(4 + n, n) for n in range(0, 3)])
 
 dif = CeEt1hD(graded_vs, dif_1, dif_2)
+
+gc = CeEt1hGC(graded_vs,dif)
+
+gc.build_matrix()
+
 
 
 

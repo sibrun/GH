@@ -7,6 +7,7 @@ from tqdm import tqdm
 import StoreLoad as SL
 import Display
 import ParallelProgress as PP
+import Shared as SH
 import Parameters
 import Log
 
@@ -225,11 +226,9 @@ class SumVectorSpace(VectorSpace):
     def __init__(self, vs_list):
         self.vs_list = vs_list
 
-    @abstractmethod
     def get_type(self):
         pass
 
-    @abstractmethod
     def get_ordered_param_range_dict(self):
         pass
 
@@ -242,7 +241,7 @@ class SumVectorSpace(VectorSpace):
     def get_dimension(self):
         dim = 0
         for vs in self.vs_list:
-            dim += vs.get_dimension
+            dim += vs.get_dimension()
         return dim
 
     def containes(self, vector_space):
@@ -300,6 +299,12 @@ class DegSlice(SumVectorSpace):
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
+
+    def is_valid(self):
+        return None
+
+    def get_ordered_param_dict(self):
+        return SH.OrderedDict({'deg': self.deg})
 
     def get_deg(self):
         return self.deg
