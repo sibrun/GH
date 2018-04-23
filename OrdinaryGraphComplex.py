@@ -1,6 +1,6 @@
 import itertools
 from sage.all import *
-import GraphVectorSpace as GVS
+import SumVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
@@ -13,7 +13,7 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 
 
 # ------- Graph Vector Space --------
-class OrdinarySubGVS(GVS.SubGraphVectorSpace):
+class OrdinarySubGVS(GVS.GraphVectorSpace):
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
@@ -88,7 +88,7 @@ class OrdinarySubGVS(GVS.SubGraphVectorSpace):
             return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
 
 
-class OrdinaryGVS(GVS.GraphVectorSpace):
+class OrdinaryGVS(GVS.SumVectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range

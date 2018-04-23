@@ -1,6 +1,6 @@
 import itertools
 from sage.all import *
-import GraphVectorSpace as GVS
+import SumVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
@@ -16,7 +16,7 @@ sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_o
 
 
 # ------- Graph Vector Space --------
-class HairySubGVS(GVS.SubGraphVectorSpace):
+class HairySubGVS(GVS.GraphVectorSpace):
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         self.n_vertices = n_vertices
@@ -113,7 +113,7 @@ class HairySubGVS(GVS.SubGraphVectorSpace):
         return G
 
 
-class HairyGVS(GVS.GraphVectorSpace):
+class HairyGVS(GVS.SumVectorSpace):
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         self.v_range = v_range
         self.l_range = l_range

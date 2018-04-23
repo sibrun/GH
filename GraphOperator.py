@@ -441,13 +441,11 @@ class BiOperatorMatrix(OperatorMatrix):
 
     @classmethod
     def generate_op_matrix_list(cls, bigrading, op_collection1, op_collection2):
-        vs_list = bigrading.get_vs_list()
+        deg_slices_list = bigrading.get_deg_slices()
         bi_op_matrix_list = []
-        print(vs_list)
-        for (domain, target) in itertools.product(vs_list, vs_list):
+        for (domain, target) in itertools.product(deg_slices_list, deg_slices_list):
             if cls.is_match(domain, target):
                 bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
-        print(bi_op_matrix_list)
         return bi_op_matrix_list
 
     def __str__(self):

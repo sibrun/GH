@@ -30,7 +30,7 @@ class VectorSpaceProperties(object):
         return [self.valid, self.dimension]
 
 
-class SubVectorSpace(object):
+class VectorSpace(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -56,11 +56,11 @@ class SubVectorSpace(object):
         return self.properties
 
 
-class SubGraphVectorSpace(SubVectorSpace):
+class GraphVectorSpace(VectorSpace):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        super(SubGraphVectorSpace, self).__init__()
+        super(GraphVectorSpace, self).__init__()
 
     @abstractmethod
     def get_type(self):
@@ -219,11 +219,11 @@ class SubGraphVectorSpace(SubVectorSpace):
         P.save(path)
 
 
-class GraphVectorSpace(object):
+class SumVectorSpace(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, sub_vs_list):
-        self.sub_vs_list = sub_vs_list
+    def __init__(self, vs_list):
+        self.vs_list = vs_list
 
     @abstractmethod
     def get_type(self):
@@ -237,22 +237,22 @@ class GraphVectorSpace(object):
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_range_dict()))
 
     def get_vs_list(self):
-        return self.sub_vs_list
+        return self.vs_list
 
     def __eq__(self, other):
-        if len(self.sub_vs_list) != len(other.vs_list):
+        if len(self.vs_list) != len(other.vs_list):
             return False
         eq_l = 0
-        for (vs1, vs2) in itertools.product(self.sub_vs_list, other.vs_list):
+        for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
             if vs1 == vs2:
                 eq_l += 1
-        return eq_l == len(self.sub_vs_list)
+        return eq_l == len(self.vs_list)
 
     def sort(self, key='work_estimate'):
         if key == 'work_estimate':
-            self.sub_vs_list.sort(key=operator.methodcaller('get_work_estimate'))
+            self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         elif key == 'dim':
-            self.sub_vs_list.sort(key=operator.methodcaller('get_sort_dim'))
+            self.vs_list.sort(key=operator.methodcaller('get_sort_dim'))
         else:
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
 
@@ -263,7 +263,7 @@ class GraphVectorSpace(object):
         self.sort()
         if n_jobs > 1:
             progress_bar = False
-        PP.parallel(self._build_single_basis, self.sub_vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+        PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                     ignore_existing_files=ignore_existing_files)
         self.plot_info()
 
@@ -272,7 +272,7 @@ class GraphVectorSpace(object):
 
     def plot_info(self):
         vsList = []
-        for vs in self.sub_vs_list:
+        for vs in self.vs_list:
             vs.update_properties()
             vsList.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
         vsColumns = self.get_ordered_param_range_dict().keys() + VectorSpaceProperties.names()
@@ -281,7 +281,7 @@ class GraphVectorSpace(object):
         Display.display_pandas_df(vsTable)
 
 
-class DegSlice(SubVectorSpace):
+class DegSlice(VectorSpace):
     def __init__(self, deg):
         self.deg = deg
         self.vs_dict = dict()
@@ -341,7 +341,7 @@ class BiGrading(object):
     def get_degs(self, graph_vs):
         pass
 
-    def get_vs_list(self):
+    def get_deg_slices(self):
         return self.grading_dict.values()
 
     def build_grading(self):
@@ -354,5 +354,8 @@ class BiGrading(object):
                 self.grading_dict.update({deg_tot: DegSlice(deg_tot)})
             self.grading_dict[deg_tot].append(vs, idx)
         for (deg, deg_slice) in self.grading_dict.items():
+            print(str(deg) + ' '+ str(len(deg_slice.get_vs_list())))
+        for (deg, deg_slice) in self.grading_dict.items():
             if not deg_slice.is_complete():
                 self.grading_dict.pop(deg)
+
