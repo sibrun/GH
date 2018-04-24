@@ -328,7 +328,6 @@ class SumVectorSpace(VectorSpace):
         vsList = []
         for vs in self.vs_list:
             vs.update_properties()
-            print(vs.properties.list())
             vsList.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
         try:
             vsColumns = self.vs_list[0].get_ordered_param_dict().keys() + self.vs_list[0].properties.names()

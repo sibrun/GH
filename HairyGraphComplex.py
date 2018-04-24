@@ -214,8 +214,9 @@ class ContractEdgesGO(GO.GraphOperator):
 
 
 class ContractEdgesD(GO.Differential):
-    def __init__(self, vector_space):
-        super(ContractEdgesD, self).__init__(vector_space, ContractEdgesGO.generate_op_matrix_list(vector_space))
+    def __init__(self, vs_list):
+        super(ContractEdgesD, self).__init__(vs_list,
+                                             ContractEdgesGO.generate_op_matrix_list(vs_list))
 
     def get_type(self):
         return 'contract edges'
@@ -285,8 +286,9 @@ class EdgeToOneHairGO(GO.GraphOperator):
 
 
 class EdgeToOneHairD(GO.Differential):
-    def __init__(self, vector_space):
-        super(EdgeToOneHairD, self).__init__(vector_space, EdgeToOneHairGO.generate_op_matrix_list(vector_space))
+    def __init__(self, vs_list):
+        super(EdgeToOneHairD, self).__init__(vs_list,
+                                             EdgeToOneHairGO.generate_op_matrix_list(vs_list))
 
     def get_type(self):
         return 'edge to one hair'
@@ -303,7 +305,7 @@ class ContractEdgesGC(GC.GraphComplex):
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
         vector_space = SumHairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        differential = ContractEdgesD(vector_space)
+        differential = ContractEdgesD(vector_space.get_vs_list())
         super(ContractEdgesGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
@@ -321,7 +323,7 @@ class EdgeToOneHairGC(GC.GraphComplex):
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
         vector_space = SumHairyGVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
-        differential = EdgeToOneHairD(vector_space)
+        differential = EdgeToOneHairD(vector_space.get_vs_list())
         super(EdgeToOneHairGC, self).__init__(vector_space, differential)
 
     def get_cohomology_plot_path(self):
