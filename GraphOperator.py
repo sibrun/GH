@@ -14,7 +14,7 @@ import Display
 logger = Log.logger.getChild('graph_operator')
 
 
-class MatrixProperties(object):
+class OperatorMatrixProperties(object):
     def __init__(self):
         self.valid = None
         self.shape = None
@@ -23,8 +23,8 @@ class MatrixProperties(object):
         self.rank_mod_p = None
         self.rank_est = None
 
-    @staticmethod
-    def names():
+    @classmethod
+    def names(cls):
         return ['valid', 'shape', 'entries', 'rank', 'rank_mod_p', 'rank_estimate']
 
     @staticmethod
@@ -46,7 +46,7 @@ class OperatorMatrix(object):
                              % (str(domain), str(target), str(self)))
         self.domain = domain
         self.target = target
-        self.properties = MatrixProperties()
+        self.properties = OperatorMatrixProperties()
 
     def get_domain(self):
         return self.domain
@@ -362,8 +362,7 @@ class GraphOperator(Operator, OperatorMatrix):
         super(GraphOperator, self).__init__(domain, target)
 
     @classmethod
-    def generate_op_matrix_list(cls, vector_space):
-        vs_list = vector_space.get_vs_list()
+    def generate_op_matrix_list(cls, vs_list):
         op_matrix_list = []
         for (domain, target) in itertools.product(vs_list, vs_list):
             if cls.is_match(domain, target):
@@ -452,6 +451,9 @@ class BiOperatorMatrix(OperatorMatrix):
         return '<Bi operator matrix on domain: %s, and %s, %s' \
                % (str(self.domain), str(self.op_collection1), str(self.op_collection2))
 
+    def is_valid(self):
+        return True
+
     def get_work_estimate(self):
         return self.domain.get_dimension() * self.target.get_dimension()
 
@@ -463,7 +465,7 @@ class BiOperatorMatrix(OperatorMatrix):
         for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
             op_domain = op.get_domain()
             op_target = op.get_target()
-            if self.domain.containes(op_domain) and self.target.containes(op.target):
+            if self.domain.contains(op_domain) and self.target.contains(op.target):
                 domain_start_idx = self.domain.get_start_idx(op.get_domain())
                 target_start_idx = self.target.get_start_idx(op.get_target())
                 subMatrixList = op.get_matrix_list()
@@ -473,8 +475,8 @@ class BiOperatorMatrix(OperatorMatrix):
 
 
 class OperatorMatrixCollection(object):
-    def __init__(self, vector_space, op_matrix_list):
-        self.vector_space = vector_space
+    def __init__(self, vs_list, op_matrix_list):
+        self.vs_list = vs_list
         self.op_matrix_list = op_matrix_list
 
     @abstractmethod
@@ -482,14 +484,13 @@ class OperatorMatrixCollection(object):
         pass
 
     def __str__(self):
-        return '<%s operator matrix collection with parameters %s>' % \
-               (self.get_type(), str(self.vector_space.get_ordered_param_range_dict()))
+        return '<%s operator matrix collection>' % self.get_type()
 
     def get_op_list(self):
         return self.op_matrix_list
 
-    def get_vector_space(self):
-        return self.vector_space
+    def get_vs_list(self):
+        return self.vs_list
 
     def sort(self, key='work_estimate'):
         if key == 'work_estimate':
@@ -528,7 +529,11 @@ class OperatorMatrixCollection(object):
         for op in self.op_matrix_list:
             op.update_properties()
             opList.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
-        opColumns = self.vector_space.get_ordered_param_range_dict().keys() + MatrixProperties.names()
+            try:
+                param_names = self.vs_list[0].get_ordered_param_dict().keys()
+            except IndexError:
+                param_names = []
+        opColumns = param_names + OperatorMatrixProperties.names()
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
         #opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(opTable)
@@ -537,8 +542,8 @@ class OperatorMatrixCollection(object):
 class Differential(OperatorMatrixCollection):
     __metaclass__ = ABCMeta
 
-    def __init__(self, vector_space, op_matrix_list):
-        super(Differential, self).__init__(vector_space, op_matrix_list)
+    def __init__(self, vs_list, op_matrix_list):
+        super(Differential, self).__init__(vs_list, op_matrix_list)
 
     @staticmethod
     # Check whether opD.domain == opDD.target
@@ -588,7 +593,7 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_dim(self):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
-        for vs in self.vector_space.get_vs_list():
+        for vs in self.vs_list():
             dim_dict.update({vs.get_param_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
@@ -627,3 +632,17 @@ class Differential(OperatorMatrixCollection):
         for (op1, op2) in fail:
             logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
+
+
+class BiDifferential(Differential):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, graded_vs, dif1, dif2, bi_op_matrix):
+        self.graded_vs = graded_vs
+        flat_vs_list = graded_vs.get_flat_vs_list()
+        self.dif1 = dif1(flat_vs_list)
+        self.dif2 = dif2(flat_vs_list)
+        self.bi_op_matrix = bi_op_matrix
+        op_matrix_list = self.bi_op_matrix.generate_op_matrix_list(graded_vs, self.dif1, self.dif2)
+        super(BiDifferential, self).__init__(self.graded_vs.get_vs_list(), op_matrix_list)
+

@@ -16,16 +16,28 @@ logger = Log.logger.getChild('graph_vector_space')
 
 class VectorSpaceProperties(object):
     def __init__(self):
+        self.dimension = None
+
+    @staticmethod
+    def names():
+        return ['dimension']
+
+    @staticmethod
+    def sort_variables():
+        return VectorSpaceProperties.names()
+
+    def list(self):
+        return [self.dimension]
+
+
+class GraphVectorSpaceProperties(VectorSpaceProperties):
+    def __init__(self):
         self.valid = None
         self.dimension = None
 
     @staticmethod
     def names():
         return ['valid', 'dimension']
-
-    @staticmethod
-    def sort_variables():
-        return VectorSpaceProperties.names()
 
     def list(self):
         return [self.valid, self.dimension]
@@ -49,22 +61,41 @@ class VectorSpace(object):
     def get_dimension(self):
         pass
 
+    @abstractmethod
+    def get_ordered_param_dict(self):
+        pass
+
+    @abstractmethod
+    def get_work_estimate(self):
+        pass
+
+    @abstractmethod
+    def build_basis(self):
+        pass
+
+    @abstractmethod
+    def update_properties(self):
+        pass
+
     def get_properties(self):
         return self.properties
+
+    def get_sort_dim(self):
+        try:
+            sort_dim = self.get_dimension()
+        except SL.FileNotFoundError:
+            sort_dim = Parameters.max_sort_value
+        return sort_dim
 
 
 class GraphVectorSpace(VectorSpace):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        super(GraphVectorSpace, self).__init__()
+        self.properties = GraphVectorSpaceProperties()
 
     @abstractmethod
     def get_type(self):
-        pass
-
-    @abstractmethod
-    def get_ordered_param_dict(self):
         pass
 
     @abstractmethod
@@ -85,10 +116,6 @@ class GraphVectorSpace(VectorSpace):
 
     @abstractmethod
     def is_valid(self):
-        pass
-
-    @abstractmethod
-    def get_work_estimate(self):
         pass
 
     @abstractmethod
@@ -168,13 +195,6 @@ class GraphVectorSpace(VectorSpace):
         except SL.FileNotFoundError:
             raise SL.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
-    def get_sort_dim(self):
-        try:
-            sort_dim = self.get_dimension()
-        except SL.FileNotFoundError:
-            sort_dim = Parameters.max_sort_value
-        return sort_dim
-
     def _store_basis_g6(self, basisList):
         basisList.insert(0, str(len(basisList)))
         SL.store_string_list(basisList, self.get_basis_file_path())
@@ -206,11 +226,11 @@ class GraphVectorSpace(VectorSpace):
         self.properties.valid = self.is_valid()
         if not self.properties.valid:
             self.properties.dimension = 0
-        elif self.exists_basis_file():
-            self.properties.dimension = self.get_dimension()
-
-    def get_properties(self):
-        return self.properties
+        else:
+            try:
+                self.properties.dimension = self.get_dimension()
+            except SL.FileNotFoundError:
+                pass
 
     def plot_graph(self, G):
         g6 = G.graph6_string()
@@ -232,11 +252,28 @@ class SumVectorSpace(VectorSpace):
     def get_ordered_param_range_dict(self):
         pass
 
+    def get_ordered_param_dict(self):
+        pass
+
     def __str__(self):
-        return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_range_dict()))
+        return '<%s vector space with parameters: %s>' % (str(self.get_type()), str(self.get_ordered_param_range_dict()))
 
     def get_vs_list(self):
         return self.vs_list
+
+    def get_flat_vs_list(self):
+        try:
+            flat_vs_list = [slice.get_vs_list() for slice in self.vs_list]
+            return list(itertools.chain.from_iterable(flat_vs_list))
+        except AttributeError:
+            return self.vs_list
+
+
+    def get_work_estimate(self):
+        work_estimate = 0
+        for vs in self.vs_list:
+            work_estimate += vs.get_work_estimate()
+        return work_estimate
 
     def get_dimension(self):
         dim = 0
@@ -244,7 +281,13 @@ class SumVectorSpace(VectorSpace):
             dim += vs.get_dimension()
         return dim
 
-    def containes(self, vector_space):
+    def update_properties(self):
+        try:
+            self.properties.dimension = self.get_dimension()
+        except SL.FileNotFoundError:
+            pass
+
+    def contains(self, vector_space):
         for vs in self.vs_list:
             if vs == vector_space:
                 return True
@@ -270,13 +313,13 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        self.plot_info()
+        #self.plot_info()
         self.sort()
         if n_jobs > 1:
             progress_bar = False
         PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                     ignore_existing_files=ignore_existing_files)
-        self.plot_info()
+        #self.plot_info()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True):
         vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
@@ -300,11 +343,9 @@ class DegSlice(SumVectorSpace):
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
 
-    def is_valid(self):
-        return None
-
+    @abstractmethod
     def get_ordered_param_dict(self):
-        return SH.OrderedDict({'deg': self.deg})
+        pass
 
     def get_deg(self):
         return self.deg
@@ -324,6 +365,7 @@ class DegSlice(SumVectorSpace):
             if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
                 return False
         return True
+
 
 '''class BiGrading(object):
     def __init__(self, vector_space):
