@@ -528,10 +528,10 @@ class OperatorMatrixCollection(object):
         for op in self.op_matrix_list:
             op.update_properties()
             opList.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
-            try:
-                param_names = self.vs_list[0].get_ordered_param_dict().keys()
-            except IndexError:
-                param_names = []
+        try:
+            param_names = self.vs_list[0].get_ordered_param_dict().keys()
+        except IndexError:
+            param_names = []
         opColumns = param_names + OperatorMatrixProperties.names()
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
         #opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
