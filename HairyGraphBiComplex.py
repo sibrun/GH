@@ -1,12 +1,8 @@
-import itertools
 from sage.all import *
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC
 import Shared as SH
-import NautyInterface as NI
-import OrdinaryGraphComplex as OGC
-import StoreLoad as SL
 import Parameters
 import HairyGraphComplex as HGC
 
@@ -40,8 +36,8 @@ class VertexLoopDegSlice(GVS.DegSlice):
         self.h_min = h_min
         self.even_edges = even_edges
         self.even_hairs = even_hairs
-        super(VertexLoopDegSlice, self).__init__([HGC.HairyGVS(n, deg - n, self.h_min, self.even_edges, self.even_hairs)
-                                                  for n in range(deg)], deg)
+        super(VertexLoopDegSlice, self).__init__([HGC.HairyGVS(n, deg - n, self.h_min + n, self.even_edges, self.even_hairs)
+                                                  for n in range(0, deg + 1)], deg)
 
     def get_ordered_param_dict(self):
         return SH.OrderedDict({'deg': self.deg, 'min_hairs': self.h_min})
@@ -85,7 +81,7 @@ class CeEt1hGC(GC.GraphComplex):
         return os.path.join(Parameters.plots_dir, HGC.graph_type, self.sub_type, s)
 
 
-gc = CeEt1hGC(range(4,7), 0, False, False)
-gc.build_basis()
+gc = CeEt1hGC(range(5,8), 1, False, False)
+#gc.build_basis()
 gc.build_matrix()
 

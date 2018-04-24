@@ -509,7 +509,6 @@ class OperatorMatrixCollection(object):
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
-        self.plot_info()
 
     def compute_rank(self, exact=False, n_primes=1, estimate=True, sort_key='size', ignore_existing_files=False,
                      n_jobs=1):

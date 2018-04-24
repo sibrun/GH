@@ -18,8 +18,8 @@ class VectorSpaceProperties(object):
     def __init__(self):
         self.dimension = None
 
-    @staticmethod
-    def names():
+    @classmethod
+    def names(cls):
         return ['dimension']
 
     @staticmethod
@@ -35,8 +35,8 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
         self.valid = None
         self.dimension = None
 
-    @staticmethod
-    def names():
+    @classmethod
+    def names(cls):
         return ['valid', 'dimension']
 
     def list(self):
@@ -245,6 +245,7 @@ class SumVectorSpace(VectorSpace):
 
     def __init__(self, vs_list):
         self.vs_list = vs_list
+        super(SumVectorSpace, self).__init__()
 
     def get_type(self):
         pass
@@ -267,7 +268,6 @@ class SumVectorSpace(VectorSpace):
             return list(itertools.chain.from_iterable(flat_vs_list))
         except AttributeError:
             return self.vs_list
-
 
     def get_work_estimate(self):
         work_estimate = 0
@@ -313,13 +313,13 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        #self.plot_info()
+        self.plot_info()
         self.sort()
         if n_jobs > 1:
             progress_bar = False
         PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                     ignore_existing_files=ignore_existing_files)
-        #self.plot_info()
+        self.plot_info()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True):
         vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
@@ -329,7 +329,10 @@ class SumVectorSpace(VectorSpace):
         for vs in self.vs_list:
             vs.update_properties()
             vsList.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
-        vsColumns = self.get_ordered_param_range_dict().keys() + VectorSpaceProperties.names()
+        try:
+            vsColumns = self.vs_list[0].get_ordered_param_dict().keys() + self.vs_list[0].properties.names()
+        except IndexError:
+            vsColumns = []
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
         #vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
         Display.display_pandas_df(vsTable)
@@ -339,6 +342,7 @@ class DegSlice(SumVectorSpace):
     def __init__(self, vs_list, deg):
         self.deg = deg
         super(DegSlice, self).__init__(vs_list)
+        self.plot_info()
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
@@ -365,33 +369,3 @@ class DegSlice(SumVectorSpace):
             if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
                 return False
         return True
-
-
-'''class BiGrading(object):
-    def __init__(self, vector_space):
-        self.vector_space = vector_space
-        self.grading_dict = dict()
-        self.build_grading()
-
-    @abstractmethod
-    def get_degs(self, graph_vs):
-        pass
-
-    def get_deg_slices(self):
-        return self.grading_dict.values()
-
-    def build_grading(self):
-        for vs in self.vector_space.get_vs_list():
-            (deg1, deg2) = self.get_degs(vs)
-            deg_tot = deg1 + deg2
-            idx = deg1
-            deg_slice = self.grading_dict.get(deg_tot)
-            if deg_slice is None:
-                self.grading_dict.update({deg_tot: DegSlice(deg_tot)})
-            self.grading_dict[deg_tot].append(vs, idx)
-        for (deg, deg_slice) in self.grading_dict.items():
-            print(str(deg) + ' '+ str(len(deg_slice.get_vs_list())))
-        for (deg, deg_slice) in self.grading_dict.items():
-            if not deg_slice.is_complete():
-                self.grading_dict.pop(deg)'''
-
