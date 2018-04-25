@@ -13,7 +13,7 @@ class Perm:
         return inverse
         #return [j-1 for j in Permutation([j+1 for j in self.p]).inverse()]
 
-    def sign(self):
+    def signature(self):
         return Permutation([j+1 for j in self.p]).signature()
 
     @classmethod
@@ -38,6 +38,11 @@ def enumerate_edges(graph):
     for (j, e) in enumerate(graph.edges(labels=False)):
         a, b = e
         graph.set_edge_label(a, b, j)
+
+
+def edge_perm_sign(graph):
+    p = [j for (a, b, j) in graph.edges()]
+    return Perm(p).signature()
 
 
 def permute_to_left((u, v), vertex_range):

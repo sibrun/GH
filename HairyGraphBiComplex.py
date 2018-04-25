@@ -81,7 +81,7 @@ class CeEt1hGC(GC.GraphComplex):
         return os.path.join(Parameters.plots_dir, HGC.graph_type, self.sub_type, s)
 
 
-gc = CeEt1hGC(range(7,8), 0, False, False)
+gc = CeEt1hGC(range(7,9), 0, False, False)
 gc.build_basis()
 gc.build_matrix()
 

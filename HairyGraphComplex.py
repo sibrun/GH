@@ -95,7 +95,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         # compute the extra contribution from hairs if necessary
         if self.even_hairs == self.even_edges:
             hairs = p[self.n_vertices:]
-            sgn *= SH.Perm.shifted(hairs).sign()
+            sgn *= SH.Perm.shifted(hairs).signature()
         return sgn
 
     def _bip_to_ordinary(self, G):
@@ -207,8 +207,7 @@ class ContractEdgesGO(GO.GraphOperator):
                 continue
             G1.relabel(list(range(0, G1.order())), inplace=True)
             if not self.domain.even_edges:
-                p = [j for (a, b, j) in G1.edges()]
-                sgn *= Permutation(p).signature()
+                sgn *= SH.edge_perm_sign(G1)
             image.append((G1, sgn))
         return image
 
@@ -270,18 +269,28 @@ class EdgeToOneHairGO(GO.GraphOperator):
             # only edges not connected to a hair-vertex can be split
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
-            pp = SH.permute_to_left((u, v), range(0, self.domain.n_vertices + self.domain.n_hairs))
-            sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
-            G1.relabel(pp, inplace=True)
-            G1.delete_edge((0,1))
+            SH.enumerate_edges(G1)
+            sgn = 1
+            e_label = G1.edge_label(u, v)
+            if not self.domain.even_edges:
+                sgn *= -1 if e_label % 2 else 1
+            else:
+                sgn *= -1 if u % 2 else 1
+            G1.delete_edge(u, v)
             new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
             G1.add_vertex(new_hair_idx)
-            G1.add_edge((0, new_hair_idx))
-            image.append((G1, 1))
             G2 = copy(G1)
-            G2.add_edge((1, new_hair_idx))
-            image.append((G2, 1))
+            G1.add_edge((u, new_hair_idx))
+            G1.set_edge_label(u, new_hair_idx, e_label)
+            G2.add_edge((v, new_hair_idx))
+            G2.set_edge_label(v, new_hair_idx, e_label)
+            sgn1 = sgn2 = sgn
+            if not self.domain.even_edges:
+                sgn1 *= SH.edge_perm_sign(G1)
+                sgn2 *= SH.edge_perm_sign(G2)
+            image.append((G1, sgn1))
+            image.append((G2, sgn2))
         return image
 
 

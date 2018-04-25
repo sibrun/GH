@@ -361,7 +361,7 @@ class DegSlice(SumVectorSpace):
             if vs == vector_space:
                 return start_idx
             start_idx += vs.get_dimension()
-        raise ValueError('vector_space needs to refer on a vector space of the degree slice')
+        raise ValueError('vector_space should refer to a vector space of the degree slice')
 
     def is_complete(self):
         if len(self.vs_list) != self.deg + 1:

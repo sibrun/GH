@@ -67,7 +67,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def perm_sign(self, G, p):
         if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            sign = SH.Perm(p).sign()
+            sign = SH.Perm(p).signature()
             for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -85,7 +85,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
             # we permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
-            return SH.Perm([j for (u, v, j) in G1.edges()]).sign()
+            return SH.Perm([j for (u, v, j) in G1.edges()]).signature()
 
 
 class SumOrdinaryGVS(GVS.SumVectorSpace):
