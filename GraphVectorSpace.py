@@ -313,8 +313,9 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        self.plot_info()
-        self.sort()
+        if not isinstance(self, DegSlice):
+            self.plot_info()
+            self.sort()
         if n_jobs > 1:
             progress_bar = False
         PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,

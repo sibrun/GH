@@ -82,6 +82,6 @@ class CeEt1hGC(GC.GraphComplex):
 
 
 gc = CeEt1hGC(range(7,8), 0, False, False)
-#gc.build_basis()
+gc.build_basis()
 gc.build_matrix()
 

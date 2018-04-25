@@ -465,7 +465,7 @@ class BiOperatorMatrix(OperatorMatrix):
         for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
             op_domain = op.get_domain()
             op_target = op.get_target()
-            if self.domain.contains(op_domain) and self.target.contains(op.target):
+            if self.domain.contains(op_domain) and self.target.contains(op_target):
                 domain_start_idx = self.domain.get_start_idx(op.get_domain())
                 target_start_idx = self.target.get_start_idx(op.get_target())
                 subMatrixList = op.get_matrix_list()
@@ -544,6 +544,9 @@ class Differential(OperatorMatrixCollection):
     def __init__(self, vs_list, op_matrix_list):
         super(Differential, self).__init__(vs_list, op_matrix_list)
 
+    def __str__(self):
+        return '<%s differential>' % self.get_type()
+
     @staticmethod
     # Check whether opD.domain == opDD.target
     def is_match(opD, opDD):
@@ -597,6 +600,7 @@ class Differential(OperatorMatrixCollection):
         return dim_dict
 
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
+        print("Square zero test for %s:" % str(self))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
@@ -624,7 +628,6 @@ class Differential(OperatorMatrixCollection):
                 else:
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        print("Square zero test for %s:" % str(self))
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
         if inc_l:
             logger.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
