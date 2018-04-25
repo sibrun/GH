@@ -133,15 +133,6 @@ class SumHairyGVS(GVS.SumVectorSpace):
         return SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range)])
 
 
-"""# ------- Gradings --------
-class VertexHairBiGrading(GVS.BiGrading):
-    def __init__(self, vector_space):
-        super(VertexHairBiGrading, self).__init__(vector_space)
-
-    def get_degs(self, ordinary_sub_gvs):
-        return (ordinary_sub_gvs.n_vertices, ordinary_sub_gvs.n_hairs)"""
-
-
 # ------- Operators --------
 class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
