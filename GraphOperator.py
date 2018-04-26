@@ -594,7 +594,7 @@ class Differential(OperatorMatrixCollection):
     # Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()
-        for (opD, opDD) in itertools.product(self.op_matrix_list, self.op_matrix_list):
+        for (opD, opDD) in itertools.permutations(self.op_matrix_list):
             if Differential.is_match(opD, opDD):
                 dim = Differential.cohomology_dim(opD, opDD)
                 cohomology_dim.update({opD.domain: dim})
@@ -613,7 +613,7 @@ class Differential(OperatorMatrixCollection):
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
-        for (op1, op2) in itertools.product(self.op_matrix_list, self.op_matrix_list):
+        for (op1, op2) in itertools.permutations(self.op_matrix_list):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
                 p = (op1, op2)

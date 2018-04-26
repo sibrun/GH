@@ -1,3 +1,4 @@
+import itertools
 import StoreLoad as SL
 import Shared as SH
 import Parameters
@@ -7,48 +8,52 @@ logger = Log.logger.getChild('graph_complex')
 
 
 class GraphComplex(object):
-    def __init__(self, vector_space, operator_list):
+    def __init__(self, vector_space, operator_collection_list):
         self.vector_space = vector_space
-        self.operator_list = operator_list
+        self.operator_collection_list = operator_collection_list
 
     def get_vector_space(self):
         return self.vector_space
 
     def get_differential_list(self):
-        return self.operator_list
+        return self.operator_collection_list
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         self.vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                       progress_bar=progress_bar)
 
     def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
-        for dif in self.operator_list:
+        for dif in self.operator_collection_list:
             dif.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        progress_bar=progress_bar)
 
     def square_zero_test(self):
-        for dif in self.operator_list:
+        for dif in self.operator_collection_list:
             dif.square_zero_test()
 
     def compute_rank(self, exact=False, n_primes=1, estimate=True, ignore_existing_files=True, n_jobs=1):
-        for dif in self.operator_list:
+        for dif in self.operator_collection_list:
             dif.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
     def plot_cohomology_dim(self, dif_idx):
-        dif = self.operator_list[dif_idx]
+        dif = self.operator_collection_list[dif_idx]
         ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
         dif.plot_cohomology_dim(ordered_param_range_dict)
 
-    def commute(self, op_list1, op_list2, anti_commute=False, eps=Parameters.commute_test_eps):
+    def test_pairwise_commute(self):
+        for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list):
+            self.commute(op_collection1, op_collection2)
 
+    def commute(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
         print('commutation test for %s' % str(self))
-
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
 
+        op_list1 = op_collection1.get_op_list()
+        op_list2 = op_collection2.get_op_list()
         for op1a in op_list1:
             for op2a in op_list2:
                 if op1a.get_domain() == op2a.get_domain():
