@@ -457,7 +457,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def get_work_estimate(self):
         return self.domain.get_dimension() * self.target.get_dimension()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=True):
         if not ignore_existing_files and self.exists_matrix_file():
             return
         shape = (self.domain.get_dimension(), self.target.get_dimension())
@@ -468,6 +468,9 @@ class BiOperatorMatrix(OperatorMatrix):
             if self.domain.contains(op_domain) and self.target.contains(op_target):
                 domain_start_idx = self.domain.get_start_idx(op.get_domain())
                 target_start_idx = self.target.get_start_idx(op.get_target())
+                if not skip_if_no_matrices and not op.exists_matrix_file():
+                    op.build_matrix(ignore_existing_files=ignore_existing_files, skip_if_no_basis=False, n_jobs=n_jobs,
+                                    progress_bar=progress_bar)
                 subMatrixList = op.get_matrix_list()
                 for (i, j, v) in subMatrixList:
                     matrixList.append((i + domain_start_idx, j + target_start_idx, v))

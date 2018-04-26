@@ -7,7 +7,6 @@ from tqdm import tqdm
 import StoreLoad as SL
 import Display
 import ParallelProgress as PP
-import Shared as SH
 import Parameters
 import Log
 
@@ -137,7 +136,7 @@ class GraphVectorSpace(VectorSpace):
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, progress_bar=False, ignore_existing_files=False):
+    def build_basis(self, progress_bar=False, ignore_existing_files=False, n_jobs=1):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_basis_file():
@@ -245,6 +244,12 @@ class SumVectorSpace(VectorSpace):
 
     def __init__(self, vs_list):
         self.vs_list = vs_list
+        self.is_graded = False
+        try:
+            if isinstance(self.vs_list[0], DegSlice):
+                self.is_graded = True
+        except IndexError:
+            self.is_graded = True
         super(SumVectorSpace, self).__init__()
 
     def get_type(self):
@@ -313,17 +318,23 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        if not isinstance(self, DegSlice):
+        if not (self.is_graded or isinstance(self, DegSlice)):
             self.plot_info()
+        if not isinstance(self,DegSlice):
             self.sort()
         if n_jobs > 1:
             progress_bar = False
-        PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
-                    ignore_existing_files=ignore_existing_files)
+        if not self.is_graded:
+            PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+                        ignore_existing_files=ignore_existing_files)
+        else:
+            for vs in self.vs_list:
+                self._build_single_basis(vs, progress_bar=progress_bar, ignore_existing_files=ignore_existing_files,
+                                         n_jobs = n_jobs)
         self.plot_info()
 
-    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True):
-        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
+    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, n_jobs = 1):
+        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, n_jobs = n_jobs)
 
     def plot_info(self):
         vsList = []

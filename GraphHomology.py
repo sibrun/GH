@@ -22,8 +22,8 @@ def non_negative_int(value):
     return value
 
 
-def positive_range_type(arg):
-    (min, max) = map(positive_int, arg.split(','))
+def non_negative_range_type(arg):
+    (min, max) = map(non_negative_int, arg.split(','))
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
     return range(min, max)
@@ -37,9 +37,9 @@ parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
 parser.add_argument('-even_h', action='store_true', help='even hairs')
 parser.add_argument('-odd_h', action='store_true', help='odd edges')
-parser.add_argument('-v', type=positive_range_type, help='range min,max for number of vertices')
-parser.add_argument('-l', type=positive_range_type, help='range min,max for number of loops')
-parser.add_argument('-hairs', type=positive_range_type, help='range min,max for number of hairs')
+parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
+parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
+parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
 parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
 parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of parallel processes')
 parser.add_argument('-pbar', action='store_true', help='show progressbar')

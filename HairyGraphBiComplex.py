@@ -36,8 +36,8 @@ class VertexLoopDegSlice(GVS.DegSlice):
         self.h_min = h_min
         self.even_edges = even_edges
         self.even_hairs = even_hairs
-        super(VertexLoopDegSlice, self).__init__([HGC.HairyGVS(n, deg - n, self.h_min + n, self.even_edges, self.even_hairs)
-                                                  for n in range(0, deg + 1)], deg)
+        super(VertexLoopDegSlice, self).__init__(
+            [HGC.HairyGVS(n, deg - n, self.h_min + n, self.even_edges, self.even_hairs) for n in range(0, deg + 1)], deg)
 
     def get_ordered_param_dict(self):
         return SH.OrderedDict({'deg': self.deg, 'min_hairs': self.h_min})
@@ -49,9 +49,9 @@ class VertexLoopBigradedVS(GVS.SumVectorSpace):
         self.h_min = h_min
         self.even_edges = even_edges
         self.even_hairs = even_hairs
-        min_deg = min(self.deg_range)
+        max_deg = max(self.deg_range)
         super(VertexLoopBigradedVS, self).__init__(
-            [VertexLoopDegSlice(n, self.h_min + n - min_deg, even_edges, even_hairs) for n in self.deg_range])
+            [VertexLoopDegSlice(n, self.h_min + (max_deg - n), even_edges, even_hairs) for n in self.deg_range])
 
     def get_ordered_param_range_dict(self):
         return SH.OrderedDict({'deg': self.deg_range, 'min_hairs': self.h_min})
@@ -81,7 +81,7 @@ class CeEt1hGC(GC.GraphComplex):
         return os.path.join(Parameters.plots_dir, HGC.graph_type, self.sub_type, s)
 
 
-gc = CeEt1hGC(range(7,9), 0, False, False)
+gc = CeEt1hGC(range(8,12), 0, True, False)
 gc.build_basis()
-gc.build_matrix()
+#gc.build_matrix()
 

@@ -245,7 +245,10 @@ class EdgeToOneHairGO(GO.GraphOperator):
     def get_work_estimate(self):
         if not self.is_valid():
             return 0
-        target_dim = self.target.get_dimension()
+        try:
+            target_dim = self.target.get_dimension()
+        except SL.FileNotFoundError:
+            return 0
         if target_dim == 0:
             return 0
         return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
@@ -257,7 +260,7 @@ class EdgeToOneHairGO(GO.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a hair-vertex can be split
+            # only edges not connected to a hair-vertex can be cut
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             G1 = copy(G)

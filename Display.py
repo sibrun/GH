@@ -3,6 +3,8 @@ import numpy as np
 import itertools
 import logging
 import os
+import time
+import tempfile
 import webbrowser
 from urllib import pathname2url
 import StoreLoad as SL
@@ -10,11 +12,11 @@ import Parameters
 
 
 def display_pandas_df(df):
-    s = 'temp.html'
-    temp_path = os.path.join(Parameters.temp_folder, s)
-    df.to_html(temp_path)
-    url = 'file:{}'.format(pathname2url(os.path.abspath(temp_path)))
-    webbrowser.open_new_tab(url)
+    f = tempfile.NamedTemporaryFile(delete=False)
+    path = f.name+'.html'
+    df.to_html(path)
+    url = 'file:{}'.format(pathname2url(path))
+    webbrowser.open(url)
 
 
 def plot_array(value_dict, ordered_param_range_dict, path):
