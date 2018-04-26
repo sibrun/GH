@@ -1,10 +1,12 @@
-from abc import ABCMeta, abstractmethod
-import Display
+import StoreLoad as SL
+import Shared as SH
+import Parameters
+import Log
+
+logger = Log.logger.getChild('graph_complex')
 
 
 class GraphComplex(object):
-    __metaclass__ = ABCMeta
-
     def __init__(self, vector_space, operator_list):
         self.vector_space = vector_space
         self.operator_list = operator_list
@@ -38,7 +40,10 @@ class GraphComplex(object):
         ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
         dif.plot_cohomology_dim(ordered_param_range_dict)
 
-    def commute(self, op_list1, op_list2, anti_commute=False):
+    def commute(self, op_list1, op_list2, anti_commute=False, eps=Parameters.commute_test_eps):
+
+        print('commutation test for %s' % str(self))
+
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
@@ -57,79 +62,68 @@ class GraphComplex(object):
                                         triv.append(p)
                                         continue
 
+                                    if op1a.is_valid() and op2b.is_valid() and (not (op2a.is_valid() and op1b.is_valid())):
+                                        try:
+                                            if op1a.is_trivial() or op2b.is_trivial():
+                                                triv.append(p)
+                                                continue
+                                            M1a = op1a.get_matrix()
+                                            M2b = op2b.get_matrix()
+                                        except SL.FileNotFoundError:
+                                            inc.append(p)
+                                            continue
+                                        if SH.matrix_norm(M2b * M1a) < eps:
+                                            succ.append(p)
+                                            continue
+                                        fail.append(p)
+                                        continue
 
-                          '''  elseif(is_valid_op(op1a) & & is_valid_op(op2b)) & & !(
-                                        is_valid_op(op1b) & & is_valid_op(op2a))
-                            D = []
-                            DD = []
-                            try
-                                D = load_matrix(op1a)
-                                DD = load_matrix(op2b)
-                            catch
-                            # println("cannot load")
-                            push!(inc, p)
-                            continue
-                        end
-                        if D == [] | | DD == []
-                            push!(triv, p)
-                        else
-                            if mynorm(D * DD) < 1e-10
-                                push!(succ, p)
-                            else
-                                push!(fail, p)
-                            end
-                        end
-                    elseif !(is_valid_op(op1a) & & is_valid_op(op2b)) & & (is_valid_op(op1b) & & is_valid_op(op2a))
-                    D = []
-                    DD = []
-                    try
-                        D = load_matrix(op2a)
-                        DD = load_matrix(op1b)
-                    catch
-                    # println("cannot load")
-                    push!(inc, p)
-                    continue
-                end
-                if D == [] | | DD == []
-                    push!(triv, p)
-                else
-                    if mynorm(D * DD) < 1e-10
-                        push!(succ, p)
-                    else
-                        push!(fail, p)
-                    end
-                end
-            else
-                D1a = []
-                D1b = []
-                D2a = []
-                D2b = []
-                try
-                    D1a = load_matrix(op1a)
-                    D1b = load_matrix(op1b)
-                    D2a = load_matrix(op2a)
-                    D2b = load_matrix(op2b)
-                catch
-                # println("cannot load")
-                push!(inc, p)
-                continue
-            end
-            if (D1a == [] | | D2b == []) & & (D2a == [] | | D1b == [])
-                push!(triv, p)
-            elseif !(D1a == [] | | D2b == []) & & (D2a == [] | | D1b == [])
-            if mynorm(D1a * D2b) < 1e-10
-                push!(succ, p)
-            else
-                push!(fail, p)
-            end
-        elseif(D1a == [] | | D2b == []) & & !(D2a == [] | | D1b == [])
-        if mynorm(D2a * D1b) < 1e-10
-            push!(succ, p)
-        else
-            push!(fail, p)
-        end
-    else
-        if mynorm(D1a * D2b + (antiCommute?1:-1) * D2a * D1b) < 1e-10
-            push!(succ, p)
-        else
-            push!(fail, p)'''
+                                    if (not (op1a.is_valid() and op2b.is_valid())) and op2a.is_valid() and op1b.is_valid():
+                                        try:
+                                            if op1b.is_trivial() or op2a.is_trivial():
+                                                triv.append(p)
+                                                continue
+                                            M1b = op1b.get_matrix()
+                                            M2a = op2a.get_matrix()
+                                        except SL.FileNotFoundError:
+                                            inc.append(p)
+                                            continue
+                                        if SH.matrix_norm(M1b * M2a) < eps:
+                                            succ.append(p)
+                                            continue
+                                        fail.append(p)
+                                        continue
+
+                                    try:
+                                        if (op1a.is_trivial() or op2b.is_trivial()) and (op2a.is_trivial() or op1b.is_trivial()):
+                                            triv.append(p)
+                                            continue
+                                        if (not (op1a.is_trivial() or op2b.is_trivial())) and (op2a.is_trivial() or op1b.is_trivial()):
+                                            M1a = op1a.get_matrix()
+                                            M2b = op2b.get_matrix()
+                                            if SH.matrix_norm(M2b * M1a) < eps:
+                                                succ.append(p)
+                                                continue
+                                        if (op1a.is_trivial() or op2b.is_trivial()) and (not (op2a.is_trivial() or op1b.is_trivial())):
+                                            M1b = op1b.get_matrix()
+                                            M2a = op2a.get_matrix()
+                                            if SH.matrix_norm(M1b * M2a) < eps:
+                                                succ.append(p)
+                                                continue
+                                        M1a = op1a.get_matrix()
+                                        M2b = op2b.get_matrix()
+                                        M1b = op1b.get_matrix()
+                                        M2a = op2a.get_matrix()
+                                        if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
+                                            succ.append(p)
+                                    except SL.FileNotFoundError:
+                                        inc.append(p)
+                                        continue
+
+        (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
+        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
+        if inc_l:
+            logger.warn("Commutation test for %s: inconclusive: %d paris" % (str(self), inc_l))
+        for (op1, op2) in fail:
+            logger.error("Commutation test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+        return (triv_l, succ_l, inc_l, fail_l)

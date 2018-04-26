@@ -58,3 +58,7 @@ def permute_to_left((u, v), vertex_range):
             p[idx] = j
             idx += 1
     return Perm(p).inverse()
+
+
+def matrix_norm(M):
+    return sum(map(abs, M.list()))

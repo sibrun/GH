@@ -10,6 +10,7 @@ temp_folder = 'temp'
 
 #---- Eps Parameters ----
 square_zero_test_eps = 1e-6
+commute_test_eps = 1e-6
 estimate_rank_eps = 1e-6
 
 #---- Rank Computation ----

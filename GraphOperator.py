@@ -8,6 +8,7 @@ from sage.all import *
 import Log
 import StoreLoad as SL
 import ParallelProgress as PP
+import Shared as SH
 import Parameters
 import Display
 
@@ -620,6 +621,9 @@ class Differential(OperatorMatrixCollection):
                     triv.append(p)
                     continue
                 try:
+                    if op1.is_trivial() or op2.is_trivial():
+                        triv.append(p)
+                        continue
                     M1 = op1.get_matrix()
                     M2 = op2.get_matrix()
                 except SL.FileNotFoundError:
@@ -627,10 +631,7 @@ class Differential(OperatorMatrixCollection):
                                  "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
                     inc.append(p)
                     continue
-                if op1.is_trivial() or op2.is_trivial():
-                    triv.append(p)
-                    continue
-                if sum(map(abs, (M2 * M1).list())) < eps:
+                if SH.matrix_norm(M2 * M1) < eps:
                     succ.append(p)
                 else:
                     fail.append(p)
