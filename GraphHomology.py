@@ -28,11 +28,14 @@ def non_negative_range_type(arg):
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
     return range(min, max)
 
-graph_complex_types = ['o_ce', 'h_ce', 'h_etoh', 'h_ce_etoh']
+graph_types = ['ordinary', 'hairy']
+differentials = ['contract', 'et1h']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
-parser.add_argument('graph_complex_type', type=str, choices=graph_complex_types, help='type of the graph complex')
+parser.add_argument('graph_type', type=str, choices=graph_types, help='type of the graphs')
+parser.add_argument('dif1', type=str, choices=differentials, help='differential 1')
+parser.add_argument('-dif2', type=str, choices=differentials, default=None, help='differential 2')
 parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
 parser.add_argument('-even_h', action='store_true', help='even hairs')
@@ -125,7 +128,12 @@ if __name__ == "__main__":
     if args.l is None:
         raise MissingArgumentError('specify -l: range for number of loops')
 
-    if args.graph_complex_type in {'h_ce', 'h_etoh', 'h_ce_etoh'}:
+    if args.graph_type == 'ordinary':
+        if not args.dif1 == 'contract':
+            raise ValueError('only contract edges differential implemented for ordinary graphs')
+        graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges)
+
+    if args.graph_type == 'hairy':
         if args.even_h:
                 even_hairs = True
         elif args.odd_h:
@@ -136,14 +144,11 @@ if __name__ == "__main__":
         if args.hairs is None:
             raise MissingArgumentError('specify -hairs: range for number of hairs')
 
-    if args.graph_complex_type == 'o_ce':
-        graph_complex = OGC.OrdinaryContractEdgesGC(args.v, args.l, even_edges)
-    elif args.graph_complex_type == 'h_ce':
-        graph_complex = HGC.ContractEdgesGC(args.v, args.l, args.hairs, even_edges, even_hairs)
-    elif args.graph_complex_type == 'h_etoh':
-        graph_complex = HGC.EdgeToOneHairGC(args.v, args.l, args.hairs, even_edges, even_hairs)
-    elif args.graph_complex_type == 'h_ce_etoh':
-        graph_complex = HGC.CeEt1hBiGC(args.v, args.l, args.hairs, even_edges, even_hairs)
+        differentials = [args.dif1]
+        if args.dif2 is not None:
+            differentials.append(args.dif2)
+
+        graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
 
     if not (args.build or args.build_b or args.build_op or args.square_zero or args.rank or args.coho):
         cohomology_complete(graph_complex)

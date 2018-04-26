@@ -64,8 +64,13 @@ class CeEt1hD(GO.BiDifferential):
     def get_type(self):
         return 'contract edges and edge to one hair'
 
+    def get_cohomology_plot_path(self):
+        sub_type = self.vs_list[0].sub_type
+        s = "cohomology_dim_contract_edges_edge_to_one_hair_D_%s_%s.png" % (HGC.graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, HGC.graph_type, sub_type, s)
 
-class CeEt1hGC(GC.GraphComplex):
+
+class HairyBiGC(GC.GraphComplex):
     def __init__(self, deg_range, h_min, even_edges, even_hairs):
         self.deg_range = deg_range
         self.h_min = h_min
@@ -73,15 +78,10 @@ class CeEt1hGC(GC.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = HGC.sub_types.get(even_edges, even_hairs)
         graded_vs = VertexLoopBigradedVS(deg_range, h_min, even_edges, even_hairs)
-        super(CeEt1hGC, self).__init__(graded_vs,
-                                       CeEt1hD(graded_vs))
-
-    def get_cohomology_plot_path(self):
-        s = "cohomology_dim_contract_edges_edge_to_one_hair_%s_%s.png" % (HGC.graph_type, self.sub_type)
-        return os.path.join(Parameters.plots_dir, HGC.graph_type, self.sub_type, s)
+        super(HairyBiGC, self).__init__(graded_vs, [CeEt1hD(graded_vs)])
 
 
-gc = CeEt1hGC(range(8,12), 0, True, False)
+gc = HairyBiGC(range(8,12), 0, True, False)
 gc.build_basis()
 #gc.build_matrix()
 

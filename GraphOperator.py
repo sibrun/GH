@@ -547,6 +547,10 @@ class Differential(OperatorMatrixCollection):
     def __init__(self, vs_list, op_matrix_list):
         super(Differential, self).__init__(vs_list, op_matrix_list)
 
+    @abstractmethod
+    def get_cohomology_plot_path(self):
+        pass
+
     def __str__(self):
         return '<%s differential>' % self.get_type()
 
@@ -637,6 +641,11 @@ class Differential(OperatorMatrixCollection):
         for (op1, op2) in fail:
             logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
+
+    def plot_cohomology_dim(self, ordered_param_range_dict):
+        dim_dict = self.get_cohomology_dim()
+        plot_path = self.get_cohomology_plot_path()
+        Display.plot_array(dim_dict, ordered_param_range_dict, plot_path)
 
 
 class BiDifferential(Differential):

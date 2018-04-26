@@ -194,9 +194,14 @@ class ContractEdgesD(GO.Differential):
     def get_type(self):
         return 'contract edges'
 
+    def get_cohomology_plot_path(self):
+        sub_type = self.vs_list[0].sub_type
+        s = "cohomology_dim_%s_%s.png" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
 
 # ------- Graph Complexes --------
-class OrdinaryContractEdgesGC(GC.GraphComplex):
+class OrdinaryGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
@@ -205,8 +210,6 @@ class OrdinaryContractEdgesGC(GC.GraphComplex):
 
         vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
         differential = ContractEdgesD(vector_space)
-        super(OrdinaryContractEdgesGC, self).__init__(vector_space, differential)
+        super(OrdinaryContractEdgesGC, self).__init__(vector_space, [differential])
 
-    def get_cohomology_plot_path(self):
-        s = "cohomology_dim_%s_%s.png" % (graph_type, self.sub_type)
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
