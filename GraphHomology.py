@@ -57,6 +57,8 @@ parser.add_argument('-build_op', action='store_true', help='just build operator 
 parser.add_argument('-rank', action='store_true', help='just compute matrix ranks')
 parser.add_argument('-coho', action='store_true', help='just compute cohomology')
 parser.add_argument('-square_zero', action='store_true', help='square zero test')
+parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
+
 
 args = parser.parse_args()
 
@@ -92,6 +94,11 @@ def square_zero_test(graph_complex):
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
+def test_commutativity(graph_complex):
+    graph_complex.test_pairwise_commutativity()
+
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
     graph_complex.compute_rank(exact=args.exact_rank, n_primes=args.n_primes, estimate=args.no_est_rank,
                                ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
@@ -108,6 +115,7 @@ class MissingArgumentError(RuntimeError):
 
 if __name__ == "__main__":
     if args.log is not None:
+        print(args.commute)
         Log.set_log_level(args.log)
         log_file = args.graph_complex_type + '.log'
         Log.set_log_file(log_file)
@@ -150,7 +158,7 @@ if __name__ == "__main__":
 
         graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
 
-    if not (args.build or args.build_b or args.build_op or args.square_zero or args.rank or args.coho):
+    if not (args.build or args.build_b or args.build_op or args.square_zero or args.commute or args.rank or args.coho):
         cohomology_complete(graph_complex)
     else:
         if args.build:
@@ -162,6 +170,8 @@ if __name__ == "__main__":
                 build_operator(graph_complex)
         if args.square_zero:
             square_zero_test(graph_complex)
+        if args.commute:
+            test_commutativity(graph_complex)
         if args.rank:
             rank(graph_complex)
         if args.coho:

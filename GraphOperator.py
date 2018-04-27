@@ -365,7 +365,7 @@ class GraphOperator(Operator, OperatorMatrix):
     @classmethod
     def generate_op_matrix_list(cls, vs_list):
         op_matrix_list = []
-        for (domain, target) in itertools.product(vs_list, vs_list):
+        for (domain, target) in itertools.permutations(vs_list, 2):
             if cls.is_match(domain, target):
                 op_matrix_list.append(cls(domain, target))
         return op_matrix_list
@@ -443,7 +443,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def generate_op_matrix_list(cls, graded_vs, op_collection1, op_collection2):
         graded_vs_list = graded_vs.get_vs_list()
         bi_op_matrix_list = []
-        for (domain, target) in itertools.product(graded_vs_list, graded_vs_list):
+        for (domain, target) in itertools.permutations(graded_vs_list, 2):
             if cls.is_match(domain, target):
                 bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
         return bi_op_matrix_list
@@ -594,7 +594,7 @@ class Differential(OperatorMatrixCollection):
     # Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()
-        for (opD, opDD) in itertools.permutations(self.op_matrix_list):
+        for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
             if Differential.is_match(opD, opDD):
                 dim = Differential.cohomology_dim(opD, opDD)
                 cohomology_dim.update({opD.domain: dim})
@@ -613,7 +613,7 @@ class Differential(OperatorMatrixCollection):
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc = []  # pairs for which operator matrices are missing
-        for (op1, op2) in itertools.permutations(self.op_matrix_list):
+        for (op1, op2) in itertools.permutations(self.op_matrix_list, 2):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
                 p = (op1, op2)
