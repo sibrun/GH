@@ -603,7 +603,7 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_dim(self):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
-        for vs in self.vs_list():
+        for vs in self.vs_list:
             dim_dict.update({vs.get_param_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
@@ -646,6 +646,7 @@ class Differential(OperatorMatrixCollection):
     def plot_cohomology_dim(self, ordered_param_range_dict):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
+        print(plot_path)
         Display.plot_array(dim_dict, ordered_param_range_dict, plot_path)
 
 
@@ -660,4 +661,3 @@ class BiDifferential(Differential):
         self.bi_op_matrix = bi_op_matrix
         op_matrix_list = self.bi_op_matrix.generate_op_matrix_list(graded_vs, self.dif1, self.dif2)
         super(BiDifferential, self).__init__(self.graded_vs.get_vs_list(), op_matrix_list)
-

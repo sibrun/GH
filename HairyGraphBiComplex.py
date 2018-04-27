@@ -80,8 +80,3 @@ class HairyBiGC(GC.GraphComplex):
         graded_vs = VertexLoopBigradedVS(deg_range, h_min, even_edges, even_hairs)
         super(HairyBiGC, self).__init__(graded_vs, [CeEt1hD(graded_vs)])
 
-
-gc = HairyBiGC(range(8,12), 0, True, False)
-gc.build_basis()
-#gc.build_matrix()
-

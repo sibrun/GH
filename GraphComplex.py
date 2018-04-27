@@ -36,10 +36,10 @@ class GraphComplex(object):
             dif.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
 
-    def plot_cohomology_dim(self, dif_idx):
-        dif = self.operator_collection_list[dif_idx]
-        ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
-        dif.plot_cohomology_dim(ordered_param_range_dict)
+    def plot_cohomology_dim(self):
+        for dif in self.operator_collection_list:
+            ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
+            dif.plot_cohomology_dim(ordered_param_range_dict)
 
     def test_pairwise_commutativity(self):
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
