@@ -28,7 +28,10 @@ class InfoTracker(object):
         return self.data_dict
 
     def get_list(self):
-        L = self.data_dict.items()
+        data_list = []
+        for (params, properties) in self.data_dict.items():
+            data_list.append(list(params) + properties)
+        return data_list
 
     def update_data(self, data_dict):
         self.data_dict.update(data_dict)
@@ -54,6 +57,7 @@ class InfoTracker(object):
 
     def start(self):
         self.update_html_file()
+        self.show_in_browser()
         self.p = mp.Process(target=self.track)
         self.p.start()
 
