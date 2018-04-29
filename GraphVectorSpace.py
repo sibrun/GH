@@ -2,13 +2,12 @@ from abc import ABCMeta, abstractmethod
 from sage.all import *
 import operator
 import itertools
-import pandas
 from tqdm import tqdm
 import StoreLoad as SL
-import PlotCohomology
 import ParallelProgress as PP
 import Parameters
 import Log
+import DisplayInfo
 
 logger = Log.logger.getChild('graph_vector_space')
 
@@ -251,6 +250,9 @@ class SumVectorSpace(VectorSpace):
         except IndexError:
             self.is_graded = True
         super(SumVectorSpace, self).__init__()
+        self.info_tracker = DisplayInfo.InfoTracker(str(self))
+        self.set_tracker_parameters()
+        self.q = self.info_tracker.get_queue()
 
     def get_type(self):
         pass
@@ -318,8 +320,8 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        if not (self.is_graded or isinstance(self, DegSlice)):
-            self.plot_info()
+        self.start_tracker()
+        print('aaa')
         if not isinstance(self,DegSlice):
             self.sort()
         if n_jobs > 1:
@@ -331,23 +333,34 @@ class SumVectorSpace(VectorSpace):
             for vs in self.vs_list:
                 self._build_single_basis(vs, progress_bar=progress_bar, ignore_existing_files=ignore_existing_files,
                                          n_jobs = n_jobs)
-        self.plot_info()
+        self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, n_jobs = 1):
         vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, n_jobs = n_jobs)
+        self.update_tracker(vs)
 
-    def plot_info(self):
-        vsList = []
-        for vs in self.vs_list:
-            vs.update_properties()
-            vsList.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
+    def set_tracker_parameters(self):
         try:
-            vsColumns = self.vs_list[0].get_ordered_param_dict().keys() + self.vs_list[0].properties.names()
+            param_names = self.vs_list[0].get_ordered_param_dict().keys()
+            property_names = self.vs_list[0].get_properties().names()
         except IndexError:
-            vsColumns = []
-        vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
-        #vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
-        PlotCohomology.display_pandas_df(vsTable)
+            param_names = property_names = []
+        parameter_list = param_names + property_names
+        self.info_tracker.set_parameter_list(parameter_list)
+
+    def start_tracker(self):
+        vs_info_dict = dict()
+        for vs in self.vs_list:
+            vs_info_dict.update({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
+        self.info_tracker.update_data(vs_info_dict)
+        self.info_tracker.start()
+
+    def update_tracker(self, vs):
+        vs.update_properties()
+        self.q.put({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
+
+    def stop_tracker(self):
+        self.info_tracker.stop()
 
 
 class DegSlice(SumVectorSpace):

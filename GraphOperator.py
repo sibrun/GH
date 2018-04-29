@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 import itertools
-import pandas
 import scipy.sparse as sparse
 from scipy.sparse.linalg import aslinearoperator as aslinearoperator
 from scipy.linalg.interpolative import estimate_rank as estimate_rank
