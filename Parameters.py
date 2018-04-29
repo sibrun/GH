@@ -25,10 +25,10 @@ x_plots = 2
 
 #---- Progress Bar Parameters ----
 pbar_steps = 200
-timeout = 0.1
+pbar_timeout = 0.1
 
 #---- Max Values for Sorting ----
 max_sort_value = sys.maxint  # return value if dimension or shape is unknown
 
 #---- Data Tracker Parameters ----
-data_tracker_timeout = 0.2 # waiting time between updating data frame
+data_tracker_timeout = 0.2

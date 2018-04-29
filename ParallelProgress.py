@@ -121,7 +121,7 @@ class ParallelTqdm(object):
     def tqdm(self):
         while len(self.results) != self.n_bars:
             try:
-                self.update_bars(self.queue.get(timeout=Parameters.timeout))
+                self.update_bars(self.queue.get(timeout=Parameters.pbar_timeout))
             except Queue.Empty:
                 continue
 
