@@ -11,14 +11,6 @@ import StoreLoad as SL
 import Parameters
 
 
-def display_pandas_df(df):
-    f = tempfile.NamedTemporaryFile(delete=False)
-    path = f.name+'.html'
-    df.to_html(path)
-    url = 'file:{}'.format(pathname2url(path))
-    webbrowser.open(url)
-
-
 def plot_array(value_dict, ordered_param_range_dict, path):
     if len(ordered_param_range_dict) == 2:
         plot_2d_array(value_dict, ordered_param_range_dict, path)

@@ -5,7 +5,7 @@ import itertools
 import pandas
 from tqdm import tqdm
 import StoreLoad as SL
-import Display
+import PlotCohomology
 import ParallelProgress as PP
 import Parameters
 import Log
@@ -347,7 +347,7 @@ class SumVectorSpace(VectorSpace):
             vsColumns = []
         vsTable = pandas.DataFrame(data=vsList, columns=vsColumns)
         #vsTable.sort_values(by=VectorSpaceProperties.sort_variables(), inplace=True, na_position='last')
-        Display.display_pandas_df(vsTable)
+        PlotCohomology.display_pandas_df(vsTable)
 
 
 class DegSlice(SumVectorSpace):

@@ -10,7 +10,7 @@ import StoreLoad as SL
 import ParallelProgress as PP
 import Shared as SH
 import Parameters
-import Display
+import PlotCohomology
 
 logger = Log.logger.getChild('graph_operator')
 
@@ -513,6 +513,7 @@ class OperatorMatrixCollection(object):
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
+        self.plot_info()
 
     def compute_rank(self, exact=False, n_primes=1, estimate=True, sort_key='size', ignore_existing_files=False,
                      n_jobs=1):
@@ -539,7 +540,7 @@ class OperatorMatrixCollection(object):
         opColumns = param_names + OperatorMatrixProperties.names()
         opTable = pandas.DataFrame(data=opList, columns=opColumns)
         #opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
-        Display.display_pandas_df(opTable)
+        PlotCohomology.display_pandas_df(opTable)
 
 
 class Differential(OperatorMatrixCollection):
@@ -647,7 +648,7 @@ class Differential(OperatorMatrixCollection):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
         print(plot_path)
-        Display.plot_array(dim_dict, ordered_param_range_dict, plot_path)
+        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path)
 
 
 class BiDifferential(Differential):
