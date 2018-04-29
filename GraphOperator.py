@@ -11,6 +11,7 @@ import ParallelProgress as PP
 import Shared as SH
 import Parameters
 import PlotCohomology
+import DisplayInfo
 
 logger = Log.logger.getChild('graph_operator')
 
@@ -482,6 +483,9 @@ class OperatorMatrixCollection(object):
     def __init__(self, vs_list, op_matrix_list):
         self.vs_list = vs_list
         self.op_matrix_list = op_matrix_list
+        self.info_tracker = DisplayInfo.InfoTracker(str(self))
+        self.set_tracker_parameters()
+        self.q = self.info_tracker.get_queue()
 
     @abstractmethod
     def get_type(self):
@@ -509,38 +513,48 @@ class OperatorMatrixCollection(object):
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False):
         print(' ')
         print('Build matrices of %s' % str(self))
-        self.plot_info()
+        self.start_tracker()
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
-        self.plot_info()
+            self.update_tracker(op)
+        self.stop_tracker()
 
     def compute_rank(self, exact=False, n_primes=1, estimate=True, sort_key='size', ignore_existing_files=False,
                      n_jobs=1):
         print(' ')
         print('Compute ranks of %s' % str(self))
-        self.plot_info()
+        self.start_tracker()
         self.sort(key=sort_key)
         PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
                     estimate=estimate, ignore_existing_files=ignore_existing_files)
-        self.plot_info()
+        self.stop_tracker()
 
     def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=True, ignore_existing_files=False):
         op.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, ignore_existing_files=ignore_existing_files)
+        self.update_tracker(op)
 
-    def plot_info(self):
-        opList = []
-        for op in self.op_matrix_list:
-            op.update_properties()
-            opList.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
+    def set_tracker_parameters(self):
         try:
             param_names = self.vs_list[0].get_ordered_param_dict().keys()
         except IndexError:
             param_names = []
-        opColumns = param_names + OperatorMatrixProperties.names()
-        opTable = pandas.DataFrame(data=opList, columns=opColumns)
-        #opTable.sort_values(by=MatrixProperties.sort_variables(), inplace=True, na_position='last')
-        PlotCohomology.display_pandas_df(opTable)
+        parameter_list = param_names + OperatorMatrixProperties.names()
+        self.info_tracker.set_parameter_list(parameter_list)
+
+    def start_tracker(self):
+        op_info_dict = dict()
+        for op in self.op_matrix_list:
+            op_info_dict.update({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
+        self.info_tracker.update_data(op_info_dict)
+        self.info_tracker.start()
+
+    def update_tracker(self, op):
+        op.update_properties()
+        self.q.put({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
+
+    def stop_tracker(self):
+        self.info_tracker.stop()
 
 
 class Differential(OperatorMatrixCollection):
