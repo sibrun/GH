@@ -42,3 +42,5 @@ class DataFrame(object):
         while True:
             self.update_html_file()
             time.sleep(delay_time)
+
+
