@@ -136,7 +136,7 @@ class GraphVectorSpace(VectorSpace):
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, progress_bar=False, ignore_existing_files=False, n_jobs=1):
+    def build_basis(self, progress_bar=False, ignore_existing_files=False, n_jobs=1, **kwargs):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_basis_file():
@@ -337,8 +337,8 @@ class SumVectorSpace(VectorSpace):
         if info_tracker:
             self.stop_tracker()
 
-    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, n_jobs = 1, info_tracker=False):
-        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, n_jobs = n_jobs)
+    def _build_single_basis(self, vs, info_tracker=False, **kwargs):
+        vs.build_basis(info_tracker=info_tracker, **kwargs)
         if info_tracker:
             self.update_tracker(vs)
 

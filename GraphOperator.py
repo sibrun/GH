@@ -519,8 +519,15 @@ class OperatorMatrixCollection(object):
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
             self.update_tracker(op)
+        '''PP.parallel(self._build_single_matrix, self.op_matrix_list, n_jobs=n_jobs,
+                    ignore_existing_files=ignore_existing_files, progress_bar=progress_bar, info_tracker=info_tracker)'''
         if info_tracker:
             self.stop_tracker()
+
+    def _build_single_matrix(self, op, info_tracker=False, **kwargs):
+        op.build_matrix(**kwargs)
+        if info_tracker:
+            self.update_tracker(op)
 
     def compute_rank(self, exact=False, n_primes=1, estimate=False, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
@@ -534,9 +541,8 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.stop_tracker()
 
-    def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=False, ignore_existing_files=False,
-                             info_tracker=False):
-        op.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, ignore_existing_files=ignore_existing_files)
+    def _compute_single_rank(self, op, info_tracker=False, **kwargs):
+        op.compute_rank(**kwargs)
         if info_tracker:
             self.update_tracker(op)
 
@@ -668,7 +674,6 @@ class Differential(OperatorMatrixCollection):
     def plot_cohomology_dim(self, ordered_param_range_dict):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
-        print(plot_path)
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path)
 
 
