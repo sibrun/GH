@@ -48,9 +48,10 @@ parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of par
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
-parser.add_argument('-exact_rank', action='store_true', help='exact matrix rank computation')
-parser.add_argument('-n_primes', type=non_negative_int, default=0, help='compute matrix rank modulo n_primes different prime numbers')
-parser.add_argument('-no_est_rank', action='store_false', help="don't estimate matrix rank")
+parser.add_argument('-info', action='store_true', help='display info during calculations in browser')
+parser.add_argument('-exact', action='store_true', help='exact matrix rank computation')
+parser.add_argument('-n_primes', type=non_negative_int, default=1, help='compute matrix rank modulo n_primes different prime numbers')
+parser.add_argument('-est', action='store_true', help="estimate matrix rank")
 parser.add_argument('-build', action='store_true', help='build vector space basis and operator matrix')
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='build operator matrix')
@@ -64,28 +65,15 @@ args = parser.parse_args()
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
-def cohomology_complete(graph_complex):
-    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
-    graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
-    graph_complex.compute_rank(ignore_existing_files=args.ignore_ex)
-    graph_complex.plot_cohomology_dim()
-
-
-@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
-def build(graph_complex):
-    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
-    graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
-
-
-@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_basis(graph_complex):
-    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar)
+    graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
+                              info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_operator(graph_complex):
-    graph_complex.build_matrix(ignore_existing_files=args.ignore_ex,
-                               n_jobs=args.n_jobs, progress_bar=args.pbar)
+    graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
+                               info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
@@ -100,8 +88,8 @@ def test_commutativity(graph_complex):
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
-    graph_complex.compute_rank(exact=args.exact_rank, n_primes=args.n_primes, estimate=args.no_est_rank,
-                               ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs)
+    graph_complex.compute_rank(exact=args.exact, n_primes=args.n_primes, estimate=args.est,
+                               ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
@@ -158,21 +146,15 @@ if __name__ == "__main__":
 
         graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
 
-    if not (args.build or args.build_b or args.build_op or args.square_zero or args.commute or args.rank or args.coho):
-        cohomology_complete(graph_complex)
-    else:
-        if args.build:
-            build(graph_complex)
-        else:
-            if args.build_b:
-                build_basis(graph_complex)
-            if args.build_op:
-                build_operator(graph_complex)
-        if args.square_zero:
-            square_zero_test(graph_complex)
-        if args.commute:
-            test_commutativity(graph_complex)
-        if args.rank:
-            rank(graph_complex)
-        if args.coho:
-            cohomology(graph_complex)
+    if args.build_b:
+        build_basis(graph_complex)
+    if args.build_op:
+        build_operator(graph_complex)
+    if args.square_zero:
+        square_zero_test(graph_complex)
+    if args.commute:
+        test_commutativity(graph_complex)
+    if args.rank:
+        rank(graph_complex)
+    if args.coho:
+        cohomology(graph_complex)

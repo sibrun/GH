@@ -214,7 +214,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=True,
+    def compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
                      eps=Parameters.estimate_rank_eps, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.is_valid():
             return
@@ -231,7 +231,7 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=True,
+    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
                       eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
             rank_dict = {'exact': 0}
@@ -459,7 +459,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def get_work_estimate(self):
         return self.domain.get_dimension() * self.target.get_dimension()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=True):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=False):
         if not ignore_existing_files and self.exists_matrix_file():
             return
         shape = (self.domain.get_dimension(), self.target.get_dimension())
@@ -510,30 +510,35 @@ class OperatorMatrixCollection(object):
         else:
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
 
-    def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False):
+    def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print(' ')
         print('Build matrices of %s' % str(self))
-        self.start_tracker()
+        if info_tracker:
+            self.start_tracker()
         self.sort()
         for op in self.op_matrix_list:
             op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
             self.update_tracker(op)
-        self.stop_tracker()
+        if info_tracker:
+            self.stop_tracker()
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=True, sort_key='size', ignore_existing_files=False,
-                     n_jobs=1):
+    def compute_rank(self, exact=False, n_primes=1, estimate=False, sort_key='size', ignore_existing_files=False,
+                     n_jobs=1, info_tracker=False):
         print(' ')
         print('Compute ranks of %s' % str(self))
-        self.start_tracker()
+        if info_tracker:
+            self.start_tracker()
         self.sort(key=sort_key)
         PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
-                    estimate=estimate, ignore_existing_files=ignore_existing_files)
-        self.stop_tracker()
+                    estimate=estimate, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+        if info_tracker:
+            self.stop_tracker()
 
-    def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=True, ignore_existing_files=False):
+    def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=False, ignore_existing_files=False,
+                             info_tracker=False):
         op.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, ignore_existing_files=ignore_existing_files)
-        print(str(self))
-        self.update_tracker(op)
+        if info_tracker:
+            self.update_tracker(op)
 
     def set_tracker_parameters(self):
         try:

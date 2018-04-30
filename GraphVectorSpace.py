@@ -320,24 +320,27 @@ class SumVectorSpace(VectorSpace):
         else:
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        self.start_tracker()
+        if info_tracker:
+            self.start_tracker()
         if n_jobs > 1:
             progress_bar = False
         if not self.is_graded:
             PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
-                        ignore_existing_files=ignore_existing_files)
+                        ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         else:
             for vs in self.vs_list:
                 self._build_single_basis(vs, progress_bar=progress_bar, ignore_existing_files=ignore_existing_files,
-                                         n_jobs = n_jobs)
-        self.stop_tracker()
+                                         n_jobs=n_jobs, info_tracker=info_tracker)
+        if info_tracker:
+            self.stop_tracker()
 
-    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, n_jobs = 1):
+    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, n_jobs = 1, info_tracker=False):
         vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, n_jobs = n_jobs)
-        self.update_tracker(vs)
+        if info_tracker:
+            self.update_tracker(vs)
 
     def set_tracker_parameters(self):
         try:

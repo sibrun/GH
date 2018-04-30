@@ -18,23 +18,24 @@ class GraphComplex(object):
     def get_differential_list(self):
         return self.operator_collection_list
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
         self.vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
-                                      progress_bar=progress_bar)
+                                      progress_bar=progress_bar, info_tracker=info_tracker)
 
-    def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False):
+    def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
         for dif in self.operator_collection_list:
-            dif.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
-                                       progress_bar=progress_bar)
+            dif.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar,
+                             info_tracker=info_tracker)
 
     def square_zero_test(self):
         for dif in self.operator_collection_list:
             dif.square_zero_test()
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=True, ignore_existing_files=True, n_jobs=1):
+    def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=True, n_jobs=1,
+                     info_tracker=False):
         for dif in self.operator_collection_list:
             dif.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
-                                       ignore_existing_files=ignore_existing_files, n_jobs=n_jobs)
+                             ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, info_tracker=info_tracker)
 
     def plot_cohomology_dim(self):
         for dif in self.operator_collection_list:
