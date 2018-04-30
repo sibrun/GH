@@ -56,10 +56,10 @@ parser.add_argument('-build', action='store_true', help='build vector space basi
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='build operator matrix')
 parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
-parser.add_argument('-coho', action='store_true', help='compute cohomology')
-parser.add_argument('-square_zero', action='store_true', help='square zero test')
-parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
-
+parser.add_argument('-cohomology', action='store_true', help='compute cohomology')
+parser.add_argument('-square_zero_test', action='store_true', help='square zero test')
+parser.add_argument('-commutativity_test', action='store_true', help='test commutativity of differentials')
+parser.add_argument('-anti_commute', action='store_true', help='test commutativity of differentials')
 
 args = parser.parse_args()
 
@@ -83,7 +83,7 @@ def square_zero_test(graph_complex):
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def test_commutativity(graph_complex):
-    graph_complex.test_pairwise_commutativity()
+    graph_complex.test_pairwise_commutativity(anti_commute=args.anti_commute)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
@@ -150,11 +150,11 @@ if __name__ == "__main__":
         build_basis(graph_complex)
     if args.build_op:
         build_operator(graph_complex)
-    if args.square_zero:
+    if args.square_zero_test:
         square_zero_test(graph_complex)
-    if args.commute:
+    if args.commutativity_test:
         test_commutativity(graph_complex)
     if args.rank:
         rank(graph_complex)
-    if args.coho:
+    if args.cohomology:
         cohomology(graph_complex)

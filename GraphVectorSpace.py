@@ -255,9 +255,11 @@ class SumVectorSpace(VectorSpace):
         self.set_tracker_parameters()
         self.q = self.info_tracker.get_queue()
 
+    @abstractmethod
     def get_type(self):
         pass
 
+    @abstractmethod
     def get_ordered_param_range_dict(self):
         pass
 
@@ -374,6 +376,12 @@ class DegSlice(SumVectorSpace):
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg
+
+    def get_type(self):
+        pass
+
+    def get_ordered_param_range_dict(self):
+        pass
 
     @abstractmethod
     def get_ordered_param_dict(self):

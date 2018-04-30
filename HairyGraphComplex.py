@@ -268,14 +268,24 @@ class EdgeToOneHairGO(GO.GraphOperator):
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             G1 = copy(G)
-            G1.delete_edge(u, v)
+            if not self.domain.even_edges:
+                SH.enumerate_edges(G1)
+                e_label = G1.edge_label(u, v)
+            G1.delete_edge((u, v))
             new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
             G1.add_vertex(new_hair_idx)
             G2 = copy(G1)
             G1.add_edge((u, new_hair_idx))
             G2.add_edge((v, new_hair_idx))
-            image.append((G1, 1))
-            sgn2 = -1 if self.domain.even_edges else 1
+            if not self.domain.even_edges:
+                G1.set_edge_label(u, new_hair_idx, e_label)
+                G2.set_edge_label(v, new_hair_idx, e_label)
+                sgn1 = SH.edge_perm_sign(G1)
+                sgn2 = SH.edge_perm_sign(G2)
+            else:
+                sgn1 = 1
+                sgn2 = -1
+            image.append((G1, sgn1))
             image.append((G2, sgn2))
         return image
 

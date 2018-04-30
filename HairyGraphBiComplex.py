@@ -53,6 +53,10 @@ class VertexLoopBigradedVS(GVS.SumVectorSpace):
         super(VertexLoopBigradedVS, self).__init__(
             [VertexLoopDegSlice(n, self.h_min + (max_deg - n), even_edges, even_hairs) for n in self.deg_range])
 
+    def get_type(self):
+        pass
+        #return '%s graphs with %s' % (HGC.graph_type, self.sub_type)
+
     def get_ordered_param_range_dict(self):
         return SH.OrderedDict({'deg': self.deg_range, 'min_hairs': self.h_min})
 

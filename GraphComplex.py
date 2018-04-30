@@ -42,9 +42,9 @@ class GraphComplex(object):
             ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
             dif.plot_cohomology_dim(ordered_param_range_dict)
 
-    def test_pairwise_commutativity(self):
+    def test_pairwise_commutativity(self, anti_commute=False):
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
-            self.test_commutativity(op_collection1, op_collection2)
+            self.test_commutativity(op_collection1, op_collection2, anti_commute=anti_commute)
 
     def test_commutativity(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
         print('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
