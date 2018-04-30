@@ -8,9 +8,9 @@ import HairyGraphComplex as HGC
 
 
 class CeEt1hBiOM(GO.BiOperatorMatrix):
-    def __init__(self, domain, target, op_collection1, op_collection2):
+    def __init__(self, domain, target, operator_cls1, operator_cls2):
         self.sub_type = domain.get_vs_list()[0].sub_type
-        super(CeEt1hBiOM, self).__init__(domain, target, op_collection1, op_collection2)
+        super(CeEt1hBiOM, self).__init__(domain, target, operator_cls1, operator_cls2)
 
     @staticmethod
     def is_match(domain, target):
@@ -63,7 +63,7 @@ class VertexLoopBigradedVS(GVS.SumVectorSpace):
 
 class CeEt1hD(GO.BiDifferential):
     def __init__(self, graded_vs):
-        super(CeEt1hD, self).__init__(graded_vs, HGC.ContractEdgesD, HGC.EdgeToOneHairD, CeEt1hBiOM)
+        super(CeEt1hD, self).__init__(graded_vs, HGC.ContractEdgesGO, HGC.EdgeToOneHairGO, CeEt1hBiOM)
 
     def get_type(self):
         return 'contract edges and edge to one hair'

@@ -435,23 +435,22 @@ class GraphOperator(Operator, OperatorMatrix):
 class BiOperatorMatrix(OperatorMatrix):
     __metaclass__ = ABCMeta
 
-    def __init__(self, domain, target, op_collection1, op_collection2):
+    def __init__(self, domain, target, operator_cls1, operator_cls2):
         super(BiOperatorMatrix, self).__init__(domain, target)
-        self.op_collection1 = op_collection1
-        self.op_collection2 = op_collection2
+        self.operator_cls1 = operator_cls1
+        self.operator_cls2 = operator_cls2
 
     @classmethod
-    def generate_op_matrix_list(cls, graded_vs, op_collection1, op_collection2):
+    def generate_op_matrix_list(cls, graded_vs, operator_cls1, operator_cls2):
         graded_vs_list = graded_vs.get_vs_list()
         bi_op_matrix_list = []
         for (domain, target) in itertools.permutations(graded_vs_list, 2):
             if cls.is_match(domain, target):
-                bi_op_matrix_list.append(cls(domain, target, op_collection1, op_collection2))
+                bi_op_matrix_list.append(cls(domain, target, operator_cls1, operator_cls2))
         return bi_op_matrix_list
 
     def __str__(self):
-        return '<Bi operator matrix on domain: %s, and %s, %s' \
-               % (str(self.domain), str(self.op_collection1), str(self.op_collection2))
+        return '<Bi operator matrix on domain: %s>' % str(self.domain)
 
     def is_valid(self):
         return True
@@ -463,20 +462,37 @@ class BiOperatorMatrix(OperatorMatrix):
         if not ignore_existing_files and self.exists_matrix_file():
             return
         shape = (self.domain.get_dimension(), self.target.get_dimension())
+        underlying_matrices = self._get_underlying_matrices()
+        self._build_underlying_matrices(underlying_matrices, ignore_existing_files=ignore_existing_files,
+                                        n_jobs=n_jobs, progress_bar=progress_bar)
+        matrix_list = self._get_matrix_list(underlying_matrices)
+        self._store_matrix_list(matrix_list, shape)
+
+    def _get_underlying_matrices(self):
+        op_matrix_list = []
+        for (domain, target) in itertools.product(self.domain.get_vs_list(), self.target.get_vs_list()):
+            if self.operator_cls1.is_match(domain, target):
+                op_matrix_list.append(self.operator_cls1(domain, target))
+            elif self.operator_cls2.is_match(domain, target):
+                op_matrix_list.append(self.operator_cls2(domain, target))
+        return op_matrix_list
+
+    def _build_underlying_matrices(self, op_matrix_list, ignore_existing_files=False, n_jobs=1, progress_bar=True):
+        for op in op_matrix_list:
+            op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
+
+    def _get_matrix_list(self, underlying_matrices):
         matrixList = []
-        for op in self.op_collection1.get_op_list() + self.op_collection2.get_op_list():
-            op_domain = op.get_domain()
-            op_target = op.get_target()
-            if self.domain.contains(op_domain) and self.target.contains(op_target):
-                domain_start_idx = self.domain.get_start_idx(op.get_domain())
-                target_start_idx = self.target.get_start_idx(op.get_target())
-                if not skip_if_no_matrices and not op.exists_matrix_file():
-                    op.build_matrix(ignore_existing_files=ignore_existing_files, skip_if_no_basis=False, n_jobs=n_jobs,
-                                    progress_bar=progress_bar)
-                subMatrixList = op.get_matrix_list()
-                for (i, j, v) in subMatrixList:
-                    matrixList.append((i + domain_start_idx, j + target_start_idx, v))
-        self._store_matrix_list(matrixList, shape)
+        for op in underlying_matrices:
+            if not op.is_valid():
+                continue
+            domain_start_idx = self.domain.get_start_idx(op.get_domain())
+            target_start_idx = self.target.get_start_idx(op.get_target())
+            subMatrixList = op.get_matrix_list()
+            for (i, j, v) in subMatrixList:
+                matrixList.append((i + domain_start_idx, j + target_start_idx, v))
+        matrixList.sort()
+        return matrixList
 
 
 class OperatorMatrixCollection(object):
@@ -616,7 +632,7 @@ class Differential(OperatorMatrixCollection):
             rankDD = 0
         cohomologyDim = dimV - rankD - rankDD
         if cohomologyDim < 0:
-            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
+            print("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
@@ -636,6 +652,7 @@ class Differential(OperatorMatrixCollection):
         return dim_dict
 
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
+        print(' ')
         print("Square zero test for %s:" % str(self))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
@@ -680,11 +697,11 @@ class Differential(OperatorMatrixCollection):
 class BiDifferential(Differential):
     __metaclass__ = ABCMeta
 
-    def __init__(self, graded_vs, dif1, dif2, bi_op_matrix):
+    def __init__(self, graded_vs, operator_cls1, operator_cls2, bi_op_matrix_cls):
         self.graded_vs = graded_vs
         flat_vs_list = graded_vs.get_flat_vs_list()
-        self.dif1 = dif1(flat_vs_list)
-        self.dif2 = dif2(flat_vs_list)
-        self.bi_op_matrix = bi_op_matrix
-        op_matrix_list = self.bi_op_matrix.generate_op_matrix_list(graded_vs, self.dif1, self.dif2)
+        self.operator_cls1 = operator_cls1
+        self.operator_cls2 = operator_cls2
+        self.bi_op_matrix_cls = bi_op_matrix_cls
+        op_matrix_list = self.bi_op_matrix_cls.generate_op_matrix_list(graded_vs, self.operator_cls1, self.operator_cls2)
         super(BiDifferential, self).__init__(self.graded_vs.get_vs_list(), op_matrix_list)
