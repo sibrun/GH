@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from sage.all import *
 import operator
 import itertools
+import collections
 from tqdm import tqdm
 import StoreLoad as SL
 import ParallelProgress as PP
@@ -310,6 +311,8 @@ class SumVectorSpace(VectorSpace):
         return eq_l == len(self.vs_list)
 
     def sort(self, key='work_estimate'):
+        if self.is_graded or isinstance(self,DegSlice):
+            return
         if key == 'work_estimate':
             self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
         elif key == 'dim':
@@ -321,9 +324,6 @@ class SumVectorSpace(VectorSpace):
         print(' ')
         print('Build basis of %s' % str(self))
         self.start_tracker()
-        print('aaa')
-        if not isinstance(self,DegSlice):
-            self.sort()
         if n_jobs > 1:
             progress_bar = False
         if not self.is_graded:
@@ -349,7 +349,7 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
-        vs_info_dict = dict()
+        vs_info_dict = collections.OrderedDict()
         for vs in self.vs_list:
             vs_info_dict.update({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
         self.info_tracker.update_data(vs_info_dict)
@@ -357,7 +357,8 @@ class SumVectorSpace(VectorSpace):
 
     def update_tracker(self, vs):
         vs.update_properties()
-        self.q.put({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
+        message = {tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()}
+        self.q.put(message)
 
     def stop_tracker(self):
         self.info_tracker.stop()
@@ -367,7 +368,6 @@ class DegSlice(SumVectorSpace):
     def __init__(self, vs_list, deg):
         self.deg = deg
         super(DegSlice, self).__init__(vs_list)
-        self.plot_info()
 
     def __str__(self):
         return '<degree slice of degree %d>' % self.deg

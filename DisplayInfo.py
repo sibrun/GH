@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import Queue
+import collections
 import pandas
 import tempfile
 import webbrowser
@@ -11,7 +12,7 @@ class InfoTracker(object):
     def __init__(self, name):
         self.name = name
         self.parameter_list = []
-        self.data_dict = dict()
+        self.data_dict = collections.OrderedDict()
         self.queue = mp.Queue()
         self.p = None
         self.f = tempfile.NamedTemporaryFile(delete=False)

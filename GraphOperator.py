@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import itertools
+import collections
 import scipy.sparse as sparse
 from scipy.sparse.linalg import aslinearoperator as aslinearoperator
 from scipy.linalg.interpolative import estimate_rank as estimate_rank
@@ -531,6 +532,7 @@ class OperatorMatrixCollection(object):
 
     def _compute_single_rank(self, op, exact=False, n_primes=1, estimate=True, ignore_existing_files=False):
         op.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, ignore_existing_files=ignore_existing_files)
+        print(str(self))
         self.update_tracker(op)
 
     def set_tracker_parameters(self):
@@ -542,7 +544,7 @@ class OperatorMatrixCollection(object):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
-        op_info_dict = dict()
+        op_info_dict = collections.OrderedDict()
         for op in self.op_matrix_list:
             op_info_dict.update({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
         self.info_tracker.update_data(op_info_dict)
@@ -550,7 +552,8 @@ class OperatorMatrixCollection(object):
 
     def update_tracker(self, op):
         op.update_properties()
-        self.q.put({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
+        message = {tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()}
+        self.q.put(message)
 
     def stop_tracker(self):
         self.info_tracker.stop()
