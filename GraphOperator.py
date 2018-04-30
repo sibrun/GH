@@ -699,7 +699,6 @@ class BiDifferential(Differential):
 
     def __init__(self, graded_vs, operator_cls1, operator_cls2, bi_op_matrix_cls):
         self.graded_vs = graded_vs
-        flat_vs_list = graded_vs.get_flat_vs_list()
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
         self.bi_op_matrix_cls = bi_op_matrix_cls

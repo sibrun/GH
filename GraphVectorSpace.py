@@ -272,13 +272,6 @@ class SumVectorSpace(VectorSpace):
     def get_vs_list(self):
         return self.vs_list
 
-    def get_flat_vs_list(self):
-        try:
-            flat_vs_list = [slice.get_vs_list() for slice in self.vs_list]
-            return list(itertools.chain.from_iterable(flat_vs_list))
-        except AttributeError:
-            return self.vs_list
-
     def get_work_estimate(self):
         work_estimate = 0
         for vs in self.vs_list:
@@ -386,6 +379,9 @@ class DegSlice(SumVectorSpace):
     @abstractmethod
     def get_ordered_param_dict(self):
         pass
+
+    def get_param_tuple(self):
+        return tuple(self.get_ordered_param_dict().values())
 
     def get_deg(self):
         return self.deg

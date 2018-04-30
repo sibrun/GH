@@ -52,7 +52,7 @@ class HairyGVS(GVS.GraphVectorSpace):
         return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('hairs', self.n_hairs)])
 
     def get_param_tuple(self):
-        return (self.n_vertices, self.n_loops, self.n_hairs)
+        return tuple(self.get_ordered_param_dict().values())
 
     def get_partition(self):
         # all internal vertices are in color 1, the hair vertices are in color 2

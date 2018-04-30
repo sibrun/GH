@@ -45,7 +45,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
 
     def get_param_tuple(self):
-        return (self.n_vertices, self.n_loops)
+        return tuple(self.get_ordered_param_dict().values())
 
     def get_partition(self):
         return None
