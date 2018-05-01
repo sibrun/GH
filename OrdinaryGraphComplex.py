@@ -30,22 +30,19 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
                and self.even_edges == other.even_edges
 
     def get_basis_file_path(self):
-        s = "gra%d_%d.g6" % self.get_param_tuple()
+        s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_plot_path(self):
-        s = "gra%d_%d" % self.get_param_tuple()
+        s = "gra%d_%d" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     def get_ref_basis_file_path(self):
-        s = "gra%d_%d.g6" % self.get_param_tuple()
+        s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ordered_param_dict(self):
         return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
-
-    def get_param_tuple(self):
-        return tuple(self.get_ordered_param_dict().values())
 
     def get_partition(self):
         return None
@@ -125,19 +122,19 @@ class ContractEdgesGO(GO.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_param_tuple()
+        s = "contractD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_rank.txt" % self.domain.get_param_tuple()
+        s = "contractD%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_param_tuple()
+        s = "contractD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_param_tuple()
+        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -195,7 +192,7 @@ class ContractEdgesD(GO.Differential):
         return 'contract edges'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.vs_list[0].sub_type
+        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
         s = "cohomology_dim_%s_%s.png" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
@@ -210,6 +207,6 @@ class OrdinaryGC(GC.GraphComplex):
 
         vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
         differential = ContractEdgesD(vector_space)
-        super(OrdinaryContractEdgesGC, self).__init__(vector_space, [differential])
+        super(OrdinaryGC, self).__init__(vector_space, [differential])
 
 

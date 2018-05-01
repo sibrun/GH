@@ -3,14 +3,16 @@ import multiprocessing as mp
 
 if __name__ == "__main__":
 
-    gc = HGBC.HairyBiGC(range(6, 12), -4, True, False)
+    ignore_ex = False
 
-    '''gc.build_basis(n_jobs=1, info_tracker=True, ignore_existing_files=False)
+    gc = HGBC.HairyBiGC(range(6, 12), range(-5, 0) , True, False)
 
-    gc.build_matrix(n_jobs=1, info_tracker=True, ignore_existing_files=False)
+    gc.build_basis(n_jobs=1, info_tracker=True, ignore_existing_files=ignore_ex)
 
-    gc.square_zero_test()
+    gc.build_matrix(n_jobs=1, info_tracker=True, ignore_existing_files=ignore_ex)
 
-    gc.compute_rank(info_tracker=True, ignore_existing_files=False)'''
+    #gc.square_zero_test()
+
+    gc.compute_rank(info_tracker=True, ignore_existing_files=ignore_ex)
 
     gc.plot_cohomology_dim()

@@ -218,7 +218,10 @@ class OperatorMatrix(object):
                      eps=Parameters.estimate_rank_eps, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.is_valid():
             return
-        if ignore_existing_files and self.exists_rank_file():
+        if not ignore_existing_files:
+            if self.exists_rank_file():
+                return
+        elif self.exists_rank_file():
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
@@ -364,9 +367,9 @@ class GraphOperator(Operator, OperatorMatrix):
         super(GraphOperator, self).__init__(domain, target)
 
     @classmethod
-    def generate_op_matrix_list(cls, vs_list):
+    def generate_op_matrix_list(cls, vector_space):
         op_matrix_list = []
-        for (domain, target) in itertools.permutations(vs_list, 2):
+        for (domain, target) in itertools.permutations(vector_space.get_vs_list(), 2):
             if cls.is_match(domain, target):
                 op_matrix_list.append(cls(domain, target))
         return op_matrix_list
@@ -377,7 +380,7 @@ class GraphOperator(Operator, OperatorMatrix):
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
         if not self.is_valid():
             return
-        if not ignore_existing_files and self.exists_matrix_file():
+        if (not ignore_existing_files) and self.exists_matrix_file():
             return
         try:
             domainBasis = self.domain.get_basis(g6=False)
@@ -441,10 +444,10 @@ class BiOperatorMatrix(OperatorMatrix):
         self.operator_cls2 = operator_cls2
 
     @classmethod
-    def generate_op_matrix_list(cls, graded_vs, operator_cls1, operator_cls2):
-        graded_vs_list = graded_vs.get_vs_list()
+    def generate_op_matrix_list(cls, graded_sum_vs, operator_cls1, operator_cls2):
+        graded_sum_vs_list = graded_sum_vs.get_vs_list()
         bi_op_matrix_list = []
-        for (domain, target) in itertools.permutations(graded_vs_list, 2):
+        for (domain, target) in itertools.permutations(graded_sum_vs_list, 2):
             if cls.is_match(domain, target):
                 bi_op_matrix_list.append(cls(domain, target, operator_cls1, operator_cls2))
         return bi_op_matrix_list
@@ -459,7 +462,7 @@ class BiOperatorMatrix(OperatorMatrix):
         return self.domain.get_dimension() * self.target.get_dimension()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=False):
-        if not ignore_existing_files and self.exists_matrix_file():
+        if (not ignore_existing_files) and self.exists_matrix_file():
             return
         shape = (self.domain.get_dimension(), self.target.get_dimension())
         underlying_matrices = self._get_underlying_matrices()
@@ -496,8 +499,8 @@ class BiOperatorMatrix(OperatorMatrix):
 
 
 class OperatorMatrixCollection(object):
-    def __init__(self, vs_list, op_matrix_list):
-        self.vs_list = vs_list
+    def __init__(self, sum_vector_space, op_matrix_list):
+        self.sum_vector_space = sum_vector_space
         self.op_matrix_list = op_matrix_list
         self.info_tracker = DisplayInfo.InfoTracker(str(self))
         self.set_tracker_parameters()
@@ -513,8 +516,8 @@ class OperatorMatrixCollection(object):
     def get_op_list(self):
         return self.op_matrix_list
 
-    def get_vs_list(self):
-        return self.vs_list
+    def get_vector_space(self):
+        return self.sum_vector_space
 
     def sort(self, key='work_estimate'):
         if key == 'work_estimate':
@@ -564,7 +567,7 @@ class OperatorMatrixCollection(object):
 
     def set_tracker_parameters(self):
         try:
-            param_names = self.vs_list[0].get_ordered_param_dict().keys()
+            param_names = self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys()
         except IndexError:
             param_names = []
         parameter_list = param_names + OperatorMatrixProperties.names()
@@ -589,12 +592,15 @@ class OperatorMatrixCollection(object):
 class Differential(OperatorMatrixCollection):
     __metaclass__ = ABCMeta
 
-    def __init__(self, vs_list, op_matrix_list):
-        super(Differential, self).__init__(vs_list, op_matrix_list)
+    def __init__(self, sum_vector_space, op_matrix_list):
+        super(Differential, self).__init__(sum_vector_space, op_matrix_list)
 
     @abstractmethod
     def get_cohomology_plot_path(self):
         pass
+
+    def get_ordered_cohomology_param_range_dict(self):
+        return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):
         return '<%s differential>' % self.get_type()
@@ -647,8 +653,8 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_dim(self):
         cohomology_dim = self.get_general_cohomology_dim_dict()
         dim_dict = dict()
-        for vs in self.vs_list:
-            dim_dict.update({vs.get_param_tuple(): cohomology_dim.get(vs)})
+        for vs in self.sum_vector_space.get_vs_list():
+            dim_dict.update({vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
@@ -688,19 +694,20 @@ class Differential(OperatorMatrixCollection):
             logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
 
-    def plot_cohomology_dim(self, ordered_param_range_dict):
+    def plot_cohomology_dim(self):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
+        ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path)
 
 
 class BiDifferential(Differential):
     __metaclass__ = ABCMeta
 
-    def __init__(self, graded_vs, operator_cls1, operator_cls2, bi_op_matrix_cls):
-        self.graded_vs = graded_vs
+    def __init__(self, graded_sum_vs, operator_cls1, operator_cls2, bi_op_matrix_cls):
+        self.graded_sum_vs = graded_sum_vs
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
         self.bi_op_matrix_cls = bi_op_matrix_cls
-        op_matrix_list = self.bi_op_matrix_cls.generate_op_matrix_list(graded_vs, self.operator_cls1, self.operator_cls2)
-        super(BiDifferential, self).__init__(self.graded_vs.get_vs_list(), op_matrix_list)
+        op_matrix_list = self.bi_op_matrix_cls.generate_op_matrix_list(graded_sum_vs, self.operator_cls1, self.operator_cls2)
+        super(BiDifferential, self).__init__(self.graded_sum_vs, op_matrix_list)

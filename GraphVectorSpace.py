@@ -129,7 +129,7 @@ class GraphVectorSpace(VectorSpace):
         pass
 
     def __str__(self):
-        return '<%s sub vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
+        return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
         canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
@@ -139,7 +139,7 @@ class GraphVectorSpace(VectorSpace):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, n_jobs=1, **kwargs):
         if not self.is_valid():
             return
-        if not ignore_existing_files and self.exists_basis_file():
+        if (not ignore_existing_files) and self.exists_basis_file():
             return
         generatingList = self.get_generating_graphs()
 
@@ -368,7 +368,7 @@ class DegSlice(SumVectorSpace):
         super(DegSlice, self).__init__(vs_list)
 
     def __str__(self):
-        return '<degree slice of degree %d>' % self.deg
+        return '<degree slice with parameters: %s>' % str(self.get_ordered_param_dict())
 
     def get_type(self):
         pass
@@ -380,11 +380,10 @@ class DegSlice(SumVectorSpace):
     def get_ordered_param_dict(self):
         pass
 
-    def get_param_tuple(self):
-        return tuple(self.get_ordered_param_dict().values())
-
-    def get_deg(self):
-        return self.deg
+    def build_basis(self, **kwargs):
+        super(DegSlice, self).build_basis(**kwargs)
+        if not self.is_complete():
+            raise ValueError('deg slice %s should be completely built' % str(self))
 
     def get_start_idx(self, vector_space):
         start_idx = 0

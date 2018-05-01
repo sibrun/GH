@@ -33,6 +33,9 @@ class OrderedDict(collections.OrderedDict):
         s += ')'
         return s
 
+    def get_value_tuple(self):
+        return tuple(self.values())
+
 
 def enumerate_edges(graph):
     for (j, e) in enumerate(graph.edges(labels=False)):

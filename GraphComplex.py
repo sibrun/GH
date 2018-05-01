@@ -8,19 +8,19 @@ logger = Log.logger.getChild('graph_complex')
 
 
 class GraphComplex(object):
-    def __init__(self, vector_space, operator_collection_list):
-        self.vector_space = vector_space
+    def __init__(self, sum_vector_space, operator_collection_list):
+        self.sum_vector_space = sum_vector_space
         self.operator_collection_list = operator_collection_list
 
     def get_vector_space(self):
-        return self.vector_space
+        return self.sum_vector_space
 
     def get_differential_list(self):
         return self.operator_collection_list
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
-        self.vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
-                                      progress_bar=progress_bar, info_tracker=info_tracker)
+        self.sum_vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
+                                          progress_bar=progress_bar, info_tracker=info_tracker)
 
     def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
         for dif in self.operator_collection_list:
@@ -39,8 +39,7 @@ class GraphComplex(object):
 
     def plot_cohomology_dim(self):
         for dif in self.operator_collection_list:
-            ordered_param_range_dict = self.vector_space.get_ordered_param_range_dict()
-            dif.plot_cohomology_dim(ordered_param_range_dict)
+            dif.plot_cohomology_dim()
 
     def test_pairwise_commutativity(self, anti_commute=False):
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
