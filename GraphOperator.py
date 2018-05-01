@@ -108,8 +108,8 @@ class OperatorMatrix(object):
         (d, t) = shape
         stringList = []
         stringList.append("%d %d %s" % (d, t, data_type))
-        for (domainIndex, targetIndex, data) in matrixList:
-            stringList.append("%d %d %d" % (domainIndex + 1, targetIndex + 1, data))
+        for (i, j, v) in matrixList:
+            stringList.append("%d %d %d" % (i + 1, j + 1, v))
         stringList.append("0 0 0")
         SL.store_string_list(stringList, self.get_matrix_file_path())
 
@@ -464,6 +464,8 @@ class BiOperatorMatrix(OperatorMatrix):
     def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=False):
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
+        print(' ')
+        print('Build matrix of %s' % str(self))
         shape = (self.domain.get_dimension(), self.target.get_dimension())
         underlying_matrices = self._get_underlying_matrices()
         self._build_underlying_matrices(underlying_matrices, ignore_existing_files=ignore_existing_files,
@@ -476,13 +478,13 @@ class BiOperatorMatrix(OperatorMatrix):
         for (domain, target) in itertools.product(self.domain.get_vs_list(), self.target.get_vs_list()):
             if self.operator_cls1.is_match(domain, target):
                 op_matrix_list.append(self.operator_cls1(domain, target))
-            elif self.operator_cls2.is_match(domain, target):
+            if self.operator_cls2.is_match(domain, target):
                 op_matrix_list.append(self.operator_cls2(domain, target))
         return op_matrix_list
 
-    def _build_underlying_matrices(self, op_matrix_list, ignore_existing_files=False, n_jobs=1, progress_bar=True):
+    def _build_underlying_matrices(self, op_matrix_list, **kwargs):
         for op in op_matrix_list:
-            op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
+            op.build_matrix(**kwargs)
 
     def _get_matrix_list(self, underlying_matrices):
         matrixList = []
@@ -502,9 +504,7 @@ class OperatorMatrixCollection(object):
     def __init__(self, sum_vector_space, op_matrix_list):
         self.sum_vector_space = sum_vector_space
         self.op_matrix_list = op_matrix_list
-        self.info_tracker = DisplayInfo.InfoTracker(str(self))
-        self.set_tracker_parameters()
-        self.q = self.info_tracker.get_queue()
+        self.info_tracker = None
 
     @abstractmethod
     def get_type(self):
@@ -574,6 +574,8 @@ class OperatorMatrixCollection(object):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
+        self.info_tracker = DisplayInfo.InfoTracker(str(self))
+        self.set_tracker_parameters()
         op_info_dict = collections.OrderedDict()
         for op in self.op_matrix_list:
             op_info_dict.update({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
@@ -583,7 +585,7 @@ class OperatorMatrixCollection(object):
     def update_tracker(self, op):
         op.update_properties()
         message = {tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()}
-        self.q.put(message)
+        self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
         self.info_tracker.stop()

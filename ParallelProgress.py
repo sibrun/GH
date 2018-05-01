@@ -77,7 +77,6 @@ def parallel(func, iter_arg, n_jobs=1, **kwargs):
 
     else:
         pool = mp.Pool(n_jobs)
-        print(kwargs)
         [pool.apply_async(func, args=(x, ), kwds=kwargs) for x in iter_arg]
         pool.close()
         pool.join()

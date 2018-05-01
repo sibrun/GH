@@ -136,7 +136,7 @@ class GraphVectorSpace(VectorSpace):
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
-    def build_basis(self, progress_bar=False, ignore_existing_files=False, n_jobs=1, **kwargs):
+    def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         if not self.is_valid():
             return
         if (not ignore_existing_files) and self.exists_basis_file():
@@ -244,16 +244,8 @@ class SumVectorSpace(VectorSpace):
 
     def __init__(self, vs_list):
         self.vs_list = vs_list
-        self.is_graded = False
-        try:
-            if isinstance(self.vs_list[0], DegSlice):
-                self.is_graded = True
-        except IndexError:
-            self.is_graded = True
         super(SumVectorSpace, self).__init__()
-        self.info_tracker = DisplayInfo.InfoTracker(str(self))
-        self.set_tracker_parameters()
-        self.q = self.info_tracker.get_queue()
+        self.info_tracker = None
 
     @abstractmethod
     def get_type(self):
@@ -306,7 +298,7 @@ class SumVectorSpace(VectorSpace):
         return eq_l == len(self.vs_list)
 
     def sort(self, key='work_estimate'):
-        if self.is_graded or isinstance(self,DegSlice):
+        if isinstance(self,DegSlice):
             return
         if key == 'work_estimate':
             self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
@@ -322,18 +314,13 @@ class SumVectorSpace(VectorSpace):
             self.start_tracker()
         if n_jobs > 1:
             progress_bar = False
-        if not self.is_graded:
-            PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+        PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                         ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
-        else:
-            for vs in self.vs_list:
-                self._build_single_basis(vs, progress_bar=progress_bar, ignore_existing_files=ignore_existing_files,
-                                         n_jobs=n_jobs, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
 
-    def _build_single_basis(self, vs, info_tracker=False, **kwargs):
-        vs.build_basis(info_tracker=info_tracker, **kwargs)
+    def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
+        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
         if info_tracker:
             self.update_tracker(vs)
 
@@ -347,6 +334,8 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
+        self.info_tracker = DisplayInfo.InfoTracker(str(self))
+        self.set_tracker_parameters()
         vs_info_dict = collections.OrderedDict()
         for vs in self.vs_list:
             vs_info_dict.update({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
@@ -356,7 +345,7 @@ class SumVectorSpace(VectorSpace):
     def update_tracker(self, vs):
         vs.update_properties()
         message = {tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()}
-        self.q.put(message)
+        self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
         self.info_tracker.stop()
@@ -366,6 +355,7 @@ class DegSlice(SumVectorSpace):
     def __init__(self, vs_list, deg):
         self.deg = deg
         super(DegSlice, self).__init__(vs_list)
+        self.start_idx_dict = None
 
     def __str__(self):
         return '<degree slice with parameters: %s>' % str(self.get_ordered_param_dict())
@@ -385,13 +375,21 @@ class DegSlice(SumVectorSpace):
         if not self.is_complete():
             raise ValueError('deg slice %s should be completely built' % str(self))
 
-    def get_start_idx(self, vector_space):
+    def build_start_idx_dict(self):
+        self.start_idx_dict = dict()
         start_idx = 0
         for vs in self.vs_list:
-            if vs == vector_space:
-                return start_idx
-            start_idx += vs.get_dimension()
-        raise ValueError('vector_space should refer to a vector space of the degree slice')
+            self.start_idx_dict.update({vs: start_idx})
+            dim = vs.get_dimension()
+            start_idx += dim
+
+    def get_start_idx(self, vector_space):
+        if self.start_idx_dict is None:
+            self.build_start_idx_dict()
+        start_idx = self.start_idx_dict.get(vector_space)
+        if start_idx is None:
+            raise ValueError('vector_space should refer to a vector space of the degree slice')
+        return start_idx
 
     def is_complete(self):
         if len(self.vs_list) != self.deg + 1:

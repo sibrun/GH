@@ -1,4 +1,5 @@
 import argparse
+import multiprocessing as mp
 import Log
 import Profiling
 import OrdinaryGraphComplex as OGC
@@ -103,9 +104,11 @@ class MissingArgumentError(RuntimeError):
 
 if __name__ == "__main__":
     if args.log is not None:
-        print(args.commute)
+        complex = args.graph_type + args.dif1
+        if args.dif2 is not None:
+            complex += args.dif2
         Log.set_log_level(args.log)
-        log_file = args.graph_complex_type + '.log'
+        log_file = complex + '.log'
         Log.set_log_file(log_file)
 
     logger.warn("\n###########################\n" + "----- Graph Homology -----")
