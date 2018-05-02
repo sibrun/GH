@@ -5,7 +5,7 @@ import itertools
 import collections
 from tqdm import tqdm
 import StoreLoad as SL
-import ParallelProgress as PP
+import Parallel
 import Parameters
 import Log
 import DisplayInfo
@@ -310,11 +310,12 @@ class SumVectorSpace(VectorSpace):
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
         print(' ')
         print('Build basis of %s' % str(self))
-        if info_tracker:
-            self.start_tracker()
         if n_jobs > 1:
             progress_bar = False
-        PP.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
+            info_tracker = False
+        if info_tracker:
+            self.start_tracker()
+        Parallel.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                         ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()

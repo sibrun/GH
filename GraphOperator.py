@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import itertools
+from tqdm import tqdm
 import collections
 import scipy.sparse as sparse
 from scipy.sparse.linalg import aslinearoperator as aslinearoperator
@@ -7,7 +8,7 @@ from scipy.linalg.interpolative import estimate_rank as estimate_rank
 from sage.all import *
 import Log
 import StoreLoad as SL
-import ParallelProgress as PP
+import Parallel
 import Shared as SH
 import Parameters
 import PlotCohomology
@@ -377,7 +378,7 @@ class GraphOperator(Operator, OperatorMatrix):
     def __str__(self):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True):
         if not self.is_valid():
             return
         if (not ignore_existing_files) and self.exists_matrix_file():
@@ -409,11 +410,16 @@ class GraphOperator(Operator, OperatorMatrix):
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-
         desc = 'Build matrix: Domain: ' + str(self.domain.get_ordered_param_dict())
-        listOfLists = PP.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
-                                                  n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
+        #listOfLists = Parallel.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
+                                                  #n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
+
+        if not progress_bar:
+            print(desc)
+        listOfLists = []
+        for domainBasisElement in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
+            listOfLists.append(self._generate_matrix_list(domainBasisElement, lookup))
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix_list(matrixList, shape)
 
@@ -461,7 +467,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def get_work_estimate(self):
         return self.domain.get_dimension() * self.target.get_dimension()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, n_jobs=1, progress_bar=False):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, progress_bar=False):
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         print(' ')
@@ -469,7 +475,7 @@ class BiOperatorMatrix(OperatorMatrix):
         shape = (self.domain.get_dimension(), self.target.get_dimension())
         underlying_matrices = self._get_underlying_matrices()
         self._build_underlying_matrices(underlying_matrices, ignore_existing_files=ignore_existing_files,
-                                        n_jobs=n_jobs, progress_bar=progress_bar)
+                                        progress_bar=progress_bar)
         matrix_list = self._get_matrix_list(underlying_matrices)
         self._store_matrix_list(matrix_list, shape)
 
@@ -532,14 +538,15 @@ class OperatorMatrixCollection(object):
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print(' ')
         print('Build matrices of %s' % str(self))
+        if n_jobs > 1:
+            info_tracker = False
+            progress_bar = False
         if info_tracker:
             self.start_tracker()
         self.sort()
-        for op in self.op_matrix_list:
-            op.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar)
-            self.update_tracker(op)
-        '''PP.parallel(self._build_single_matrix, self.op_matrix_list, n_jobs=n_jobs,
-                    ignore_existing_files=ignore_existing_files, progress_bar=progress_bar, info_tracker=info_tracker)'''
+        Parallel.parallel(self._build_single_matrix, self.op_matrix_list, n_jobs=n_jobs,
+                          ignore_existing_files=ignore_existing_files, info_tracker=info_tracker,
+                          progress_bar=progress_bar)
         if info_tracker:
             self.stop_tracker()
 
@@ -552,10 +559,12 @@ class OperatorMatrixCollection(object):
                      n_jobs=1, info_tracker=False):
         print(' ')
         print('Compute ranks of %s' % str(self))
+        if n_jobs > 1:
+            info_tracker = False
         if info_tracker:
             self.start_tracker()
         self.sort(key=sort_key)
-        PP.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
+        Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
                     estimate=estimate, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
