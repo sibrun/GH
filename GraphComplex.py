@@ -127,8 +127,8 @@ class GraphComplex(object):
 
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" % (triv_l, succ_l, inc_l, fail_l))
-        if inc_l:
-            logger.warn("Commutativity test for %s: inconclusive: %d quadruples" % (str(self), inc_l))
+        logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
+                    (triv_l, succ_l, inc_l, fail_l))
         for (op1a, op1b, op2a, op2b) in fail:
             logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
                          (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))

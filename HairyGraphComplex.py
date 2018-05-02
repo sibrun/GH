@@ -213,6 +213,9 @@ class ContractEdgesD(GO.Differential):
         s = "cohomology_dim_contract_D_%s_%s.png" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
+    def get_cohomology_plot_parameter_order(self):
+        return (0, 1, 2)
+
 
 class EdgeToOneHairGO(GO.GraphOperator):
     def __init__(self, domain, target):
@@ -281,8 +284,8 @@ class EdgeToOneHairGO(GO.GraphOperator):
                 sgn1 = SH.edge_perm_sign(G1)
                 sgn2 = SH.edge_perm_sign(G2)
             else:
-                sgn1 = 1
-                sgn2 = -1
+                sgn1 = -1 if (u % 2) else 1
+                sgn2 = -1 * sgn1
             image.append((G1, sgn1))
             image.append((G2, sgn2))
         return image
@@ -299,6 +302,9 @@ class EdgeToOneHairD(GO.Differential):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
         s = "cohomology_dim_edge_to_one_hair_D_%s_%s.png" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_cohomology_plot_parameter_order(self):
+        return (1, 2, 0)
 
 
 # ------- Graph Complex --------

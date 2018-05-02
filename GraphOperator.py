@@ -610,6 +610,10 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_plot_path(self):
         pass
 
+    @abstractmethod
+    def get_cohomology_plot_parameter_order(self):
+        pass
+
     def get_ordered_cohomology_param_range_dict(self):
         return self.sum_vector_space.get_ordered_param_range_dict()
 
@@ -699,8 +703,8 @@ class Differential(OperatorMatrixCollection):
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
-        if inc_l:
-            logger.warn("Square zero test for %s: inconclusive: %d paris" % (str(self), inc_l))
+        logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
+                    (triv_l, succ_l, inc_l, fail_l))
         for (op1, op2) in fail:
             logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
@@ -708,8 +712,9 @@ class Differential(OperatorMatrixCollection):
     def plot_cohomology_dim(self):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
+        param_order = self.get_cohomology_plot_parameter_order()
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
-        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path)
+        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, param_order)
 
 
 class BiDifferential(Differential):

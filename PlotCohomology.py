@@ -2,27 +2,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import logging
-import os
-import time
-import tempfile
-import webbrowser
-from urllib import pathname2url
 import StoreLoad as SL
 import Parameters
 
 
-def plot_array(value_dict, ordered_param_range_dict, path):
+def plot_array(value_dict, ordered_param_range_dict, path, parameter_order):
     if len(ordered_param_range_dict) == 2:
-        plot_2d_array(value_dict, ordered_param_range_dict, path)
+        plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
     elif len(ordered_param_range_dict) == 3:
-        plot_3d_array(value_dict, ordered_param_range_dict, path)
+        plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
     else:
         raise ValueError('Need 2 or 3 parameters for plotting')
 
 
-def plot_2d_array(value_dict, ordered_param_range_dict, path):
-    (x_label, x_range) = ordered_param_range_dict.items()[0]
-    (y_label, y_range) = ordered_param_range_dict.items()[1]
+def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
+    if parameter_order in [(0, 1), (1, 0)]:
+        (x_idx, y_idx) = parameter_order
+    else:
+        raise ValueError('invalid parameter order')
+
+    (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
+    (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -42,10 +42,12 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path):
     plt.xlim(x_min, x_max)
     plt.ylim(y_min, y_max)
 
-    for (x, y) in itertools.product(x_range, y_range):
-        v = value_dict.get((x, y))
+    for coordinates in itertools.product(x_range, y_range):
+        v = value_dict.get(coordinates)
         if v is not None:
             v = Parameters.zero_symbol if v == 0 else v
+            new_coordinates = tuple(coordinates[i] for i in parameter_order)
+            (x, y) = new_coordinates
             ax.text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
@@ -66,10 +68,14 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path):
     plt.savefig(path)
 
 
-def plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=Parameters.x_plots):
-    (x_label, x_range) = ordered_param_range_dict.items()[0]
-    (y_label, y_range) = ordered_param_range_dict.items()[1]
-    (z_label, z_range) = ordered_param_range_dict.items()[2]
+def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1, 2), x_plots=Parameters.x_plots):
+    if parameter_order in {(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)}:
+        (x_idx, y_idx, z_idx) = parameter_order
+    else:
+        raise ValueError('invalid parameter order')
+    (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
+    (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
+    (z_label, z_range) = ordered_param_range_dict.items()[z_idx]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0 or len(list(z_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -99,10 +105,12 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=Parameters
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
 
-    for (x, y, z) in itertools.product(x_range, y_range, z_range):
-        v = value_dict.get((x, y, z))
+    for coordinates in itertools.product(x_range, y_range, z_range):
+        v = value_dict.get(coordinates)
         if v is not None:
             v = Parameters.zero_symbol if v == 0 else v
+            new_coordinates = tuple(coordinates[i] for i in parameter_order)
+            (x, y, z) = new_coordinates
             get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
