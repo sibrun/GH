@@ -315,6 +315,7 @@ class SumVectorSpace(VectorSpace):
             info_tracker = False
         if info_tracker:
             self.start_tracker()
+        self.sort()
         Parallel.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
                         ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:

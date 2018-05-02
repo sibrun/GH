@@ -92,7 +92,8 @@ class HairyGraphVS(GVS.GraphVectorSpace):
         # compute the extra contribution from hairs if necessary
         if self.even_hairs == self.even_edges:
             hairs = p[self.n_vertices:]
-            sgn *= SH.Perm.shifted(hairs).signature()
+            if len(hairs) != 0:
+                sgn *= SH.Perm.shifted(hairs).signature()
         return sgn
 
     def _bip_to_ordinary(self, G):
@@ -195,7 +196,7 @@ class ContractEdgesGO(GO.GraphOperator):
                 continue
             G1.relabel(list(range(0, G1.order())), inplace=True)
             if not self.domain.even_edges:
-                sgn *= SH.edge_perm_sign(G1)
+                sgn *= SH.shifted_edge_perm_sign(G1)
             image.append((G1, sgn))
         return image
 

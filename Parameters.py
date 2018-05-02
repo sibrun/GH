@@ -18,17 +18,17 @@ primes = [32189, 31277, 32183, 31121, 32143, 31481, 32233]
 min_size_for_rank_estimate = 40
 
 #---- Display Parameters ----
-x_width = 0.7
-y_width = 0.7
+x_width = 0.4
+y_width = 0.4
 zero_symbol = '*'
 x_plots = 2
-
-#---- Progress Bar Parameters ----
-pbar_steps = 200
-pbar_timeout = 0.1
 
 #---- Max Values for Sorting ----
 max_sort_value = sys.maxint  # return value if dimension or shape is unknown
 
 #---- Data Tracker Parameters ----
 data_tracker_timeout = 0.2
+
+#---- Progress Bar Parameters ----
+pbar_steps = 200
+pbar_timeout = 0.1

@@ -83,7 +83,7 @@ class OperatorMatrix(object):
         pass
 
     @abstractmethod
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, n_jobs=1, progress_bar=True):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
         pass
 
     @staticmethod
@@ -229,7 +229,7 @@ class OperatorMatrix(object):
             rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, primes=primes, estimate=estimate, eps=eps)
         except SL.FileNotFoundError as error:
             if skip_if_no_matrix:
-                logger.warn("Skip computing rank of %s, since matrix is not built" % str(self))
+                logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
                 return
             else:
                 raise error
@@ -378,7 +378,7 @@ class GraphOperator(Operator, OperatorMatrix):
     def __str__(self):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
         if not self.is_valid():
             return
         if (not ignore_existing_files) and self.exists_matrix_file():
@@ -390,7 +390,7 @@ class GraphOperator(Operator, OperatorMatrix):
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
-                logger.warn("Skip building operator matrix of %s "
+                logger.info("Skip building operator matrix of %s "
                              "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
@@ -400,7 +400,7 @@ class GraphOperator(Operator, OperatorMatrix):
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the target %s" % (str(self), str(self.target)))
             else:
-                logger.warn("Skip building operator matrix of %s "
+                logger.info("Skip building operator matrix of %s "
                              "since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
@@ -410,7 +410,7 @@ class GraphOperator(Operator, OperatorMatrix):
             return
 
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
-        desc = 'Build matrix: Domain: ' + str(self.domain.get_ordered_param_dict())
+        desc = 'Build matrix of %s operator: Domain: %s' % (str(self.get_type()), str(self.domain.get_ordered_param_dict()))
 
         #listOfLists = Parallel.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
                                                   #n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
@@ -467,7 +467,7 @@ class BiOperatorMatrix(OperatorMatrix):
     def get_work_estimate(self):
         return self.domain.get_dimension() * self.target.get_dimension()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, progress_bar=False):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, progress_bar=False, **kwargs):
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         print(' ')
@@ -517,7 +517,7 @@ class OperatorMatrixCollection(object):
         pass
 
     def __str__(self):
-        return '<%s operator matrix collection>' % self.get_type()
+        return '<%s operator matrix collection on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     def get_op_list(self):
         return self.op_matrix_list
@@ -551,7 +551,7 @@ class OperatorMatrixCollection(object):
             self.stop_tracker()
 
     def _build_single_matrix(self, op, info_tracker=False, **kwargs):
-        op.build_matrix(**kwargs)
+        op.build_matrix(info_tracker=info_tracker, **kwargs)
         if info_tracker:
             self.update_tracker(op)
 
@@ -614,7 +614,7 @@ class Differential(OperatorMatrixCollection):
         return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):
-        return '<%s differential>' % self.get_type()
+        return '<%s differential on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     @staticmethod
     # Check whether opD.domain == opDD.target
@@ -627,7 +627,7 @@ class Differential(OperatorMatrixCollection):
         try:
             dimV = opD.get_domain().get_dimension()
         except SL.FileNotFoundError:
-            logger.warn("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+            logger.info("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
         if dimV == 0:
             return 0
@@ -635,7 +635,7 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankD = opD.get_matrix_rank()
             except SL.FileNotFoundError:
-                logger.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+                logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
         else:
             rankD = 0
@@ -643,7 +643,7 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankDD = opDD.get_matrix_rank()
             except SL.FileNotFoundError:
-                logger.warn("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+                logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
         else:
             rankDD = 0
@@ -689,7 +689,7 @@ class Differential(OperatorMatrixCollection):
                     M1 = op1.get_matrix()
                     M2 = op2.get_matrix()
                 except SL.FileNotFoundError:
-                    logger.warn("Cannot test square zero: "
+                    logger.info("Cannot test square zero: "
                                  "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
                     inc.append(p)
                     continue

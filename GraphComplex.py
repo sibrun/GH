@@ -62,7 +62,7 @@ class GraphComplex(object):
                             if op2b.get_domain() == op1a.get_target() and op1b.get_target() == op2b.get_target():
                                 p = (op1a, op1b, op2a, op2b)
 
-                                if not((op1a.is_valid() and op2b.is_valid()) or (op2a.is_valid() and op2b.is_valid())):
+                                if not((op1a.is_valid() and op2b.is_valid()) or (op2a.is_valid() and op1b.is_valid())):
                                     triv.append(p)
                                     continue
 
@@ -120,14 +120,16 @@ class GraphComplex(object):
                                     M2a = op2a.get_matrix()
                                     if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
                                         succ.append(p)
+                                        continue
                                 except SL.FileNotFoundError:
                                     inc.append(p)
                                     continue
 
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
-        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
+        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" % (triv_l, succ_l, inc_l, fail_l))
         if inc_l:
-            logger.warn("Commutation test for %s: inconclusive: %d paris" % (str(self), inc_l))
-        for (op1, op2) in fail:
-            logger.error("Commutation test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+            logger.warn("Commutativity test for %s: inconclusive: %d quadruples" % (str(self), inc_l))
+        for (op1a, op1b, op2a, op2b) in fail:
+            logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
+                         (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
         return (triv_l, succ_l, inc_l, fail_l)

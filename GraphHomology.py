@@ -67,34 +67,40 @@ args = parser.parse_args()
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_basis(graph_complex):
+    logger.warn("\n----- Build Basis -----\n")
     graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
                               info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_operator(graph_complex):
+    logger.warn("\n----- Build Matrix -----\n")
     graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
                                info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def square_zero_test(graph_complex):
+    logger.warn("\n----- Square Zero Test -----\n")
     graph_complex.square_zero_test()
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def test_commutativity(graph_complex):
+    logger.warn("\n----- Commutativity Test -----\n")
     graph_complex.test_pairwise_commutativity(anti_commute=args.anti_commute)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
+    logger.warn("\n----- Compute Ranks -----\n")
     graph_complex.compute_rank(exact=args.exact, n_primes=args.n_primes, estimate=args.est,
                                ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def cohomology(graph_complex):
+    logger.warn("\n----- Compute Cohomology -----\n")
     graph_complex.plot_cohomology_dim()
 
 

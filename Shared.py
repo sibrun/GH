@@ -48,6 +48,11 @@ def edge_perm_sign(graph):
     return Perm(p).signature()
 
 
+def shifted_edge_perm_sign(graph):
+    p = [j for (a, b, j) in graph.edges()]
+    return Perm.shifted(p).signature()
+
+
 def permute_to_left((u, v), vertex_range):
     p = list(vertex_range)
     min_index = min(vertex_range)
@@ -64,4 +69,8 @@ def permute_to_left((u, v), vertex_range):
 
 
 def matrix_norm(M):
-    return sum(map(abs, M.list()))
+    return sqrt(sum(map(power_2, M.list())))
+
+
+def power_2(x):
+    return x*x
