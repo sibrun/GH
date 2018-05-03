@@ -383,7 +383,6 @@ class GraphOperator(Operator, OperatorMatrix):
         for (G1, sgn1) in graph_sgn_list:
             G1_image = self.operate_on(G1)
             for (G2, sgn2) in G1_image:
-                print(G2)
                 (G2_g6, sgn_p) = self.target.graph_to_canon_g6(G2)
                 v = imageDict.get(G2_g6)
                 if v is None:
