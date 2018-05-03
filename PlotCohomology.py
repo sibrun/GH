@@ -4,6 +4,7 @@ import itertools
 import logging
 import StoreLoad as SL
 import Parameters
+import Shared as SH
 
 
 def plot_array(value_dict, ordered_param_range_dict, path, parameter_order):
@@ -20,6 +21,7 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         (x_idx, y_idx) = parameter_order
     else:
         raise ValueError('invalid parameter order')
+    inverse_order = tuple(SH.Perm(list(parameter_order)).inverse())
 
     (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
     (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
@@ -43,11 +45,11 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     plt.ylim(y_min, y_max)
 
     for coordinates in itertools.product(x_range, y_range):
-        v = value_dict.get(coordinates)
+        old_coordinates = tuple(coordinates[i] for i in inverse_order)
+        v = value_dict.get(old_coordinates)
         if v is not None:
             v = Parameters.zero_symbol if v == 0 else v
-            new_coordinates = tuple(coordinates[i] for i in parameter_order)
-            (x, y) = new_coordinates
+            (x, y) = coordinates
             ax.text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
@@ -73,6 +75,8 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         (x_idx, y_idx, z_idx) = parameter_order
     else:
         raise ValueError('invalid parameter order')
+    inverse_order = tuple(SH.Perm(list(parameter_order)).inverse())
+
     (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
     (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
     (z_label, z_range) = ordered_param_range_dict.items()[z_idx]
@@ -106,11 +110,11 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         ax.set_ylim(y_min, y_max)
 
     for coordinates in itertools.product(x_range, y_range, z_range):
-        v = value_dict.get(coordinates)
+        old_coordinates = tuple(coordinates[i] for i in inverse_order)
+        v = value_dict.get(old_coordinates)
         if v is not None:
             v = Parameters.zero_symbol if v == 0 else v
-            new_coordinates = tuple(coordinates[i] for i in parameter_order)
-            (x, y, z) = new_coordinates
+            (x, y, z) = coordinates
             get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
