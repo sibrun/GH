@@ -740,3 +740,4 @@ class BiDifferential(Differential):
         self.bi_op_matrix_cls = bi_op_matrix_cls
         op_matrix_list = self.bi_op_matrix_cls.generate_op_matrix_list(graded_sum_vs, self.operator_cls1, self.operator_cls2)
         super(BiDifferential, self).__init__(self.graded_sum_vs, op_matrix_list)
+
