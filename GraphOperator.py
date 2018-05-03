@@ -360,6 +360,18 @@ class Operator(object):
         """For G a graph returns a list of pairs (GG, x), such that (operator)(G) = sum x GG."""
         pass
 
+    def operate_on_list(self, graph_sgn_list):
+        imageDict = dict()
+        for (G1, sgn1) in graph_sgn_list:
+            G1_image = self.operate_on(G1)
+            for (G2, sgn2) in G1_image:
+                sgn = imageDict.get(G2)
+                if sgn is None:
+                    sgn = 0
+                new_sgn = sgn + sgn1 * sgn2
+                imageDict.update({G2: new_sgn})
+        return imageDict.items()
+
 
 class GraphOperator(Operator, OperatorMatrix):
     __metaclass__ = ABCMeta
