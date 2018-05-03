@@ -9,7 +9,7 @@ import OrdinaryGraphComplex as OGC
 import StoreLoad as SL
 import Parameters
 
-
+reload(GC)
 graph_type = "hairy"
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
@@ -276,6 +276,8 @@ class EdgeToOneHairGO(GO.GraphOperator):
             new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
             G1.add_vertex(new_hair_idx)
             G2 = copy(G1)
+            if u >= v:
+                raise ValueError('wrong order uv')
             G1.add_edge((u, new_hair_idx))
             G2.add_edge((v, new_hair_idx))
             if not self.domain.even_edges:

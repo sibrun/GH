@@ -1,5 +1,4 @@
 import HairyGraphBiComplex as HGBC
-import multiprocessing as mp
 
 if __name__ == "__main__":
 
@@ -7,7 +6,7 @@ if __name__ == "__main__":
 
     n_jobs = 8
 
-    even_e = True
+    even_e = False
     even_h = False
     deg_range = range(5, 12)
     h_min_range = range(-9, -1)

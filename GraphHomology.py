@@ -158,11 +158,11 @@ if __name__ == "__main__":
         build_basis(graph_complex)
     if args.build_op:
         build_operator(graph_complex)
-    if args.square_zero:
-        square_zero_test(graph_complex)
-    if args.commutativity:
-        test_commutativity(graph_complex)
     if args.rank:
         rank(graph_complex)
     if args.cohomology:
         cohomology(graph_complex)
+    if args.square_zero:
+        square_zero_test(graph_complex)
+    if args.commutativity:
+        test_commutativity(graph_complex)

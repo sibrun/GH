@@ -360,18 +360,6 @@ class Operator(object):
         """For G a graph returns a list of pairs (GG, x), such that (operator)(G) = sum x GG."""
         pass
 
-    def operate_on_list(self, graph_sgn_list):
-        imageDict = dict()
-        for (G1, sgn1) in graph_sgn_list:
-            G1_image = self.operate_on(G1)
-            for (G2, sgn2) in G1_image:
-                sgn = imageDict.get(G2)
-                if sgn is None:
-                    sgn = 0
-                new_sgn = sgn + sgn1 * sgn2
-                imageDict.update({G2: new_sgn})
-        return imageDict.items()
-
 
 class GraphOperator(Operator, OperatorMatrix):
     __metaclass__ = ABCMeta
@@ -389,6 +377,20 @@ class GraphOperator(Operator, OperatorMatrix):
 
     def __str__(self):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
+
+    def operate_on_list(self, graph_sgn_list):
+        imageDict = dict()
+        for (G1, sgn1) in graph_sgn_list:
+            G1_image = self.operate_on(G1)
+            for (G2, sgn2) in G1_image:
+                print(G2)
+                (G2_g6, sgn_p) = self.target.graph_to_canon_g6(G2)
+                v = imageDict.get(G2_g6)
+                if v is None:
+                    v = 0
+                new_v = v + sgn1 * sgn2 * sgn_p
+                imageDict.update({G2_g6: new_v})
+        return imageDict.items()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
         if not self.is_valid():
@@ -665,7 +667,7 @@ class Differential(OperatorMatrixCollection):
             rankDD = 0
         cohomologyDim = dimV - rankD - rankDD
         if cohomologyDim < 0:
-            logger.error("Negative cohomology dimension for %s" % str(opD.domain))
+            print("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
