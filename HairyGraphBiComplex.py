@@ -40,11 +40,14 @@ class VertexLoopDegSlice(GVS.DegSlice):
         self.even_edges = even_edges
         self.even_hairs = even_hairs
         super(VertexLoopDegSlice, self).__init__(
-            [HGC.HairyGraphVS(n, deg - n, self.h_min + n, self.even_edges, self.even_hairs)
-             for n in range(0, deg + 1)], deg)
+            [HGC.HairyGraphVS(v, deg - v, self.h_min + v, self.even_edges, self.even_hairs)
+             for v in range(0, deg + 1)], deg)
 
     def get_ordered_param_dict(self):
         return SH.OrderedDict([('deg', self.deg), ('min_hairs', self.h_min)])
+
+    def __eq__(self, other):
+        return self.deg == other.deg and self.h_min == other.h_min
 
 
 class VertexLoopBigradedSumVS(GVS.SumVectorSpace):
@@ -56,7 +59,7 @@ class VertexLoopBigradedSumVS(GVS.SumVectorSpace):
         self.sub_type = HGC.sub_types.get((even_edges, even_hairs))
         max_deg = max(self.deg_range)
         super(VertexLoopBigradedSumVS, self).__init__(
-            [VertexLoopDegSlice(n, h_min + (max_deg - n), even_edges, even_hairs) for (n, h_min) in
+            [VertexLoopDegSlice(deg, h_min + (max_deg - deg), even_edges, even_hairs) for (deg, h_min) in
              itertools.product(self.deg_range, self.h_min_range)])
 
     def get_type(self):
@@ -85,6 +88,9 @@ class CeEt1hD(GO.BiDifferential):
         h_range = range(h_min_min, h_min_max + 1)
         return SH.OrderedDict([('deg', deg_range), ('min_hairs', h_range)])
 
+    def get_cohomology_plot_parameter_order(self):
+        return (0, 1)
+
 
 class HairyBiGC(GC.GraphComplex):
     def __init__(self, deg_range, h_min_range, even_edges, even_hairs):
@@ -94,4 +100,7 @@ class HairyBiGC(GC.GraphComplex):
         self.even_hairs = even_hairs
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_min_range, even_edges, even_hairs)
         super(HairyBiGC, self).__init__(graded_sum_vs, [CeEt1hD(graded_sum_vs)])
+
+    def __str__(self):
+        return '<hairy graphs bi-complex with %s>' % str(self.sub_type)
 

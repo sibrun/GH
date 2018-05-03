@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 import itertools
 import StoreLoad as SL
 import Shared as SH
@@ -8,9 +9,14 @@ logger = Log.logger.getChild('graph_complex')
 
 
 class GraphComplex(object):
+    __metaclass__ = ABCMeta
     def __init__(self, sum_vector_space, operator_collection_list):
         self.sum_vector_space = sum_vector_space
         self.operator_collection_list = operator_collection_list
+
+    @abstractmethod
+    def __str__(self):
+        pass
 
     def get_vector_space(self):
         return self.sum_vector_space
@@ -46,7 +52,9 @@ class GraphComplex(object):
             self.test_commutativity(op_collection1, op_collection2, anti_commute=anti_commute)
 
     def test_commutativity(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
+        print(' ')
         print('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
+        logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix

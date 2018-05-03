@@ -255,6 +255,9 @@ class SumVectorSpace(VectorSpace):
     def get_ordered_param_range_dict(self):
         pass
 
+    def __eq__(self, other):
+        pass
+
     def get_ordered_param_dict(self):
         pass
 
@@ -288,17 +291,17 @@ class SumVectorSpace(VectorSpace):
                 return True
         return False
 
-    def __eq__(self, other):
+    '''def __eq__(self, other):
         if len(self.vs_list) != len(other.vs_list):
             return False
         eq_l = 0
         for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
             if vs1 == vs2:
                 eq_l += 1
-        return eq_l == len(self.vs_list)
+        return eq_l == len(self.vs_list)'''
 
     def sort(self, key='work_estimate'):
-        if isinstance(self,DegSlice):
+        if isinstance(self, DegSlice):
             return
         if key == 'work_estimate':
             self.vs_list.sort(key=operator.methodcaller('get_work_estimate'))
@@ -366,6 +369,10 @@ class DegSlice(SumVectorSpace):
         pass
 
     def get_ordered_param_range_dict(self):
+        pass
+
+    @abstractmethod
+    def __eq__(self, other):
         pass
 
     @abstractmethod

@@ -284,8 +284,8 @@ class EdgeToOneHairGO(GO.GraphOperator):
                 sgn1 = SH.edge_perm_sign(G1)
                 sgn2 = SH.edge_perm_sign(G2)
             else:
-                sgn1 = -1 if (u % 2) else 1
-                sgn2 = -1 * sgn1
+                sgn1 = 1
+                sgn2 = -1
             image.append((G1, sgn1))
             image.append((G2, sgn2))
         return image
@@ -327,3 +327,5 @@ class HairyGC(GC.GraphComplex):
             differential_list.append(edge_to_one_hair_dif)
         super(HairyGC, self).__init__(sum_vector_space, differential_list)
 
+    def __str__(self):
+        return '<hairy graph complex with %s>' % str(self.sub_type)

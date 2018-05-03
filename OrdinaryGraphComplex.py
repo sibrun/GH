@@ -209,4 +209,5 @@ class OrdinaryGC(GC.GraphComplex):
         differential = ContractEdgesD(vector_space)
         super(OrdinaryGC, self).__init__(vector_space, [differential])
 
-
+    def __str__(self):
+        return '<ordinary graph complex with %s>' % str(self.sub_type)

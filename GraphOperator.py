@@ -653,7 +653,7 @@ class Differential(OperatorMatrixCollection):
             rankDD = 0
         cohomologyDim = dimV - rankD - rankDD
         if cohomologyDim < 0:
-            print("Negative cohomology dimension for %s" % str(opD.domain))
+            logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
@@ -675,6 +675,7 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         print(' ')
         print("Square zero test for %s:" % str(self))
+        logger.warn("Square zero test for %s:" % str(self))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
