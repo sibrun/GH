@@ -379,16 +379,23 @@ class GraphOperator(Operator, OperatorMatrix):
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
 
     def operate_on_list(self, graph_sgn_list):
+        g6_coordinates_dict = self.target.get_g6_coordinates_dict()
         imageDict = dict()
         for (G1, sgn1) in graph_sgn_list:
             G1_image = self.operate_on(G1)
             for (G2, sgn2) in G1_image:
                 (G2_g6, sgn_p) = self.target.graph_to_canon_g6(G2)
-                v = imageDict.get(G2_g6)
-                if v is None:
-                    v = 0
-                new_v = v + sgn1 * sgn2 * sgn_p
-                imageDict.update({G2_g6: new_v})
+                coord = g6_coordinates_dict.get(G2_g6)
+                if coord is None:
+                    continue
+                v = imageDict.get(coord)
+                new_v = sgn1 * sgn2 * sgn_p
+                if v is not None:
+                    new_v += v
+                if new_v:
+                    imageDict.update({coord: new_v})
+                elif v is not None:
+                    imageDict.pop(coord)
         return imageDict.items()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):

@@ -217,6 +217,9 @@ class GraphVectorSpace(VectorSpace):
         else:
             return [Graph(g6) for g6 in basis_g6]
 
+    def get_g6_coordinates_dict(self):
+        return {G6: i for (i, G6) in enumerate(self.get_basis(g6=True))}
+
     def delete_basis_file(self):
         if os.path.isfile(self.get_basis_file_path()):
             os.remove(self.get_basis_file_path())
