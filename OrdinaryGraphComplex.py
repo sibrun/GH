@@ -196,6 +196,9 @@ class ContractEdgesD(GO.Differential):
         s = "cohomology_dim_%s_%s.png" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
+    def get_cohomology_plot_parameter_order(self):
+        return (0 ,1)
+
 
 # ------- Graph Complexes --------
 class OrdinaryGC(GC.GraphComplex):
