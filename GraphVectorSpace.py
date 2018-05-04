@@ -1,9 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from sage.all import *
 import operator
-import itertools
 import collections
-from tqdm import tqdm
+#from tqdm import tqdm
 import StoreLoad as SL
 import Parallel
 import Parameters
@@ -144,10 +143,11 @@ class GraphVectorSpace(VectorSpace):
         generatingList = self.get_generating_graphs()
 
         desc = 'Build basis: ' + str(self.get_ordered_param_dict())
-        if not progress_bar:
-            print(desc)
+        #if not progress_bar:
+        print(desc)
         basisSet = set()
-        for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
+        #for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
+        for G in generatingList:
             if self.get_partition() is None:
                 automList = G.automorphism_group().gens()
                 canonG = G.canonical_label()
