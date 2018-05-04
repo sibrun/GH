@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import itertools
-#from tqdm import tqdm
+from tqdm import tqdm
 import collections
 import scipy.sparse as sparse
 from scipy.sparse.linalg import aslinearoperator as aslinearoperator
@@ -435,11 +435,11 @@ class GraphOperator(Operator, OperatorMatrix):
         #listOfLists = Parallel.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
                                                   #n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
-        #if not progress_bar:
-        print(desc)
+        if not progress_bar:
+            print(desc)
         listOfLists = []
-        #for domainBasisElement in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
-        for domainBasisElement in list(enumerate(domainBasis)):
+        for domainBasisElement in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
+        #for domainBasisElement in list(enumerate(domainBasis)):
             listOfLists.append(self._generate_matrix_list(domainBasisElement, lookup))
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         self._store_matrix_list(matrixList, shape)
