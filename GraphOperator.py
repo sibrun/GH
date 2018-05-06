@@ -700,7 +700,7 @@ class Differential(OperatorMatrixCollection):
         fail = []  # failed pairs
         triv_l = 0  # number of pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc_l = 0  # number of pairs for which operator matrices are missing
-        for (op1, op2) in tqdm(list(itertools.permutations(self.op_matrix_list, 2))):
+        for (op1, op2) in itertools.permutations(self.op_matrix_list, 2):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
 

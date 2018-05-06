@@ -62,7 +62,7 @@ class GraphComplex(object):
 
         op_list1 = op_collection1.get_op_list()
         op_list2 = op_collection2.get_op_list()
-        for (op1a, op2a) in tqdm(list(itertools.product(op_list1, op_list2))):
+        for (op1a, op2a) in itertools.product(op_list1, op_list2):
             if op1a.get_domain() == op2a.get_domain():
                 for op1b in op_list1:
                     if op1b.get_domain() == op2a.get_target():
