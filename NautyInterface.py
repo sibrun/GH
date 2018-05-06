@@ -13,6 +13,7 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
     #logger.warn('call nauty to generate simple graphs: ' + nauty_string)
     graph_list = list(graphs.nauty_geng(nauty_string))
     if len(graph_list) == 0:
+        print('list of simple graphs generated using nauty has zero length')
         logger.warn('list of simple graphs generated using nauty has zero length')
     return graph_list
 
@@ -31,5 +32,6 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
         os.system(nauty_command)
         list_g6 = f.read().splitlines()
         if len(list_g6) == 0:
+            print('list of bipartite graphs generated using nauty has zero length')
             logger.warn('list of bipartite graphs generated using nauty has zero length')
     return [Graph(g6) for g6 in list_g6]
