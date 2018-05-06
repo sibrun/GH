@@ -696,7 +696,6 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         print(' ')
         print("Square zero test for %s:" % str(self))
-        logger.warn("Square zero test for %s:" % str(self))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
@@ -725,6 +724,7 @@ class Differential(OperatorMatrixCollection):
                     fail.append(p)
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
+        logger.warn("Square zero test for %s:" % str(self))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
                     (triv_l, succ_l, inc_l, fail_l))
         for (op1, op2) in fail:

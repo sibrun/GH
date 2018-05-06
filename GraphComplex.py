@@ -54,7 +54,6 @@ class GraphComplex(object):
     def test_commutativity(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
         print(' ')
         print('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
-        logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
         succ = []  # holds pairs for which test was successful
         fail = []  # failed pairs
         triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
@@ -135,6 +134,7 @@ class GraphComplex(object):
 
         (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" % (triv_l, succ_l, inc_l, fail_l))
+        logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
                     (triv_l, succ_l, inc_l, fail_l))
         for (op1a, op1b, op2a, op2b) in fail:
