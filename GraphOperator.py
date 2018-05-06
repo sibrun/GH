@@ -696,33 +696,29 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         print(' ')
         print("Square zero test for %s:" % str(self))
-        succ = []  # holds pairs for which test was successful
+        succ_l = 0  # number of pairs for which test was successful
         fail = []  # failed pairs
-        triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
-        inc = []  # pairs for which operator matrices are missing
+        triv_l = 0  # number of pairs for which test trivially succeeded because at least one operator is the empty matrix
+        inc_l = 0  # number of pairs for which operator matrices are missing
         for (op1, op2) in itertools.permutations(self.op_matrix_list, 2):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
-                p = (op1, op2)
-                if not (op1.is_valid() and op2.is_valid()):
-                    triv.append(p)
-                    continue
-                try:
-                    if op1.is_trivial() or op2.is_trivial():
-                        triv.append(p)
-                        continue
-                    M1 = op1.get_matrix()
-                    M2 = op2.get_matrix()
-                except SL.FileNotFoundError:
-                    logger.info("Cannot test square zero: "
-                                 "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
-                    inc.append(p)
-                    continue
-                if SH.matrix_norm(M2 * M1) < eps:
-                    succ.append(p)
+
+                pair = (op1, op2)
+                res = self._square_zero_test_for_pair(pair, eps=eps)
+
+                if res == 'triv':
+                    triv_l += 1
+                elif res == 'succ':
+                    succ_l += 1
+                elif res == 'inc':
+                    inc_l += 1
+                elif res == 'fail':
+                    fail.append(pair)
                 else:
-                    fail.append(p)
-        (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
+                    raise ValueError('Undefined commutativity test result')
+
+        fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
         logger.warn("Square zero test for %s:" % str(self))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
@@ -730,6 +726,24 @@ class Differential(OperatorMatrixCollection):
         for (op1, op2) in fail:
             logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
+
+    def _square_zero_test_for_pair(self, pair, eps=Parameters.square_zero_test_eps):
+        (op1, op2) = pair
+        if not (op1.is_valid() and op2.is_valid()):
+            return 'triv'
+        try:
+            if op1.is_trivial() or op2.is_trivial():
+                return 'triv'
+            M1 = op1.get_matrix()
+            M2 = op2.get_matrix()
+        except SL.FileNotFoundError:
+            logger.info("Cannot test square zero: "
+                        "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
+            return 'inc'
+        if SH.matrix_norm(M2 * M1) < eps:
+            return 'succ'
+        else:
+            return 'fail'
 
     def plot_cohomology_dim(self):
         dim_dict = self.get_cohomology_dim()

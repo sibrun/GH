@@ -54,10 +54,10 @@ class GraphComplex(object):
     def test_commutativity(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
         print(' ')
         print('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
-        succ = []  # holds pairs for which test was successful
-        fail = []  # failed pairs
-        triv = []  # pairs for which test trivially succeeded because at least one operator is the empty matrix
-        inc = []  # pairs for which operator matrices are missing
+        succ_l = 0  # number of quadruples for which test was successful
+        fail = []  # failed quadruples
+        triv_l = 0  # number of quadruples for which test trivially succeeded because at least one operator is the empty matrix
+        inc_l = 0  # number of quadruples for which operator matrices are missing
 
         op_list1 = op_collection1.get_op_list()
         op_list2 = op_collection2.get_op_list()
@@ -67,72 +67,22 @@ class GraphComplex(object):
                     if op1b.get_domain() == op2a.get_target():
                         for op2b in op_list2:
                             if op2b.get_domain() == op1a.get_target() and op1b.get_target() == op2b.get_target():
-                                p = (op1a, op1b, op2a, op2b)
 
-                                if not((op1a.is_valid() and op2b.is_valid()) or (op2a.is_valid() and op1b.is_valid())):
-                                    triv.append(p)
-                                    continue
+                                quadruple = (op1a, op1b, op2a, op2b)
+                                res = self._test_commutativity_for_quadruple(quadruple, anti_commute=anti_commute,
+                                                                             eps=eps)
+                                if res == 'triv':
+                                    triv_l += 1
+                                elif res == 'succ':
+                                    succ_l += 1
+                                elif res == 'inc':
+                                    inc_l += 1
+                                elif res == 'fail':
+                                    fail.append(quadruple)
+                                else:
+                                    raise ValueError('Undefined commutativity test result')
 
-                                if op1a.is_valid() and op2b.is_valid() and (not (op2a.is_valid() and op1b.is_valid())):
-                                    try:
-                                        if op1a.is_trivial() or op2b.is_trivial():
-                                            triv.append(p)
-                                            continue
-                                        M1a = op1a.get_matrix()
-                                        M2b = op2b.get_matrix()
-                                    except SL.FileNotFoundError:
-                                        inc.append(p)
-                                        continue
-                                    if SH.matrix_norm(M2b * M1a) < eps:
-                                        succ.append(p)
-                                        continue
-                                    fail.append(p)
-                                    continue
-
-                                if (not (op1a.is_valid() and op2b.is_valid())) and op2a.is_valid() and op1b.is_valid():
-                                    try:
-                                        if op1b.is_trivial() or op2a.is_trivial():
-                                            triv.append(p)
-                                            continue
-                                        M1b = op1b.get_matrix()
-                                        M2a = op2a.get_matrix()
-                                    except SL.FileNotFoundError:
-                                        inc.append(p)
-                                        continue
-                                    if SH.matrix_norm(M1b * M2a) < eps:
-                                        succ.append(p)
-                                        continue
-                                    fail.append(p)
-                                    continue
-
-                                try:
-                                    if (op1a.is_trivial() or op2b.is_trivial()) and (op2a.is_trivial() or op1b.is_trivial()):
-                                        triv.append(p)
-                                        continue
-                                    if (not (op1a.is_trivial() or op2b.is_trivial())) and (op2a.is_trivial() or op1b.is_trivial()):
-                                        M1a = op1a.get_matrix()
-                                        M2b = op2b.get_matrix()
-                                        if SH.matrix_norm(M2b * M1a) < eps:
-                                            succ.append(p)
-                                            continue
-                                    if (op1a.is_trivial() or op2b.is_trivial()) and (not (op2a.is_trivial() or op1b.is_trivial())):
-                                        M1b = op1b.get_matrix()
-                                        M2a = op2a.get_matrix()
-                                        if SH.matrix_norm(M1b * M2a) < eps:
-                                            succ.append(p)
-                                            continue
-                                    M1a = op1a.get_matrix()
-                                    M2b = op2b.get_matrix()
-                                    M1b = op1b.get_matrix()
-                                    M2a = op2a.get_matrix()
-                                    if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
-                                        succ.append(p)
-                                        continue
-                                except SL.FileNotFoundError:
-                                    inc.append(p)
-                                    continue
-
-        (triv_l, succ_l, inc_l, fail_l) = (len(triv), len(succ), len(inc), len(fail))
+        fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" % (triv_l, succ_l, inc_l, fail_l))
         logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
@@ -141,3 +91,59 @@ class GraphComplex(object):
             logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
                          (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
         return (triv_l, succ_l, inc_l, fail_l)
+
+
+    def _test_commutativity_for_quadruple(self, quadruple, anti_commute=False, eps=Parameters.commute_test_eps):
+        (op1a, op1b, op2a, op2b) = quadruple
+        if not ((op1a.is_valid() and op2b.is_valid()) or (op2a.is_valid() and op1b.is_valid())):
+            return 'triv'
+
+        if op1a.is_valid() and op2b.is_valid() and (not (op2a.is_valid() and op1b.is_valid())):
+            try:
+                if op1a.is_trivial() or op2b.is_trivial():
+                    return 'triv'
+                M1a = op1a.get_matrix()
+                M2b = op2b.get_matrix()
+            except SL.FileNotFoundError:
+                return 'inc'
+            if SH.matrix_norm(M2b * M1a) < eps:
+                return 'succ'
+            return 'fail'
+
+        if (not (op1a.is_valid() and op2b.is_valid())) and op2a.is_valid() and op1b.is_valid():
+            try:
+                if op1b.is_trivial() or op2a.is_trivial():
+                    return 'triv'
+                M1b = op1b.get_matrix()
+                M2a = op2a.get_matrix()
+            except SL.FileNotFoundError:
+                return 'inc'
+            if SH.matrix_norm(M1b * M2a) < eps:
+                return 'succ'
+            return 'fail'
+
+        try:
+            if (op1a.is_trivial() or op2b.is_trivial()) and (op2a.is_trivial() or op1b.is_trivial()):
+                return 'triv'
+            if (not (op1a.is_trivial() or op2b.is_trivial())) and (op2a.is_trivial() or op1b.is_trivial()):
+                M1a = op1a.get_matrix()
+                M2b = op2b.get_matrix()
+                if SH.matrix_norm(M2b * M1a) < eps:
+                    return 'succ'
+                else: return 'fail'
+            if (op1a.is_trivial() or op2b.is_trivial()) and (not (op2a.is_trivial() or op1b.is_trivial())):
+                M1b = op1b.get_matrix()
+                M2a = op2a.get_matrix()
+                if SH.matrix_norm(M1b * M2a) < eps:
+                    return 'succ'
+                else: return 'fail'
+            M1a = op1a.get_matrix()
+            M2b = op2b.get_matrix()
+            M1b = op1b.get_matrix()
+            M2a = op2a.get_matrix()
+            if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
+                return 'succ'
+            else:
+                return 'fail'
+        except SL.FileNotFoundError:
+            return 'inc'
