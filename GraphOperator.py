@@ -718,7 +718,7 @@ class Differential(OperatorMatrixCollection):
                 elif res == 'fail':
                     print('fail')
                     logger.error('fail')
-                    print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+                    #print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     fail.append(pair)
                 else:
