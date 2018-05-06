@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import itertools
+from tqdm import tqdm
 import StoreLoad as SL
 import Shared as SH
 import Parameters
@@ -61,7 +62,7 @@ class GraphComplex(object):
 
         op_list1 = op_collection1.get_op_list()
         op_list2 = op_collection2.get_op_list()
-        for (op1a, op2a) in itertools.product(op_list1, op_list2):
+        for (op1a, op2a) in tqdm(list(itertools.product(op_list1, op_list2))):
             if op1a.get_domain() == op2a.get_domain():
                 for op1b in op_list1:
                     if op1b.get_domain() == op2a.get_target():
@@ -74,22 +75,28 @@ class GraphComplex(object):
                                 if res == 'triv':
                                     triv_l += 1
                                 elif res == 'succ':
+                                    print('success')
+                                    logger.warn('success')
                                     succ_l += 1
                                 elif res == 'inc':
                                     inc_l += 1
                                 elif res == 'fail':
+                                    print('fail')
+                                    logger.error('fail')
+                                    print("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
+                                                 (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
+                                    logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
+                                                 (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
                                     fail.append(quadruple)
                                 else:
                                     raise ValueError('Undefined commutativity test result')
 
         fail_l = len(fail)
-        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" % (triv_l, succ_l, inc_l, fail_l))
+        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
+              (triv_l, succ_l, inc_l, fail_l))
         logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
                     (triv_l, succ_l, inc_l, fail_l))
-        for (op1a, op1b, op2a, op2b) in fail:
-            logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
-                         (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
         return (triv_l, succ_l, inc_l, fail_l)
 
 

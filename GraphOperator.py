@@ -700,7 +700,7 @@ class Differential(OperatorMatrixCollection):
         fail = []  # failed pairs
         triv_l = 0  # number of pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc_l = 0  # number of pairs for which operator matrices are missing
-        for (op1, op2) in itertools.permutations(self.op_matrix_list, 2):
+        for (op1, op2) in tqdm(list(itertools.permutations(self.op_matrix_list, 2))):
             if Differential.is_match(op2, op1):
                 # A composable pair is found
 
@@ -710,10 +710,16 @@ class Differential(OperatorMatrixCollection):
                 if res == 'triv':
                     triv_l += 1
                 elif res == 'succ':
+                    print('success')
+                    logger.warn('success')
                     succ_l += 1
                 elif res == 'inc':
                     inc_l += 1
                 elif res == 'fail':
+                    print('fail')
+                    logger.error('fail')
+                    print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+                    logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     fail.append(pair)
                 else:
                     raise ValueError('Undefined commutativity test result')
@@ -723,8 +729,6 @@ class Differential(OperatorMatrixCollection):
         logger.warn("Square zero test for %s:" % str(self))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
                     (triv_l, succ_l, inc_l, fail_l))
-        for (op1, op2) in fail:
-            logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
         return (triv_l, succ_l, inc_l, fail_l)
 
     def _square_zero_test_for_pair(self, pair, eps=Parameters.square_zero_test_eps):
