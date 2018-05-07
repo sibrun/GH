@@ -471,12 +471,12 @@ class BiOperatorMatrix(OperatorMatrix):
         self.operator_cls2 = operator_cls2
 
     @classmethod
-    def generate_op_matrix_list(cls, graded_sum_vs, operator_cls1, operator_cls2):
+    def generate_op_matrix_list(cls, graded_sum_vs):
         graded_sum_vs_list = graded_sum_vs.get_vs_list()
         bi_op_matrix_list = []
         for (domain, target) in itertools.permutations(graded_sum_vs_list, 2):
             if cls.is_match(domain, target):
-                bi_op_matrix_list.append(cls(domain, target, operator_cls1, operator_cls2))
+                bi_op_matrix_list.append(cls(domain, target))
         return bi_op_matrix_list
 
     def __str__(self):
@@ -756,14 +756,3 @@ class Differential(OperatorMatrixCollection):
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, param_order)
 
-
-class BiDifferential(Differential):
-    __metaclass__ = ABCMeta
-
-    def __init__(self, graded_sum_vs, operator_cls1, operator_cls2, bi_op_matrix_cls):
-        self.graded_sum_vs = graded_sum_vs
-        self.operator_cls1 = operator_cls1
-        self.operator_cls2 = operator_cls2
-        self.bi_op_matrix_cls = bi_op_matrix_cls
-        op_matrix_list = self.bi_op_matrix_cls.generate_op_matrix_list(graded_sum_vs, self.operator_cls1, self.operator_cls2)
-        super(BiDifferential, self).__init__(self.graded_sum_vs, op_matrix_list)

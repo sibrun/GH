@@ -150,7 +150,6 @@ class GraphComplex(object):
             M2a = op2a.get_matrix()
             if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
                 return 'succ'
-            else:
-                return 'fail'
+            return 'fail'
         except SL.FileNotFoundError:
             return 'inc'

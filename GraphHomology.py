@@ -29,7 +29,7 @@ def non_negative_range_type(arg):
     return range(min, max)
 
 graph_types = ['ordinary', 'hairy']
-differentials = ['contract', 'et1h']
+differentials = ['contract', 'delete_e', 'et1h']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
@@ -133,9 +133,13 @@ if __name__ == "__main__":
         raise MissingArgumentError('specify -l: range for number of loops')
 
     if args.graph_type == 'ordinary':
-        if not args.dif1 == 'contract':
-            raise ValueError('only contract edges differential implemented for ordinary graphs')
-        graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges)
+        differentials = [args.dif1]
+        if args.dif2 is not None:
+            differentials.append(args.dif2)
+        if not set(differentials) <= {'contract', 'delete_e'}:
+            raise ValueError('Differential not implemented for ordinary graph complex')
+
+        graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges, differentials)
 
     if args.graph_type == 'hairy':
         if args.even_h:
@@ -151,6 +155,8 @@ if __name__ == "__main__":
         differentials = [args.dif1]
         if args.dif2 is not None:
             differentials.append(args.dif2)
+        if not set(differentials) <= {'contract', 'et1h'}:
+            raise ValueError('Differential not implemented for ordinary hairy complex')
 
         graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
 

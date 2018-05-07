@@ -9,9 +9,9 @@ import HairyGraphComplex as HGC
 
 
 class CeEt1hBiOM(GO.BiOperatorMatrix):
-    def __init__(self, domain, target, operator_cls1, operator_cls2):
+    def __init__(self, domain, target):
         self.sub_type = domain.get_vs_list()[0].sub_type
-        super(CeEt1hBiOM, self).__init__(domain, target, operator_cls1, operator_cls2)
+        super(CeEt1hBiOM, self).__init__(domain, target, HGC.ContractEdgesGO, HGC.EdgeToOneHairGO)
 
     @staticmethod
     def is_match(domain, target):
@@ -69,22 +69,22 @@ class VertexLoopBigradedSumVS(GVS.SumVectorSpace):
         return SH.OrderedDict([('deg', self.deg_range), ('min_hairs', self.h_min_range)])
 
 
-class CeEt1hD(GO.BiDifferential):
+class CeEt1hD(GO.Differential):
     def __init__(self, graded_sum_vs):
-        super(CeEt1hD, self).__init__(graded_sum_vs, HGC.ContractEdgesGO, HGC.EdgeToOneHairGO, CeEt1hBiOM)
+        super(CeEt1hD, self).__init__(graded_sum_vs, CeEt1hBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
         return 'contract edges and edge to one hair'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.graded_sum_vs.sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contract_edges_edge_to_one_hair_D_%s_%s.png" % (HGC.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, HGC.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):
-        deg_range = self.graded_sum_vs.deg_range
-        h_min_min = min(self.graded_sum_vs.h_min_range)
-        h_min_max = max(self.graded_sum_vs.h_min_range) + (max(deg_range) - min(deg_range))
+        deg_range = self.sum_vector_space.deg_range
+        h_min_min = min(self.sum_vector_space.h_min_range)
+        h_min_max = max(self.sum_vector_space.h_min_range) + (max(deg_range) - min(deg_range))
         h_range = range(h_min_min, h_min_max + 1)
         return SH.OrderedDict([('deg', deg_range), ('min_hairs', h_range)])
 
@@ -98,6 +98,8 @@ class HairyBiGC(GC.GraphComplex):
         self.h_min_range = h_min_range
         self.even_edges = even_edges
         self.even_hairs = even_hairs
+        self.sub_type = HGC.sub_types.get((self.even_edges, self.even_hairs))
+
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_min_range, even_edges, even_hairs)
         super(HairyBiGC, self).__init__(graded_sum_vs, [CeEt1hD(graded_sum_vs)])
 

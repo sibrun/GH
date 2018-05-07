@@ -106,13 +106,13 @@ class SumOrdinaryGVS(GVS.SumVectorSpace):
 class ContractEdgesGO(GO.GraphOperator):
     def __init__(self, domain, target):
         if not ContractEdgesGO.is_match(domain, target):
-            raise ValueError("Domain and target not consistent for contract edge operator")
+            raise ValueError("Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
-        return domain.n_vertices == target.n_vertices+1 and domain.n_loops == target.n_loops \
+        return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops \
                 and domain.even_edges == target.even_edges
 
     @classmethod
@@ -193,24 +193,103 @@ class ContractEdgesD(GO.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
-        s = "cohomology_dim_%s_%s.png" % (graph_type, sub_type)
+        s = "cohomology_dim_contrct_edges_D_%s_%s.png" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_cohomology_plot_parameter_order(self):
-        return (0 ,1)
+        return (0, 1)
+
+
+class DeleteEdgesGO(GO.GraphOperator):
+    def __init__(self, domain, target):
+        if not DeleteEdgesGO.is_match(domain, target):
+            raise ValueError("Domain and target not consistent for delete edges operator")
+        self.sub_type = domain.sub_type
+        super(DeleteEdgesGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
+                and domain.even_edges == target.even_edges
+
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops, even_edges):
+        domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
+        target = OrdinaryGVS(n_vertices, n_loops - 1, even_edges)
+        return cls(domain, target)
+
+    def get_matrix_file_path(self):
+        s = "delete_edgesD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "delete_edgesD%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "delete_edgesD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_ref_rank_file_path(self):
+        s = "delete_edgesD%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_work_estimate(self):
+        if not self.is_valid():
+            return 0
+        target_dim_sort = self.target.get_sort_dim()
+        if target_dim_sort == 0:
+            return 0
+        return self.domain.n_edges * math.log(target_dim_sort, 2)
+
+    def get_type(self):
+        return 'delete edges'
+
+    def operate_on(self,G):
+        image=[]
+        for (i, e) in enumerate(G.edges(labels=False)):
+            (u, v) = e
+            G1 = copy(G)
+            G1.delete_edge((u, v))
+            sgn = -1 if i % 2 else 1
+            image.append((G1, sgn))
+        return image
+
+
+class DeleteEdgesD(GO.Differential):
+    def __init__(self, vector_space):
+        super(DeleteEdgesD, self).__init__(vector_space, DeleteEdgesGO.generate_op_matrix_list(vector_space))
+
+    def get_type(self):
+        return 'delete edges'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        s = "cohomology_dim_delete_edges_D_%s_%s.png" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_cohomology_plot_parameter_order(self):
+        return (0, 1)
+
 
 
 # ------- Graph Complexes --------
 class OrdinaryGC(GC.GraphComplex):
-    def __init__(self, v_range, l_range, even_edges):
+    def __init__(self, v_range, l_range, even_edges, differentials):
         self.v_range = v_range
         self.l_range = l_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
-        differential = ContractEdgesD(vector_space)
-        super(OrdinaryGC, self).__init__(vector_space, [differential])
+        sum_vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
+        differential_list = []
+        if 'contract' in differentials:
+            contract_edges_dif = ContractEdgesD(sum_vector_space)
+            differential_list.append(contract_edges_dif)
+        if 'delete_e' in differentials:
+            delete_edges_dif = DeleteEdgesD(sum_vector_space)
+            differential_list.append(delete_edges_dif)
+        super(OrdinaryGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<ordinary graph complex with %s>' % str(self.sub_type)

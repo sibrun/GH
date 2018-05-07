@@ -1,17 +1,15 @@
-import HairyGraphBiComplex as HGBC
+import OrdinaryGraphBiComplex as OGBC
 
 if __name__ == "__main__":
 
     ignore_ex = True
 
-    n_jobs = 8
+    n_jobs = 1
 
-    even_e = True
-    even_h = False
-    deg_range = range(5, 12)
-    h_min_range = range(-9, -1)
+    even_e = False
+    deg_range = range(3, 19)
 
-    gc = HGBC.HairyBiGC(deg_range, h_min_range, even_e, even_h)
+    gc = OGBC.OrdinaryBiGC(deg_range, even_e)
 
     gc.build_basis(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
 

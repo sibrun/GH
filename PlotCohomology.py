@@ -8,12 +8,59 @@ import Shared as SH
 
 
 def plot_array(value_dict, ordered_param_range_dict, path, parameter_order):
-    if len(ordered_param_range_dict) == 2:
+    if len(ordered_param_range_dict) == 1:
+        plot_1d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+    elif len(ordered_param_range_dict) == 2:
         plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
     elif len(ordered_param_range_dict) == 3:
         plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
     else:
-        raise ValueError('Need 2 or 3 parameters for plotting')
+        raise ValueError('Need 1, 2 or 3 parameters for plotting')
+
+def plot_1d_array(value_dict, ordered_param_range_dict, path, **kwargs):
+    (x_label, x_range) = ordered_param_range_dict.items()[0]
+    y_range = range(0, 1)
+    if len(list(x_range)) == 0 or len(list(y_range)) == 0:
+        logging.warn('empty parameter range: nothing to plot')
+        return
+
+    x_min = min(x_range)
+    x_max = max(x_range)
+    x_size = (x_max + 1 - x_min) * Parameters.x_width
+    y_min = min(y_range)
+    y_max = max(y_range)
+    y_size = (y_max + 1 - y_min) * Parameters.y_width
+
+    fig, ax = plt.subplots(figsize=(x_size, y_size))
+
+    for x in x_range:
+        v = value_dict.get((x,))
+        if v is not None:
+            v = Parameters.zero_symbol if v == 0 else v
+            ax.text(x, 0, str(v), va='center', ha='center')
+
+    x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
+    #y_ticks_grid = np.arange(y_min - 0.5, y_max + 1, 1)
+
+    x_ticks = np.arange(x_min, x_max + 1, 1)
+    y_ticks = np.arange(y_min, y_max + 1, 1)
+
+    ax.set_xticks(x_ticks)
+    ax.set_yticks(y_ticks)
+    ax.set_xticks(x_ticks_grid, minor=True)
+    #ax.set_yticks(y_ticks_grid, minor=True)
+    ax.grid(which='minor')
+
+
+    #plt.ylabel(y_label)
+
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
+
+    plt.xlabel(x_label)
+
+    SL.generate_path(path)
+    plt.savefig(path)
 
 
 def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
