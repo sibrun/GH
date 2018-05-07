@@ -119,7 +119,7 @@ class GraphComplex(object):
 
         if (not (op1a.is_valid() and op2b.is_valid())) and op2a.is_valid() and op1b.is_valid():
             try:
-                if op1b.is_trivial() or op2a.is_trivial():
+                if op2a.is_trivial() or op1b.is_trivial():
                     return 'triv'
                 M1b = op1b.get_matrix()
                 M2a = op2a.get_matrix()

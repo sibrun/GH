@@ -272,7 +272,6 @@ class DeleteEdgesD(GO.Differential):
         return (0, 1)
 
 
-
 # ------- Graph Complexes --------
 class OrdinaryGC(GC.GraphComplex):
     def __init__(self, v_range, l_range, even_edges, differentials):
