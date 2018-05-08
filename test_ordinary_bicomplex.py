@@ -7,7 +7,7 @@ if __name__ == "__main__":
     n_jobs = 8
 
     even_e = False
-    deg_range = range(3, 17)
+    deg_range = range(3, 18)
 
     gc = OGBC.OrdinaryBiGC(deg_range, even_e)
 
@@ -15,13 +15,8 @@ if __name__ == "__main__":
 
     gc.build_matrix(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
 
-    #gc.square_zero_test()
+    gc.square_zero_test()
 
-    op_list = gc.operator_collection_list[0].get_op_list()
-    for op in op_list:
-        m = op.get_matrix()
+    gc.compute_rank(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
 
-
-    #gc.compute_rank(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
-
-    #gc.plot_cohomology_dim()
+    gc.plot_cohomology_dim()
