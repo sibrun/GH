@@ -201,7 +201,10 @@ class OperatorMatrix(object):
         return M
 
     def get_matrix(self):
-        return self.get_matrix_transposed().transpose()
+        M = self.get_matrix_transposed().transpose()
+        if M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension():
+            print('matrix dimension error for ' + str(self))
+        return M
 
     def get_matrix_scipy_transposed(self):
         data = []
@@ -752,4 +755,3 @@ class Differential(OperatorMatrixCollection):
         param_order = self.get_cohomology_plot_parameter_order()
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, param_order)
-

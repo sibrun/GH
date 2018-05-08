@@ -48,13 +48,14 @@ class GraphComplex(object):
         for dif in self.operator_collection_list:
             dif.plot_cohomology_dim()
 
-    def test_pairwise_commutativity(self, anti_commute=False):
+    def test_pairwise_anti_commutativity(self, commute=False):
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
-            self.test_commutativity(op_collection1, op_collection2, anti_commute=anti_commute)
+            self.test_anti_commutativity(op_collection1, op_collection2, commute=commute)
 
-    def test_commutativity(self, op_collection1, op_collection2, anti_commute=False, eps=Parameters.commute_test_eps):
+    def test_anti_commutativity(self, op_collection1, op_collection2, commute=False, eps=Parameters.commute_test_eps):
+        case = 'anti-commutativity' if not commute else 'commutativity'
         print(' ')
-        print('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
+        print('Test %s for %s and %s' % (case, str(op_collection1), str(op_collection2)))
         succ_l = 0  # number of quadruples for which test was successful
         fail = []  # failed quadruples
         triv_l = 0  # number of quadruples for which test trivially succeeded because at least one operator is the empty matrix
@@ -70,8 +71,8 @@ class GraphComplex(object):
                             if op2b.get_domain() == op1a.get_target() and op1b.get_target() == op2b.get_target():
 
                                 quadruple = (op1a, op1b, op2a, op2b)
-                                res = self._test_commutativity_for_quadruple(quadruple, anti_commute=anti_commute,
-                                                                             eps=eps)
+                                res = self._test_anti_commutativity_for_quadruple(quadruple, commute=commute,
+                                                                                  eps=eps)
                                 if res == 'triv':
                                     triv_l += 1
                                 elif res == 'succ':
@@ -83,10 +84,10 @@ class GraphComplex(object):
                                 elif res == 'fail':
                                     print('fail')
                                     logger.error('fail')
-                                    print("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
-                                                 (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
-                                    logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
-                                                 (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
+                                    print("%s test for %s: failed for the quadruples %s, %s, %s, %s" %
+                                                 (case, str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
+                                    logger.error("%s test for %s: failed for the quadruples %s, %s, %s, %s" %
+                                                 (case, str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
                                     fail.append(quadruple)
                                 else:
                                     raise ValueError('Undefined commutativity test result')
@@ -94,13 +95,13 @@ class GraphComplex(object):
         fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
               (triv_l, succ_l, inc_l, fail_l))
-        logger.warn('Test commutativity for %s and %s' % (str(op_collection1), str(op_collection2)))
+        logger.warn('Test %s for %s and %s' % (case, str(op_collection1), str(op_collection2)))
         logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
                     (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 
 
-    def _test_commutativity_for_quadruple(self, quadruple, anti_commute=False, eps=Parameters.commute_test_eps):
+    def _test_anti_commutativity_for_quadruple(self, quadruple, commute=False, eps=Parameters.commute_test_eps):
         (op1a, op1b, op2a, op2b) = quadruple
         if not ((op1a.is_valid() and op2b.is_valid()) or (op2a.is_valid() and op1b.is_valid())):
             return 'triv'
@@ -148,7 +149,7 @@ class GraphComplex(object):
             M2b = op2b.get_matrix()
             M1b = op1b.get_matrix()
             M2a = op2a.get_matrix()
-            if SH.matrix_norm(M2b * M1a + (1 if anti_commute else -1) * M1b * M2a) < eps:
+            if SH.matrix_norm(M2b * M1a + (-1 if commute else 1) * M1b * M2a) < eps:
                 return 'succ'
             return 'fail'
         except SL.FileNotFoundError:

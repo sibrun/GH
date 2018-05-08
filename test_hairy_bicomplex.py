@@ -8,8 +8,8 @@ if __name__ == "__main__":
 
     even_e = False
     even_h = False
-    deg_range = range(5, 11)
-    h_min_range = range(-11, -1)
+    deg_range = range(4, 13)
+    h_min_range = range(-11, 0)
 
     gc = HGBC.HairyBiGC(deg_range, h_min_range, even_e, even_h)
 

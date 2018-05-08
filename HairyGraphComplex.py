@@ -262,6 +262,7 @@ class EdgeToOneHairGO(GO.GraphOperator):
         return 'edge to one hair'
 
     def operate_on(self,G):
+        sgn0 = -1 if G.order() % 2 else 1
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
@@ -288,8 +289,8 @@ class EdgeToOneHairGO(GO.GraphOperator):
             else:
                 sgn1 = 1
                 sgn2 = -1
-            image.append((G1, sgn1))
-            image.append((G2, sgn2))
+            image.append((G1, sgn1*sgn0))
+            image.append((G2, sgn2*sgn0))
         return image
 
 

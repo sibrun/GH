@@ -246,13 +246,12 @@ class DeleteEdgesGO(GO.GraphOperator):
         return 'delete edges'
 
     def operate_on(self,G):
-        sgn0 = -1 if G.order() % 2 else 1
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             G1 = copy(G)
             G1.delete_edge((u, v))
-            sgn = sgn0 * (-1 if i % 2 else 1)
+            sgn = -1 if i % 2 else 1
             image.append((G1, sgn))
         return image
 

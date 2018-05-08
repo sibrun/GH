@@ -58,8 +58,8 @@ parser.add_argument('-build_op', action='store_true', help='build operator matri
 parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
 parser.add_argument('-cohomology', action='store_true', help='compute cohomology')
 parser.add_argument('-square_zero', action='store_true', help='square zero test')
-parser.add_argument('-commutativity', action='store_true', help='test commutativity of differentials')
-parser.add_argument('-anti_commute', action='store_true', help='test commutativity of differentials')
+parser.add_argument('-anti_commute', action='store_true', help='test anti-commutativity of differentials')
+parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
 
 args = parser.parse_args()
 
@@ -85,9 +85,15 @@ def square_zero_test(graph_complex):
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
+def test_anti_commutativity(graph_complex):
+    logger.warn("\n----- Anti-commutativity Test -----\n")
+    graph_complex.test_pairwise_anti_commutativity(commute=False)
+
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def test_commutativity(graph_complex):
     logger.warn("\n----- Commutativity Test -----\n")
-    graph_complex.test_pairwise_commutativity(anti_commute=args.anti_commute)
+    graph_complex.test_pairwise_anti_commutativity(commute=True)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
@@ -170,5 +176,7 @@ if __name__ == "__main__":
         cohomology(graph_complex)
     if args.square_zero:
         square_zero_test(graph_complex)
-    if args.commutativity:
+    if args.anti_commute:
+        test_anti_commutativity(graph_complex)
+    if args.commute:
         test_commutativity(graph_complex)
