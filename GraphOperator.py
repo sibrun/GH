@@ -442,6 +442,7 @@ class GraphOperator(Operator, OperatorMatrix):
         for domainBasisElement in list(enumerate(domainBasis)):
             listOfLists.append(self._generate_matrix_list(domainBasisElement, lookup))
         matrixList = list(itertools.chain.from_iterable(listOfLists))
+        matrixList.sort()
         self._store_matrix_list(matrixList, shape)
 
     def _generate_matrix_list(self, domainBasisElement, lookup):
@@ -714,7 +715,7 @@ class Differential(OperatorMatrixCollection):
                 elif res == 'fail':
                     print('fail')
                     logger.error('fail')
-                    #print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+                    print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     fail.append(pair)
                 else:

@@ -83,8 +83,8 @@ class GraphComplex(object):
                                 elif res == 'fail':
                                     print('fail')
                                     logger.error('fail')
-                                    #print("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
-                                                 #(str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
+                                    print("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
+                                                 (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
                                     logger.error("Commutativity test for %s: failed for the quadruples %s, %s, %s, %s" %
                                                  (str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
                                     fail.append(quadruple)
