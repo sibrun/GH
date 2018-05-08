@@ -4,7 +4,6 @@ from sage.all import *
 import logging
 import StoreLoad as SL
 import ReferenceGC as REF
-import Parameters
 
 
 class BasisTest(unittest.TestCase):
