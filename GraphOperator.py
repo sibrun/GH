@@ -466,6 +466,7 @@ class GraphOperator(Operator, OperatorMatrix):
 class BiOperatorMatrix(OperatorMatrix):
     __metaclass__ = ABCMeta
 
+    @abstractmethod
     def __init__(self, domain, target, operator_cls1, operator_cls2):
         super(BiOperatorMatrix, self).__init__(domain, target)
         self.operator_cls1 = operator_cls1
