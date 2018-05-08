@@ -642,11 +642,6 @@ class Differential(OperatorMatrixCollection):
         return '<%s differential on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     @staticmethod
-    # Check whether opD.domain == opDD.target
-    def is_match(opD, opDD):
-        return opD.get_domain() == opDD.get_target()
-
-    @staticmethod
     # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
     def cohomology_dim(opD, opDD):
         try:
@@ -654,8 +649,8 @@ class Differential(OperatorMatrixCollection):
         except SL.FileNotFoundError:
             logger.info("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
-        if dimV == 0:
-            return 0
+        #if dimV == 0:
+         #   return 0
         if opD.is_valid():
             try:
                 rankD = opD.get_matrix_rank()
@@ -675,13 +670,14 @@ class Differential(OperatorMatrixCollection):
         cohomologyDim = dimV - rankD - rankDD
         if cohomologyDim < 0:
             print("Negative cohomology dimension for %s" % str(opD.domain))
+            logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomologyDim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
         cohomology_dim = dict()
         for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
-            if Differential.is_match(opD, opDD):
+            if opD.get_domain() == opDD.get_target():
                 dim = Differential.cohomology_dim(opD, opDD)
                 cohomology_dim.update({opD.domain: dim})
         return cohomology_dim
@@ -701,7 +697,7 @@ class Differential(OperatorMatrixCollection):
         triv_l = 0  # number of pairs for which test trivially succeeded because at least one operator is the empty matrix
         inc_l = 0  # number of pairs for which operator matrices are missing
         for (op1, op2) in itertools.permutations(self.op_matrix_list, 2):
-            if Differential.is_match(op2, op1):
+            if op1.get_target() == op2.get_domain():
                 # A composable pair is found
 
                 pair = (op1, op2)
@@ -746,8 +742,7 @@ class Differential(OperatorMatrixCollection):
             return 'inc'
         if SH.matrix_norm(M2 * M1) < eps:
             return 'succ'
-        else:
-            return 'fail'
+        return 'fail'
 
     def plot_cohomology_dim(self):
         dim_dict = self.get_cohomology_dim()

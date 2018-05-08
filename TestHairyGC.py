@@ -19,7 +19,7 @@ hairs_types = [True, False]
 
 class HGCBasisTest(TGC.BasisTest):
     def setUp(self):
-        self.vs_list = [HGC.HairyGraphSumVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.vs_list = [HGC.HairyGraphVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):
@@ -32,20 +32,11 @@ class HGCBasisTest(TGC.BasisTest):
 
 class HGCOperatorTest(TGC.OperatorTest):
     def setUp(self):
-        self.op_list = [HGC.ContractEdges.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.op_list = [HGC.ContractEdgesGO.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
     def tearDown(self):
         self.op_list = None
-
-
-class HGCGraphComplexTest(TGC.GraphComplexTest):
-    def setUp(self):
-        self.gc_list = [HGC.HairyGC(v_range, l_range, h_range, even_edges, even_hairs) for (even_edges, even_hairs)
-                        in itertools.product(edges_types, hairs_types)]
-
-    def tearDown(self):
-        self.gc_list = None
 
 
 def suite():
@@ -59,8 +50,6 @@ def suite():
     suite.addTest(HGCBasisTest('test_compare_ref_basis'))
     suite.addTest(HGCOperatorTest('test_operator_functionality'))
     suite.addTest(HGCOperatorTest('test_compare_ref_op_matrix'))
-    suite.addTest(HGCGraphComplexTest('test_graph_complex_functionality'))
-    suite.addTest(HGCGraphComplexTest('test_compare_ref_cohomology'))
     return suite
 
 
