@@ -12,7 +12,7 @@ if __name__ == "__main__":
     deg_range = range(3, 14)
     h_min_range = range(-11, -1)
 
-    gc = HGBC.HairyBiGC(deg_range, h_min_range, even_e, even_h)
+    gc = HGBC.HairyCeEt1hBiGC(deg_range, h_min_range, even_e, even_h)
 
     gc.build_basis(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
 

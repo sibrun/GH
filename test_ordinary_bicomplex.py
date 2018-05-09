@@ -9,7 +9,7 @@ if __name__ == "__main__":
     even_e = False
     deg_range = range(3, 18)
 
-    gc = OGBC.OrdinaryBiGC(deg_range, even_e)
+    gc = OGBC.OrdinaryCeDeleBiGC(deg_range, even_e)
 
     gc.build_basis(info_tracker=True, ignore_existing_files=ignore_ex, n_jobs=n_jobs)
 

@@ -92,7 +92,7 @@ class CeEt1hD(GO.Differential):
         return (0, 1)
 
 
-class HairyBiGC(GC.GraphComplex):
+class HairyCeEt1hBiGC(GC.GraphComplex):
     def __init__(self, deg_range, h_min_range, even_edges, even_hairs):
         self.deg_range = deg_range
         self.h_min_range = h_min_range
@@ -101,7 +101,7 @@ class HairyBiGC(GC.GraphComplex):
         self.sub_type = HGC.sub_types.get((self.even_edges, self.even_hairs))
 
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_min_range, even_edges, even_hairs)
-        super(HairyBiGC, self).__init__(graded_sum_vs, [CeEt1hD(graded_sum_vs)])
+        super(HairyCeEt1hBiGC, self).__init__(graded_sum_vs, [CeEt1hD(graded_sum_vs)])
 
     def __str__(self):
         return '<hairy graphs bi-complex with %s>' % str(self.sub_type)

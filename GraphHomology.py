@@ -30,11 +30,13 @@ def non_negative_range_type(arg):
 
 graph_types = ['ordinary', 'hairy']
 differentials = ['contract', 'delete_e', 'et1h']
+bicomplexes = ['ce_et1h', 'ce_dele']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
 parser.add_argument('graph_type', type=str, choices=graph_types, help='type of the graphs')
-parser.add_argument('dif1', type=str, choices=differentials, help='differential 1')
+parser.add_argument('-bicomplex', type=str, choices=bicomplexes, help='bicomplex')
+parser.add_argument('-dif1', type=str, choices=differentials, help='differential 1')
 parser.add_argument('-dif2', type=str, choices=differentials, default=None, help='differential 2')
 parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
@@ -126,6 +128,12 @@ if __name__ == "__main__":
 
     graph_complex = None
 
+    differentials = []
+    if args.dif1 is not None:
+        differentials.append(args.dif1)
+    if args.dif2 is not None:
+        differentials.append(args.dif2)
+
     if args.even_e:
             even_edges = True
     elif args.odd_e:
@@ -138,10 +146,8 @@ if __name__ == "__main__":
     if args.l is None:
         raise MissingArgumentError('specify -l: range for number of loops')
 
+
     if args.graph_type == 'ordinary':
-        differentials = [args.dif1]
-        if args.dif2 is not None:
-            differentials.append(args.dif2)
         if not set(differentials) <= {'contract', 'delete_e'}:
             raise ValueError('Differential not implemented for ordinary graph complex')
 
@@ -158,9 +164,6 @@ if __name__ == "__main__":
         if args.hairs is None:
             raise MissingArgumentError('specify -hairs: range for number of hairs')
 
-        differentials = [args.dif1]
-        if args.dif2 is not None:
-            differentials.append(args.dif2)
         if not set(differentials) <= {'contract', 'et1h'}:
             raise ValueError('Differential not implemented for ordinary hairy complex')
 

@@ -81,13 +81,13 @@ class CeDeleD(GO.Differential):
         return (0, 1)
 
 
-class OrdinaryBiGC(GC.GraphComplex):
+class OrdinaryCeDeleBiGC(GC.GraphComplex):
     def __init__(self, deg_range, even_edges):
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OGC.sub_types.get(self.even_edges)
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, even_edges)
-        super(OrdinaryBiGC, self).__init__(graded_sum_vs, [CeDeleD(graded_sum_vs)])
+        super(OrdinaryCeDeleBiGC, self).__init__(graded_sum_vs, [CeDeleD(graded_sum_vs)])
 
     def __str__(self):
         return '<ordinary graphs bi-complex with %s>' % str(self.sub_type)
