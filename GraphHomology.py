@@ -2,7 +2,9 @@ import argparse
 import Log
 import Profiling
 import OrdinaryGraphComplex as OGC
+import OrdinaryGraphBiComplex as OGBC
 import HairyGraphComplex as HGC
+import HairyGraphBiComplex as HGBC
 import Parameters
 
 
@@ -15,6 +17,7 @@ def positive_int(value):
         raise argparse.ArgumentTypeError('positive integer expected')
     return value
 
+
 def non_negative_int(value):
     value = int(value)
     if value < 0:
@@ -26,6 +29,14 @@ def non_negative_range_type(arg):
     (min, max) = map(non_negative_int, arg.split(','))
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
+    return range(min, max)
+
+
+def range_type(arg):
+    (prefix, min, max) = arg.split(',')
+    (min, max) = map(int, (min, max))
+    if min >= max:
+        raise argparse.ArgumentTypeError('range min,max with min < max expected')
     return range(min, max)
 
 graph_types = ['ordinary', 'hairy']
@@ -45,6 +56,8 @@ parser.add_argument('-odd_h', action='store_true', help='odd edges')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
+parser.add_argument('-d', type=non_negative_range_type, help='range min,max for degree of degree slices in bicomplex')
+parser.add_argument('-h_min', type=range_type, help='range min,max for minimal number of hairs in a degree slice of a bicomplex')
 parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
 parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of parallel processes')
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
@@ -126,13 +139,18 @@ if __name__ == "__main__":
 
     logger.warn("\n###########################\n" + "----- Graph Homology -----")
 
-    graph_complex = None
+    if args.bicomplex is not None:
+        Parameters.bicomplex = True
+    else:
+        Parameters.bicomplex = False
 
     differentials = []
     if args.dif1 is not None:
         differentials.append(args.dif1)
     if args.dif2 is not None:
         differentials.append(args.dif2)
+
+    bicomplex = False
 
     if args.even_e:
             even_edges = True
@@ -141,19 +159,27 @@ if __name__ == "__main__":
     else:
         raise MissingArgumentError('specify -even_e or -odd_e')
 
-    if args.v is None:
-        raise MissingArgumentError('specify -v: range for number of vertices')
-    if args.l is None:
-        raise MissingArgumentError('specify -l: range for number of loops')
-
-
     if args.graph_type == 'ordinary':
-        if not set(differentials) <= {'contract', 'delete_e'}:
-            raise ValueError('Differential not implemented for ordinary graph complex')
+        if args.bicomplex is not None:
+            if args.bicomplex == 'ce_dele':
+                if args.d is None:
+                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
 
-        graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges, differentials)
+                graph_complex = OGBC.OrdinaryCeDeleBiGC(args.d, args.even_e)
+            else:
+                raise ValueError('Ordinary graphs bicomplexes: ce_dele')
 
-    if args.graph_type == 'hairy':
+        elif len(differentials) > 0 and set(differentials) <= {'contract', 'delete_e'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+
+            graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges, differentials)
+        else:
+            raise ValueError('Differentials for ordinary graph complex: contract, delete_e')
+
+    elif args.graph_type == 'hairy':
         if args.even_h:
                 even_hairs = True
         elif args.odd_h:
@@ -161,13 +187,29 @@ if __name__ == "__main__":
         else:
             raise MissingArgumentError('specify -even_h or -odd_h')
 
-        if args.hairs is None:
-            raise MissingArgumentError('specify -hairs: range for number of hairs')
+        if args.bicomplex is not None:
+            if args.bicomplex == 'ce_et1h':
+                if args.d is None:
+                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
+                if args.h_min is None:
+                    raise MissingArgumentError('specify -h_min: range for minimal number of hairs of degree slices in bicomplex')
 
-        if not set(differentials) <= {'contract', 'et1h'}:
-            raise ValueError('Differential not implemented for ordinary hairy complex')
+                graph_complex = HGBC.HairyCeEt1hBiGC(args.d, args.h_min, args.even_e, args.even_h)
+            else:
+                raise ValueError('Hairy graphs bicomplexes: ce_et1h')
 
-        graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
+        elif len(differentials) > 0 and set(differentials) <= {'contract', 'et1h'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+            if args.hairs is None:
+                raise MissingArgumentError('specify -hairs: range for number of hairs')
+
+            graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
+        else:
+            raise ValueError('Differentials for hairy graph complex: contract, et1h')
+
 
     if args.build_b:
         build_basis(graph_complex)
