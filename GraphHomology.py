@@ -139,18 +139,11 @@ if __name__ == "__main__":
 
     logger.warn("\n###########################\n" + "----- Graph Homology -----")
 
-    if args.bicomplex is not None:
-        Parameters.bicomplex = True
-    else:
-        Parameters.bicomplex = False
-
     differentials = []
     if args.dif1 is not None:
         differentials.append(args.dif1)
     if args.dif2 is not None:
         differentials.append(args.dif2)
-
-    bicomplex = False
 
     if args.even_e:
             even_edges = True
