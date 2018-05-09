@@ -2,9 +2,9 @@ import OrdinaryGraphBiComplex as OGBC
 
 if __name__ == "__main__":
 
-    ignore_ex = True
+    ignore_ex = False
 
-    n_jobs = 8
+    n_jobs = 1
 
     even_e = False
     deg_range = range(3, 18)

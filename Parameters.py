@@ -32,3 +32,9 @@ data_tracker_timeout = 0.2
 #---- Progress Bar Parameters ----
 pbar_steps = 200
 pbar_timeout = 0.1
+
+#---- Secon Layor Info ----
+second_info = False
+
+#---- Global Variables ----
+bicomplex = False

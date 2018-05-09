@@ -1,15 +1,16 @@
 import HairyGraphBiComplex as HGBC
+import HairyGraphComplex as HGC
 
 if __name__ == "__main__":
 
-    ignore_ex = True
+    ignore_ex = False
 
-    n_jobs = 8
+    n_jobs = 1
 
     even_e = False
     even_h = False
-    deg_range = range(4, 13)
-    h_min_range = range(-11, 0)
+    deg_range = range(3, 14)
+    h_min_range = range(-11, -1)
 
     gc = HGBC.HairyBiGC(deg_range, h_min_range, even_e, even_h)
 

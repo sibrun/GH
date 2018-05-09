@@ -333,7 +333,8 @@ class SumVectorSpace(VectorSpace):
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
-        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files)
+        info = info_tracker if Parameters.second_info else False
+        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, info_tracker=info)
         if info_tracker:
             self.update_tracker(vs)
 

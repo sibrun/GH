@@ -71,8 +71,7 @@ class GraphComplex(object):
                             if op2b.get_domain() == op1a.get_target() and op1b.get_target() == op2b.get_target():
 
                                 quadruple = (op1a, op1b, op2a, op2b)
-                                res = self._test_anti_commutativity_for_quadruple(quadruple, commute=commute,
-                                                                                  eps=eps)
+                                res = self._test_anti_commutativity_for_quadruple(quadruple, commute=commute, eps=eps)
                                 if res == 'triv':
                                     triv_l += 1
                                 elif res == 'succ':

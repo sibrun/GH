@@ -577,7 +577,8 @@ class OperatorMatrixCollection(object):
             self.stop_tracker()
 
     def _build_single_matrix(self, op, info_tracker=False, **kwargs):
-        op.build_matrix(info_tracker=info_tracker, **kwargs)
+        info = info_tracker if Parameters.second_info else False
+        op.build_matrix(info_tracker=info, **kwargs)
         if info_tracker:
             self.update_tracker(op)
 
