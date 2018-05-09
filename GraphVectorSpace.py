@@ -42,43 +42,97 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
 
 
 class VectorSpace(object):
+    """Vector space interface.
+
+    Abstract class defining the interface for a vector space.
+
+    Attributes:
+        properties (VectorSpaceProperties): Vector space properties object, containing information like
+            dimension and validity.
+    """
+
     __metaclass__ = ABCMeta
 
     def __init__(self):
+        """Initialize the vector space properties with None."""
+
         self.properties = VectorSpaceProperties()
 
     @abstractmethod
     def __eq__(self, other):
+        """Comparing two vector spaces.
+
+        Args:
+            other (VectorSpace): Vector space to be compared with.
+
+        Returns:
+            bool: True if the compared vector spaces are equal, False otherwise.
+        """
         pass
 
     @abstractmethod
     def __str__(self):
+        """Unique description of the vector space.
+
+        Returns:
+            str: Unique description of the vector space.
+        """
         pass
 
     @abstractmethod
     def get_dimension(self):
+        """Dimension of the vector space.
+
+        Returns:
+            non-negative int: Dimension of the vector space.
+        """
         pass
 
     @abstractmethod
     def get_ordered_param_dict(self):
+        """Get an ordered dictionary of parameters, identifying the vector space.
+
+        Returns:
+            Shared.OrderedDict: Ordered dictionary of parameters. Example:
+                SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+        """
         pass
 
     @abstractmethod
     def get_work_estimate(self):
+        """Estimating the work needed to build the vector space basis.
+
+        Arbitrary unit. Used to schedule the order of building the basis of different vector spaces.
+
+        Returns:
+            non-negative int: Estimate the work to build the basis. Arbitrary unit.
+        """
         pass
 
     @abstractmethod
     def build_basis(self):
+        """Build the vector space basis."""
         pass
 
     @abstractmethod
     def update_properties(self):
+        """Update the vector space properties."""
         pass
 
     def get_properties(self):
+        """Access the vector space properties.
+
+        Returns:
+            VectorSpaceProperties: Vector space properties.
+        """
         return self.properties
 
     def get_sort_dim(self):
+        """Dimension for sorting vector spaces.
+
+        Returns:
+            non-negative int: Dimension of the vector space if known, constant Parameters.max_sort_value otherwise.
+            """
         try:
             sort_dim = self.get_dimension()
         except SL.FileNotFoundError:
