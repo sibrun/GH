@@ -242,15 +242,42 @@ class GraphVectorSpace(VectorSpace):
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
+        """Returns the graph6 string of the canonically labeled graph and the corresponding permutation sign.
+
+        Canonically label the sage Graph graph using the sage method for canonical labelling and respecting the
+        partition of the vertices.
+
+        Args:
+            graph (sage.Graph): Graph to be canonically labeled.
+
+        Returns:
+            tuple(str, int): Tuple containing the graph6 string of the canonically labeled graph and the corresponding
+                permutation sign.
+        """
         canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
         sgn = self.perm_sign(graph, permDict.values())
         return (canonG.graph6_string(), sgn)
 
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
+        """Build the basis of the vector space.
+
+        Create the basis file if the vector space is valid, otherwise skip building a basis. If there exists already
+        a basis file rebuild the basis if ignore_existing_file is True, otherwise skip building a basis.
+
+        Args:
+            progress_bar (bool, optional): Option to show a progress bar (Default: False).
+            ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
+                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
+                 (Default: False).
+            **kwargs: Accepting further keyword arguments, which have no influence.
+        """
         if not self.is_valid():
+            # Skip building a basis file if the vector space is not valid.
             return
         if (not ignore_existing_files) and self.exists_basis_file():
+            # Skip buiding a basis file if there exists already one and ignore_existing_file is False.
             return
+
         generatingList = self.get_generating_graphs()
 
         if len(generatingList) == 0:
