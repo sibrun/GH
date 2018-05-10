@@ -81,7 +81,7 @@ class VectorSpace(object):
 
     @abstractmethod
     def get_dimension(self):
-        """Dimension of the vector space.
+        """Returns the dimension of the vector space.
 
         Returns:
             non-negative int: Dimension of the vector space.
@@ -90,7 +90,7 @@ class VectorSpace(object):
 
     @abstractmethod
     def get_ordered_param_dict(self):
-        """Get an ordered dictionary of parameters, identifying the vector space.
+        """Returns an ordered dictionary of parameters, identifying the vector space.
 
         Returns:
             Shared.OrderedDict: Ordered dictionary of parameters. Example:
@@ -100,12 +100,12 @@ class VectorSpace(object):
 
     @abstractmethod
     def get_work_estimate(self):
-        """Estimating the work needed to build the vector space basis.
+        """Estimates the work needed to build the vector space basis.
 
-        Arbitrary unit. Used to schedule the order of building the basis of different vector spaces.
+        Arbitrary units. Used to schedule the order of building the basis of different vector spaces.
 
         Returns:
-            non-negative int: Estimate the work to build the basis. Arbitrary unit.
+            non-negative int: Estimate the work to build the basis. Arbitrary units.
         """
         pass
 
@@ -162,7 +162,7 @@ class GraphVectorSpace(VectorSpace):
         """Returns the type of graphs.
 
         Returns:
-            str: Type of graphs. Example: 'ordinary graphs with evend edges'.
+            str: Type of graphs. Example: 'ordinary graphs with even edges'.
         """
         pass
 
@@ -196,6 +196,15 @@ class GraphVectorSpace(VectorSpace):
 
     @abstractmethod
     def get_partition(self):
+        """Returns the partition of the vertices in different colours.
+
+        The partition of vertices is respected for the canonical labelling as well as for the automorphism group of
+        graphs.
+
+        Returns:
+            list(list): List of lists. Partition of the vertices in different colours. Example:
+                [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+        """
         pass
 
     @abstractmethod
@@ -456,40 +465,90 @@ class GraphVectorSpace(VectorSpace):
 
 
 class SumVectorSpace(VectorSpace):
+    """Direct sum of vector spaces.
+
+    Abstract class. Implements the interface vector space.
+
+    Attributes:
+        vs_list (list(VectorSpace)): List of sub vector spaces.
+        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
+            Tracker is only active if the basis of different vector spaces are not built in parallel.
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, vs_list):
+        """Initialize with a list of vector spaces.
+
+        Args:
+            vs_list (list(VectorSpace)): List of vector spaces to initialize the sum vector space.
+        """
         self.vs_list = vs_list
-        super(SumVectorSpace, self).__init__()
         self.info_tracker = None
+        super(SumVectorSpace, self).__init__()
 
     @abstractmethod
     def get_type(self):
+        """Returns the type of graphs.
+
+        Returns:
+            str: Type of graphs. Example: 'ordinary graphs with even edges'.
+        """
         pass
 
     @abstractmethod
     def get_ordered_param_range_dict(self):
-        pass
+        """Returns an ordered dictionary of parameter ranges, for the sub vector spaces of the sum vector space.
 
-    def __eq__(self, other):
+         Returns:
+             Shared.OrderedDict: Ordered dictionary of parameter ranges. Example:
+                 SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+         """
         pass
 
     def get_ordered_param_dict(self):
+        """Returns an ordered dictionary of parameters, identifying the vector space.
+
+         Returns:
+             Shared.OrderedDict: Ordered dictionary of parameters. Example:
+                 SH.OrderedDict([('deg', self.deg)])
+         """
         pass
 
     def __str__(self):
+        """Unique description of the vector space.
+
+        Returns:
+            str: Unique description of the vector space.
+        """
         return '<%s vector space with parameters: %s>' % (str(self.get_type()), str(self.get_ordered_param_range_dict()))
 
     def get_vs_list(self):
+        """Returns the list of sub vector spaces.
+
+        Returns:
+            list(VectorSpace): List of sub vector spaces.
+        """
         return self.vs_list
 
     def get_work_estimate(self):
+        """Estimates the work needed to build the vector space basis.
+
+        Arbitrary units. Used to schedule the order of building the basis of different vector spaces.
+
+        Returns:
+            non-negative int: Estimate the work to build the basis. Arbitrary units.
+        """
         work_estimate = 0
         for vs in self.vs_list:
             work_estimate += vs.get_work_estimate()
         return work_estimate
 
     def get_dimension(self):
+        """Returns the dimension of the sum vector space.
+
+        Returns:
+            non-negative int: Dimension of the sum vector space.
+        """
         dim = 0
         for vs in self.vs_list:
             dim += vs.get_dimension()
@@ -502,19 +561,27 @@ class SumVectorSpace(VectorSpace):
             pass
 
     def contains(self, vector_space):
+        """Determines whether the vector space vector_space is a sub vector space of the sum vector space.
+
+        Args:
+            vector_space (VectorSpace): Test whether this vector space is contained in the sum vector space.
+
+        Returns:
+            bool: True if the vector space vector_space is a sub vector space of the sum vector space, False otehrwise.
+        """
         for vs in self.vs_list:
             if vs == vector_space:
                 return True
         return False
 
-    '''def __eq__(self, other):
-        if len(self.vs_list) != len(other.vs_list):
-            return False
-        eq_l = 0
-        for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
-            if vs1 == vs2:
-                eq_l += 1
-        return eq_l == len(self.vs_list)'''
+    #def __eq__(self, other):
+        #if len(self.vs_list) != len(other.vs_list):
+            #return False
+        #eq_l = 0
+        #for (vs1, vs2) in itertools.product(self.vs_list, other.vs_list):
+            #if vs1 == vs2:
+                #eq_l += 1
+        #return eq_l == len(self.vs_list)
 
     def sort(self, key='work_estimate'):
         if isinstance(self, DegSlice):
