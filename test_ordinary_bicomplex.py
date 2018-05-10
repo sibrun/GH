@@ -2,7 +2,7 @@ import OrdinaryGraphBiComplex as OGBC
 
 if __name__ == "__main__":
 
-    ignore_ex = False
+    ignore_ex = True
 
     n_jobs = 1
 

@@ -144,7 +144,7 @@ class GraphVectorSpace(VectorSpace):
     """Vector space of graphs.
 
     Abstract class defining the interface for graph vector spaces. It implements the interface vector space and
-    provides methods to build the basis.
+    provides a method to build the basis.
 
     Attributes:
         properties (GraphVectorSpaceProperties): Graph vector space properties object, containing information about
@@ -263,6 +263,8 @@ class GraphVectorSpace(VectorSpace):
 
         Create the basis file if the vector space is valid, otherwise skip building a basis. If there exists already
         a basis file rebuild the basis if ignore_existing_file is True, otherwise skip building a basis.
+        The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the vector
+        space. The canonical labeling respects the partition of the vertices.
 
         Args:
             progress_bar (bool, optional): Option to show a progress bar (Default: False).
@@ -275,12 +277,13 @@ class GraphVectorSpace(VectorSpace):
             # Skip building a basis file if the vector space is not valid.
             return
         if (not ignore_existing_files) and self.exists_basis_file():
-            # Skip buiding a basis file if there exists already one and ignore_existing_file is False.
+            # Skip building a basis file if there exists already one and ignore_existing_file is False.
             return
 
         generatingList = self.get_generating_graphs()
 
         if len(generatingList) == 0:
+            # Warn if no generating graphs.
             print('Skip building basis, list of generating graphs has zero length for %s' % str(self))
             logger.warn('Skip building basis, list of generating graphs has zero length for %s' % str(self))
             return
@@ -289,21 +292,25 @@ class GraphVectorSpace(VectorSpace):
         #if not progress_bar:
         print(desc)
         basisSet = set()
+
         #for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
         for G in generatingList:
+            # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set
+            # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:
                 automList = G.automorphism_group().gens()
                 canonG = G.canonical_label()
             else:
+                # The canonical labelling respects the partition of the vertices.
                 automList = G.automorphism_group(partition=self.get_partition()).gens()
                 canonG = G.canonical_label(partition=self.get_partition())
-            if len(automList):
-                canon6 = canonG.graph6_string()
-                if not canon6 in basisSet:
-                    if not self._has_odd_automorphisms(G, automList):
-                        basisSet.add(canon6)
+            canon6 = canonG.graph6_string()
+            if not canon6 in basisSet:
+                if not self._has_odd_automorphisms(G, automList):
+                    basisSet.add(canon6)
 
         #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet, pbar_info=pbar_info, desc=desc)
+
         self._store_basis_g6(list(basisSet))
 
     #def _generate_basis_set(self, G, basis_set):
@@ -320,15 +327,39 @@ class GraphVectorSpace(VectorSpace):
                     #basis_set.add(canon6)
 
     def _has_odd_automorphisms(self, G, automList):
+        """Test whether the graph G has odd automorphisms.
+
+        Args:
+            G (sage.Graph): Test whether G has odd automoerphisms.
+            automList (list(group generators)): List of generators of the automorphisms group of graph G.
+
+        Returns:
+            bool: True if G has odd automorphisms, False otherwise.
+            """
         for g in automList:
-            if self.perm_sign(G, g.tuple()) == -1:
+            if self.perm_sign(G, list(g.tuple())) == -1:
                return True
         return False
 
     def exists_basis_file(self):
+        """Return whether there exists a basis file.
+
+        Returns:
+            bool: True if there exists a basis file, False otherwise.
+        """
         return os.path.isfile(self.get_basis_file_path())
 
     def get_dimension(self):
+        """Returns the Dimension of the vector space.
+
+        Raises an exception if no basis file found.
+
+        Returns:
+            non-negative int: Dimension of the vector space
+
+        Raises:
+            StoareLoad.FileNotFoundError: Raised if no basis file found.
+        """
         if not self.is_valid():
             return 0
         try:
@@ -338,10 +369,32 @@ class GraphVectorSpace(VectorSpace):
             raise SL.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
     def _store_basis_g6(self, basisList):
+        """Stores the basis to the basis file.
+
+        The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the
+        vector space.
+        The first line of the basis file contains the dimension of the vector space.
+
+        Args:
+            basisList (list(str)): List of graph6 strings.
+        """
         basisList.insert(0, str(len(basisList)))
         SL.store_string_list(basisList, self.get_basis_file_path())
 
     def _load_basis_g6(self):
+        """Loads the basis from the basis file.
+
+        Raises an exception if no basis file found or if the dimension in the header of the basis file doesn't
+        correspond to the dimension of the basis.
+
+        Returns:
+            list(graph6 string): List of graph6 strings of canonically labeled graphs building a basis of the vector
+                space.
+
+        Raises:
+            StoareLoad.FileNotFoundError: Raised if no basis file found.
+            ValueError: Raised if dimension in header doesn't correspond to the basis dimension.
+        """
         if not self.exists_basis_file():
             raise SL.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
         basisList = SL.load_string_list(self.get_basis_file_path())
@@ -351,6 +404,17 @@ class GraphVectorSpace(VectorSpace):
         return basisList
 
     def get_basis(self, g6=True):
+        """Return the basis of the vector space.
+
+        Choose between graph6 and sage graph representation of the basis elements.
+
+        Args:
+            g6 (bool): If true a list of graph6 strings is returned. If False a list of sage graphs is returned.
+
+        Returns:
+            list(graph6 str / sage.Graph): List of basis elements. As graph6 strings or sage graphs.
+        """
+
         if not self.is_valid():
             logger.warn("Empty basis: %s is not valid" % str(self))
             return []
@@ -361,13 +425,26 @@ class GraphVectorSpace(VectorSpace):
             return [Graph(g6) for g6 in basis_g6]
 
     def get_g6_coordinates_dict(self):
+        """Returns a dictionary to translate from the graph6 string of graphs in the basis to their coordinates.
+
+        Returns:
+            dict(graph6 str -> int): Dictionary to translate from graph6 string to the coordinate of a basis element.
+        """
         return {G6: i for (i, G6) in enumerate(self.get_basis(g6=True))}
 
     def delete_basis_file(self):
+        """Delete the basis file."""
         if os.path.isfile(self.get_basis_file_path()):
             os.remove(self.get_basis_file_path())
 
     def update_properties(self):
+        """Update the graph vector space properties validity and dimension.
+
+        Reading vector space dimension from basis file.
+
+        Raises:
+            StoareLoad.FileNotFoundError: Raised if no basis file found.
+        """
         self.properties.valid = self.is_valid()
         if not self.properties.valid:
             self.properties.dimension = 0
@@ -376,13 +453,6 @@ class GraphVectorSpace(VectorSpace):
                 self.properties.dimension = self.get_dimension()
             except SL.FileNotFoundError:
                 pass
-
-    def plot_graph(self, G):
-        g6 = G.graph6_string()
-        path = os.path.join(self.get_plot_path(), g6 + '.png')
-        SL.generate_path(path)
-        P = G.plot(partition=self.get_partition(), vertex_labels=False)
-        P.save(path)
 
 
 class SumVectorSpace(VectorSpace):
