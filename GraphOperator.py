@@ -203,7 +203,7 @@ class OperatorMatrix(object):
     def get_matrix(self):
         M = self.get_matrix_transposed().transpose()
         if M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension():
-            print('matrix dimension error for ' + str(self))
+            raise ValueError("Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
         return M
 
     def get_matrix_scipy_transposed(self):
@@ -407,7 +407,7 @@ class GraphOperator(Operator, OperatorMatrix):
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         try:
-            domainBasis = self.domain.get_basis(g6=False)
+            domainBasis = self.domain.get_basis()
         except SL.FileNotFoundError:
             if not skip_if_no_basis:
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
@@ -417,7 +417,7 @@ class GraphOperator(Operator, OperatorMatrix):
                              "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
-            targetBasis6 = self.target.get_basis(g6=True)
+            targetBasis6 = self.target.get_basis_g6()
         except SL.FileNotFoundError:
             if not skip_if_no_basis:
                 raise SL.FileNotFoundError("Cannot build operator matrix of %s: "

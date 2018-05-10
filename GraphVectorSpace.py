@@ -412,26 +412,25 @@ class GraphVectorSpace(VectorSpace):
             raise ValueError("Basis read from file %s has wrong dimension" % str(self.get_basis_file_path()))
         return basisList
 
-    def get_basis(self, g6=True):
-        """Return the basis of the vector space.
-
-        Choose between graph6 and sage graph representation of the basis elements.
-
-        Args:
-            g6 (bool): If true a list of graph6 strings is returned. If False a list of sage graphs is returned.
+    def get_basis_g6(self):
+        """Returns the basis of the vector space as list of graph6 strings.
 
         Returns:
-            list(graph6 str / sage.Graph): List of basis elements. As graph6 strings or sage graphs.
+            list(graph6 str): List of graph6 strings representing the basis elements.
         """
-
         if not self.is_valid():
+            # Return empty list if graph vector space is not valid.
             logger.warn("Empty basis: %s is not valid" % str(self))
             return []
-        basis_g6 = self._load_basis_g6()
-        if g6:
-            return basis_g6
-        else:
-            return [Graph(g6) for g6 in basis_g6]
+        return self._load_basis_g6()
+
+    def get_basis(self):
+        """Returns the basis of the vector space.
+
+        Returns:
+            list(sage.Graph): List of sage graphs representing the basis elements.
+        """
+        return map(Graph, self.get_basis_g6())
 
     def get_g6_coordinates_dict(self):
         """Returns a dictionary to translate from the graph6 string of graphs in the basis to their coordinates.
@@ -439,7 +438,7 @@ class GraphVectorSpace(VectorSpace):
         Returns:
             dict(graph6 str -> int): Dictionary to translate from graph6 string to the coordinate of a basis element.
         """
-        return {G6: i for (i, G6) in enumerate(self.get_basis(g6=True))}
+        return {G6: i for (i, G6) in enumerate(self.get_basis_g6())}
 
     def delete_basis_file(self):
         """Delete the basis file."""
