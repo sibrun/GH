@@ -141,25 +141,57 @@ class VectorSpace(object):
 
 
 class GraphVectorSpace(VectorSpace):
+    """Vector space of graphs.
+
+    Abstract class defining the interface for graph vector spaces. It implements the interface vector space and
+    provides methods to build the basis.
+
+    Attributes:
+        properties (GraphVectorSpaceProperties): Graph vector space properties object, containing information about
+            dimension and validity.
+
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self):
+        """Initialize the vector space properties with None."""
         self.properties = GraphVectorSpaceProperties()
 
     @abstractmethod
     def get_type(self):
+        """Returns the type of graphs.
+
+        Returns:
+            str: Type of graphs. Example: 'ordinary graphs with evend edges'.
+        """
         pass
 
     @abstractmethod
     def get_basis_file_path(self):
+        """Returns the path for the basis file.
+
+        Returns:
+            path: Path for the basis file.
+        """
         pass
 
     @abstractmethod
     def get_plot_path(self):
+        """Returns the path for the cohomology dimension plot file.
+
+        Returns:
+            path: Path for the cohomology dimension plot file.
+        """
         pass
 
-    @abstractmethod
     def get_ref_basis_file_path(self):
+        """Returns the path for the reference basis file.
+
+        Refers to reference data (if available) for testing.
+
+        Returns:
+            path: Path for the reference basis file.
+        """
         pass
 
     @abstractmethod
@@ -168,20 +200,45 @@ class GraphVectorSpace(VectorSpace):
 
     @abstractmethod
     def is_valid(self):
+        """Returns the validity of the parameter combination for the graph vector space.
+
+        Returns:
+            bool: True if the graph vector space is valid, False otherwise.
+        """
         pass
 
     @abstractmethod
     def get_generating_graphs(self):
-        """Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)"""
+        """Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)
+
+        Returns:
+            list(sage.Graph): List of sage graphs spanning the vector space.
+        """
         pass
 
     @abstractmethod
     def perm_sign(self, G, p):
-        """For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
-           Here vertex j becomes vertex p[j] in the new graph."""
+        """Returns the sign of the permutation of the edges of graph G, induced by the relabelling by p.
+
+        For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
+        Here vertex j becomes vertex p[j] in the new graph.
+
+        Args:
+            G (sage.Graph): Sage graph.
+            p (list): List of the images of the permutation of the edges of graph G.
+
+        Returns:
+            int: Sign of the edge permutation of graph G induced by the relabelling by p.
+
+            """
         pass
 
     def __str__(self):
+        """Unique description of the graph vector space.
+
+        Returns:
+            str: Unique description of the grpah vector space.
+        """
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
