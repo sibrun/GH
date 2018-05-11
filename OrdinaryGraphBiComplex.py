@@ -1,5 +1,4 @@
-from sage.all import *
-import itertools
+import os
 import GraphVectorSpace as GVS
 import GraphOperator as GO
 import GraphComplex as GC

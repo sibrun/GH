@@ -60,7 +60,7 @@ class HairyGraphVS(GVS.GraphVectorSpace):
         l = (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs)
         # all numbers positive
         l = l and self.n_vertices > 0 and self.n_loops >= 0 and \
-            ((self.n_hairs >= 0) if not Parameters.bicomplex else (self.n_hairs > 0))
+            ((self.n_hairs >= 0) if Parameters.zero_hairs else (self.n_hairs > 0))
         # Can have at most a full graph
         l = l and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
         # can have at most one hair per vertex

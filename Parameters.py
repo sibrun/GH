@@ -37,4 +37,4 @@ pbar_timeout = 0.1
 second_info = False
 
 #---- Global Variables ----
-bicomplex = False
+zero_hairs = False

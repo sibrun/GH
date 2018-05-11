@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 import itertools
-from tqdm import tqdm
 import StoreLoad as SL
 import Shared as SH
 import Parameters

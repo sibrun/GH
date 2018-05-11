@@ -3,7 +3,7 @@ from sage.all import *
 import operator
 import collections
 from tqdm import tqdm
-import StoreLoad as SL
+import StoreLoad
 import Parallel
 import Parameters
 import Log
@@ -110,7 +110,7 @@ class VectorSpace(object):
         pass
 
     @abstractmethod
-    def build_basis(self):
+    def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the vector space basis."""
         pass
 
@@ -135,7 +135,7 @@ class VectorSpace(object):
             """
         try:
             sort_dim = self.get_dimension()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             sort_dim = Parameters.max_sort_value
         return sort_dim
 
@@ -367,15 +367,15 @@ class GraphVectorSpace(VectorSpace):
             non-negative int: Dimension of the vector space
 
         Raises:
-            StoareLoad.FileNotFoundError: Raised if no basis file found.
+            StoreLoad.FileNotFoundError: Raised if no basis file found.
         """
         if not self.is_valid():
             return 0
         try:
-            header = SL.load_line(self.get_basis_file_path())
+            header = StoreLoad.load_line(self.get_basis_file_path())
             return int(header)
-        except SL.FileNotFoundError:
-            raise SL.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
+        except StoreLoad.FileNotFoundError:
+            raise StoreLoad.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
     def _store_basis_g6(self, basisList):
         """Stores the basis to the basis file.
@@ -388,7 +388,7 @@ class GraphVectorSpace(VectorSpace):
             basisList (list(str)): List of graph6 strings.
         """
         basisList.insert(0, str(len(basisList)))
-        SL.store_string_list(basisList, self.get_basis_file_path())
+        StoreLoad.store_string_list(basisList, self.get_basis_file_path())
 
     def _load_basis_g6(self):
         """Loads the basis from the basis file.
@@ -401,12 +401,12 @@ class GraphVectorSpace(VectorSpace):
                 space.
 
         Raises:
-            StoareLoad.FileNotFoundError: Raised if no basis file found.
+            StoreLoad.FileNotFoundError: Raised if no basis file found.
             ValueError: Raised if dimension in header doesn't correspond to the basis dimension.
         """
         if not self.exists_basis_file():
-            raise SL.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
-        basisList = SL.load_string_list(self.get_basis_file_path())
+            raise StoreLoad.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
+        basisList = StoreLoad.load_string_list(self.get_basis_file_path())
         dim = int(basisList.pop(0))
         if len(basisList) != dim:
             raise ValueError("Basis read from file %s has wrong dimension" % str(self.get_basis_file_path()))
@@ -451,7 +451,7 @@ class GraphVectorSpace(VectorSpace):
         Reading vector space dimension from basis file.
 
         Raises:
-            StoareLoad.FileNotFoundError: Raised if no basis file found.
+            StoreLoad.FileNotFoundError: Raised if no basis file found.
         """
         self.properties.valid = self.is_valid()
         if not self.properties.valid:
@@ -459,7 +459,7 @@ class GraphVectorSpace(VectorSpace):
         else:
             try:
                 self.properties.dimension = self.get_dimension()
-            except SL.FileNotFoundError:
+            except StoreLoad.FileNotFoundError:
                 pass
 
 
@@ -472,6 +472,8 @@ class SumVectorSpace(VectorSpace):
         vs_list (list(VectorSpace)): List of sub vector spaces.
         info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
             Tracker is only active if the basis of different vector spaces are not built in parallel.
+        properties (VectorSpaceProperties): Vector space properties object, containing information about the
+            dimension.
     """
     __metaclass__ = ABCMeta
 
@@ -484,6 +486,9 @@ class SumVectorSpace(VectorSpace):
         self.vs_list = vs_list
         self.info_tracker = None
         super(SumVectorSpace, self).__init__()
+
+    def __eq__(self, other):
+        pass
 
     @abstractmethod
     def get_type(self):
@@ -500,7 +505,7 @@ class SumVectorSpace(VectorSpace):
 
          Returns:
              Shared.OrderedDict: Ordered dictionary of parameter ranges. Example:
-                 SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+                 Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
          """
         pass
 
@@ -509,7 +514,7 @@ class SumVectorSpace(VectorSpace):
 
          Returns:
              Shared.OrderedDict: Ordered dictionary of parameters. Example:
-                 SH.OrderedDict([('deg', self.deg)])
+                 Shared.OrderedDict([('deg', self.deg)])
          """
         pass
 
@@ -554,9 +559,16 @@ class SumVectorSpace(VectorSpace):
         return dim
 
     def update_properties(self):
+        """Update the graph vector space property dimension.
+
+        Reading vector space dimension from basis files.
+
+        Raises:
+            StoreLoad.FileNotFoundError: Raised if a basis file is not found.
+        """
         try:
             self.properties.dimension = self.get_dimension()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             pass
 
     def contains(self, vector_space):
@@ -583,6 +595,14 @@ class SumVectorSpace(VectorSpace):
         #return eq_l == len(self.vs_list)
 
     def sort(self, key='work_estimate'):
+        """Sort the sub vector spaces to schedule building the basis.
+
+        Raises:
+            ValueError: Raises exception if sort key is neither 'work_estimate' nor 'dim'
+
+        Args:
+            key (str, optional): Choose between sort key 'work_estimate' and 'dim' for dimension (Default: 'work_estimate')
+        """
         if isinstance(self, DegSlice):
             return
         if key == 'work_estimate':
@@ -593,9 +613,25 @@ class SumVectorSpace(VectorSpace):
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
 
     def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
+        """Build the basis of the sub vector spaces.
+
+        Call build_basis for each sub vector space of the sum vector space.
+
+        Args:
+            progress_bar (bool, optional): Option to show a progress bar (Default: False). Only active if the basis of
+                different sub vector spaces ar not built in parallel.
+            ignore_existing_files (bool, optional): Option to ignore existing basis files. Ignore existing files and
+                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
+                 (Default: False).
+            n_jobs (positive int, optional): Option to compute the basis of the different sub vector spaces in parallel using
+                n_jobs parallel processes (Default: 1)
+            info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page.
+                Only active if basis not built in parallel processes (Default: False).
+        """
         print(' ')
         print('Build basis of %s' % str(self))
         if n_jobs > 1:
+            # If mor than 1 process progress bar and info tracker are not activated.
             progress_bar = False
             info_tracker = False
         if info_tracker:
@@ -607,12 +643,29 @@ class SumVectorSpace(VectorSpace):
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
+        """Build the basis of a single sub vector spaces.
+
+        Call build_basis for the sub vector space. Update the info tracker.
+
+        Args:
+            vs (VectorSpace): Vector space of which to build the basis.
+            progress_bar (bool, optional): Option to show a progress bar (Default: False).
+            ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
+                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
+                 (Default: False).
+            info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page
+                (Default: False).
+        """
         info = info_tracker if Parameters.second_info else False
         vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, info_tracker=info)
         if info_tracker:
             self.update_tracker(vs)
 
     def set_tracker_parameters(self):
+        """Initialize the info tracker by setting its parameters.
+
+        Set the names of the variables to be displayed.
+        """
         try:
             param_names = self.vs_list[0].get_ordered_param_dict().keys()
             property_names = self.vs_list[0].get_properties().names()
@@ -622,6 +675,10 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
+        """Start the info tracker.
+
+        Track information about the properties of the sub vector spaces and display it in a web page.
+        """
         self.info_tracker = DisplayInfo.InfoTracker(str(self))
         self.set_tracker_parameters()
         vs_info_dict = collections.OrderedDict()
@@ -630,22 +687,52 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.update_data(vs_info_dict)
         self.info_tracker.start()
 
-    def update_tracker(self, vs):
-        vs.update_properties()
-        message = {tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()}
+    def update_tracker(self, vector_space):
+        """Update info tracker for the vector space vector_space.
+
+        Args:
+            vector_space (VectorSpace): Vector space for which to update the properties and message it to the info tracker.
+        """
+        vector_space.update_properties()
+        message = {tuple(vector_space.get_ordered_param_dict().values()): vector_space.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
+        """Stop tracking informations."""
         self.info_tracker.stop()
 
 
 class DegSlice(SumVectorSpace):
+    """Special type of a direct sum of vector spaces, to be used as degree slices in bicomplexes.
+
+    Abstract class.
+
+    Attributes:
+        deg (int): Degree of the degree slice.
+        vs_list (list(VectorSpace)): List of sub vector spaces.
+        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
+            Tracker is only active if the basis of different vector spaces are not built in parallel.
+        properties (VectorSpaceProperties): Vector space properties object, containing information about the
+            dimension.
+    """
+
     def __init__(self, vs_list, deg):
+        """Initialize with a list of vector spaces and a degree.
+
+        Args:
+            vs_list (list(VectorSpace)): List of vector spaces to initialize the sum vector space.
+            deg (int): Degree of the degree slice.
+        """
         self.deg = deg
         super(DegSlice, self).__init__(vs_list)
         self.start_idx_dict = None
 
     def __str__(self):
+        """Unique description of the vector space.
+
+        Returns:
+            str: Unique description of the vector space.
+        """
         return '<degree slice with parameters: %s>' % str(self.get_ordered_param_dict())
 
     def get_type(self):
@@ -656,10 +743,24 @@ class DegSlice(SumVectorSpace):
 
     @abstractmethod
     def __eq__(self, other):
+        """Comparing two degree slices.
+
+        Args:
+            other (DegSlice): Degree slice to be compared with.
+
+        Returns:
+            bool: True if the compared degree slices are equal, False otherwise.
+        """
         pass
 
     @abstractmethod
     def get_ordered_param_dict(self):
+        """Returns an ordered dictionary of parameters, identifying the degree slice.
+
+         Returns:
+             Shared.OrderedDict: Ordered dictionary of parameters. Example:
+                 Shared.OrderedDict([('deg', self.deg)])
+         """
         pass
 
     def build_basis(self, **kwargs):
