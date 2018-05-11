@@ -764,6 +764,10 @@ class DegSlice(SumVectorSpace):
         pass
 
     def build_basis(self, **kwargs):
+        """Build the basis of the sub vector spaces of the degree slice.
+
+        """
+
         super(DegSlice, self).build_basis(**kwargs)
         if not self.is_complete():
             raise ValueError('deg slice %s should be completely built' % str(self))
