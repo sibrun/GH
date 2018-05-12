@@ -1,3 +1,6 @@
+"""Module providing abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
+degree slices for bigraded vector spaces."""
+
 from abc import ABCMeta, abstractmethod
 from sage.all import *
 import operator
@@ -8,6 +11,7 @@ import Parallel
 import Parameters
 import Log
 import DisplayInfo
+
 
 logger = Log.logger.getChild('graph_vector_space')
 
@@ -280,7 +284,7 @@ class GraphVectorSpace(VectorSpace):
             ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
-            **kwargs: Accepting further keyword arguments, which have no influence.
+            kwargs: Accepting further keyword arguments, which have no influence.
         """
         if not self.is_valid():
             # Skip building a basis file if the vector space is not valid.
@@ -703,9 +707,10 @@ class SumVectorSpace(VectorSpace):
 
 
 class DegSlice(SumVectorSpace):
-    """Special type of a direct sum of vector spaces, to be used as degree slices in bicomplexes.
+    """Special type of a direct sum of vector spaces, to be used as degree slices in bicomplexes, i.e. a bigraded
+    vector space is built as a direct sum of degree slices.
 
-    Abstract class.
+    Abstract class. Implementing SumVectorSpace.
 
     Attributes:
         deg (int): Degree of the degree slice.
@@ -766,13 +771,24 @@ class DegSlice(SumVectorSpace):
     def build_basis(self, **kwargs):
         """Build the basis of the sub vector spaces of the degree slice.
 
-        """
+        Args:
+            kwargs: Forward keword arguments to the build basis method of the SumVectorSpace.
 
+        Raises:
+            ValueError: If the basis of the degree slice is not completely built, i.e. not for all valid sub vector
+                spaces there exists a basis file.
+        """
         super(DegSlice, self).build_basis(**kwargs)
         if not self.is_complete():
-            raise ValueError('deg slice %s should be completely built' % str(self))
+            raise ValueError('Degree slice %s should be completely built' % str(self))
 
     def build_start_idx_dict(self):
+        """Builds a dictionary of start indices of the sub vector spaces.
+
+        The dictionary contains the coordinate of the first basis vector of each sub vector space as basis vector of the
+        degree slice.
+        """
+
         self.start_idx_dict = dict()
         start_idx = 0
         for vs in self.vs_list:
@@ -781,14 +797,34 @@ class DegSlice(SumVectorSpace):
             start_idx += dim
 
     def get_start_idx(self, vector_space):
+        """Returns the start idndex of the sub vector space vector_space.
+
+        Returns the coordinate of the first basis vector of the sub vector space as basis vector of the degree slice.
+
+        Args:
+            vector_space (VectorSpace): Sub vector space of which to get the start index.
+
+        Returns:
+            non-negative int: Start index of the sub vector space vector_space.
+
+        Raises:
+            ValueError: If vector_space is not a sub vector space of the degree slice.
+        """
         if self.start_idx_dict is None:
             self.build_start_idx_dict()
         start_idx = self.start_idx_dict.get(vector_space)
         if start_idx is None:
-            raise ValueError('vector_space should refer to a vector space of the degree slice')
+            raise ValueError('vector_space should refer to a sub vector space of the degree slice')
         return start_idx
 
     def is_complete(self):
+        """Test whether the degree slice is complete.
+
+        For all valid sub vector spaces of the degree slice a basis file should exist.
+
+        Returns:
+            bool: True if the degree slice is complete, False otherwise.
+        """
         if len(self.vs_list) != self.deg + 1:
             return False
         for vs in self.vs_list:
