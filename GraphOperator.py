@@ -7,9 +7,9 @@ from scipy.sparse.linalg import aslinearoperator as aslinearoperator
 from scipy.linalg.interpolative import estimate_rank as estimate_rank
 from sage.all import *
 import Log
-import StoreLoad as SL
+import StoreLoad
 import Parallel
-import Shared as SH
+import Shared
 import Parameters
 import PlotCohomology
 import DisplayInfo
@@ -112,12 +112,12 @@ class OperatorMatrix(object):
         for (i, j, v) in matrixList:
             stringList.append("%d %d %d" % (i + 1, j + 1, v))
         stringList.append("0 0 0")
-        SL.store_string_list(stringList, self.get_matrix_file_path())
+        StoreLoad.store_string_list(stringList, self.get_matrix_file_path())
 
     def _load_matrix_list(self):
         if not self.exists_matrix_file():
-            raise SL.FileNotFoundError("Cannot load matrix, No matrix file found for %s: " % str(self))
-        stringList = SL.load_string_list(self.get_matrix_file_path())
+            raise StoreLoad.FileNotFoundError("Cannot load matrix, No matrix file found for %s: " % str(self))
+        stringList = StoreLoad.load_string_list(self.get_matrix_file_path())
         (d, t, data_type) = stringList.pop(0).split(" ")
         shape = (d, t) = (int(d), int(t))
         if d != self.domain.get_dimension() or t != self.target.get_dimension():
@@ -151,15 +151,15 @@ class OperatorMatrix(object):
 
     def get_matrix_shape(self):
         try:
-            header = SL.load_line(self.get_matrix_file_path())
+            header = StoreLoad.load_line(self.get_matrix_file_path())
             (d, t, data_type) = header.split(" ")
             (d, t) = (int(d), int(t))
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             try:
                 d = self.domain.get_dimension()
                 t = self.target.get_dimension()
-            except SL.FileNotFoundError:
-                raise SL.FileNotFoundError("Matrix shape of %s unknown: "
+            except StoreLoad.FileNotFoundError:
+                raise StoreLoad.FileNotFoundError("Matrix shape of %s unknown: "
                                            "Build matrix or domain and target basis first" % str(self))
         return (t, d)
 
@@ -168,8 +168,8 @@ class OperatorMatrix(object):
             (matrixList, shape) = self._load_matrix_list()
             (d, t) = shape
             return ((t, d), len(matrixList))
-        except SL.FileNotFoundError:
-            raise SL.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
+        except StoreLoad.FileNotFoundError:
+            raise StoreLoad.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
 
     def get_matrix_entries(self):
         if not self.is_valid():
@@ -230,7 +230,7 @@ class OperatorMatrix(object):
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
             rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, primes=primes, estimate=estimate, eps=eps)
-        except SL.FileNotFoundError as error:
+        except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
                 return
@@ -262,26 +262,26 @@ class OperatorMatrix(object):
                     if rank_est != min(self.get_matrix_shape()):
                         rank_est -= 1
                     rank_dict.update({'estimate': rank_est})
-            except SL.FileNotFoundError:
-                raise SL.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
+            except StoreLoad.FileNotFoundError:
+                raise StoreLoad.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
 
     def _store_rank_dict(self, update_rank_dict):
         try:
             rank_dict = self._load_rank_dict()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             rank_dict = dict()
         rank_dict.update(update_rank_dict)
         rank_list = [str(rank) + ' ' + mode for (mode, rank) in rank_dict.items()]
-        SL.store_string_list(rank_list, self.get_rank_file_path())
+        StoreLoad.store_string_list(rank_list, self.get_rank_file_path())
 
     def _load_rank_dict(self):
         if not self.is_valid():
             return {'exact': 0}
         try:
-            rank_list = SL.load_string_list(self.get_rank_file_path())
-        except SL.FileNotFoundError:
-            raise SL.FileNotFoundError("Cannot load matrix rank, No rank file found for %s: " % str(self))
+            rank_list = StoreLoad.load_string_list(self.get_rank_file_path())
+        except StoreLoad.FileNotFoundError:
+            raise StoreLoad.FileNotFoundError("Cannot load matrix rank, No rank file found for %s: " % str(self))
         rank_dict = dict()
         for line in rank_list:
             (rank, mode) = line.split(" ")
@@ -321,14 +321,14 @@ class OperatorMatrix(object):
     def get_sort_size(self):
         try:
             sort_size = min(self.get_matrix_shape())
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             sort_size = Parameters.max_sort_value
         return sort_size
 
     def get_sort_entries(self):
         try:
             sort_entries = self.get_matrix_entries()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             sort_entries = Parameters.max_sort_value
         return sort_entries
 
@@ -336,15 +336,15 @@ class OperatorMatrix(object):
         self.properties.valid = self.is_valid()
         try:
             self.properties.shape = self.get_matrix_shape()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             pass
         try:
             self.properties.entries = self.get_matrix_entries()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             pass
         try:
             (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_ranks()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             pass
 
     def get_properties(self):
@@ -408,9 +408,9 @@ class GraphOperator(Operator, OperatorMatrix):
             return
         try:
             domainBasis = self.domain.get_basis()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
-                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
+                raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
                 logger.info("Skip building operator matrix of %s "
@@ -418,9 +418,9 @@ class GraphOperator(Operator, OperatorMatrix):
                 return
         try:
             targetBasis6 = self.target.get_basis_g6()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
-                raise SL.FileNotFoundError("Cannot build operator matrix of %s: "
+                raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
                                            "First build basis of the target %s" % (str(self), str(self.target)))
             else:
                 logger.info("Skip building operator matrix of %s "
@@ -652,7 +652,7 @@ class Differential(OperatorMatrixCollection):
     def cohomology_dim(opD, opDD):
         try:
             dimV = opD.get_domain().get_dimension()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             logger.info("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
         #if dimV == 0:
@@ -660,7 +660,7 @@ class Differential(OperatorMatrixCollection):
         if opD.is_valid():
             try:
                 rankD = opD.get_matrix_rank()
-            except SL.FileNotFoundError:
+            except StoreLoad.FileNotFoundError:
                 logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
         else:
@@ -668,7 +668,7 @@ class Differential(OperatorMatrixCollection):
         if opDD.is_valid():
             try:
                 rankDD = opDD.get_matrix_rank()
-            except SL.FileNotFoundError:
+            except StoreLoad.FileNotFoundError:
                 logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
         else:
@@ -742,11 +742,11 @@ class Differential(OperatorMatrixCollection):
                 return 'triv'
             M1 = op1.get_matrix()
             M2 = op2.get_matrix()
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             logger.info("Cannot test square zero: "
                         "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
             return 'inc'
-        if SH.matrix_norm(M2 * M1) < eps:
+        if Shared.matrix_norm(M2 * M1) < eps:
             return 'succ'
         return 'fail'
 
