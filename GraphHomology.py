@@ -24,11 +24,7 @@ Prerequisits:
 
             $ sage -sh
 
-            or use the command
-
-            $ sage --python
-
-            instead of $ python ... .
+            or use the command $ sage --python ... instead of $ python ... .
 
     tqdm: Install the tqdm module in the sage python version:
 
@@ -42,26 +38,26 @@ Examples:
     Ordinary graph complex:
         Build the basis:
 
-            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_b
+            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b
 
         Build the operator matrices for the differentials 'contract edges' and 'delete edges':
 
-            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_op
-            $ python GraphHomology.py ordinary -dif1 delete_e -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_op
+            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
+            $ python GraphHomology.py ordinary -op1 delete_e -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
 
         Compute the ranks of the operator matrices:
 
-            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -n_primes 1 -rank
-            $ python GraphHomology.py ordinary -op1 delete_e -v 4,13 -l 3,9 -even_e -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py ordinary -op1 delete_e -v 3,12 -l 0,9 -odd_e -n_jobs 4 -n_primes 1 -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py ordinary -op1 contract -op2 delete_e -v 4,13 -l 3,9 -even_e -square_zero -anti_commute -cohomology
+            $ python GraphHomology.py ordinary -op1 contract -op2 delete_e -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
 
     Ordinary graph bicomplex with the differentials 'contract edges' and 'delete edges':
 
-        $ python GraphHomology.py ordinary -bicomplex ce_dele -d 3,18 -odd_e -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+        $ python GraphHomology.py ordinary -bicomplex ce_dele -d 0,18 -odd_e -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
 
     Hairy graph complex:
         Build the basis:
@@ -81,13 +77,12 @@ Examples:
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py ordinary -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
+            $ python GraphHomology.py hairy -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
 
-    Ordinary graph bicomplex with the differentials 'contract edges' and 'delete edges':
+    Hairy graph bicomplex with the differentials 'contract edges' and 'edge to one hair':
 
-        $ python GraphHomology.py hairy -bicomplex ce_et1h -d 3,14 -h_min ,-11,-1 -odd_e -odd_h -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+        $ python GraphHomology.py hairy -bicomplex ce_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
 """
-
 
 import argparse
 import Log
@@ -129,6 +124,7 @@ def range_type(arg):
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with min < max expected')
     return range(min, max)
+
 
 graph_types = ['ordinary', 'hairy']
 operators = ['contract', 'delete_e', 'et1h']
@@ -221,9 +217,13 @@ class MissingArgumentError(RuntimeError):
 
 if __name__ == "__main__":
     if args.log is not None:
-        complex = args.graph_type + '_' + args.dif1
-        if args.dif2 is not None:
-            complex += '_' + args.dif2
+        complex = args.graph_type
+        if args.bicomplex is not None:
+            complex += '_' + args.bicomplex
+        if args.op1 is not None:
+            complex += '_' + args.op1
+        if args.op2 is not None:
+            complex += '_' + args.op2
         Log.set_log_level(args.log)
         log_file = complex + '.log'
         Log.set_log_file(log_file)
@@ -231,9 +231,9 @@ if __name__ == "__main__":
     logger.warn("\n###########################\n" + "----- Graph Homology -----")
 
     operators = []
-    if args.dif1 is not None:
+    if args.op1 is not None:
         operators.append(args.op1)
-    if args.dif2 is not None:
+    if args.op2 is not None:
         operators.append(args.op2)
 
     if args.even_e:
