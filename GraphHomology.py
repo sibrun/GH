@@ -1,10 +1,101 @@
+"""Compute the cohomology dimensions of graph complexes as well as bicomplexes.
+
+Build graph complexes as well as bicomplexes.
+Test whether an operator squares to zero, i.e. is a differential.
+Test whether two operators anti-commute or commute, i.e. build a differential for a bicomplex.
+Plot the cohomology dimensions of a graph complex.
+
+This module parses command line arguments and contains the main function.
+Building the basis and operator matrices as well as computing the matrix rank can be done in parallel.
+
+There are options to ignore existing files (-ignore_ex), to display informations (-info), to show a progress bar (-pbar),
+for logging (-log warning), and for profiling (-profile).
+
+Display informations and show a progress bar are only available if not several processes work in parallel
+(default: -n_jobs=1).
+
+Prerequisits:
+    sagemath: This software is based on the sage math library.
+        Download sagemath from:
+
+            http://www.sagemath.org
+
+        Activate a sage shell with
+
+            $ sage -sh
+
+            or use the command
+
+            $ sage --python
+
+            instead of $ python ... .
+
+    tqdm: Install the tqdm module in the sage python version:
+
+            (sage-sh)$ pip -install tqdm
+
+    pandas: Install the tqdm module in the sage python version:
+
+            (sage-sh)$ pip -install pandas
+
+Examples:
+    Ordinary graph complex:
+        Build the basis:
+
+            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_b
+
+        Build the operator matrices for the differentials 'contract edges' and 'delete edges':
+
+            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_op
+            $ python GraphHomology.py ordinary -dif1 delete_e -v 4,13 -l 3,9 -even_e -n_jobs 4 -build_op
+
+        Compute the ranks of the operator matrices:
+
+            $ python GraphHomology.py ordinary -op1 contract -v 4,13 -l 3,9 -even_e -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py ordinary -op1 delete_e -v 4,13 -l 3,9 -even_e -n_jobs 4 -n_primes 1 -rank
+
+        Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
+            plot the cohomology dimensions of the respective graph complexes:
+
+            $ python GraphHomology.py ordinary -op1 contract -op2 delete_e -v 4,13 -l 3,9 -even_e -square_zero -anti_commute -cohomology
+
+    Ordinary graph bicomplex with the differentials 'contract edges' and 'delete edges':
+
+        $ python GraphHomology.py ordinary -bicomplex ce_dele -d 3,18 -odd_e -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+
+    Hairy graph complex:
+        Build the basis:
+
+            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_b
+
+        Build the operator matrices for the differentials 'contract edges' and 'edge to one hair':
+
+            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
+            $ python GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
+
+        Compute the ranks of the operator matrices:
+
+            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -n_primes 1 -rank
+
+        Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
+            plot the cohomology dimensions of the respective graph complexes:
+
+            $ python GraphHomology.py ordinary -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
+
+    Ordinary graph bicomplex with the differentials 'contract edges' and 'delete edges':
+
+        $ python GraphHomology.py hairy -bicomplex ce_et1h -d 3,14 -h_min ,-11,-1 -odd_e -odd_h -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+"""
+
+
 import argparse
 import Log
 import Profiling
-import OrdinaryGraphComplex as OGC
-import OrdinaryGraphBiComplex as OGBC
-import HairyGraphComplex as HGC
-import HairyGraphBiComplex as HGBC
+import OrdinaryGraphComplex
+import OrdinaryGraphBiComplex
+import HairyGraphComplex
+import HairyGraphBiComplex
 import Parameters
 
 
@@ -40,19 +131,19 @@ def range_type(arg):
     return range(min, max)
 
 graph_types = ['ordinary', 'hairy']
-differentials = ['contract', 'delete_e', 'et1h']
+operators = ['contract', 'delete_e', 'et1h']
 bicomplexes = ['ce_et1h', 'ce_dele']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
 parser.add_argument('graph_type', type=str, choices=graph_types, help='type of the graphs')
 parser.add_argument('-bicomplex', type=str, choices=bicomplexes, help='bicomplex')
-parser.add_argument('-dif1', type=str, choices=differentials, help='differential 1')
-parser.add_argument('-dif2', type=str, choices=differentials, default=None, help='differential 2')
+parser.add_argument('-op1', type=str, choices=operators, help='operator 1')
+parser.add_argument('-op2', type=str, choices=operators, default=None, help='operator 2')
 parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
 parser.add_argument('-even_h', action='store_true', help='even hairs')
-parser.add_argument('-odd_h', action='store_true', help='odd edges')
+parser.add_argument('-odd_h', action='store_true', help='odd hairs')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
@@ -139,11 +230,11 @@ if __name__ == "__main__":
 
     logger.warn("\n###########################\n" + "----- Graph Homology -----")
 
-    differentials = []
+    operators = []
     if args.dif1 is not None:
-        differentials.append(args.dif1)
+        operators.append(args.op1)
     if args.dif2 is not None:
-        differentials.append(args.dif2)
+        operators.append(args.op2)
 
     if args.even_e:
             even_edges = True
@@ -158,17 +249,17 @@ if __name__ == "__main__":
                 if args.d is None:
                     raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
 
-                graph_complex = OGBC.OrdinaryCeDeleBiGC(args.d, args.even_e)
+                graph_complex = OrdinaryGraphBiComplex.OrdinaryCeDeleBiGC(args.d, args.even_e)
             else:
                 raise ValueError('Ordinary graphs bicomplexes: ce_dele')
 
-        elif len(differentials) > 0 and set(differentials) <= {'contract', 'delete_e'}:
+        elif len(operators) > 0 and set(operators) <= {'contract', 'delete_e'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
             if args.l is None:
                 raise MissingArgumentError('specify -l: range for number of loops')
 
-            graph_complex = OGC.OrdinaryGC(args.v, args.l, even_edges, differentials)
+            graph_complex = OrdinaryGraphComplex.OrdinaryGC(args.v, args.l, even_edges, operators)
         else:
             raise ValueError('Differentials for ordinary graph complex: contract, delete_e')
 
@@ -187,11 +278,11 @@ if __name__ == "__main__":
                 if args.h_min is None:
                     raise MissingArgumentError('specify -h_min: range for minimal number of hairs of degree slices in bicomplex')
 
-                graph_complex = HGBC.HairyCeEt1hBiGC(args.d, args.h_min, args.even_e, args.even_h)
+                graph_complex = HairyGraphBiComplex.HairyCeEt1hBiGC(args.d, args.h_min, args.even_e, args.even_h)
             else:
                 raise ValueError('Hairy graphs bicomplexes: ce_et1h')
 
-        elif len(differentials) > 0 and set(differentials) <= {'contract', 'et1h'}:
+        elif len(operators) > 0 and set(operators) <= {'contract', 'et1h'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
             if args.l is None:
@@ -199,7 +290,7 @@ if __name__ == "__main__":
             if args.hairs is None:
                 raise MissingArgumentError('specify -hairs: range for number of hairs')
 
-            graph_complex = HGC.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, differentials)
+            graph_complex = HairyGraphComplex.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, operators)
         else:
             raise ValueError('Differentials for hairy graph complex: contract, et1h')
 
