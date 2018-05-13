@@ -152,19 +152,7 @@ class ContractEdgesGO(GO.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            r = range(0,self.domain.n_vertices)
-            p = list(r)
-            p[0] = u
-            p[1] = v
-            idx = 2
-            for j in r:
-                if j == u or j== v:
-                    continue
-                else:
-                    p[idx] = j
-                    idx +=1
-
-            pp = SH.Perm(p).inverse()
+            pp = SH.permute_to_left((u, v), range(0, self.domain.n_vertices))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)

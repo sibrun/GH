@@ -67,6 +67,16 @@ class OperatorMatrixProperties(object):
 
 
 class OperatorMatrix(object):
+    """Operator matrices class.
+
+    Abstract class defining the interface for an operator matrix.
+
+    Attributes:
+        domain (GraphVectorSpace): Domain graph vector space.
+        target (GraphVectorSpace): Terget graph vector space.
+        properties (OperatorMatrixProperties): Operator matrix properties object, containing information like
+            validity, shape, number of nonzero entries, rank.
+    """
     __metaclass__ = ABCMeta
 
     data_type = "M"

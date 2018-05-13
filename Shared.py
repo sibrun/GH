@@ -1,3 +1,5 @@
+"""This module contains shared code."""
+
 from sage.all import *
 import collections
 
