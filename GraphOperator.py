@@ -18,7 +18,20 @@ logger = Log.logger.getChild('graph_operator')
 
 
 class OperatorMatrixProperties(object):
+    """Properties of an operator matrix.
+
+    Attributes:
+        valid (bool): Validity of the operator matrix.
+        shape (tuple(non-negative int, non-negative int)): Shape of the operator matrix.
+        entries (non-negative int): Number of nonzero entries of the sparse matrix.
+        rank (non-negative int): Exact rank of the operator matrix.
+        rank_mod_p (non-negative int): Rank determined by calculating modulo a prime number while determining the matrix
+            rank. Under bound for the exact matrix rank.
+        rank_est (non-negative int): Estimated rank using interpolative algorithms offered by the scipy module:
+            scipy.linalg.interpolative.estimate_rank
+    """
     def __init__(self):
+        """Initialize the matrix properties with None."""
         self.valid = None
         self.shape = None
         self.entries = None
@@ -28,13 +41,28 @@ class OperatorMatrixProperties(object):
 
     @classmethod
     def names(cls):
+        """Returns a list of the matrix property names.
+
+        Returns:
+            list(str): Names of the matrix properties.
+        """
         return ['valid', 'shape', 'entries', 'rank', 'rank_mod_p', 'rank_estimate']
 
     @staticmethod
     def sort_variables():
+        """Returns a list of the matrix properties used as sort keys for operator matrices.
+
+        Returns:
+            list(str): Names of the matrix properties, used as sort keys for operator matrices..
+        """
         return ['valid', 'entries']
 
     def list(self):
+        """Returns a list of the matrix properties.
+
+        Returns:
+            list: Matrix properties.
+        """
         return [self.valid, self.shape, self.entries, self.rank, self.rank_mod_p, self.rank_est]
 
 
