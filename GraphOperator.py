@@ -82,6 +82,12 @@ class OperatorMatrix(object):
     data_type = "M"
 
     def __init__(self, domain, target):
+        """Initialize domain and target graph vector spaces and initialize the operator matrix properties with None.
+
+        Aargs:
+            domain (GraphVectorSpace): Domain graph vector space.
+            target (GraphVectorSpace): Terget graph vector space.
+        """
         if not self.is_match(domain, target):
             raise ValueError("Domain %s and target %s don't match to build the operator matrix %s"
                              % (str(domain), str(target), str(self)))
@@ -90,30 +96,74 @@ class OperatorMatrix(object):
         self.properties = OperatorMatrixProperties()
 
     def get_domain(self):
+        """Returns the domain graph vector space of the operator matrix.
+
+        Returns:
+            (GraphVectorSpace): Domain graph vector space.
+        """
         return self.domain
 
     def get_target(self):
+        """Returns the target graph vector space of the operator matrix.
+
+        Returns:
+            (GraphVectorSpace): Target graph vector space.
+        """
         return self.target
 
     @abstractmethod
     def __str__(self):
+        """Unique description of the graph operator matrix.
+
+        Returns:
+            str: Unique description of the graph operator matrix.
+        """
         pass
 
     @abstractmethod
     def get_matrix_file_path(self):
+        """Returns the path for the operator matrix file.
+
+        Returns:
+            path: Path for the operator matrix file.
+        """
         pass
 
     @abstractmethod
     def get_rank_file_path(self):
+        """Returns the path for the matrix rank file.
+
+        Returns:
+            path: Path for the matrix rank file.
+        """
         pass
 
     def get_ref_matrix_file_path(self):
+        """Returns the path for the reference operator matrix file.
+
+        Refers to reference data (if available) for testing.
+
+        Returns:
+            path: Path for the reference operator matrix file.
+        """
         pass
 
     def get_ref_rank_file_path(self):
+        """Returns the path for the reference matrix rank file.
+
+        Refers to reference data (if available) for testing.
+
+        Returns:
+            path: Path for the reference matrix rank file.
+        """
         pass
 
     def is_valid(self):
+        """Returns the validity of the parameter combination for the operator matrix.
+
+        Returns:
+            bool: True if the domain and target vector spaces are valid, False otherwise.
+        """
         return self.domain.is_valid() and self.target.is_valid()
 
     @abstractmethod
