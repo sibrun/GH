@@ -1,3 +1,6 @@
+"""Module providing abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
+and bi operator matrices to be used in bicomplexes"""
+
 from abc import ABCMeta, abstractmethod
 import itertools
 from tqdm import tqdm
@@ -13,6 +16,7 @@ import Shared
 import Parameters
 import PlotCohomology
 import DisplayInfo
+import GraphVectorSpace
 
 logger = Log.logger.getChild('graph_operator')
 
@@ -72,21 +76,22 @@ class OperatorMatrix(object):
     Abstract class defining the interface for an operator matrix.
 
     Attributes:
-        domain (GraphVectorSpace): Domain graph vector space.
-        target (GraphVectorSpace): Terget graph vector space.
+        domain (GraphVectorSpace.VectorSpace): Domain vector space.
+        target (GraphVectorSpace.VectorSpace): Target vector space.
         properties (OperatorMatrixProperties): Operator matrix properties object, containing information like
             validity, shape, number of nonzero entries, rank.
     """
     __metaclass__ = ABCMeta
 
+    # Data type to store matrizes using the SMS (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html) format.
     data_type = "M"
 
     def __init__(self, domain, target):
         """Initialize domain and target graph vector spaces and initialize the operator matrix properties with None.
 
         Aargs:
-            domain (GraphVectorSpace): Domain graph vector space.
-            target (GraphVectorSpace): Terget graph vector space.
+            domain (GraphVectorSpace.VectorSpace): Domain vector space.
+            target (GraphVectorSpace.VectorSpace): Target vector space.
         """
         if not self.is_match(domain, target):
             raise ValueError("Domain %s and target %s don't match to build the operator matrix %s"
@@ -99,7 +104,7 @@ class OperatorMatrix(object):
         """Returns the domain graph vector space of the operator matrix.
 
         Returns:
-            (GraphVectorSpace): Domain graph vector space.
+            (GraphVectorSpace.VectorSpace): Domain vector space.
         """
         return self.domain
 
@@ -107,7 +112,7 @@ class OperatorMatrix(object):
         """Returns the target graph vector space of the operator matrix.
 
         Returns:
-            (GraphVectorSpace): Target graph vector space.
+            (GraphVectorSpace.VectorSpace): Target vector space.
         """
         return self.target
 
@@ -168,6 +173,13 @@ class OperatorMatrix(object):
 
     @abstractmethod
     def get_work_estimate(self):
+        """Estimates the work needed to build the operator matrix.
+
+        Arbitrary units. Used to schedule the order of building the operator matrices.
+
+        Returns:
+            non-negative int: Estimate the work to build the operator matrix. Arbitrary units.
+        """
         pass
 
     @abstractmethod
@@ -177,32 +189,82 @@ class OperatorMatrix(object):
     @staticmethod
     @abstractmethod
     def is_match(domain, target):
+        """Returns whether domain and target vector space match to build a operator matrix.
+
+        Args:
+            domain (GraphVectorSpace.VectorSpace): Potential domain vector space for an operator matrix.
+            target (GraphVectorSpace.VectorSpace): Potential target vector space for an operator matrix.
+        Returns:
+            bool: True if domain and target match to build an operator matrix, False otherwise.
+        """
         pass
 
     def exists_matrix_file(self):
+        """Return whether there exists a matrix file.
+
+        Returns:
+            bool: True if there exists a matrix file, False otherwise.
+        """
         return os.path.isfile(self.get_matrix_file_path())
 
     def exists_rank_file(self):
+        """Return whether there exists a rank file.
+
+        Returns:
+            bool: True if there exists a rank file, False otherwise.
+        """
         return os.path.isfile(self.get_rank_file_path())
 
     def delete_matrix_file(self):
+        """Delete the matrix file."""
         if os.path.isfile(self.get_matrix_file_path()):
             os.remove(self.get_matrix_file_path())
 
     def delete_rank_file(self):
+        """Delete the rank file."""
         if os.path.isfile(self.get_rank_file_path()):
             os.remove(self.get_rank_file_path())
 
-    def _store_matrix_list(self, matrixList, shape, data_type=data_type):
+    def _store_matrix_list(self, matrix_list, shape, data_type=data_type):
+        """Store the operator matrix in SMS format to the matrix file.
+
+        The header line contains the shape of the matrix (nrows = domain dimension, ncols = target dimension) and
+        the data type of the SMS (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html) format. In the file the
+        matrix entries are listed as (domain index, target index, value).
+
+        Args:
+            matrix_list (list(tuple(non-negative int, non-negative int, int))): List of matrix entries in the form
+                (domain index, target index, value). The list entries must be ordered lexicographically.
+            shape (tuple(non-negative int, non-negative int)): Tuple containing the matrix shape
+                (nrows = domain dimension, ncols = target dimension).
+            data_type (str, optional): data_type for the SMS format.
+        """
         (d, t) = shape
         stringList = []
         stringList.append("%d %d %s" % (d, t, data_type))
-        for (i, j, v) in matrixList:
+        for (i, j, v) in matrix_list:
             stringList.append("%d %d %d" % (i + 1, j + 1, v))
         stringList.append("0 0 0")
         StoreLoad.store_string_list(stringList, self.get_matrix_file_path())
 
     def _load_matrix_list(self):
+        """Load the operator matrix in SMS format from the matrix file.
+
+        Returns the matrix list, i.e. a list of the non-zero matrix entries and a the matrix shape, i.e. a tuple with
+        the number of rows and columns.
+
+        Returns:
+            tuple(list(tuple(non-negative int, non-negative int, int)), tuple(non-negative int, non-negative int)):
+                (matrix_list, shape)
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
         if not self.exists_matrix_file():
             raise StoreLoad.FileNotFoundError("Cannot load matrix, No matrix file found for %s: " % str(self))
         stringList = StoreLoad.load_string_list(self.get_matrix_file_path())
@@ -215,7 +277,7 @@ class OperatorMatrix(object):
         if not tail == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file"
                              % str(self.get_matrix_file_path()))
-        matrixList = []
+        matrix_list = []
         for line in stringList:
             (i, j, v) = map(int, line.split(" "))
             if i < 1 or j < 1:
@@ -223,21 +285,58 @@ class OperatorMatrix(object):
             if i > d or j > t:
                 raise ValueError("%s: Invalid matrix index outside matrix size:"
                                  " %d %d" % (str(self.get_matrix_file_path()), i, j))
-            matrixList.append((i - 1, j - 1, v))
-        return (matrixList, shape)
+            matrix_list.append((i - 1, j - 1, v))
+        return (matrix_list, shape)
 
     def get_matrix_list(self):
-        (matrixList, shape) = self._load_matrix_list()
-        return matrixList
+        """Returns the list of nonzero matrix entries.
+
+        Returns list(tuple(non-negative int, non-negative int, int)): List of matrix entries in the form
+            (domain index, target index, value).
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
+        (matrix_list, shape) = self._load_matrix_list()
+        return matrix_list
 
     def get_shifted_matrix_list(self, domain_start, target_start):
-        matrixList = self.get_matrix_list()
-        shiftedMatrixList = []
-        for (i, j, v) in matrixList:
-            shiftedMatrixList.append((i + domain_start, j + target_start, v))
-        return shiftedMatrixList
+        """Returns the list of nonzero matrix entries with indices shifted by the domain and target start indices.
+
+        The shifted matrix list is used to build the operator matrix of bioperators in bicomplexes.
+
+        Returns list(tuple(non-negative int, non-negative int, int)): List of matrix entries in the form
+            (domain index + domain start index, target index + target start index, value).
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
+        matrix_list = self.get_matrix_list()
+        shifted_matrix_list = []
+        for (i, j, v) in matrix_list:
+            shifted_matrix_list.append((i + domain_start, j + target_start, v))
+        return shifted_matrix_list
 
     def get_matrix_shape(self):
+        """Returns the matrix shape.
+
+        Returns:
+            tuple(non-negative int, non-negative): Matrix shape = (target dimension, domain dimension).
+
+        Raises:
+            StoreLoad.FileNotFoundError: If there is neither a matrix file nor the basis files of the domain and target
+                vector spaces an exception is raised.
+        """
         try:
             header = StoreLoad.load_line(self.get_matrix_file_path())
             (d, t, data_type) = header.split(" ")
@@ -252,6 +351,20 @@ class OperatorMatrix(object):
         return (t, d)
 
     def get_matrix_shape_entries(self):
+        """Returns the matrix shape and the number of non-zero matrix entries.
+
+        Returns:
+            tuple(tuple(non-negative int, non-negative), non-negative int): (matrix shape, entries).
+                Matrix shape = (target dimension, domain dimension) and number of non-zero matrix entries.
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
         try:
             (matrixList, shape) = self._load_matrix_list()
             (d, t) = shape
@@ -260,12 +373,39 @@ class OperatorMatrix(object):
             raise StoreLoad.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
 
     def get_matrix_entries(self):
+        """Returns the number of non-zero matrix entries.
+
+        Returns:
+            non-negative int: Number of non-zero matrix entries.
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
         if not self.is_valid():
             return 0
         (shape, entries) = self.get_matrix_shape_entries()
         return entries
 
     def is_trivial(self):
+        """Tests whether the matrix is trivial, i.e. is not valid, has zero dimension or hasn't any non-zero entries
+
+        Returns:
+            bool: True if the matrix is trivial (not valid, zero dimension or no non-zero entries), False otherwise.
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix is valid and the matrix file or the basis files of domain and
+                target cannot be found an exception is raised.
+            ValueError: An exception is raised if the matrix is valid one of the following cases occurs:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
         if not self.is_valid():
             return True
         (t, d) = self.get_matrix_shape()
@@ -279,16 +419,29 @@ class OperatorMatrix(object):
         if not self.is_valid():
             logger.warn("Zero matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
-            entriesList = []
+            entries_list = []
         else:
-            (entriesList, shape) = self._load_matrix_list()
+            (entries_list, shape) = self._load_matrix_list()
             (d, t) = shape
         M = matrix(ZZ, d, t, sparse=True)
-        for (i, j, v) in entriesList:
+        for (i, j, v) in entries_list:
             M.add_to_entry(i, j, v)
         return M
 
     def get_matrix(self):
+        """Returns the operator matrix as sage matrix.
+
+        Returns: sage.Matrix: operator matrix with shape (target dimension, domain dimension).
+
+        Raises:
+            StoreLoad.FileNotFoundError: If the matrix file or the basis files of domain and target vector spaces
+                cannot be found an exception is raised.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                End line is missing.
+                Non-positive matrix indices.
+                Matrix indices outside matrix shape.
+        """
         M = self.get_matrix_transposed().transpose()
         if M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension():
             raise ValueError("Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
@@ -298,8 +451,8 @@ class OperatorMatrix(object):
         data = []
         row_ind = []
         col_ind = []
-        (entriesList, shape) = self._load_matrix_list()
-        for (r, c, d) in entriesList:
+        (entries_list, shape) = self._load_matrix_list()
+        for (r, c, d) in entries_list:
             row_ind.append(r)
             col_ind.append(c)
             data.append(d)
@@ -436,6 +589,11 @@ class OperatorMatrix(object):
             pass
 
     def get_properties(self):
+        """Returns the operator matrix properties.
+
+        Returns:
+            OperatorMatrixProperties: Operator matrix properties.
+        """
         return self.properties
 
 
@@ -529,29 +687,29 @@ class GraphOperator(Operator, OperatorMatrix):
         #if not progress_bar:
         print(desc)
         listOfLists = []
-        #for domainBasisElement in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
-        for domainBasisElement in list(enumerate(domainBasis)):
-            listOfLists.append(self._generate_matrix_list(domainBasisElement, lookup))
+        #for domain_basis_element in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
+        for domain_basis_element in list(enumerate(domainBasis)):
+            listOfLists.append(self._generate_matrix_list(domain_basis_element, lookup))
         matrixList = list(itertools.chain.from_iterable(listOfLists))
         matrixList.sort()
         self._store_matrix_list(matrixList, shape)
 
-    def _generate_matrix_list(self, domainBasisElement, lookup):
-        (domainIndex, G) = domainBasisElement
+    def _generate_matrix_list(self, domain_basis_element, lookup):
+        (domainIndex, G) = domain_basis_element
         imageList = self.operate_on(G)
-        canonImages = dict()
+        canon_images = dict()
         for (GG, prefactor) in imageList:
             (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
-            sgn0 = canonImages.get(GGcanon6)
+            sgn0 = canon_images.get(GGcanon6)
             sgn0 = sgn0 if sgn0 is not None else 0
-            canonImages.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
-        matrixList = []
-        for (image, factor) in canonImages.items():
+            canon_images.update({GGcanon6: (sgn0 + sgn1 * prefactor)})
+        matrix_list = []
+        for (image, factor) in canon_images.items():
             if factor:
                 targetIndex = lookup.get(image)
                 if targetIndex is not None:
-                    matrixList.append((domainIndex, targetIndex, factor))
-        return matrixList
+                    matrix_list.append((domainIndex, targetIndex, factor))
+        return matrix_list
 
 
 class BiOperatorMatrix(OperatorMatrix):

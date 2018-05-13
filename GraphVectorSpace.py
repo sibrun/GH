@@ -115,7 +115,15 @@ class VectorSpace(object):
 
     @abstractmethod
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
-        """Build the vector space basis."""
+        """Build the vector space basis.
+
+        Args:
+            progress_bar (bool, optional): Option to show a progress bar (Default: False).
+            ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
+                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
+                 (Default: False).
+            kwargs: Accepting further keyword arguments.
+        """
         pass
 
     @abstractmethod
@@ -124,7 +132,7 @@ class VectorSpace(object):
         pass
 
     def get_properties(self):
-        """Access the vector space properties.
+        """Returns the vector space properties.
 
         Returns:
             VectorSpaceProperties: Vector space properties.
@@ -267,8 +275,8 @@ class GraphVectorSpace(VectorSpace):
             tuple(str, int): Tuple containing the graph6 string of the canonically labeled graph and the corresponding
                 permutation sign.
         """
-        canonG, permDict = graph.canonical_label(partition=self.get_partition(), certificate=True)
-        sgn = self.perm_sign(graph, permDict.values())
+        canonG, perm_dict = graph.canonical_label(partition=self.get_partition(), certificate=True)
+        sgn = self.perm_sign(graph, perm_dict.values())
         return (canonG.graph6_string(), sgn)
 
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
@@ -304,27 +312,27 @@ class GraphVectorSpace(VectorSpace):
         desc = 'Build basis: ' + str(self.get_ordered_param_dict())
         #if not progress_bar:
         print(desc)
-        basisSet = set()
+        basis_set = set()
 
         #for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
         for G in generatingList:
             # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set
             # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:
-                automList = G.automorphism_group().gens()
+                autom_list = G.automorphism_group().gens()
                 canonG = G.canonical_label()
             else:
                 # The canonical labelling respects the partition of the vertices.
-                automList = G.automorphism_group(partition=self.get_partition()).gens()
+                autom_list = G.automorphism_group(partition=self.get_partition()).gens()
                 canonG = G.canonical_label(partition=self.get_partition())
             canon6 = canonG.graph6_string()
-            if not canon6 in basisSet:
-                if not self._has_odd_automorphisms(G, automList):
-                    basisSet.add(canon6)
+            if not canon6 in basis_set:
+                if not self._has_odd_automorphisms(G, autom_list):
+                    basis_set.add(canon6)
 
-        #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basisSet, pbar_info=pbar_info, desc=desc)
+        #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basis_set, pbar_info=pbar_info, desc=desc)
 
-        self._store_basis_g6(list(basisSet))
+        self._store_basis_g6(list(basis_set))
 
     #def _generate_basis_set(self, G, basis_set):
         #if self.get_partition() is None:
@@ -381,7 +389,7 @@ class GraphVectorSpace(VectorSpace):
         except StoreLoad.FileNotFoundError:
             raise StoreLoad.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
-    def _store_basis_g6(self, basisList):
+    def _store_basis_g6(self, basis_list):
         """Stores the basis to the basis file.
 
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the
@@ -389,10 +397,10 @@ class GraphVectorSpace(VectorSpace):
         The first line of the basis file contains the dimension of the vector space.
 
         Args:
-            basisList (list(str)): List of graph6 strings.
+            basis_list (list(str)): List of graph6 strings.
         """
-        basisList.insert(0, str(len(basisList)))
-        StoreLoad.store_string_list(basisList, self.get_basis_file_path())
+        basis_list.insert(0, str(len(basis_list)))
+        StoreLoad.store_string_list(basis_list, self.get_basis_file_path())
 
     def _load_basis_g6(self):
         """Loads the basis from the basis file.
@@ -410,11 +418,11 @@ class GraphVectorSpace(VectorSpace):
         """
         if not self.exists_basis_file():
             raise StoreLoad.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
-        basisList = StoreLoad.load_string_list(self.get_basis_file_path())
-        dim = int(basisList.pop(0))
-        if len(basisList) != dim:
+        basis_list = StoreLoad.load_string_list(self.get_basis_file_path())
+        dim = int(basis_list.pop(0))
+        if len(basis_list) != dim:
             raise ValueError("Basis read from file %s has wrong dimension" % str(self.get_basis_file_path()))
-        return basisList
+        return basis_list
 
     def get_basis_g6(self):
         """Returns the basis of the vector space as list of graph6 strings.

@@ -1,12 +1,14 @@
-"""Compute the cohomology dimensions of graph complexes as well as bicomplexes.
+"""Compute the cohomology dimensions of graph complexes and bicomplexes.
 
-Build graph complexes as well as bicomplexes.
+Build graph complexes and bicomplexes.
 Test whether an operator squares to zero, i.e. is a differential.
 Test whether two operators anti-commute or commute, i.e. build a differential for a bicomplex.
 Plot the cohomology dimensions of a graph complex.
 
 This module parses command line arguments and contains the main function.
-Building the basis and operator matrices as well as computing the matrix rank can be done in parallel.
+Building the basis and operator matrix as well as computing the matrix rank can be done in parallel for
+different parameters. Use the option (-n_jobs) to specify the number of parallel jobs.
+However, building a single basis or matrix file or computing a rank for a specific matrix can not be done in parallel.
 
 There are options to ignore existing files (-ignore_ex), to display informations (-info), to show a progress bar (-pbar),
 for logging (-log warning), and for profiling (-profile).
@@ -14,7 +16,7 @@ for logging (-log warning), and for profiling (-profile).
 Display informations and show a progress bar are only available if not several processes work in parallel
 (default: -n_jobs=1).
 
-Prerequisits:
+Prerequisites:
     sagemath: This software is based on the sage math library.
         Download sagemath from:
 
