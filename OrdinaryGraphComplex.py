@@ -33,10 +33,6 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
-    def get_plot_path(self):
-        s = "gra%d_%d" % self.get_ordered_param_dict().get_value_tuple()
-        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
-
     def get_ref_basis_file_path(self):
         s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)

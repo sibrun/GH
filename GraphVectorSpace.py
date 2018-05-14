@@ -187,15 +187,6 @@ class GraphVectorSpace(VectorSpace):
         """
         pass
 
-    @abstractmethod
-    def get_plot_path(self):
-        """Returns the path for the cohomology dimension plot file.
-
-        Returns:
-            path: Path for the cohomology dimension plot file.
-        """
-        pass
-
     def get_ref_basis_file_path(self):
         """Returns the path for the reference basis file.
 
@@ -624,7 +615,7 @@ class SumVectorSpace(VectorSpace):
         else:
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
+    def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the basis of the sub vector spaces.
 
         Call build_basis for each sub vector space of the sum vector space.

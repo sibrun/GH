@@ -258,7 +258,7 @@ class OperatorMatrix(object):
                 (matrix_list, shape)
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -295,7 +295,7 @@ class OperatorMatrix(object):
             (domain index, target index, value).
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -314,7 +314,7 @@ class OperatorMatrix(object):
             (domain index + domain start index, target index + target start index, value).
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -334,8 +334,8 @@ class OperatorMatrix(object):
             tuple(non-negative int, non-negative): Matrix shape = (target dimension, domain dimension).
 
         Raises:
-            StoreLoad.FileNotFoundError: If there is neither a matrix file nor the basis files of the domain and target
-                vector spaces an exception is raised.
+            StoreLoad.FileNotFoundError: Raised if there is neither a matrix file nor the basis files of the domain and target
+                vector spaces.
         """
         try:
             header = StoreLoad.load_line(self.get_matrix_file_path())
@@ -358,7 +358,7 @@ class OperatorMatrix(object):
                 Matrix shape = (target dimension, domain dimension) and number of non-zero matrix entries.
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -379,7 +379,7 @@ class OperatorMatrix(object):
             non-negative int: Number of non-zero matrix entries.
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file cannot be found.
+            StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -398,8 +398,8 @@ class OperatorMatrix(object):
             bool: True if the matrix is trivial (not valid, zero dimension or no non-zero entries), False otherwise.
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix is valid and the matrix file or the basis files of domain and
-                target cannot be found an exception is raised.
+            StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file or the basis files of domain and
+                target cannot be found.
             ValueError: An exception is raised if the matrix is valid one of the following cases occurs:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -416,6 +416,19 @@ class OperatorMatrix(object):
         return False
 
     def get_matrix_transposed(self):
+        """Returns the transposed operator matrix as sage matrix.
+
+               Returns: sage.Matrix: Transposed operator matrix with shape (domain dimension, target dimension).
+
+               Raises:
+                   StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
+                       cannot be found.
+                   ValueError: An exception is raised in the following cases:
+                       The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                       End line is missing.
+                       Non-positive matrix indices.
+                       Matrix indices outside matrix shape.
+               """
         if not self.is_valid():
             logger.warn("Zero matrix: %s is not valid" % str(self))
             (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
@@ -431,11 +444,11 @@ class OperatorMatrix(object):
     def get_matrix(self):
         """Returns the operator matrix as sage matrix.
 
-        Returns: sage.Matrix: operator matrix with shape (target dimension, domain dimension).
+        Returns: sage.Matrix: Operator matrix with shape (target dimension, domain dimension).
 
         Raises:
-            StoreLoad.FileNotFoundError: If the matrix file or the basis files of domain and target vector spaces
-                cannot be found an exception is raised.
+            StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
+                cannot be found.
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -448,6 +461,19 @@ class OperatorMatrix(object):
         return M
 
     def get_matrix_scipy_transposed(self):
+        """Returns the transposed operator matrix as sage matrix.
+
+        Returns: sage.Matrix: Transposed operator matrix with shape (domain dimension, target dimension).
+
+        Raises:
+            StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
+                cannot be found.
+            ValueError: An exception is raised in the following cases:
+                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                   End line is missing.
+                   Non-positive matrix indices.
+                   Matrix indices outside matrix shape.
+               """
         data = []
         row_ind = []
         col_ind = []
@@ -681,16 +707,16 @@ class GraphOperator(Operator, OperatorMatrix):
         lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
         desc = 'Build matrix of %s operator: Domain: %s' % (str(self.get_type()), str(self.domain.get_ordered_param_dict()))
 
-        #listOfLists = Parallel.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
+        #list_of_lists = Parallel.parallel_common_progress(self._generate_matrix_list, list(enumerate(domainBasis)), lookup,
                                                   #n_jobs=n_jobs, progress_bar=progress_bar, desc=desc)
 
         #if not progress_bar:
         print(desc)
-        listOfLists = []
+        list_of_lists = []
         #for domain_basis_element in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
         for domain_basis_element in list(enumerate(domainBasis)):
-            listOfLists.append(self._generate_matrix_list(domain_basis_element, lookup))
-        matrixList = list(itertools.chain.from_iterable(listOfLists))
+            list_of_lists.append(self._generate_matrix_list(domain_basis_element, lookup))
+        matrixList = list(itertools.chain.from_iterable(list_of_lists))
         matrixList.sort()
         self._store_matrix_list(matrixList, shape)
 
