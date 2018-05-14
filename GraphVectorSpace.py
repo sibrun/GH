@@ -294,17 +294,10 @@ class GraphVectorSpace(VectorSpace):
 
         generatingList = self.get_generating_graphs()
 
-        if len(generatingList) == 0:
-            # Warn if no generating graphs.
-            print('Skip building basis, list of generating graphs has zero length for %s' % str(self))
-            logger.warn('Skip building basis, list of generating graphs has zero length for %s' % str(self))
-            return
-
         desc = 'Build basis: ' + str(self.get_ordered_param_dict())
         #if not progress_bar:
         print(desc)
         basis_set = set()
-
         #for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
         for G in generatingList:
             # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set

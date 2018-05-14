@@ -78,7 +78,7 @@ class CeEt1hD(GO.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
-        s = "cohomology_dim_contract_edges_edge_to_one_hair_D_%s_%s.png" % (HGC.graph_type, sub_type)
+        s = "cohomology_dim_contract_edges_edge_to_one_hair_D_%s_%s" % (HGC.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, HGC.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):

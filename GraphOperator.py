@@ -909,7 +909,6 @@ class Differential(OperatorMatrixCollection):
     def get_cohomology_plot_path(self):
         pass
 
-    @abstractmethod
     def get_cohomology_plot_parameter_order(self):
         pass
 

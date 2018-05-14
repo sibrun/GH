@@ -87,10 +87,11 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             return []
         n_vertices_1 = self.n_vertices
         n_vertices_2 = self.n_hairs + self.n_edges
-        deg_range_1 = range(3, self.n_edges + 1)
-        deg_range_2 = range(1, 3)
         n_edges_bip = self.n_hairs + 2 * self.n_edges
-        bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
+        deg_range_1 = (3, n_edges_bip)
+        deg_range_2 = (1, 2)
+        bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
+                                                                n_edges_bip)
         hairy_graphs = [self._bip_to_ordinary(G) for G in bipartite_graphs]
         list_of_lists = [self._hairy_to_bi_colored_hairy(G) for G in hairy_graphs]
         return list(itertools.chain.from_iterable(list_of_lists))
@@ -196,11 +197,8 @@ class ContractEdgesD(GraphOperator.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
-        s = "cohomology_dim_contract_D_%s_%s.png" % (graph_type, sub_type)
+        s = "cohomology_dim_contract_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
-    def get_cohomology_plot_parameter_order(self):
-        return (0, 1, 2)
 
 
 class SplitEdgesGO(GraphOperator.GraphOperator):
@@ -283,11 +281,8 @@ class SplitEdgesD(GraphOperator.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
-        s = "cohomology_dim_split_D_%s_%s.png" % (graph_type, sub_type)
+        s = "cohomology_dim_split_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
-    def get_cohomology_plot_parameter_order(self):
-        return (1, 2, 0)
 
 """
 # ------- Graph Complex --------

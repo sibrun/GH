@@ -2,73 +2,47 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import logging
-import StoreLoad as SL
+import pandas
+import StoreLoad
 import Parameters
-import Shared as SH
+import Shared
 
 
-def plot_array(value_dict, ordered_param_range_dict, path, parameter_order):
-    if len(ordered_param_range_dict) == 1:
-        plot_1d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
-    elif len(ordered_param_range_dict) == 2:
-        plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
-    elif len(ordered_param_range_dict) == 3:
-        plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+def plot_array(value_dict, ordered_param_range_dict, path, as_list=False, parameter_order=None):
+    if len(ordered_param_range_dict) == 2 and not as_list:
+        if parameter_order is not None:
+            plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+        else:
+            plot_2d_array(value_dict, ordered_param_range_dict, path)
+    elif len(ordered_param_range_dict) == 3 and not as_list:
+        if parameter_order is not None:
+            plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+        else:
+            plot_3d_array(value_dict, ordered_param_range_dict, path)
     else:
-        raise ValueError('Need 1, 2 or 3 parameters for plotting')
-
-def plot_1d_array(value_dict, ordered_param_range_dict, path, **kwargs):
-    (x_label, x_range) = ordered_param_range_dict.items()[0]
-    y_range = range(0, 1)
-    if len(list(x_range)) == 0 or len(list(y_range)) == 0:
-        logging.warn('empty parameter range: nothing to plot')
-        return
-
-    x_min = min(x_range)
-    x_max = max(x_range)
-    x_size = (x_max + 1 - x_min) * Parameters.x_width
-    y_min = min(y_range)
-    y_max = max(y_range)
-    y_size = (y_max + 1 - y_min) * Parameters.y_width
-
-    fig, ax = plt.subplots(figsize=(x_size, y_size))
-
-    for x in x_range:
-        v = value_dict.get((x,))
-        if v is not None:
-            v = Parameters.zero_symbol if v == 0 else v
-            ax.text(x, 0, str(v), va='center', ha='center')
-
-    x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
-    #y_ticks_grid = np.arange(y_min - 0.5, y_max + 1, 1)
-
-    x_ticks = np.arange(x_min, x_max + 1, 1)
-    y_ticks = np.arange(y_min, y_max + 1, 1)
-
-    ax.set_xticks(x_ticks)
-    ax.set_yticks(y_ticks)
-    ax.set_xticks(x_ticks_grid, minor=True)
-    #ax.set_yticks(y_ticks_grid, minor=True)
-    ax.grid(which='minor')
+        plot_list(value_dict, ordered_param_range_dict, path)
 
 
-    #plt.ylabel(y_label)
-
-    plt.xlim(x_min, x_max)
-    plt.ylim(y_min, y_max)
-
-    plt.xlabel(x_label)
-
-    SL.generate_path(path)
-    plt.savefig(path)
+def plot_list(value_dict, ordered_param_range_dict, path):
+    path += '.html'
+    StoreLoad.generate_path(path)
+    data_list = []
+    for (key, value) in value_dict.items():
+        value = ' ' if value is None else value
+        data_list.append(list(key) + [value])
+    data_list.sort()
+    columns = ordered_param_range_dict.keys()+['dimension']
+    data_frame = pandas.DataFrame(data=data_list, columns=columns)
+    data_frame.to_html(path)
 
 
 def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
-    if parameter_order in [(0, 1), (1, 0)]:
+    path += '.png'
+    if parameter_order in {(0, 1), (1, 0)}:
         (x_idx, y_idx) = parameter_order
     else:
         raise ValueError('invalid parameter order')
-    inverse_order = tuple(SH.Perm(list(parameter_order)).inverse())
+    inverse_order = tuple(Shared.Perm(list(parameter_order)).inverse())
 
     (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
     (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
@@ -113,16 +87,17 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
 
     plt.tight_layout()
 
-    SL.generate_path(path)
+    StoreLoad.generate_path(path)
     plt.savefig(path)
 
 
 def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1, 2), x_plots=Parameters.x_plots):
+    path += '.png'
     if parameter_order in {(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)}:
         (x_idx, y_idx, z_idx) = parameter_order
     else:
         raise ValueError('invalid parameter order')
-    inverse_order = tuple(SH.Perm(list(parameter_order)).inverse())
+    inverse_order = tuple(Shared.Perm(list(parameter_order)).inverse())
 
     (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
     (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
@@ -185,7 +160,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
             ax = get_ax(axarr, x_plots, y_plots, z, z_min)
             fig.delaxes(ax)
 
-    SL.generate_path(path)
+    StoreLoad.generate_path(path)
     plt.savefig(path)
 
 

@@ -12,20 +12,19 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
     nauty_string = ("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (n_vertices, n_edges, n_edges)
     #logger.warn('call nauty to generate simple graphs: ' + nauty_string)
     graph_list = list(graphs.nauty_geng(nauty_string))
-    if len(graph_list) == 0:
-        print('call nauty to generate bipartite graphs: ' + nauty_string)
-        print('List of bipartite graphs generated using nauty has zero length')
-        logger.warn('call nauty to generate bipartite graphs: ' + nauty_string)
-        logger.warn('List of simple graphs generated using nauty has zero length')
+    #if len(graph_list) == 0:
+        #print('Call nauty to generate bipartite graphs: ' + nauty_string)
+        #print('List of bipartite graphs generated using nauty has zero length')
+        #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_string)
+        #logger.warn('List of simple graphs generated using nauty has zero length')
     return graph_list
 
 
 def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
     """creates a list of bipartite graphs, vertices of the first colour have degree in the range min_deg_1:max_deg_1,
     vertices of the second colour have degree in the range min_deg_2:max_deg_2"""
-
-    (min_deg_1, max_deg_1) = (min(deg_range_1), max(deg_range_1))
-    (min_deg_2, max_deg_2) = (min(deg_range_2), max(deg_range_2))
+    (min_deg_1, max_deg_1) = deg_range_1
+    (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
     with tempfile.NamedTemporaryFile() as f:
         nauty_command = 'genbgL -czlq -d%d:%d -D%d:%d %d %d %d:%d %s' % \
@@ -33,9 +32,9 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
         #logger.warn('call nauty to generate bipartite graphs: ' + nauty_command)
         os.system(nauty_command)
         list_g6 = f.read().splitlines()
-        if len(list_g6) == 0:
-            print('call nauty to generate bipartite graphs: ' + nauty_command)
-            print('List of bipartite graphs generated using nauty has zero length')
-            logger.warn('call nauty to generate bipartite graphs: ' + nauty_command)
-            logger.warn('List of bipartite graphs generated using nauty has zero length')
+        #if len(list_g6) == 0:
+            #print('Call nauty to generate bipartite graphs: ' + nauty_command)
+            #print('List of bipartite graphs generated using nauty has zero length')
+            #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_command)
+            #logger.warn('List of bipartite graphs generated using nauty has zero length')
     return [Graph(g6) for g6 in list_g6]

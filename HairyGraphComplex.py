@@ -76,11 +76,11 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             return []
         n_vertices_1 = self.n_vertices
         n_vertices_2 = self.n_hairs + self.n_edges
-        deg_range_1 = range(3, self.n_edges + 1)
-        deg_range_2 = range(1, 3)
         n_edges_bip = self.n_hairs + 2 * self.n_edges
-        L = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
-        return [self._bip_to_ordinary(G) for G in L]
+        deg_range_1 = (3, n_edges_bip + 1)
+        deg_range_2 = (1, 2)
+        bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
+        return [self._bip_to_ordinary(G) for G in bipartite_graphs]
 
     def perm_sign(self, G, p):
         # the sign is the same as the corresponding sign in the
@@ -207,11 +207,8 @@ class ContractEdgesD(GraphOperator.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
-        s = "cohomology_dim_contract_D_%s_%s.png" % (graph_type, sub_type)
+        s = "cohomology_dim_contract_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
-    def get_cohomology_plot_parameter_order(self):
-        return (0, 1, 2)
 
 
 class EdgeToOneHairGO(GraphOperator.GraphOperator):
@@ -292,7 +289,7 @@ class EdgeToOneHairD(GraphOperator.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
-        s = "cohomology_dim_edge_to_one_hair_D_%s_%s.png" % (graph_type, sub_type)
+        s = "cohomology_dim_edge_to_one_hair_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_cohomology_plot_parameter_order(self):
