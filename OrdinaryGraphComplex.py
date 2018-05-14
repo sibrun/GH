@@ -1,10 +1,10 @@
 import itertools
 from sage.all import *
-import GraphVectorSpace as GVS
-import GraphOperator as GO
-import GraphComplex as GC
-import Shared as SH
-import NautyInterface as NI
+import GraphVectorSpace
+import GraphOperator
+import GraphComplex
+import Shared
+import NautyInterface
 import Parameters
 
 
@@ -13,7 +13,7 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 
 
 # ------- Graph Vector Space --------
-class OrdinaryGVS(GVS.GraphVectorSpace):
+class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
     def __init__(self, n_vertices, n_loops, even_edges):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
@@ -38,7 +38,7 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ordered_param_dict(self):
-        return SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+        return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
 
     def get_partition(self):
         return None
@@ -55,12 +55,12 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
     def get_generating_graphs(self):
         if not self.is_valid():
             return []
-        return NI.list_simple_graphs(self.n_vertices, self.n_edges)
+        return NautyInterface.list_simple_graphs(self.n_vertices, self.n_edges)
 
     def perm_sign(self, G, p):
         if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
-            sign = SH.Perm(p).signature()
+            sign = Shared.Perm(p).signature()
             for (u, v) in G.edges(labels=False):
                 # we assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -78,10 +78,10 @@ class OrdinaryGVS(GVS.GraphVectorSpace):
 
             # we permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
-            return SH.Perm([j for (u, v, j) in G1.edges()]).signature()
+            return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
 
 
-class SumOrdinaryGVS(GVS.SumVectorSpace):
+class SumOrdinaryGVS(GraphVectorSpace.SumVectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
@@ -95,11 +95,11 @@ class SumOrdinaryGVS(GVS.SumVectorSpace):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def get_ordered_param_range_dict(self):
-        return SH.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
 
 
 # ------- Operators --------
-class ContractEdgesGO(GO.GraphOperator):
+class ContractEdgesGO(GraphOperator.GraphOperator):
     def __init__(self, domain, target):
         if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edges operator")
@@ -148,7 +148,7 @@ class ContractEdgesGO(GO.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            pp = SH.permute_to_left((u, v), range(0, self.domain.n_vertices))
+            pp = Shared.permute_to_left((u, v), range(0, self.domain.n_vertices))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -168,7 +168,7 @@ class ContractEdgesGO(GO.GraphOperator):
         return image
 
 
-class ContractEdgesD(GO.Differential):
+class ContractEdgesD(GraphOperator.Differential):
     def __init__(self, vector_space):
         super(ContractEdgesD, self).__init__(vector_space, ContractEdgesGO.generate_op_matrix_list(vector_space))
 
@@ -181,7 +181,7 @@ class ContractEdgesD(GO.Differential):
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 
-class DeleteEdgesGO(GO.GraphOperator):
+class DeleteEdgesGO(GraphOperator.GraphOperator):
     def __init__(self, domain, target):
         if not DeleteEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for delete edges operator")
@@ -237,7 +237,7 @@ class DeleteEdgesGO(GO.GraphOperator):
         return image
 
 
-class DeleteEdgesD(GO.Differential):
+class DeleteEdgesD(GraphOperator.Differential):
     def __init__(self, vector_space):
         super(DeleteEdgesD, self).__init__(vector_space, DeleteEdgesGO.generate_op_matrix_list(vector_space))
 
@@ -251,7 +251,7 @@ class DeleteEdgesD(GO.Differential):
 
 
 # ------- Graph Complexes --------
-class OrdinaryGC(GC.GraphComplex):
+class OrdinaryGC(GraphComplex.GraphComplex):
     def __init__(self, v_range, l_range, even_edges, differentials):
         self.v_range = v_range
         self.l_range = l_range
