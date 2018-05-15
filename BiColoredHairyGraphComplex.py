@@ -44,8 +44,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and \
-               self.n_hairs_a == other.n_hairs_a and self.n_hairs_b == other.n_hairs_b \
-               and self.sub_type == other.sub_type
+               self.n_hairs_a == other.n_hairs_a and self.n_hairs_b == other.n_hairs_b
 
     def get_basis_file_path(self):
         s = "gra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
@@ -143,13 +142,13 @@ class BiColoredHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.l_range = l_range
         self.h_a_range = h_a_range
         self.h_b_range = h_b_range
-        self.even_edges = even_edges
-        self.even_hairs_a = even_hairs_a
-        self.even_hairs_b = even_hairs_b
-        self.sub_type = get_sub_type(self.even_edges, self.even_hairs_a, self.even_hairs_b)
+        self.sub_type = get_sub_type(even_edges, even_hairs_a, even_hairs_b)
 
-        vs_list = [BiColoredHairyGraphVS(v, l, h_a, h_b, self.even_edges, self.even_hairs_a, self.even_hairs_b) for
-                   (v, l, h_a, h_b) in itertools.product(self.v_range, self.l_range, self.h_a_range, self.h_b_range)]
+        vs_list = []
+        for (v, l, h_a, h_b) in itertools.product(self.v_range, self.l_range, self.h_a_range, self.h_b_range):
+            if even_hairs_a == even_hairs_b and h_a < h_b:
+                continue # Symmetry between a and b hairs.
+            vs_list.append(BiColoredHairyGraphVS(v, l, h_a, h_b, even_edges, even_hairs_a, even_hairs_b))
         super(BiColoredHairyGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
@@ -254,8 +253,10 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
                 Shared.enumerate_edges(G1)
                 e_label = G1.edge_label(u, v)
             G1.delete_edge((u, v))
+
             new_hair_idx_1 = self.domain.n_vertices + self.domain.n_hairs
             new_hair_idx_2 = new_hair_idx_1 + 1
+
             G1.add_vertex(new_hair_idx_1)
             G1.add_edge((u, new_hair_idx_1))
             G1.add_vertex(new_hair_idx_2)
@@ -312,13 +313,10 @@ class BiColoredHairyGC(GraphComplex.GraphComplex):
         self.l_range = l_range
         self.h_a_range = h_a_range
         self.h_b_range = h_b_range
-        self.even_edges = even_edges
-        self.even_hairs_a = even_hairs_a
-        self.even_hairs_b = even_hairs_b
-        self.sub_type = get_sub_type(self.even_edges, self.even_hairs_a, self.even_hairs_b)
+        self.sub_type = get_sub_type(even_edges, even_hairs_a, even_hairs_b)
 
         sum_vector_space = BiColoredHairyGraphSumVS(self.v_range, self.l_range, self.h_a_range, self.h_b_range,
-                                                    self.even_edges, self.even_hairs_a, self.even_hairs_b)
+                                                    even_edges, even_hairs_a, even_hairs_b)
         differential_list = []
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)

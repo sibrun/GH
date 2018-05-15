@@ -489,8 +489,7 @@ class OperatorMatrix(object):
                      eps=Parameters.estimate_rank_eps, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.is_valid():
             return
-        if not ignore_existing_files:
-            if self.exists_rank_file():
+        if not ignore_existing_files and self.exists_rank_file():
                 return
         elif self.exists_rank_file():
             self.delete_rank_file()
@@ -1021,9 +1020,10 @@ class Differential(OperatorMatrixCollection):
             return 'succ'
         return 'fail'
 
-    def plot_cohomology_dim(self):
+    def plot_cohomology_dim(self, as_list=False):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
-        param_order = self.get_cohomology_plot_parameter_order()
+        parameter_order = self.get_cohomology_plot_parameter_order()
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
-        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, param_order)
+        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, as_list=as_list,
+                                  parameter_order=parameter_order)

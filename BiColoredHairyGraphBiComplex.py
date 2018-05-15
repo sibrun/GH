@@ -52,10 +52,14 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.h_b_min_range = h_b_min_range
         self.sub_type = BiColoredHairyGraphComplex.get_sub_type(even_edges, even_hairs_a, even_hairs_b)
         max_deg = max(self.deg_range)
-        super(VertexLoopBigradedSumVS, self).__init__(
-            [VertexLoopDegSlice(deg, h_a_min + (max_deg - deg), h_b_min + (max_deg - deg), even_edges, even_hairs_a,
-                                even_hairs_b) for (deg, h_a_min, h_b_min) in
-             itertools.product(self.deg_range, self.h_a_min_range, self.h_b_min_range)])
+
+        vs_list = []
+        for (deg, h_a_min, h_b_min) in itertools.product(self.deg_range, self.h_a_min_range, self.h_b_min_range):
+            if even_hairs_a == even_hairs_b and h_a_min < h_b_min:
+                continue # Symmetry between a and b hairs.
+            vs_list.append(VertexLoopDegSlice(deg, h_a_min + (max_deg - deg), h_b_min + (max_deg - deg), even_edges,
+                                                  even_hairs_a, even_hairs_b))
+        super(VertexLoopBigradedSumVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (BiColoredHairyGraphComplex.graph_type, self.sub_type)
