@@ -1,6 +1,9 @@
 """Module providing abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
 degree slices for bigraded vector spaces."""
 
+
+__all__ = ['VectorSpace', 'GraphVectorSpace', 'SumVectorSpace', 'DegSlice']
+
 from abc import ABCMeta, abstractmethod
 from sage.all import *
 import operator

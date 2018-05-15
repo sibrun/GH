@@ -14,7 +14,7 @@ def set_log_file(log_file):
     logger.addHandler(logging.FileHandler(log_path))
 
 
-log_levels_dict = {'invo': logging.INFO, 'warning': logging.WARNING, 'error': logging.ERROR}
+log_levels_dict = {'info': logging.INFO, 'warning': logging.WARNING, 'error': logging.ERROR}
 
 
 def set_log_level(level):
