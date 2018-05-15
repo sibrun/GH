@@ -254,15 +254,35 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
                 Shared.enumerate_edges(G1)
                 e_label = G1.edge_label(u, v)
             G1.delete_edge((u, v))
-            new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
-            G1.add_vertex(new_hair_idx)
+            new_hair_idx_1 = self.domain.n_vertices + self.domain.n_hairs
+            new_hair_idx_2 = new_hair_idx_1 + 1
+            G1.add_vertex(new_hair_idx_1)
+            G1.add_edge((u, new_hair_idx_1))
+            G1.add_vertex(new_hair_idx_2)
+            G1.add_edge((v, new_hair_idx_2))
             G2 = copy(G1)
-            G1.add_edge((u, new_hair_idx))
-            G2.add_edge((v, new_hair_idx))
+
+            vertices = list(range(0, self.domain.n_vertices))
+            vertices = [] if vertices is None else vertices
+            start_idx_a = self.domain.n_vertices
+            start_idx_b = self.domain.n_vertices + self.domain.n_hairs_a + 1
+            hairs_a = list(range(start_idx_a + 1, start_idx_b))
+            hairs_a = [] if hairs_a is None else hairs_a
+            hairs_b = list(range(start_idx_b, new_hair_idx_2))
+            hairs_b = [] if hairs_b is None else hairs_b
+            p = vertices + hairs_a + hairs_b
+
+            p1 = p + [start_idx_a, new_hair_idx_2]
+            G1.relabel(p1)
+            p2 = p + [new_hair_idx_2, start_idx_a]
+            G2.relabel(p2)
+
             if not self.domain.even_edges:
-                G1.set_edge_label(u, new_hair_idx, e_label)
-                G2.set_edge_label(v, new_hair_idx, e_label)
+                G1.set_edge_label(u, start_idx_a, e_label)
+                G1.set_edge_label(v, new_hair_idx_2, G1.size() - 1 )
                 sgn1 = Shared.edge_perm_sign(G1)
+                G2.set_edge_label(v, start_idx_a, e_label)
+                G2.set_edge_label(u, new_hair_idx_2, G2.size() - 1)
                 sgn2 = Shared.edge_perm_sign(G2)
             else:
                 sgn1 = 1
@@ -284,26 +304,29 @@ class SplitEdgesD(GraphOperator.Differential):
         s = "cohomology_dim_split_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
-"""
+
 # ------- Graph Complex --------
-class HairyGC(GC.GraphComplex):
-    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, differentials):
+class BiColoredHairyGC(GraphComplex.GraphComplex):
+    def __init__(self, v_range, l_range, h_a_range, h_b_range, even_edges, even_hairs_a, even_hairs_b, differentials):
         self.v_range = v_range
         self.l_range = l_range
-        self.h_range = h_range
+        self.h_a_range = h_a_range
+        self.h_b_range = h_b_range
         self.even_edges = even_edges
-        self.even_hairs = even_hairs
-        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
+        self.even_hairs_a = even_hairs_a
+        self.even_hairs_b = even_hairs_b
+        self.sub_type = get_sub_type(self.even_edges, self.even_hairs_a, self.even_hairs_b)
 
-        sum_vector_space = HairyGraphSumVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        sum_vector_space = BiColoredHairyGraphSumVS(self.v_range, self.l_range, self.h_a_range, self.h_b_range,
+                                                    self.even_edges, self.even_hairs_a, self.even_hairs_b)
         differential_list = []
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
-        if 'et1h' in differentials:
-            edge_to_one_hair_dif = EdgeToOneHairD(sum_vector_space)
-            differential_list.append(edge_to_one_hair_dif)
-        super(HairyGC, self).__init__(sum_vector_space, differential_list)
+        if 'split' in differentials:
+            split_edges_dif = SplitEdgesD(sum_vector_space)
+            differential_list.append(split_edges_dif)
+        super(BiColoredHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
-        return '<hairy graph complex with %s>' % str(self.sub_type)"""
+        return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

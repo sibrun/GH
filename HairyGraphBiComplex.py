@@ -28,12 +28,6 @@ class CeEt1hBiOM(GraphOperator.BiOperatorMatrix):
         s = "bi_D_ce_et1h_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, HairyGraphComplex.graph_type, self.sub_type, s)
 
-    def get_ref_matrix_file_path(self):
-        pass
-
-    def get_ref_rank_file_path(self):
-        pass
-
 
 class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
     def __init__(self, deg, h_min, even_edges, even_hairs):
@@ -57,10 +51,10 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.h_min_range = h_min_range
         self.even_edges = even_edges
         self.even_hairs = even_hairs
-        self.sub_type = HairyGraphComplex.sub_types.get((even_edges, even_hairs))
+        self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
         max_deg = max(self.deg_range)
         super(VertexLoopBigradedSumVS, self).__init__(
-            [VertexLoopDegSlice(deg, h_min + (max_deg - deg), even_edges, even_hairs) for (deg, h_min) in
+            [VertexLoopDegSlice(deg, h_min + (max_deg - deg), self.even_edges, self.even_hairs) for (deg, h_min) in
              itertools.product(self.deg_range, self.h_min_range)])
 
     def get_type(self):
@@ -101,9 +95,9 @@ class HairyCeEt1hBiGC(GraphComplex.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
 
-        graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_min_range, even_edges, even_hairs)
+        graded_sum_vs = VertexLoopBigradedSumVS(self.deg_range, self.h_min_range, self.even_edges, self.even_hairs)
         super(HairyCeEt1hBiGC, self).__init__(graded_sum_vs, [CeEt1hD(graded_sum_vs)])
 
     def __str__(self):
-        return '<hairy graphs bi-complex with %s>' % str(self.sub_type)
+        return '<%s graphs bi-complex with %s>' % (HairyGraphComplex.graph_type, str(self.sub_type))
 

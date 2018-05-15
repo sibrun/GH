@@ -70,6 +70,7 @@ def permute_to_left((u, v), vertex_range):
     return Perm(p).inverse()
 
 
+
 def matrix_norm(M):
     return sqrt(sum(map(power_2, M.list())))
 

@@ -9,6 +9,7 @@ import Parameters
 
 
 graph_type = "ordinary"
+
 sub_types = {True: "even_edges", False: "odd_edges"}
 
 
@@ -23,7 +24,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         super(OrdinaryGVS, self).__init__()
 
     def get_type(self):
-        return 'ordinary graphs with %s' % self.sub_type
+        return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
@@ -269,4 +270,4 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         super(OrdinaryGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
-        return '<ordinary graph complex with %s>' % str(self.sub_type)
+        return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

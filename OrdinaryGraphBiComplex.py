@@ -27,12 +27,6 @@ class CeDeleBiOM(GraphOperator.BiOperatorMatrix):
         s = "bi_D_ce_dele_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, OrdinaryGraphComplex.graph_type, self.sub_type, s)
 
-    def get_ref_matrix_file_path(self):
-        pass
-
-    def get_ref_rank_file_path(self):
-        pass
-
 
 class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
     def __init__(self, deg, even_edges):
@@ -52,7 +46,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
-        super(VertexLoopBigradedSumVS, self).__init__([VertexLoopDegSlice(deg, even_edges) for deg in deg_range])
+        super(VertexLoopBigradedSumVS, self).__init__([VertexLoopDegSlice(deg, self.even_edges) for deg in self.deg_range])
 
     def get_type(self):
         return '%s graphs with %s' % (OrdinaryGraphComplex.graph_type, self.sub_type)
@@ -83,8 +77,8 @@ class OrdinaryCeDeleBiGC(GraphComplex.GraphComplex):
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(self.even_edges)
-        graded_sum_vs = VertexLoopBigradedSumVS(deg_range, even_edges)
+        graded_sum_vs = VertexLoopBigradedSumVS(self.deg_range, self.even_edges)
         super(OrdinaryCeDeleBiGC, self).__init__(graded_sum_vs, [CeDeleD(graded_sum_vs)])
 
     def __str__(self):
-        return '<ordinary graphs bi-complex with %s>' % str(self.sub_type)
+        return '<%s graphs bi-complex with %s>' % (OrdinaryGraphComplex.graph_type, str(self.sub_type))

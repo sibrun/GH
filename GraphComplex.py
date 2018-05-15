@@ -50,7 +50,7 @@ class GraphComplex(object):
         """
         return self.operator_collection_list
 
-    def build_basis(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
+    def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the basis of the vector space.
 
         Args:
@@ -66,7 +66,7 @@ class GraphComplex(object):
         self.sum_vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                           progress_bar=progress_bar, info_tracker=info_tracker)
 
-    def build_matrix(self, ignore_existing_files=True, n_jobs=1, progress_bar=False, info_tracker=False):
+    def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         for dif in self.operator_collection_list:
             dif.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar,
                              info_tracker=info_tracker)
@@ -76,7 +76,7 @@ class GraphComplex(object):
             if isinstance(dif, GraphOperator.Differential):
                 dif.square_zero_test()
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=True, n_jobs=1,
+    def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
         for op_collection in self.operator_collection_list:
             op_collection.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,

@@ -10,6 +10,7 @@ import StoreLoad
 import Parameters
 
 graph_type = "hairy"
+
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
 
@@ -317,4 +318,4 @@ class HairyGC(GraphComplex.GraphComplex):
         super(HairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
-        return '<hairy graph complex with %s>' % str(self.sub_type)
+        return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
