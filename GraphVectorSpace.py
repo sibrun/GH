@@ -361,22 +361,7 @@ class GraphVectorSpace(VectorSpace):
                 if not self._has_odd_automorphisms(G, autom_list):
                     basis_set.add(canon6)
 
-        #PP.parallel_progress_messaging(self._generate_basis_set, generatingList, basis_set, pbar_info=pbar_info, desc=desc)
-
         self._store_basis_g6(list(basis_set))
-
-    #def _generate_basis_set(self, G, basis_set):
-        #if self.get_partition() is None:
-            #automList = G.automorphism_group().gens()
-            #canonG = G.canonical_label()
-        #else:
-            #automList = G.automorphism_group(partition=self.get_partition()).gens()
-            #canonG = G.canonical_label(partition=self.get_partition())
-        #if len(automList):
-            #canon6 = canonG.graph6_string()
-            #if not canon6 in basis_set:
-                #if not self._has_odd_automorphisms(G, automList):
-                    #basis_set.add(canon6)
 
     def _has_odd_automorphisms(self, G, automList):
         """Test whether the graph G has odd automorphisms.
