@@ -21,31 +21,70 @@ logger = Log.logger.getChild('graph_vector_space')
 
 
 class VectorSpaceProperties(object):
+    """Properties of a vector space.
+
+    Attributes:
+        dimension (non-negative int): Dimension of the vector space.
+    """
     def __init__(self):
+        """Initialize the vector space properties with None."""
         self.dimension = None
 
     @classmethod
     def names(cls):
+        """Returns a list of the names of the vector space properties.
+
+        Returns:
+            list(str): Names of the vector space properties.
+        """
         return ['dimension']
 
     @staticmethod
     def sort_variables():
+        """Returns a list of the vector space properties used as sort keys for vector spaces.
+
+        Returns:
+            list(str): Names of the vector space properties, used as sort keys for vector spaces matrices.
+        """
         return VectorSpaceProperties.names()
 
     def list(self):
+        """Returns a list of the vector space properties.
+
+        Returns:
+            list: Vector space properties.
+        """
         return [self.dimension]
 
 
 class GraphVectorSpaceProperties(VectorSpaceProperties):
+    """Properties of a graph vector space.
+
+    Attributes:
+        valid (bool): Validity of the parameter combination of the graph vector space.
+
+        dimension (non-negative int): Dimension of the graph vector space.
+    """
     def __init__(self):
+        """Initialize the graph vector space properties with None."""
         self.valid = None
         self.dimension = None
 
     @classmethod
     def names(cls):
+        """Returns a list of names of the graph vector space properties.
+
+        Returns:
+            list(str): Names of the graph vector space properties.
+        """
         return ['valid', 'dimension']
 
     def list(self):
+        """Returns a list of the graph vector space properties.
+
+        Returns:
+            list: Graph vector space properties.
+        """
         return [self.valid, self.dimension]
 
 
@@ -73,7 +112,7 @@ class VectorSpace(object):
             other (VectorSpace): Vector space to be compared with.
 
         Returns:
-            bool: True if the compared vector spaces are equal, False otherwise.
+            bool: True if the compared vector spaces are equal.
         """
         pass
 
@@ -220,16 +259,16 @@ class GraphVectorSpace(VectorSpace):
         """Returns the validity of the parameter combination for the graph vector space.
 
         Returns:
-            bool: True if the graph vector space is valid, False otherwise.
+            bool: True if the graph vector space is valid.
         """
         pass
 
     @abstractmethod
     def get_generating_graphs(self):
-        """Produces a set of graphs whose isomorphism classes span the vector space. (Not necessarily freely!)
+        """Produces a set of graphs whose isomorphism classes span the graph vector space. (Not necessarily freely!)
 
         Returns:
-            list(sage.Graph): List of sage graphs spanning the vector space.
+            list(sage.Graph): List of sage graphs spanning the graph vector space.
         """
         pass
 
@@ -255,14 +294,14 @@ class GraphVectorSpace(VectorSpace):
         """Unique description of the graph vector space.
 
         Returns:
-            str: Unique description of the grpah vector space.
+            str: Unique description of the graph vector space.
         """
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
         """Returns the graph6 string of the canonically labeled graph and the corresponding permutation sign.
 
-        Canonically label the sage Graph graph using the sage method for canonical labelling and respecting the
+        Labels the sage Graph graph canonically using the sage method for canonical labelling and respecting the
         partition of the vertices.
 
         Args:
@@ -586,7 +625,7 @@ class SumVectorSpace(VectorSpace):
             vector_space (VectorSpace): Test whether this vector space is contained in the sum vector space.
 
         Returns:
-            bool: True if the vector space vector_space is a sub vector space of the sum vector space, False otehrwise.
+            bool: True if the vector space vector_space is a sub vector space of the sum vector space.
         """
         for vs in self.vs_list:
             if vs == vector_space:

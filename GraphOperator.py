@@ -29,11 +29,16 @@ class OperatorMatrixProperties(object):
 
     Attributes:
         valid (bool): Validity of the operator matrix.
+
         shape (tuple(non-negative int, non-negative int)): Shape of the operator matrix.
+
         entries (non-negative int): Number of nonzero entries of the sparse matrix.
-        rank (non-negative int): Exact rank of the operator matrix.
-        rank_mod_p (non-negative int): Rank determined by calculating modulo a prime number while determining the matrix
-            rank. Under bound for the exact matrix rank.
+
+        rank (non-negative int): Exact rank of the operator matrix defined over Z.
+
+        rank_mod_p (non-negative int): Rank of the matrix defined over a finite field. Gauss elimination modulo a prime.
+        Under bound for the exact matrix rank.
+
         rank_est (non-negative int): Estimated rank using interpolative algorithms offered by the scipy module:
             scipy.linalg.interpolative.estimate_rank
     """
@@ -48,7 +53,7 @@ class OperatorMatrixProperties(object):
 
     @classmethod
     def names(cls):
-        """Returns a list of the matrix property names.
+        """Returns a list of the names of the matrix properties.
 
         Returns:
             list(str): Names of the matrix properties.
@@ -60,7 +65,7 @@ class OperatorMatrixProperties(object):
         """Returns a list of the matrix properties used as sort keys for operator matrices.
 
         Returns:
-            list(str): Names of the matrix properties, used as sort keys for operator matrices..
+            list(str): Names of the matrix properties, used as sort keys for operator matrices.
         """
         return ['valid', 'entries']
 
@@ -80,9 +85,11 @@ class OperatorMatrix(object):
 
     Attributes:
         domain (GraphVectorSpace.VectorSpace): Domain vector space.
+
         target (GraphVectorSpace.VectorSpace): Target vector space.
+
         properties (OperatorMatrixProperties): Operator matrix properties object, containing information like
-            validity, shape, number of nonzero entries, rank.
+            validity, shape, number of nonzero entries, and rank.
     """
     __metaclass__ = ABCMeta
 
@@ -94,6 +101,7 @@ class OperatorMatrix(object):
 
         Aargs:
             domain (GraphVectorSpace.VectorSpace): Domain vector space.
+
             target (GraphVectorSpace.VectorSpace): Target vector space.
         """
         if not self.is_match(domain, target):
@@ -133,7 +141,7 @@ class OperatorMatrix(object):
         """Returns the path for the operator matrix file.
 
         Returns:
-            path: Path for the operator matrix file.
+            path: Path to the operator matrix file.
         """
         pass
 
@@ -142,7 +150,7 @@ class OperatorMatrix(object):
         """Returns the path for the matrix rank file.
 
         Returns:
-            path: Path for the matrix rank file.
+            path: Path to the matrix rank file.
         """
         pass
 
@@ -152,7 +160,7 @@ class OperatorMatrix(object):
         Refers to reference data (if available) for testing.
 
         Returns:
-            path: Path for the reference operator matrix file.
+            path: Path to the reference operator matrix file.
         """
         pass
 
@@ -162,7 +170,7 @@ class OperatorMatrix(object):
         Refers to reference data (if available) for testing.
 
         Returns:
-            path: Path for the reference matrix rank file.
+            path: Path to the reference matrix rank file.
         """
         pass
 
@@ -192,13 +200,15 @@ class OperatorMatrix(object):
     @staticmethod
     @abstractmethod
     def is_match(domain, target):
-        """Returns whether domain and target vector space match to build a operator matrix.
+        """Returns whether domain and target vector space match to build an operator matrix.
 
         Args:
             domain (GraphVectorSpace.VectorSpace): Potential domain vector space for an operator matrix.
+
             target (GraphVectorSpace.VectorSpace): Potential target vector space for an operator matrix.
+
         Returns:
-            bool: True if domain and target match to build an operator matrix, False otherwise.
+            bool: True if domain and target match to build an operator matrix.
         """
         pass
 
@@ -206,7 +216,7 @@ class OperatorMatrix(object):
         """Return whether there exists a matrix file.
 
         Returns:
-            bool: True if there exists a matrix file, False otherwise.
+            bool: True if a matrix file is found.
         """
         return os.path.isfile(self.get_matrix_file_path())
 
@@ -214,17 +224,17 @@ class OperatorMatrix(object):
         """Return whether there exists a rank file.
 
         Returns:
-            bool: True if there exists a rank file, False otherwise.
+            bool: True if a rank file is found.
         """
         return os.path.isfile(self.get_rank_file_path())
 
     def delete_matrix_file(self):
-        """Delete the matrix file."""
+        """Deletes the matrix file."""
         if os.path.isfile(self.get_matrix_file_path()):
             os.remove(self.get_matrix_file_path())
 
     def delete_rank_file(self):
-        """Delete the rank file."""
+        """Deletes the rank file."""
         if os.path.isfile(self.get_rank_file_path()):
             os.remove(self.get_rank_file_path())
 
@@ -232,14 +242,16 @@ class OperatorMatrix(object):
         """Store the operator matrix in SMS format to the matrix file.
 
         The header line contains the shape of the matrix (nrows = domain dimension, ncols = target dimension) and
-        the data type of the SMS (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html) format. In the file the
+        the data type of the SMS format (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
         matrix entries are listed as (domain index, target index, value).
 
         Args:
             matrix_list (list(tuple(non-negative int, non-negative int, int))): List of matrix entries in the form
                 (domain index, target index, value). The list entries must be ordered lexicographically.
+
             shape (tuple(non-negative int, non-negative int)): Tuple containing the matrix shape
                 (nrows = domain dimension, ncols = target dimension).
+
             data_type (str, optional): data_type for the SMS format.
         """
         (d, t) = shape
@@ -251,9 +263,9 @@ class OperatorMatrix(object):
         StoreLoad.store_string_list(stringList, self.get_matrix_file_path())
 
     def _load_matrix_list(self):
-        """Load the operator matrix in SMS format from the matrix file.
+        """Load the operator matrix in the SMS format from the matrix file.
 
-        Returns the matrix list, i.e. a list of the non-zero matrix entries and a the matrix shape, i.e. a tuple with
+        Returns the matrix list, i.e. a list of the non-zero matrix entries, and the matrix shape, i.e. a tuple with
         the number of rows and columns.
 
         Returns:
@@ -262,6 +274,7 @@ class OperatorMatrix(object):
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -299,6 +312,7 @@ class OperatorMatrix(object):
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -318,6 +332,7 @@ class OperatorMatrix(object):
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -334,11 +349,11 @@ class OperatorMatrix(object):
         """Returns the matrix shape.
 
         Returns:
-            tuple(non-negative int, non-negative): Matrix shape = (target dimension, domain dimension).
+            tuple(non-negative int, non-negative): Matrix shape = (nrows = target dimension, ncolumns = domain dimension).
 
         Raises:
-            StoreLoad.FileNotFoundError: Raised if there is neither a matrix file nor the basis files of the domain and target
-                vector spaces.
+            StoreLoad.FileNotFoundError: Raised if there is neither a matrix file nor the basis files of the domain and
+            target vector spaces.
         """
         try:
             header = StoreLoad.load_line(self.get_matrix_file_path())
@@ -358,10 +373,12 @@ class OperatorMatrix(object):
 
         Returns:
             tuple(tuple(non-negative int, non-negative), non-negative int): (matrix shape, entries).
-                Matrix shape = (target dimension, domain dimension) and number of non-zero matrix entries.
+                Matrix shape = (nrows = target dimension, ncolumns = domain dimension) and number of non-zero matrix
+                entries.
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -383,6 +400,7 @@ class OperatorMatrix(object):
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -403,6 +421,7 @@ class OperatorMatrix(object):
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file or the basis files of domain and
                 target cannot be found.
+
             ValueError: An exception is raised if the matrix is valid one of the following cases occurs:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -421,16 +440,17 @@ class OperatorMatrix(object):
     def get_matrix_transposed(self):
         """Returns the transposed operator matrix as sage matrix.
 
-               Returns: sage.Matrix: Transposed operator matrix with shape (domain dimension, target dimension).
+            Returns: sage.Matrix: Transposed operator matrix with shape (domain dimension, target dimension).
 
-               Raises:
-                   StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
-                       cannot be found.
-                   ValueError: An exception is raised in the following cases:
-                       The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
-                       End line is missing.
-                       Non-positive matrix indices.
-                       Matrix indices outside matrix shape.
+            Raises:
+                StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
+                    cannot be found.
+
+                ValueError: An exception is raised in the following cases:
+                    The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+                    End line is missing.
+                    Non-positive matrix indices.
+                    Matrix indices outside matrix shape.
                """
         if not self.is_valid():
             logger.warn("Zero matrix: %s is not valid" % str(self))
@@ -452,6 +472,7 @@ class OperatorMatrix(object):
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
                 cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                 End line is missing.
@@ -471,6 +492,7 @@ class OperatorMatrix(object):
         Raises:
             StoreLoad.FileNotFoundError: Raised if the matrix file or the basis files of domain and target vector spaces
                 cannot be found.
+
             ValueError: An exception is raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
                    End line is missing.
@@ -508,8 +530,8 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, n_primes=1, small_primes=False, primes_l=Parameters.primes_large,
-                      primes_s=Parameters.primes_small, estimate=False, eps=Parameters.estimate_rank_eps):
+    def _compute_rank(self, exact=False, n_primes=1, small_primes=False, primes_large=Parameters.primes_large,
+                      primes_small=Parameters.primes_small, estimate=False, eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
             rank_dict = {'exact': 0}
         else:
@@ -521,9 +543,9 @@ class OperatorMatrix(object):
                     rank_dict.update({'exact': rank_exact})
                 if n_primes >= 1:
                     if small_primes:
-                        prime_numbers = primes_s
+                        prime_numbers = primes_small
                     else:
-                        prime_numbers = primes_l
+                        prime_numbers = primes_large
                     n = min(n_primes, len(prime_numbers))
                     for p in prime_numbers[0:n]:
                         M = self.get_matrix_transposed()
@@ -631,15 +653,28 @@ class OperatorMatrix(object):
 
 
 class Operator(object):
+    """Interface for operators."""
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_type(self):
+        """Returns a unique description of the operator.
+
+        Returns:
+            str: Unique description of the operator.
+            """
         pass
 
     @abstractmethod
-    def operate_on(self, graph):
-        """For G a graph returns a list of pairs (GG, x), such that (operator)(G) = sum x GG."""
+    def operate_on(self, G):
+        """For G a sage graph returns a list of pairs (GG, factor), such that (operator)(G) = sum(factor * GG).
+
+        Args:
+            G (sage.Graph): Graph on which the operator is applied.
+
+        Returns:
+            list(tuple(sage.Graph, factor)): List of tuples (GG, factor), such that (operator)(G) = sum(factor * GG)
+        """
         pass
 
 

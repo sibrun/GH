@@ -13,7 +13,7 @@ ignore_ex = False
 
 #gc = BCHGC.BiColoredHairyGC(range(5,9),range(0,5),range(0,6),range(0,6),False,True,True, ['contract', 'split'])
 
-gc = bicomplex.BiColoredHaryContractSplitBiGC(range(4,13),range(-11,1),range(-10,1),False,True,True)
+gc = bicomplex.BiColoredHairyContractSplitBiGC(range(4, 13), range(-11, 1), range(-10, 1), False, True, True)
 
 #gc.build_basis(info_tracker=True, n_jobs=n_jobs, ignore_existing_files=ignore_ex)
 #gc.build_matrix(info_tracker=True, n_jobs=n_jobs, ignore_existing_files=ignore_ex)

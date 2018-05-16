@@ -1,6 +1,6 @@
 
 __all__ = ['ContractSplitBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'ContractSplitD',
-           'BiColoredHaryContractSplitBiGC']
+           'BiColoredHairyContractSplitBiGC']
 
 import os
 import itertools
@@ -100,13 +100,13 @@ class ContractSplitD(GraphOperator.Differential):
         return (1, 2, 0)
 
 
-class BiColoredHaryContractSplitBiGC(GraphComplex.GraphComplex):
+class BiColoredHairyContractSplitBiGC(GraphComplex.GraphComplex):
     def __init__(self, deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a, even_hairs_b):
         self.sub_type = BiColoredHairyGraphComplex.get_sub_type(even_edges, even_hairs_a, even_hairs_b)
 
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a,
                                                 even_hairs_b)
-        super(BiColoredHaryContractSplitBiGC, self).__init__(graded_sum_vs, [ContractSplitD(graded_sum_vs)])
+        super(BiColoredHairyContractSplitBiGC, self).__init__(graded_sum_vs, [ContractSplitD(graded_sum_vs)])
 
     def __str__(self):
         return '<%s graphs bi-complex with %s>' % (BiColoredHairyGraphComplex.graph_type, str(self.sub_type))
