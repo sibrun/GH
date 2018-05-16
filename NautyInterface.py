@@ -1,3 +1,6 @@
+
+__all__ = ['list_simple_graphs', 'list_bipartite_graphs']
+
 from sage.all import *
 import os
 import tempfile

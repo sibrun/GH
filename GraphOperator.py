@@ -1,6 +1,9 @@
 """Module providing abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
 and bi operator matrices to be used in bicomplexes"""
 
+__all__ = ['OperatorMatrixProperties', 'OperatorMatrix', 'Operator', 'GraphOperator', 'BiOperatorMatrix',
+           'OperatorMatrixCollection', 'Differential']
+
 from abc import ABCMeta, abstractmethod
 import itertools
 from tqdm import tqdm
@@ -485,7 +488,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
+    def compute_rank(self, exact=False, n_primes=1, small_primes=False, estimate=False,
                      eps=Parameters.estimate_rank_eps, ignore_existing_files=False, skip_if_no_matrix=True):
         if not self.is_valid():
             return
@@ -495,7 +498,8 @@ class OperatorMatrix(object):
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
-            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, primes=primes, estimate=estimate, eps=eps)
+            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, small_primes=small_primes,
+                                           estimate=estimate, eps=eps)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
@@ -504,8 +508,8 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
-                      eps=Parameters.estimate_rank_eps):
+    def _compute_rank(self, exact=False, n_primes=1, small_primes=False, primes_l=Parameters.primes_large,
+                      primes_s=Parameters.primes_small, estimate=False, eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
             rank_dict = {'exact': 0}
         else:
@@ -516,8 +520,12 @@ class OperatorMatrix(object):
                     rank_exact = M.rank()
                     rank_dict.update({'exact': rank_exact})
                 if n_primes >= 1:
-                    n = min(n_primes, len(primes))
-                    for p in primes[0:n]:
+                    if small_primes:
+                        prime_numbers = primes_s
+                    else:
+                        prime_numbers = primes_l
+                    n = min(n_primes, len(prime_numbers))
+                    for p in prime_numbers[0:n]:
                         M = self.get_matrix_transposed()
                         M.change_ring(GF(p))
                         rank_mod_p = M.rank()
@@ -554,7 +562,7 @@ class OperatorMatrix(object):
             rank_dict.update({mode: int(rank)})
         return rank_dict
 
-    def _get_ranks(self):
+    def _get_rank(self):
         if not self.is_valid():
             return (0, 0, 0)
         rank_dict = self._load_rank_dict()
@@ -576,7 +584,7 @@ class OperatorMatrix(object):
     def get_matrix_rank(self):
         if not self.is_valid():
             return 0
-        (rank_exact, rank_mod_p, rank_est) = self._get_ranks()
+        (rank_exact, rank_mod_p, rank_est) = self._get_rank()
         if rank_exact is not None:
             return rank_exact
         if rank_mod_p is not None:
@@ -609,7 +617,7 @@ class OperatorMatrix(object):
         except StoreLoad.FileNotFoundError:
             pass
         try:
-            (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_ranks()
+            (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_rank()
         except StoreLoad.FileNotFoundError:
             pass
 
@@ -853,8 +861,8 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=False, sort_key='size', ignore_existing_files=False,
-                     n_jobs=1, info_tracker=False):
+    def compute_rank(self, exact=False, n_primes=1, small_primes=False, estimate=False, sort_key='size',
+                     ignore_existing_files=False, n_jobs=1, info_tracker=False):
         print(' ')
         print('Compute ranks of %s' % str(self))
         if n_jobs > 1:
@@ -863,7 +871,8 @@ class OperatorMatrixCollection(object):
             self.start_tracker()
         self.sort(key=sort_key)
         Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
-                    estimate=estimate, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+                          small_primes=small_primes, estimate=estimate, ignore_existing_files=ignore_existing_files,
+                          info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
 
@@ -925,8 +934,8 @@ class Differential(OperatorMatrixCollection):
         except StoreLoad.FileNotFoundError:
             logger.info("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
-        #if dimV == 0:
-         #   return 0
+        if dimV == 0:
+            return '*'
         if opD.is_valid():
             try:
                 rankD = opD.get_matrix_rank()
@@ -1020,10 +1029,10 @@ class Differential(OperatorMatrixCollection):
             return 'succ'
         return 'fail'
 
-    def plot_cohomology_dim(self, as_list=False):
+    def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
         dim_dict = self.get_cohomology_dim()
         plot_path = self.get_cohomology_plot_path()
         parameter_order = self.get_cohomology_plot_parameter_order()
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
-        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, as_list=as_list,
-                                  parameter_order=parameter_order)
+        PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
+                                  x_plots=x_plots, parameter_order=parameter_order)

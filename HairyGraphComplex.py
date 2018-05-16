@@ -1,3 +1,7 @@
+
+__all__ = ['graph_type', 'sub_types', 'HairyGraphVS', 'HairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
+           'EdgeToOneHairGO', 'EdgeToOneHairD', 'HairyGC']
+
 import itertools
 from sage.all import *
 import GraphVectorSpace

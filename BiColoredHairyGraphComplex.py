@@ -1,3 +1,7 @@
+
+__all__ = ['graph_type', 'get_sub_type', 'BiColoredHairyGraphVS', 'BiColoredHairyGraphSumVS', 'ContractEdgesGO',
+           'ContractEdgesD', 'SplitEdgesGO', 'SplitEdgesD', 'BiColoredHairyGC']
+
 import itertools
 from sage.all import *
 from sage.combinat.shuffle import ShuffleProduct

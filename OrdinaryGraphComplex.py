@@ -1,3 +1,7 @@
+
+__all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinarySumGVS', 'ContractEdgesGO', 'ContractEdgesD',
+           'DeleteEdgesGO', 'DeleteEdgesD', 'OrdinaryGC']
+
 import itertools
 from sage.all import *
 import GraphVectorSpace
@@ -82,7 +86,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
 
 
-class SumOrdinaryGVS(GraphVectorSpace.SumVectorSpace):
+class OrdinarySumGVS(GraphVectorSpace.SumVectorSpace):
     def __init__(self, v_range, l_range, even_edges):
         self.v_range = v_range
         self.l_range = l_range
@@ -90,7 +94,7 @@ class SumOrdinaryGVS(GraphVectorSpace.SumVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        super(SumOrdinaryGVS, self).__init__(vs_list)
+        super(OrdinarySumGVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -259,7 +263,7 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        sum_vector_space = SumOrdinaryGVS(v_range, l_range, even_edges)
+        sum_vector_space = OrdinarySumGVS(v_range, l_range, even_edges)
         differential_list = []
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)

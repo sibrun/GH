@@ -1,3 +1,7 @@
+
+__all__ = ['ContractSplitBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'ContractSplitD',
+           'BiColoredHaryContractSplitBiGC']
+
 import os
 import itertools
 import GraphVectorSpace

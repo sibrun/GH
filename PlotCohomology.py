@@ -1,3 +1,6 @@
+
+__all__ = ['plot_array', 'plot_list', 'plot_2d_array', 'plot_3d_array']
+
 import matplotlib.pyplot as plt
 import numpy as np
 import itertools
@@ -8,32 +11,39 @@ import Parameters
 import Shared
 
 
-def plot_array(value_dict, ordered_param_range_dict, path, as_list=False, parameter_order=None):
-    if len(ordered_param_range_dict) == 2 and not as_list:
+def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv=False, x_plots=2, parameter_order=None):
+    if len(ordered_param_range_dict) == 2:
         if parameter_order is not None:
             plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
         else:
             plot_2d_array(value_dict, ordered_param_range_dict, path)
-    elif len(ordered_param_range_dict) == 3 and not as_list:
+    elif len(ordered_param_range_dict) == 3:
         if parameter_order is not None:
-            plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+            plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=x_plots, parameter_order=parameter_order)
         else:
-            plot_3d_array(value_dict, ordered_param_range_dict, path)
-    else:
-        plot_list(value_dict, ordered_param_range_dict, path)
+            plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=x_plots)
+    if to_html or to_csv:
+        plot_list(value_dict, ordered_param_range_dict, path, to_html=to_html, to_csv=to_csv)
 
 
-def plot_list(value_dict, ordered_param_range_dict, path):
-    path += '.html'
+def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=False):
     StoreLoad.generate_path(path)
     data_list = []
     for (key, value) in value_dict.items():
-        value = ' ' if value is None else value
+        if value is None:
+           value = ' '
+        elif value == '*':
+            value = Parameters.zero_v_symbol
         data_list.append(list(key) + [value])
     data_list.sort()
     columns = ordered_param_range_dict.keys()+['dimension']
     data_frame = pandas.DataFrame(data=data_list, columns=columns)
-    data_frame.to_html(path)
+    if to_html:
+        html_path = path + '.html'
+        data_frame.to_html(html_path)
+    if to_csv:
+        csv_path = path + '.csv'
+        data_frame.to_csv(csv_path)
 
 
 def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
@@ -69,7 +79,10 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         old_coordinates = tuple(coordinates[i] for i in inverse_order)
         v = value_dict.get(old_coordinates)
         if v is not None:
-            v = Parameters.zero_symbol if v == 0 else v
+            if v == '*':
+                v = Parameters.zero_v_symbol
+            elif v == 0:
+                v = Parameters.zero_symbol
             (x, y) = coordinates
             ax.text(x, y, str(v), va='center', ha='center')
 
@@ -91,7 +104,7 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     plt.savefig(path)
 
 
-def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1, 2), x_plots=Parameters.x_plots):
+def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1, 2), x_plots=2):
     path += '.png'
     if parameter_order in {(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)}:
         (x_idx, y_idx, z_idx) = parameter_order
@@ -135,7 +148,10 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         old_coordinates = tuple(coordinates[i] for i in inverse_order)
         v = value_dict.get(old_coordinates)
         if v is not None:
-            v = Parameters.zero_symbol if v == 0 else v
+            if v == '*':
+                v = Parameters.zero_v_symbol
+            elif v == 0:
+                v = Parameters.zero_symbol
             (x, y, z) = coordinates
             get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 

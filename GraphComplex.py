@@ -1,5 +1,7 @@
 """Module providing an abstract class for a graph complex."""
 
+__all__ = ['GraphComplex']
+
 from abc import ABCMeta, abstractmethod
 import itertools
 import GraphOperator
@@ -76,16 +78,16 @@ class GraphComplex(object):
             if isinstance(dif, GraphOperator.Differential):
                 dif.square_zero_test()
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
-                     info_tracker=False):
+    def compute_rank(self, exact=False, n_primes=1, small_primes=False, estimate=False, ignore_existing_files=False,
+                     n_jobs=1, info_tracker=False):
         for op_collection in self.operator_collection_list:
-            op_collection.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
+            op_collection.compute_rank(exact=exact, n_primes=n_primes, small_primes=small_primes, estimate=estimate,
                              ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, info_tracker=info_tracker)
 
-    def plot_cohomology_dim(self):
+    def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
-                dif.plot_cohomology_dim()
+                dif.plot_cohomology_dim(to_html=to_html, to_csv=to_csv, x_plots=x_plots)
 
     def test_pairwise_anti_commutativity(self, commute=False):
         """Test pairwise anti-commutativity / commutativity of the op_collections of the graph complex

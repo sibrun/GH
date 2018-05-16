@@ -14,14 +14,15 @@ commute_test_eps = 1e-6
 estimate_rank_eps = 1e-6
 
 #---- Rank Computation ----
-primes = [32189, 31277, 32183, 31121, 32143, 31481, 32233]
+primes_large = [32189, 31277, 32183, 31121]
+primes_small = [2621, 3701, 3989, 4211]
 min_size_for_rank_estimate = 40
 
 #---- Display Parameters ----
 x_width = 0.4
 y_width = 0.4
 zero_symbol = '*'
-x_plots = 2
+zero_v_symbol = '-'
 
 #---- Max Values for Sorting ----
 max_sort_value = sys.maxint  # return value if dimension or shape is unknown
