@@ -58,11 +58,14 @@ class GraphComplex(object):
         Args:
             progress_bar (bool, optional): Option to show a progress bar (Default: False). Only active if the basis of
                 different sub vector spaces ar not built in parallel.
+
             ignore_existing_files (bool, optional): Option to ignore existing basis files. Ignore existing files and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
+
             n_jobs (positive int, optional): Option to compute the basis of the different sub vector spaces in parallel
                 using n_jobs parallel processes (Default: 1).
+
             info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page.
                 Only active if basis not built in parallel processes (Default: False)."""
         self.sum_vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
@@ -78,7 +81,7 @@ class GraphComplex(object):
             if isinstance(dif, GraphOperator.Differential):
                 dif.square_zero_test()
 
-    def compute_rank(self, exact=False, n_primes=1, small_primes=False, estimate=False, ignore_existing_files=False,
+    def compute_rank(self, exact=False, n_primes=1, small_primes=True, estimate=False, ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         for op_collection in self.operator_collection_list:
             op_collection.compute_rank(exact=exact, n_primes=n_primes, small_primes=small_primes, estimate=estimate,
@@ -109,9 +112,12 @@ class GraphComplex(object):
 
         Args:
             op_collection1 (GraphOperator.OperatorMatrixCollection): First operator (differential).
+
             op_collection2 (GraphOperator.OperatorMatrixCollection): Second operator (differential).
+
             commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
+
             eps (positive float, optional): Threshold for equivalence of matrices (Default: Parameters.commute_test_eps).
         """
         case = 'anti-commutativity' if not commute else 'commutativity'
