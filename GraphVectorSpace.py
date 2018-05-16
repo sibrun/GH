@@ -2,7 +2,8 @@
 degree slices for bigraded vector spaces."""
 
 
-__all__ = ['VectorSpace', 'GraphVectorSpace', 'SumVectorSpace', 'DegSlice']
+__all__ = ['VectorSpaceProperties', 'GraphVectorSpaceProperties', 'VectorSpace', 'GraphVectorSpace', 'SumVectorSpace',
+           'DegSlice']
 
 from abc import ABCMeta, abstractmethod
 from sage.all import *
@@ -54,8 +55,7 @@ class VectorSpace(object):
     Abstract class defining the interface for a vector space.
 
     Attributes:
-        properties (VectorSpaceProperties): Vector space properties object, containing information like
-            dimension and validity.
+        properties (VectorSpaceProperties): Vector space properties, containing information about the dimension.
     """
 
     __metaclass__ = ABCMeta
@@ -122,9 +122,11 @@ class VectorSpace(object):
 
         Args:
             progress_bar (bool, optional): Option to show a progress bar (Default: False).
+
             ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
+
             kwargs: Accepting further keyword arguments.
         """
         pass
@@ -162,7 +164,7 @@ class GraphVectorSpace(VectorSpace):
     provides a method to build the basis.
 
     Attributes:
-        properties (GraphVectorSpaceProperties): Graph vector space properties object, containing information about
+        properties (GraphVectorSpaceProperties): Graph vector space properties, containing information about
             dimension and validity.
 
     """
@@ -240,6 +242,7 @@ class GraphVectorSpace(VectorSpace):
 
         Args:
             G (sage.Graph): Sage graph.
+
             p (list): List of the images of the permutation of the edges of graph G.
 
         Returns:
@@ -276,16 +279,18 @@ class GraphVectorSpace(VectorSpace):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the basis of the vector space.
 
-        Create the basis file if the vector space is valid, otherwise skip building a basis. If there exists already
+        Creates the basis file if the vector space is valid, otherwise skips building a basis. If there exists already
         a basis file rebuild the basis if ignore_existing_file is True, otherwise skip building a basis.
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the vector
         space. The canonical labeling respects the partition of the vertices.
 
         Args:
             progress_bar (bool, optional): Option to show a progress bar (Default: False).
+
             ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
+
             kwargs: Accepting further keyword arguments, which have no influence.
         """
         if not self.is_valid():
@@ -339,6 +344,7 @@ class GraphVectorSpace(VectorSpace):
 
         Args:
             G (sage.Graph): Test whether G has odd automoerphisms.
+
             automList (list(group generators)): List of generators of the automorphisms group of graph G.
 
         Returns:
@@ -401,6 +407,7 @@ class GraphVectorSpace(VectorSpace):
 
         Raises:
             StoreLoad.FileNotFoundError: Raised if no basis file found.
+
             ValueError: Raised if dimension in header doesn't correspond to the basis dimension.
         """
         if not self.exists_basis_file():
@@ -469,8 +476,10 @@ class SumVectorSpace(VectorSpace):
 
     Attributes:
         vs_list (list(VectorSpace)): List of sub vector spaces.
+
         info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
             Tracker is only active if the basis of different vector spaces are not built in parallel.
+
         properties (VectorSpaceProperties): Vector space properties object, containing information about the
             dimension.
     """
@@ -619,11 +628,14 @@ class SumVectorSpace(VectorSpace):
         Args:
             progress_bar (bool, optional): Option to show a progress bar (Default: False). Only active if the basis of
                 different sub vector spaces ar not built in parallel.
+
             ignore_existing_files (bool, optional): Option to ignore existing basis files. Ignore existing files and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
+
             n_jobs (positive int, optional): Option to compute the basis of the different sub vector spaces in parallel using
-                n_jobs parallel processes (Default: 1)
+                n_jobs parallel processes (Default: 1).
+
             info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page.
                 Only active if basis not built in parallel processes (Default: False).
         """
@@ -648,10 +660,13 @@ class SumVectorSpace(VectorSpace):
 
         Args:
             vs (VectorSpace): Vector space of which to build the basis.
+
             progress_bar (bool, optional): Option to show a progress bar (Default: False).
+
             ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
+
             info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page
                 (Default: False).
         """
@@ -709,9 +724,12 @@ class DegSlice(SumVectorSpace):
 
     Attributes:
         deg (int): Degree of the degree slice.
+
         vs_list (list(VectorSpace)): List of sub vector spaces.
+
         info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
             Tracker is only active if the basis of different vector spaces are not built in parallel.
+
         properties (VectorSpaceProperties): Vector space properties object, containing information about the
             dimension.
     """
