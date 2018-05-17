@@ -96,8 +96,8 @@ class OperatorMatrix(object):
     def __init__(self, domain, target):
         """Initialize domain and target graph vector spaces and initialize the operator matrix properties with None.
 
-        :param domain: (GraphVectorSpace.VectorSpace): Domain vector space.
-        :param target: (GraphVectorSpace.VectorSpace): Target vector space.
+        :param domain: GraphVectorSpace.VectorSpace: Domain vector space.
+        :param target: GraphVectorSpace.VectorSpace: Target vector space.
 
         :raise: ValueError: Raised if domain and target don't match to build the operator matrix.
         """
@@ -592,6 +592,11 @@ class OperatorMatrix(object):
         return rank_est
 
     def get_sort_size(self):
+        """Returns the min(nrows, ncolumns) to be used as a sort key. If the matrix shape is unknown the constant
+        Parameters.max_sort_value is returned.
+
+        :return: Returns the min(nrows, ncolumns) or a constant to be used as a sort key
+        """
         try:
             sort_size = min(self.get_matrix_shape())
         except StoreLoad.FileNotFoundError:
@@ -599,6 +604,11 @@ class OperatorMatrix(object):
         return sort_size
 
     def get_sort_entries(self):
+        """Returns the number of nonzero entries to be used as a sort key. If the number of entries is unknown the
+        constant Parameters.max_sort_value is returned.
+
+        :return: Returns the number of non-zero entries or a constant to be used as a sort key
+        """
         try:
             sort_entries = self.get_matrix_entries()
         except StoreLoad.FileNotFoundError:
@@ -606,6 +616,8 @@ class OperatorMatrix(object):
         return sort_entries
 
     def update_properties(self):
+        """Update the vector space properties by reading from the matrix and rank files if available.
+        """
         self.properties.valid = self.is_valid()
         try:
             self.properties.shape = self.get_matrix_shape()
@@ -623,8 +635,7 @@ class OperatorMatrix(object):
     def get_properties(self):
         """Returns the operator matrix properties.
 
-        Returns:
-            OperatorMatrixProperties: Operator matrix properties.
+        :return OperatorMatrixProperties: Operator matrix properties.
         """
         return self.properties
 
@@ -635,10 +646,9 @@ class Operator(object):
 
     @abstractmethod
     def get_type(self):
-        """Returns a unique description of the operator.
+        """Returns a unique description of the operator type.
 
-        Returns:
-            str: Unique description of the operator.
+        :return str: Unique description of the operator.
             """
         pass
 
@@ -646,33 +656,56 @@ class Operator(object):
     def operate_on(self, G):
         """For G a sage graph returns a list of pairs (GG, factor), such that (operator)(G) = sum(factor * GG).
 
-        Args:
-            G (sage.Graph): Graph on which the operator is applied.
-
-        Returns:
-            list(tuple(sage.Graph, factor)): List of tuples (GG, factor), such that (operator)(G) = sum(factor * GG)
+        :param G: sage.Graph: Graph on which the operator is applied.
+        :return: list(tuple(sage.Graph, factor)): List of tuples (GG, factor), such that (operator)(G) = sum(factor * GG)
         """
         pass
 
 
 class GraphOperator(Operator, OperatorMatrix):
+    """Graph oerator.
+
+    Inherits from operator matrix and additionally implements the operator interface, i.e. it acts on graphs as
+    described in the method operate on. Build the operator matrix by calling the method build_matrix.
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, domain, target):
         super(GraphOperator, self).__init__(domain, target)
 
     @classmethod
-    def generate_op_matrix_list(cls, vector_space):
+    def generate_op_matrix_list(cls, sum_vector_space):
+        """Returns a list of all possible graph operators of this type with domain and target being sub vector spaces
+        of the sum vector space.
+
+        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Sum vector space of graphs on which the graph
+            operator is based.
+
+        :return: list(GraphOperator): List of all possible graph operators with domain and target in the sum vector
+            space.
+        """
         op_matrix_list = []
-        for (domain, target) in itertools.permutations(vector_space.get_vs_list(), 2):
+        for (domain, target) in itertools.permutations(sum_vector_space.get_vs_list(), 2):
             if cls.is_match(domain, target):
                 op_matrix_list.append(cls(domain, target))
         return op_matrix_list
 
     def __str__(self):
+        """Returns a unique description of the graph operator.
+
+        :return: str: Unique description of the graph operator.
+        """
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
 
     def operate_on_list(self, graph_sgn_list):
+        """Operates on the output of the operate on method of the graph operator.
+
+        This method is intended to act with the graph operator twice on a graph.
+
+        :param graph_sgn_list: Output of the operate_on method of the same graph operator.
+        :return: ist(tuple(sage.Graph, factor)): List of tuples (GG, factor),
+            such that (operator)(graph_sgn_list) = sum(factor * GG)
+        """
         g6_coordinates_dict = self.target.get_g6_coordinates_dict()
         imageDict = dict()
         for (G1, sgn1) in graph_sgn_list:
@@ -692,7 +725,24 @@ class GraphOperator(Operator, OperatorMatrix):
                     imageDict.pop(coord)
         return imageDict.items()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
+    def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=False, **kwargs):
+        """Build the operator matrix and write it to the matrix file if the graph operator is valid.
+
+        The operator matrix is stored in the SMS format to the matrix file. The header line contains the shape of the
+        matrix (nrows = domain dimension, ncols = target dimension) and the data type of the SMS format
+        (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
+        matrix entries are listed as (domain index, target index, value).
+
+        :param ignore_existing_files: bool, optional: Option to ignore an existing matrix file. Ignore an existing file and
+            rebuild the operator matrix if True, otherwise skip rebuilding the matrix file if there exists a
+            matrix file already (Default: False).
+        :param skip_if_no_basis: bool, optional: Skip building the matrix if the domain or target basis is not built
+            (Default: True). If False and a basis file is missing an error is raised.
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+        :param kwargs: Accept further keyword arguments without influence.
+        :raise StoreLoad.FileNotFoundError: Raised if skip_if_no_basis is True and the domain or target basis file is
+            not found.
+        """
         if not self.is_valid():
             return
         if (not ignore_existing_files) and self.exists_matrix_file():
@@ -755,16 +805,31 @@ class GraphOperator(Operator, OperatorMatrix):
 
 
 class BiOperatorMatrix(OperatorMatrix):
+    """Bi operator matrix to be used as operator matrix in bicomplexes."""
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def __init__(self, domain, target, operator_cls1, operator_cls2):
+        """Initialize domain and target degree slice and the two operator classes composing the bi operator.
+
+        :param domain: GraphVectorSpace.DegSlice: Domain degree slice.
+        :param target: GraphVectorSpace.DegSlice: Target degree slice.
+        :param operator_cls1: First operator class to compose the bi operator.
+        :param operator_cls2: Second operator class to compose the bi operator.
+        """
         super(BiOperatorMatrix, self).__init__(domain, target)
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
 
     @classmethod
     def generate_op_matrix_list(cls, graded_sum_vs):
+        """Returns a list of all possible bi operator matrices of this type with domain and target being degree slices
+        of the graded sum vector space.
+
+        :param graded_sum_vs: GraphVectorSpace.SumVectorSpace: Graded sum vector space composed of degree slices.
+        :return: list(BiOperatorMatrix): List of all possible bi operator matrices with domain and target
+            being degree slices of the graded sum vector space.
+        """
         graded_sum_vs_list = graded_sum_vs.get_vs_list()
         bi_op_matrix_list = []
         for (domain, target) in itertools.permutations(graded_sum_vs_list, 2):
@@ -773,15 +838,39 @@ class BiOperatorMatrix(OperatorMatrix):
         return bi_op_matrix_list
 
     def __str__(self):
+        """Returns a unique description of the bi operator matrix.
+
+        :return: str: Uniqe description of the bi operator matrix.
+        """
         return '<Bi operator matrix on domain: %s>' % str(self.domain)
 
     def is_valid(self):
         return True
 
     def get_work_estimate(self):
+        """Estimates the work needed to build the bi operator matrix by the product of the dimensions of domain and target.
+
+        Used to schedule the order of building the operator matrices.
+
+        :return: non-negative int: Estimate the work to build the operator matrix.
+        """
+
         return self.domain.get_dimension() * self.target.get_dimension()
 
-    def build_matrix(self, ignore_existing_files=False, skip_if_no_matrices=False, progress_bar=False, **kwargs):
+    def build_matrix(self, ignore_existing_files=False, progress_bar=False, **kwargs):
+        """Build the bi operator matrix composed of the underlying operator matrices and write it to the matrix file.
+
+        The bi operator matrix is stored in the SMS format to the matrix file. The header line contains the shape of the
+        matrix (nrows = domain dimension, ncols = target dimension) and the data type of the SMS format
+        (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
+        matrix entries are listed as (domain index, target index, value).
+
+        :param ignore_existing_files: bool, optional: Option to ignore an existing matrix file. Ignore an existing file and
+            rebuild the operator matrix if True, otherwise skip rebuilding the matrix file if there exists a
+            matrix file already (Default: False).
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+        :param kwargs: Accept further keyword arguments without influence.
+        """
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         print(' ')
@@ -821,6 +910,18 @@ class BiOperatorMatrix(OperatorMatrix):
 
 
 class OperatorMatrixCollection(object):
+    """Graph operator on the direct sum of graph vector spaces.
+
+    Collection of operator matrices composing an operator on a sum vector space.
+
+    Attributes:
+        sum_vector_space (GraphVectorSpace.SumVectorSpace): Underlying sum vector space.
+
+        op_matrix_list (list(OperatorMatrix)): List of operator matrices composing the operator.
+
+        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the operator matrices in op_matrix_list.
+            Tracker is only active if the different operator matrices are not built in parallel.
+        """
     def __init__(self, sum_vector_space, op_matrix_list):
         self.sum_vector_space = sum_vector_space
         self.op_matrix_list = op_matrix_list
@@ -831,12 +932,22 @@ class OperatorMatrixCollection(object):
         pass
 
     def __str__(self):
+        """Returns a unique description of the operator.
+
+        :return: str: Unique description of the operator.
+        """
         return '<%s operator matrix collection on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     def get_op_list(self):
+        """Returns the operator matrix list composing the operator.
+        :return: list(OperatorMatrix): List of operator matrices composing the operator.
+        """
         return self.op_matrix_list
 
     def get_vector_space(self):
+        """Returns the underlying vector space.
+        :return: GraphVectorSpace.SumVectorSpace: Underlying direct sum of graph vector spaces.
+        """
         return self.sum_vector_space
 
     def sort(self, key='work_estimate'):
@@ -916,6 +1027,7 @@ class OperatorMatrixCollection(object):
 
 
 class Differential(OperatorMatrixCollection):
+    """Operator matrix collection, which is supposed to be a differential, i.e. is supposed to square to zero."""
     __metaclass__ = ABCMeta
 
     def __init__(self, sum_vector_space, op_matrix_list):
@@ -960,11 +1072,11 @@ class Differential(OperatorMatrixCollection):
                 return None
         else:
             rankDD = 0
-        cohomologyDim = dimV - rankD - rankDD
-        if cohomologyDim < 0:
+        cohomology_dim = dimV - rankD - rankDD
+        if cohomology_dim < 0:
             print("Negative cohomology dimension for %s" % str(opD.domain))
             logger.error("Negative cohomology dimension for %s" % str(opD.domain))
-        return cohomologyDim
+        return cohomology_dim
 
     # Computes the cohomology, i.e., ker(D)/im(DD)
     def get_general_cohomology_dim_dict(self):
