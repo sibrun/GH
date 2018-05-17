@@ -3,7 +3,7 @@ import unittest
 from sage.all import *
 import logging
 import StoreLoad as SL
-import ReferenceGC as REF
+import ReferenceGraphComplex as REF
 
 
 class BasisTest(unittest.TestCase):

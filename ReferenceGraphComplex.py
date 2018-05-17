@@ -1,7 +1,7 @@
 import logging
 import itertools
 from sage.all import *
-import StoreLoad as SL
+import StoreLoad
 
 
 class RefGraphVectorSpace(object):
@@ -20,8 +20,8 @@ class RefGraphVectorSpace(object):
 
     def _load_basis_g6(self):
         if not self.exists_basis_file():
-            raise SL.FileNotFoundError("%s: Reference basis file not found" % str(self))
-        return SL.load_string_list(self.basis_file_path)
+            raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
+        return StoreLoad.load_string_list(self.basis_file_path)
 
     def _g6_to_canon_g6(self, graph6, sign=False):
         graph = Graph(graph6)
@@ -41,11 +41,11 @@ class RefGraphVectorSpace(object):
     def get_dimension(self):
         try:
             dim = len(self._load_basis_g6())
-        except SL.FileNotFoundError:
+        except StoreLoad.FileNotFoundError:
             if not self.graph_vs.is_valid():
                 return 0
             else:
-                raise SL.FileNotFoundError('Dimension of reference basis unknown: %s' % str(self))
+                raise StoreLoad.FileNotFoundError('Dimension of reference basis unknown: %s' % str(self))
         return dim
 
     def get_transformation_matrix(self):
@@ -84,9 +84,9 @@ class RefOperatorMatrix(object):
 
     def _load_matrix(self):
         if not self.exists_matrix_file():
-           raise SL.FileNotFoundError("%s: Reference basis file not found" % str(self))
+           raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
         logging.info("Load operator matrix from reference file: %s" % str(self.matrix_file_path))
-        stringList = SL.load_string_list(self.matrix_file_path)
+        stringList = StoreLoad.load_string_list(self.matrix_file_path)
         entriesList = []
         if len(stringList) == 0:
             return ([], None)
@@ -132,5 +132,5 @@ class RefOperatorMatrix(object):
 
     def get_rank(self):
         if not self.exists_rank_file():
-           raise SL.FileNotFoundError("%s: Reference rank file not found" % str(self))
-        return int(SL.load_line(self.rank_file_path))
+           raise StoreLoad.FileNotFoundError("%s: Reference rank file not found" % str(self))
+        return int(StoreLoad.load_line(self.rank_file_path))

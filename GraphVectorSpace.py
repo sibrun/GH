@@ -34,8 +34,7 @@ class VectorSpaceProperties(object):
     def names(cls):
         """Returns a list of the names of the vector space properties.
 
-        Returns:
-            list(str): Names of the vector space properties.
+        :return: list(str): Names of the vector space properties.
         """
         return ['dimension']
 
@@ -43,16 +42,14 @@ class VectorSpaceProperties(object):
     def sort_variables():
         """Returns a list of the vector space properties used as sort keys for vector spaces.
 
-        Returns:
-            list(str): Names of the vector space properties, used as sort keys for vector spaces matrices.
+        :return: list(str): Names of the vector space properties, used as sort keys for vector spaces matrices.
         """
         return VectorSpaceProperties.names()
 
     def list(self):
         """Returns a list of the vector space properties.
 
-        Returns:
-            list: Vector space properties.
+        :return: list: Vector space properties.
         """
         return [self.dimension]
 
@@ -74,16 +71,14 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
     def names(cls):
         """Returns a list of names of the graph vector space properties.
 
-        Returns:
-            list(str): Names of the graph vector space properties.
+        :return: list(str): Names of the graph vector space properties.
         """
         return ['valid', 'dimension']
 
     def list(self):
         """Returns a list of the graph vector space properties.
 
-        Returns:
-            list: Graph vector space properties.
+        :return: list: Graph vector space properties.
         """
         return [self.valid, self.dimension]
 
@@ -94,25 +89,21 @@ class VectorSpace(object):
     Abstract class defining the interface for a vector space.
 
     Attributes:
-        properties (VectorSpaceProperties): Vector space properties, containing information about the dimension.
+        properties (VectorSpaceProperties): Vector space properties, containing the dimension.
     """
 
     __metaclass__ = ABCMeta
 
     def __init__(self):
         """Initialize the vector space properties with None."""
-
         self.properties = VectorSpaceProperties()
 
     @abstractmethod
     def __eq__(self, other):
         """Comparing two vector spaces.
 
-        Args:
-            other (VectorSpace): Vector space to be compared with.
-
-        Returns:
-            bool: True if the compared vector spaces are equal.
+        :param other: VectorSpace: Vector space to be compared with.
+        :return: bool: True if the compared vector spaces are equal.
         """
         pass
 
@@ -120,8 +111,7 @@ class VectorSpace(object):
     def __str__(self):
         """Unique description of the vector space.
 
-        Returns:
-            str: Unique description of the vector space.
+        :return: str: Unique description of the vector space.
         """
         pass
 
@@ -129,8 +119,7 @@ class VectorSpace(object):
     def get_dimension(self):
         """Returns the dimension of the vector space.
 
-        Returns:
-            non-negative int: Dimension of the vector space.
+        :return non-negative int: Dimension of the vector space.
         """
         pass
 
@@ -138,8 +127,7 @@ class VectorSpace(object):
     def get_ordered_param_dict(self):
         """Returns an ordered dictionary of parameters, identifying the vector space.
 
-        Returns:
-            Shared.OrderedDict: Ordered dictionary of parameters. Example:
+        :return: Shared.OrderedDict: Ordered dictionary of parameters. Example:
                 SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
         """
         pass
@@ -150,8 +138,7 @@ class VectorSpace(object):
 
         Arbitrary units. Used to schedule the order of building the basis of different vector spaces.
 
-        Returns:
-            non-negative int: Estimate the work to build the basis. Arbitrary units.
+        :return: non-negative int: Estimate the work to build the basis. Arbitrary units.
         """
         pass
 
@@ -159,14 +146,11 @@ class VectorSpace(object):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the vector space basis.
 
-        Args:
-            progress_bar (bool, optional): Option to show a progress bar (Default: False).
-
-            ignore_existing_files (bool, optional): Option to ignore existing basis file. Ignore existing file and
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+        :param ignore_existing_files: bool, optional: Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                  (Default: False).
-
-            kwargs: Accepting further keyword arguments.
+        :param kwargs: Accepting further keyword arguments.
         """
         pass
 
@@ -178,17 +162,15 @@ class VectorSpace(object):
     def get_properties(self):
         """Returns the vector space properties.
 
-        Returns:
-            VectorSpaceProperties: Vector space properties.
+        :return: VectorSpaceProperties: Vector space properties.
         """
         return self.properties
 
     def get_sort_dim(self):
         """Dimension for sorting vector spaces.
 
-        Returns:
-            non-negative int: Dimension of the vector space if known, constant Parameters.max_sort_value otherwise.
-            """
+        :return:non-negative int: Dimension of the vector space if known, constant Parameters.max_sort_value otherwise.
+        """
         try:
             sort_dim = self.get_dimension()
         except StoreLoad.FileNotFoundError:

@@ -14,8 +14,7 @@ commute_test_eps = 1e-6
 estimate_rank_eps = 1e-6
 
 #---- Rank Computation ----
-primes_large = [32189, 31277, 32183, 31121]
-primes_small = [2621, 3701, 3989, 4211]
+primes = [32189, 31277, 32183, 31121]
 min_size_for_rank_estimate = 40
 
 #---- Display Parameters ----
