@@ -1,3 +1,5 @@
+"""Module to set the log level and log file."""
+
 import logging
 import os
 import StoreLoad as SL

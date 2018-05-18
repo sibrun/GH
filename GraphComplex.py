@@ -18,12 +18,13 @@ class GraphComplex(object):
 
     Attributes:
         sum_vector_space (GraphVectorSpace.SumVectorSpace): Vector space.
+
         operator_collection_list (list(GraphOperator.OperatorMatrixCollection)): List of operators (differentials).
     """
     __metaclass__ = ABCMeta
 
     def __init__(self, sum_vector_space, operator_collection_list):
-        """Initialize the vector space properties with None."""
+        """Initialize the underlying vector space and the list of operators."""
         self.sum_vector_space = sum_vector_space
         self.operator_collection_list = operator_collection_list
 
@@ -31,64 +32,98 @@ class GraphComplex(object):
     def __str__(self):
         """Unique description of the graph complex.
 
-        Returns:
-            str: Unique description of the graph complex.
+        :return: str: Unique description of the graph complex.
         """
         pass
 
     def get_vector_space(self):
         """Returns the underlying vector space of the graph complex.
 
-        Returns:
-            GraphVectorSpace.SumVectorSpace: Vector space of the graph complex.
+        :return: GraphVectorSpace.SumVectorSpace: Vector space of the graph complex.
         """
         return self.sum_vector_space
 
     def get_operator_list(self):
         """Returns the list of operators (differential).
 
-        Returns:
-            list(GraphOperator.OperatorMatrixCollection): List of operators of the graph complex.
+        :return: list(GraphOperator.OperatorMatrixCollection): List of operators of the graph complex.
         """
         return self.operator_collection_list
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        """Build the basis of the vector space.
+        """Builds the basis of the underlying vector space.
 
-        Args:
-            progress_bar (bool, optional): Option to show a progress bar (Default: False). Only active if the basis of
-                different sub vector spaces ar not built in parallel.
-
-            ignore_existing_files (bool, optional): Option to ignore existing basis files. Ignore existing files and
+        :param ignore_existing_files: bool, optional: Option to ignore existing basis files. Ignore existing files and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
-                 (Default: False).
-
-            n_jobs (positive int, optional): Option to compute the basis of the different sub vector spaces in parallel
+                (Default: False).
+        :param n_jobs: positive int, optional: Option to compute the basis of the different sub vector spaces in parallel
                 using n_jobs parallel processes (Default: 1).
-
-            info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page.
-                Only active if basis not built in parallel processes (Default: False)."""
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False). Only active if the basis of
+                different sub vector spaces ar not built in parallel.
+        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page.
+                Only active if basis not built in parallel processes (Default: False).
+        """
         self.sum_vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                           progress_bar=progress_bar, info_tracker=info_tracker)
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        for dif in self.operator_collection_list:
-            dif.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar,
+        """Builds the matrices for all operators of the graph complex.
+
+        :param ignore_existing_files: bool, optional: Option to ignore  existing matrix files. Ignore existing files and
+            rebuild the operator matrices if True, otherwise skip rebuilding a matrix file if there exists already a
+            matrix file (Default: False).
+        :param n_jobs: positive int, optional: Option to build different matrices in parallel using
+                n_jobs parallel processes (Default: 1).
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+            Only active if different matrices are not built in parallel.
+        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page
+            (Default: False). Only active if different matrices are not built in parallel.
+        """
+
+        for op_collection in self.operator_collection_list:
+            op_collection.build_matrix(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar,
                              info_tracker=info_tracker)
 
     def square_zero_test(self):
+        """For each differential of the graph complex, tests whether it squares to zero."""
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
                 dif.square_zero_test()
 
     def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
+        """Computes the ranks for all operators of the graph complex.
+
+        :param exact: bool, optional: Compute the exact rank (Default: False)
+        :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
+            different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
+        :param estimate: bool, optional: If True estimate rank using interpolative mthods offered by the scipy package
+            (Default: False).
+        :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
+            'work_estimate', 'size', 'entries' (Default: 'size').
+        :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
+            recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
+            rank file (Default: False).
+        :param n_jobs: positive int, optional: Option to compute different ranks in parallel using
+                n_jobs parallel processes (Default: 1).
+        :param info_tracker: bool, optional: Option to plot information about the operator matrices in a web page
+            (Default: False). Only active if different ranks are not computed in parallel.
+        """
         for op_collection in self.operator_collection_list:
             op_collection.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        info_tracker=info_tracker)
 
     def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
+        """Plots the cohomology dimensions for each differential of the graph complex
+
+        Plot the cohomology dimensions as plot and/or table associated with the differential.
+        :param to_html: bool, optional: Option to generate a html file with a table of the cohomology dimensions
+            (Dafault: False).
+        :param to_csv: bool, optional: Option to generate a csv file with a table of the cohomology dimensions
+            (default: False).
+        :param x_plots, optional: positive int: Number of plots on the x-axis (Default: 2).
+        """
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
                 dif.plot_cohomology_dim(to_html=to_html, to_csv=to_csv, x_plots=x_plots)
@@ -96,8 +131,7 @@ class GraphComplex(object):
     def test_pairwise_anti_commutativity(self, commute=False):
         """Test pairwise anti-commutativity / commutativity of the op_collections of the graph complex
 
-        Args:
-            commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
+        :param commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
         """
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
@@ -107,19 +141,17 @@ class GraphComplex(object):
         """Tests whether two operators (differentials) anti-commute.
 
         Tests whether the two operators (differentials) op_collection1 and op_collection2 anti-commute or commute.
-        Builds all possible quadruples of operators and reports for how many of them the test was trivially successful
+        Searches all possible quadruples of operators and reports for how many of them the test was trivially successful
         (because at least two matrices are trivial), successful, inconclusive (because matrices are missing) or
         unsuccessful.
 
-        Args:
-            op_collection1 (GraphOperator.OperatorMatrixCollection): First operator (differential).
-
-            op_collection2 (GraphOperator.OperatorMatrixCollection): Second operator (differential).
-
-            commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
+        :param op_collection1: GraphOperator.OperatorMatrixCollection: First operator (differential).
+        :param op_collection2: raphOperator.OperatorMatrixCollection: Second operator (differential).
+        :param commute: ool, optional: If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
-
-            eps (positive float, optional): Threshold for equivalence of matrices (Default: Parameters.commute_test_eps).
+        :param eps: positive float, optional: Threshold for equivalence of matrices (Default: Parameters.commute_test_eps).
+        :return: tuple(int, int, int, int): Tuple with the number of quadruples for which the (anti-)commutativity test was a
+            (trivial success, success, inconclusive, fail).
         """
         case = 'anti-commutativity' if not commute else 'commutativity'
         print(' ')

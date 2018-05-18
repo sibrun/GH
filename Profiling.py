@@ -1,3 +1,5 @@
+"""Provides a conditional decorator to profile functions."""
+
 import cProfile
 import functools
 import os

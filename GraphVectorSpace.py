@@ -296,7 +296,6 @@ class GraphVectorSpace(VectorSpace):
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                 (Default: False).
         :param kwargs: Accepting further keyword arguments, which have no influence.
-        :return:
         """
         if not self.is_valid():
             # Skip building a basis file if the vector space is not valid.
@@ -582,24 +581,6 @@ class SumVectorSpace(VectorSpace):
         :param progress_bar: bool, optional: Option to show a progress bar (Default: False). Only active if the basis of
                 different sub vector spaces ar not built in parallel.
         :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page.
-                Only active if basis not built in parallel processes (Default: False).
-        """
-        """Build the basis of the sub vector spaces.
-
-        Call build_basis for each sub vector space of the sum vector space.
-
-        Args:
-            progress_bar (bool, optional): Option to show a progress bar (Default: False). Only active if the basis of
-                different sub vector spaces ar not built in parallel.
-
-            ignore_existing_files (bool, optional): Option to ignore existing basis files. Ignore existing files and
-                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
-                 (Default: False).
-
-            n_jobs (positive int, optional): Option to compute the basis of the different sub vector spaces in parallel using
-                n_jobs parallel processes (Default: 1).
-
-            info_tracker (bool, optional): Option to plot information about the sub vector spaces in a web page.
                 Only active if basis not built in parallel processes (Default: False).
         """
         print(' ')

@@ -1,3 +1,6 @@
+"""This module provides Nauty interfaces to generate graphs.
+For details, see: http://users.cecs.anu.edu.au/~bdm/nauty/
+"""
 
 __all__ = ['list_simple_graphs', 'list_bipartite_graphs']
 
@@ -9,7 +12,13 @@ import Log
 logger = Log.logger.getChild('nauty_interface')
 
 def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
-    """creates a list of simple 1vi graphs with at least trivalent vertices"""
+    """Creates a list of simple 1vi graphs with at least trivalent vertices
+
+    :param n_vertices: non-negative int: Number of vertices.
+    :param n_edges: non-negative int: Number of edges.
+    :param onlyonevi: TODO
+    :return: list(sage.Graph): List of generated sage graphs.
+    """
     if n_vertices <= 0 or n_edges <= 0 or 3 * n_vertices > 2 * n_edges or n_edges > n_vertices * (n_vertices - 1) / 2:
         return []
     nauty_string = ("-Cd3" if onlyonevi else "-cd3") + " %d %d:%d" % (n_vertices, n_edges, n_edges)
@@ -24,8 +33,15 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
 
 
 def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
-    """creates a list of bipartite graphs, vertices of the first colour have degree in the range min_deg_1:max_deg_1,
-    vertices of the second colour have degree in the range min_deg_2:max_deg_2"""
+    """Creates a list of bipartite graphs, vertices of the first colour have degree in the range min_deg_1:max_deg_1,
+    vertices of the second colour have degree in the range min_deg_2:max_deg_2.
+    :param n_vertices_1: non-negative int: Number of vertices of the first colour.
+    :param n_vertices_2: non-negative int: Number of vertices of the second colour.
+    :param deg_range_1: tuple(non-negative int, non-negative int): (min, max) degree of the vertices of the first colour.
+    :param deg_range_2: tuple(non-negative int, non-negative int): (min, max) degree of the vertices of the second colour.
+    :param n_edges: non-negative int: Number of edges of the bipartite graph.
+    :return: list(sage.Graph): List of generated sage graphs.
+    """
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges

@@ -46,17 +46,6 @@ def store_line(S, path):
         f.write(S + '\n')
 
 
-def store_list_of_header_lists(LHL, path):
-    generate_path(path)
-    with open(path, 'w') as f:
-        for HL in LHL:
-            (H,L) = HL
-            if H is not None:
-                f.write(H + '\n')
-            for x in L:
-                f.write(x + '\n')
-
-
 def pickle_store(Ob, path):
     generate_path(path)
     with open(path,'wb') as f:

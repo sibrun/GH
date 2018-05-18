@@ -1194,7 +1194,9 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         """Generic test whether the differential squares to zero.
 
-        Search for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+        Searches for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+        Reports for how many of them the test was trivially successful (because at least two matrices are trivial),
+        successful, inconclusive (because matrices are missing) or unsuccessful.
 
         :param eps: positive float, optional: Threshold for the square zero test (Default: Parameters.square_zero_test_eps).
         :return: tuple(int, int, int, int): Tuple with the number of pairs for which the square zero test was a
