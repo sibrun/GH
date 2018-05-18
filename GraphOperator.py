@@ -929,6 +929,11 @@ class OperatorMatrixCollection(object):
 
     @abstractmethod
     def get_type(self):
+        """Returns a unique description of the operator type.
+
+        :return: str: Unique description of the operator type. Example:
+            'contract edges'
+        """
         pass
 
     def __str__(self):
@@ -940,17 +945,26 @@ class OperatorMatrixCollection(object):
 
     def get_op_list(self):
         """Returns the operator matrix list composing the operator.
+
         :return: list(OperatorMatrix): List of operator matrices composing the operator.
         """
         return self.op_matrix_list
 
     def get_vector_space(self):
         """Returns the underlying vector space.
+
         :return: GraphVectorSpace.SumVectorSpace: Underlying direct sum of graph vector spaces.
         """
         return self.sum_vector_space
 
     def sort(self, key='work_estimate'):
+        """Sorts the list of sub vector spaces.
+
+        Possible sort keys: 'work_estimate', 'size', 'entries'.
+
+        :param key: Sort key. Options: 'work_estimate', 'size', 'entries'.
+        :raise  ValueError: If an unknown sort key is given.
+        """
         if key == 'work_estimate':
             self.op_matrix_list.sort(key=operator.methodcaller('get_work_estimate'))
         elif key == 'size':
@@ -961,6 +975,14 @@ class OperatorMatrixCollection(object):
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
+        """
+
+        :param ignore_existing_files:
+        :param n_jobs:
+        :param progress_bar:
+        :param info_tracker:
+        :return:
+        """
         print(' ')
         print('Build matrices of %s' % str(self))
         if n_jobs > 1:
@@ -983,6 +1005,17 @@ class OperatorMatrixCollection(object):
 
     def compute_rank(self, exact=False, n_primes=1,estimate=False, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
+        """
+
+        :param exact:
+        :param n_primes:
+        :param estimate:
+        :param sort_key:
+        :param ignore_existing_files:
+        :param n_jobs:
+        :param info_tracker:
+        :return:
+        """
         print(' ')
         print('Compute ranks of %s' % str(self))
         if n_jobs > 1:
@@ -1001,6 +1034,10 @@ class OperatorMatrixCollection(object):
             self.update_tracker(op)
 
     def set_tracker_parameters(self):
+        """Initialize the info tracker by setting its parameters.
+
+        Set the names of the variables to be displayed.
+        """
         try:
             param_names = self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys()
         except IndexError:
@@ -1009,6 +1046,10 @@ class OperatorMatrixCollection(object):
         self.info_tracker.set_parameter_list(parameter_list)
 
     def start_tracker(self):
+        """Start the info tracker.
+
+        Track information about the properties of the underlying operator matrices and display it in a web page.
+        """
         self.info_tracker = DisplayInfo.InfoTracker(str(self))
         self.set_tracker_parameters()
         op_info_dict = collections.OrderedDict()
@@ -1018,11 +1059,17 @@ class OperatorMatrixCollection(object):
         self.info_tracker.start()
 
     def update_tracker(self, op):
+        """Update info tracker for the operator matrix op.
+
+        :param op: OperatorMatrix: Operator matrix for which to update the properties and message it to the info tracker.
+        """
         op.update_properties()
         message = {tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
+        """Stop tracking information about the underlying operator matrices.
+        """
         self.info_tracker.stop()
 
 
@@ -1035,6 +1082,12 @@ class Differential(OperatorMatrixCollection):
 
     @abstractmethod
     def get_cohomology_plot_path(self):
+        """Returns the path to the cohomology plot file.
+
+        File name without ending.
+
+        :return: path: Path to the cohomology plot file.
+        """
         pass
 
     def get_cohomology_plot_parameter_order(self):
@@ -1044,11 +1097,23 @@ class Differential(OperatorMatrixCollection):
         return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):
+        """Returns a unique description of the differential.
+
+        :return: str: Unique description of the differential.
+        """
         return '<%s differential on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     @staticmethod
-    # Computes the cohomology dimension, i.e., dim(ker(D)/im(DD)) = dim(opD.domain) - rankD - rankDD
     def cohomology_dim(opD, opDD):
+        """Computes the cohomology dimension, i.e. dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
+
+        The domain vector space of opD must correspond to the target vector space of opDD.
+        A warning is printed a negative cohomology dimension results.
+
+        :param opD: OperatorMatrix: First operator matrix relevant for the cohomology dimension.
+        :param opDD: OperatorMatrix: Second operator matrix relevant for the cohomology dimension.
+        :return: int: Cohomology dimension dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
+        """
         try:
             dimV = opD.get_domain().get_dimension()
         except StoreLoad.FileNotFoundError:
@@ -1078,23 +1143,38 @@ class Differential(OperatorMatrixCollection):
             logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomology_dim
 
-    # Computes the cohomology, i.e., ker(D)/im(DD)
-    def get_general_cohomology_dim_dict(self):
-        cohomology_dim = dict()
+    def _get_cohomology_dim_dict(self):
+        """Returns a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
+
+        :return: dict: Dictionary (vector space -> cohomology dimension)
+        """
+        cohomology_dim_dict = dict()
         for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
             if opD.get_domain() == opDD.get_target():
                 dim = Differential.cohomology_dim(opD, opDD)
-                cohomology_dim.update({opD.domain: dim})
-        return cohomology_dim
+                cohomology_dim_dict.update({opD.domain: dim})
+        return cohomology_dim_dict
 
-    def get_cohomology_dim(self):
-        cohomology_dim = self.get_general_cohomology_dim_dict()
+    def get_cohomology_dim_dict(self):
+        """Returns a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
+
+        :return: dict: Dictionary (vector space parameters -> cohomology dimension)
+        """
+        cohomology_dim = self._get_cohomology_dim_dict()
         dim_dict = dict()
         for vs in self.sum_vector_space.get_vs_list():
             dim_dict.update({vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
+        """Generic test whether the differential squares to zero.
+
+        Search for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+
+        :param eps: positive float, optional: Threshold for the square zero test (Default: Parameters.square_zero_test_eps).
+        :return: tuple(int, int, int, int): Tuple with the number of pairs for which the square zero test was a
+            (trivial success, success, inconclusive, fail).
+        """
         print(' ')
         print("Square zero test for %s:" % str(self))
         succ_l = 0  # number of pairs for which test was successful
@@ -1150,10 +1230,19 @@ class Differential(OperatorMatrixCollection):
         return 'fail'
 
     def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
-        dim_dict = self.get_cohomology_dim()
+        """Plots the cohomology dimensions.
+
+        Plot the cohomology dimensions as plot and/or table associated with the differential.
+        :param to_html: bool, optional: Option to generate a html file with a table of the cohomology dimensions
+            (Dafault: False).
+        :param to_csv: bool, optional: Option to generate a csv file with a table of the cohomology dimensions
+            (default: False).
+        :param x_plots, optional: positive int: Number of plots on the x-axis (Default: 2).
+        """
+        dim_dict = self.get_cohomology_dim_dict()
         plot_path = self.get_cohomology_plot_path()
         parameter_order = self.get_cohomology_plot_parameter_order()
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
                                   x_plots=x_plots, parameter_order=parameter_order)
-        
+

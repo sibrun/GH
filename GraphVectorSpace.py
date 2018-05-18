@@ -658,7 +658,7 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
-        """Stop tracking informations."""
+        """Stop tracking informations about the sub vector spaces."""
         self.info_tracker.stop()
 
 
