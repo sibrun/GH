@@ -85,10 +85,22 @@ class GraphComplex(object):
                              info_tracker=info_tracker)
 
     def square_zero_test(self):
-        """For each differential of the graph complex, tests whether it squares to zero."""
+        """For each differential of the graph complex, tests whether it squares to zero.
+
+        :return tuple(bool, bool): (successes, fails) true if there where successful cases and failed cases respectively
+            for each differential of the graph complex. Test was successful if it returns
+            (True, False).
+        """
+        successes = True
+        fails = False
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
-                dif.square_zero_test()
+                (triv_l, succ_l, inc_l, fail_l) = dif.square_zero_test()
+                if succ_l == 0:
+                    successes = False
+                if fail_l > 0:
+                    fails = True
+        return (successes, fails)
 
     def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
@@ -133,9 +145,19 @@ class GraphComplex(object):
 
         :param commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
+        :return tuple(bool, bool): (successes, fails) true if there where successful cases and failed cases respectively
+            for each combination of operators of the graph complex. Test was successful if it returns
+            (True, False).
         """
+        successes = True
+        fails = False
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
-            self.test_anti_commutativity(op_collection1, op_collection2, commute=commute)
+            (triv_l, succ_l, inc_l, fail_l) = self.test_anti_commutativity(op_collection1, op_collection2, commute=commute)
+            if succ_l == 0:
+                successes = False
+            if fail_l > 0:
+                fails = True
+        return (successes, fails)
 
     def test_anti_commutativity(self, op_collection1, op_collection2, commute=False, eps=Parameters.commute_test_eps):
         """Tests whether two operators (differentials) anti-commute.

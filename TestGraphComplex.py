@@ -2,8 +2,8 @@ from abc import ABCMeta, abstractmethod
 import unittest
 from sage.all import *
 import logging
-import StoreLoad as SL
-import ReferenceGraphComplex as REF
+import StoreLoad
+import ReferenceGraphComplex
 
 
 class BasisTest(unittest.TestCase):
@@ -13,7 +13,6 @@ class BasisTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    @abstractmethod
     def tearDown(self):
         pass
 
@@ -25,17 +24,17 @@ class BasisTest(unittest.TestCase):
                 continue
             vs.delete_basis_file()
             self.assertFalse(vs.exists_basis_file(), 'basis should have been deleted')
-            self.assertRaises(SL.FileNotFoundError, vs.get_basis)
+            self.assertRaises(StoreLoad.FileNotFoundError, vs.get_basis)
             vs.build_basis(ignore_existing_files=True)
             self.assertTrue(vs.exists_basis_file(), 'basis should exist')
-            basis_g6 = vs.get_basis()
+            basis_g6 = vs.get_basis_g6()
             if len(basis_g6) == 0:
                 logging.warn('len(basis_g6) == 0 for %s' % str(vs))
             for G6 in basis_g6:
                 self.assertIsInstance(G6, basestring, "%s: type of basis_g6 element is not string" % str(vs))
             self.assertEqual(vs.get_dimension(), len(basis_g6), 'dimension not consistent for %s' % str(vs))
             self.assertEqual(len(basis_g6), len(set(basis_g6)), '%s: basis contains duplicates' % str(vs))
-            basis = vs.get_basis(g6=False)
+            basis = vs.get_basis()
             self.assertEqual(len(basis), len(basis_g6), '%s: basis_g6 and basis have not the same size' % str(vs))
             for G in basis:
                 self.assertEqual(type(G), type(Graph()), "%s: basis element has not 'sage graph' type" % str(vs))
@@ -50,8 +49,8 @@ class BasisTest(unittest.TestCase):
                 logging.info('%s: no basis test, since not valid' % str(vs))
                 continue
             vs.build_basis(ignore_existing_files=True)
-            basis_g6 = vs.get_basis(g6=True)
-            ref_vs = REF.RefGraphVectorSpace(vs)
+            basis_g6 = vs.get_basis_g6()
+            ref_vs = ReferenceGraphComplex.RefGraphVectorSpace(vs)
             if not ref_vs.exists_basis_file():
                 logging.warn('%s: no basis test since no reference file for basis' % str(vs))
                 continue
@@ -68,7 +67,6 @@ class OperatorTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    @abstractmethod
     def tearDown(self):
         pass
 
@@ -118,7 +116,7 @@ class OperatorTest(unittest.TestCase):
             M = op.get_matrix()
             shape = op.get_matrix_shape()
             rank = op.get_matrix_rank()
-            ref_op = REF.RefOperatorMatrix(op)
+            ref_op = ReferenceGraphComplex.RefOperatorMatrix(op)
             if not ref_op.exists_matrix_file():
                 logging.warn('%s: no reference file for operator matrix' % str(op))
                 continue
@@ -140,3 +138,31 @@ class OperatorTest(unittest.TestCase):
                 ref_M_transformed = -ref_M_transformed      # TODO: sign error in transformation matrix for even edges
             self.assertTrue(M == ref_M_transformed,
                              '%s: matrix and transformed reference matrix not equal' % str(op))
+
+
+class GraphComplexTest(unittest.TestCase):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_graph_complex_functionality(self):
+        logging.warn('----- Test graph complex functionality -----')
+        for graph_complex in self.gc_list:
+            graph_complex.build_basis(ignore_existing_files=True)
+            graph_complex.build_matrix(ignore_existing_files=True)
+            graph_complex.compute_rank(ignore_existing_files=True)
+
+    def test_graph_complex(self):
+        logging.warn('----- Test graph complex -----')
+        for graph_complex in self.gc_list:
+            graph_complex.build_basis()
+            graph_complex.build_matrix()
+            graph_complex.compute_rank()
+            self.assertEqual(graph_complex.square_zero_test(), (True, False))
+            self.assertEqual(graph_complex.test_pairwise_anti_commutativity(), (True, False))
+

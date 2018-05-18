@@ -1,5 +1,4 @@
 import logging
-import itertools
 from sage.all import *
 import StoreLoad
 
@@ -54,7 +53,7 @@ class RefGraphVectorSpace(object):
         if not dim == self.graph_vs.get_dimension():
             raise ValueError("Dimension of reference basis and basis not equal for %s" % str(self))
         T = matrix(ZZ, dim, dim, sparse=True)
-        lookup = {G6: j for (j, G6) in enumerate(self.graph_vs.get_basis(g6=True))}
+        lookup = {G6: j for (j, G6) in enumerate(self.graph_vs.get_basis_g6())}
         i = 0
         for G6 in basis_g6:
             (canonG6, sgn) = self._g6_to_canon_g6(G6, sign=True)

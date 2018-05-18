@@ -1191,6 +1191,13 @@ class Differential(OperatorMatrixCollection):
             dim_dict.update({vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
+    def complex_is_acyclic(self):
+        cohomology_dims = self._get_cohomology_dim_dict().values()
+        for dim in cohomology_dims:
+            if dim:
+                return False
+        return True
+
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         """Generic test whether the differential squares to zero.
 
@@ -1272,4 +1279,5 @@ class Differential(OperatorMatrixCollection):
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
                                   x_plots=x_plots, parameter_order=parameter_order)
+
 

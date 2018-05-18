@@ -2,32 +2,28 @@ import unittest
 import itertools
 import logging
 from sage.all import *
-import StoreLoad as SL
-import TestGraphComplex as TGC
-import OrdinaryGraphComplex as OGC
-import Parameters
+import Log
+import TestGraphComplex
+import OrdinaryGraphComplex
 
 
 log_file = "OGC_Unittest.log"
 
 v_range = range(4, 10)
-l_range = range(4, 10)
+l_range = range(4, 9)
 edges_types = [True, False]
 
 
-class OGCBasisTest(TGC.BasisTest):
+class OGCBasisTest(TestGraphComplex.BasisTest):
     def setUp(self):
-        self.vs_list = [OGC.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
+        self.vs_list = [OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
-
-    def tearDown(self):
-        self.vs_list = None
 
     def test_perm_sign(self):
         logging.warn('----- Test permutation sign -----')
 
-        vs_even = OGC.OrdinaryGVS(6, 5, even_edges=True)
-        vs_odd = OGC.OrdinaryGVS(6, 5, even_edges=False)
+        vs_even = OrdinaryGraphComplex.OrdinaryGVS(6, 5, even_edges=True)
+        vs_odd = OrdinaryGraphComplex.OrdinaryGVS(6, 5, even_edges=False)
         G = graphs.WheelGraph(5)
         p = [0, 2, 3, 4, 5, 1]
         self.assertTrue(vs_odd.perm_sign(G, p) == 1, 'incorrect permutation sign')
@@ -40,26 +36,28 @@ class OGCBasisTest(TGC.BasisTest):
         self.assertTrue(vs_even.perm_sign(G, p) == 1, 'incorrect permutation sign')
 
 
-class OGCOperatorTest(TGC.OperatorTest):
+class OGCOperatorTest(TestGraphComplex.OperatorTest):
     def setUp(self):
-        self.op_list = [OGC.ContractEdgesGO.generate_operator(v, l, even_edges) for (v, l, even_edges) in
+        self.op_list = [OrdinaryGraphComplex.ContractEdgesGO.generate_operator(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
 
-    def tearDown(self):
-        self.op_list = None
 
+class OGCTest(TestGraphComplex.GraphComplexTest):
+    def setUp(self):
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract', 'delete_e'])]
 
 def suite():
-    log_path = os.path.join(Parameters.log_dir, log_file)
-    SL.generate_path(log_path)
-    logging.basicConfig(filename=log_path, level=logging.WARN)
+    Log.set_log_file(log_file)
+    Log.set_log_level('warning')
     logging.warn("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
     suite = unittest.TestSuite()
-    suite.addTest(OGCBasisTest('test_perm_sign'))
-    suite.addTest(OGCBasisTest('test_basis_functionality'))
-    suite.addTest(OGCBasisTest('test_compare_ref_basis'))
-    suite.addTest(OGCOperatorTest('test_operator_functionality'))
-    suite.addTest(OGCOperatorTest('test_compare_ref_op_matrix'))
+    #suite.addTest(OGCBasisTest('test_perm_sign'))
+    #suite.addTest(OGCBasisTest('test_basis_functionality'))
+    #suite.addTest(OGCBasisTest('test_compare_ref_basis'))
+    #suite.addTest(OGCOperatorTest('test_operator_functionality'))
+    #suite.addTest(OGCOperatorTest('test_compare_ref_op_matrix'))
+    suite.addTest(OGCTest('test_graph_complex_functionality'))
+    suite.addTest(OGCTest('test_graph_complex'))
     return suite
 
 

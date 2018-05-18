@@ -2,9 +2,9 @@ import unittest
 import itertools
 import logging
 from sage.all import *
-import StoreLoad as SL
-import TestGraphComplex as TGC
-import HairyGraphComplex as HGC
+import Log
+import TestGraphComplex
+import HairyGraphComplex
 import Parameters
 
 
@@ -17,39 +17,39 @@ edges_types = [True, False]
 hairs_types = [True, False]
 
 
-class HGCBasisTest(TGC.BasisTest):
+class HGCBasisTest(TestGraphComplex.BasisTest):
     def setUp(self):
-        self.vs_list = [HGC.HairyGraphVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.vs_list = [HairyGraphComplex.HairyGraphVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
-
-    def tearDown(self):
-        self.vs_list = None
 
     def test_perm_sign(self):
         logging.warn('----- Test permutation sign -----')
         logging.warn('NOT IMPLEMENTED')         #TODO: implement sign test for hairy graphs
 
 
-class HGCOperatorTest(TGC.OperatorTest):
+class HGCOperatorTest(TestGraphComplex.OperatorTest):
     def setUp(self):
-        self.op_list = [HGC.ContractEdgesGO.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
+        self.op_list = [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
-    def tearDown(self):
-        self.op_list = None
+
+class HGCTest(TestGraphComplex.GraphComplexTest):
+    def setUp(self):
+        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, False, False, ['contract', 'et1h'])]
 
 
 def suite():
-    log_path = os.path.join(Parameters.log_dir, log_file)
-    SL.generate_path(log_path)
-    logging.basicConfig(filename=log_path, level=logging.WARN)
+    Log.set_log_file(log_file)
+    Log.set_log_level('warning')
     logging.warn("\n#######################################\n" + "----- Start test suite for hairy graph complex -----")
     suite = unittest.TestSuite()
-    suite.addTest(HGCBasisTest('test_perm_sign'))
-    suite.addTest(HGCBasisTest('test_basis_functionality'))
-    suite.addTest(HGCBasisTest('test_compare_ref_basis'))
-    suite.addTest(HGCOperatorTest('test_operator_functionality'))
-    suite.addTest(HGCOperatorTest('test_compare_ref_op_matrix'))
+    #suite.addTest(HGCBasisTest('test_perm_sign'))
+    #suite.addTest(HGCBasisTest('test_basis_functionality'))
+    #suite.addTest(HGCBasisTest('test_compare_ref_basis'))
+    #suite.addTest(HGCOperatorTest('test_operator_functionality'))
+    #suite.addTest(HGCOperatorTest('test_compare_ref_op_matrix'))
+    #suite.addTest(HGCTest('test_graph_complex_functionality'))
+    suite.addTest(HGCTest('test_graph_complex'))
     return suite
 
 
