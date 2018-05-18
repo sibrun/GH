@@ -923,6 +923,11 @@ class OperatorMatrixCollection(object):
             Tracker is only active if the different operator matrices are not built in parallel.
         """
     def __init__(self, sum_vector_space, op_matrix_list):
+        """Initialze the underlying sum vector space and the list of operator matrices composing the operator.
+
+        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Underlying vector space.
+        :param op_matrix_list: list(OperatorMatrix): List of operator matrices composing the operator
+        """
         self.sum_vector_space = sum_vector_space
         self.op_matrix_list = op_matrix_list
         self.info_tracker = None
@@ -975,13 +980,17 @@ class OperatorMatrixCollection(object):
             raise ValueError("Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        """
+        """Build the operator matrices of the operator.
 
-        :param ignore_existing_files:
-        :param n_jobs:
-        :param progress_bar:
-        :param info_tracker:
-        :return:
+        :param ignore_existing_files: bool, optional: Option to ignore  existing matrix files. Ignore existing files and
+            rebuild the operator matrices if True, otherwise skip rebuilding a matrix file if there exists already a
+            matrix file (Default: False).
+        :param n_jobs: positive int, optional: Option to build different matrices in parallel using
+                n_jobs parallel processes (Default: 1).
+        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+            Only active if different matrices are not built in parallel.
+        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page
+            (Default: False). Only active if different matrices are not built in parallel.
         """
         print(' ')
         print('Build matrices of %s' % str(self))
@@ -1005,16 +1014,22 @@ class OperatorMatrixCollection(object):
 
     def compute_rank(self, exact=False, n_primes=1,estimate=False, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
-        """
+        """Compute the ranks of the operator matrices.
 
-        :param exact:
-        :param n_primes:
-        :param estimate:
-        :param sort_key:
-        :param ignore_existing_files:
-        :param n_jobs:
-        :param info_tracker:
-        :return:
+        :param exact: bool, optional: Compute the exact rank (Default: False)
+        :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
+            different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
+        :param estimate: bool, optional: If True estimate rank using interpolative mthods offered by the scipy package
+            (Default: False).
+        :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
+            'work_estimate', 'size', 'entries' (Default: 'size').
+        :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
+            recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
+            rank file (Default: False).
+        :param n_jobs: positive int, optional: Option to compute different ranks in parallel using
+                n_jobs parallel processes (Default: 1).
+        :param info_tracker: bool, optional: Option to plot information about the operator matrices in a web page
+            (Default: False). Only active if different ranks are not computed in parallel.
         """
         print(' ')
         print('Compute ranks of %s' % str(self))
@@ -1078,6 +1093,11 @@ class Differential(OperatorMatrixCollection):
     __metaclass__ = ABCMeta
 
     def __init__(self, sum_vector_space, op_matrix_list):
+        """Initialze the underlying sum vector space and the list of operator matrices composing the differential.
+
+        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Underlying vector space.
+        :param op_matrix_list: list(OperatorMatrix): List of operator matrices composing the differential
+        """
         super(Differential, self).__init__(sum_vector_space, op_matrix_list)
 
     @abstractmethod
@@ -1094,6 +1114,11 @@ class Differential(OperatorMatrixCollection):
         pass
 
     def get_ordered_cohomology_param_range_dict(self):
+        """Returns an ordered dictionary of parameter ranges for the sub vector spaces of the underlying sum vector space.
+
+         :return Shared.OrderedDict: Ordered dictionary of parameter ranges. Example:
+                 Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+         """
         return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):
