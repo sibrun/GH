@@ -48,7 +48,7 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
     :param value_dict: dict(tuple -> int): Dictionary (parameters tuple -> value) containing the values to be ploted.
     :param ordered_param_range_dict: Shared.OrderedDict(str -> range): Ordered dictionary (parameter name -> range of the parameter).
     :param path: path: Path to the plot file without suffix.
-    :param to_html: bool, optional: Option to plot a html list (Default: False).
+    :param to_html: bool, optional: Option to plot a html list (Default: True).
     :param to_csv: bool, optional: Option to build a csv file (Default: False).
     """
     StoreLoad.generate_path(path)
@@ -181,7 +181,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     fig, axarr = plt.subplots(y_plots, x_plots, figsize=(x_plots*x_size, y_plots*y_size))
 
     for z in z_range:
-        ax = get_ax(axarr, x_plots, y_plots, z, z_min)
+        ax = _get_ax(axarr, x_plots, y_plots, z, z_min)
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_title(str(z)+' '+z_label)
@@ -197,7 +197,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
             elif v == 0:
                 v = Parameters.zero_symbol
             (x, y, z) = coordinates
-            get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
+            _get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
     y_ticks_grid = np.arange(y_min - 0.5, y_max + 1, 1)
@@ -206,7 +206,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     y_ticks = np.arange(y_min, y_max + 1, 1)
 
     for z in z_range:
-        ax = get_ax(axarr, x_plots, y_plots, z, z_min)
+        ax = _get_ax(axarr, x_plots, y_plots, z, z_min)
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
         ax.set_xticks(x_ticks_grid, minor=True)
@@ -217,14 +217,14 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
 
     if z_size % x_plots:
         for z in range(z_max + 1, z_min + x_plots*y_plots):
-            ax = get_ax(axarr, x_plots, y_plots, z, z_min)
+            ax = _get_ax(axarr, x_plots, y_plots, z, z_min)
             fig.delaxes(ax)
 
     StoreLoad.generate_path(path)
     plt.savefig(path)
 
 
-def get_ax(axarr, x_plots, y_plots, z, z_min):
+def _get_ax(axarr, x_plots, y_plots, z, z_min):
     dz = z - z_min
     if x_plots > 1 and y_plots > 1:
         i = dz / x_plots
