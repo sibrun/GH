@@ -1226,13 +1226,10 @@ class Differential(OperatorMatrixCollection):
                     triv_l += 1
                 elif res == 'succ':
                     print('success')
-                    logger.warn('success')
                     succ_l += 1
                 elif res == 'inc':
                     inc_l += 1
                 elif res == 'fail':
-                    print('fail')
-                    logger.error('fail')
                     print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
                     fail.append(pair)

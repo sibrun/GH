@@ -174,7 +174,8 @@ class SquerZeroTest(unittest.TestCase):
         for graph_complex in self.gc_list:
             graph_complex.build_basis()
             graph_complex.build_matrix()
-            self.assertEqual(graph_complex.square_zero_test(), (True, False), 'Square zero test failed for ' + str(graph_complex))
+            for (dif, success) in graph_complex.square_zero_test().items():
+                self.assertTrue(success, 'Square zero test failed for ' + str(dif))
 
 
 class AntiCommutativityTest(unittest.TestCase):
@@ -192,8 +193,8 @@ class AntiCommutativityTest(unittest.TestCase):
         for graph_complex in self.gc_list:
             graph_complex.build_basis()
             graph_complex.build_matrix()
-            self.assertEqual(graph_complex.test_pairwise_anti_commutativity(), (True, False), 'Anti-commutativity test'
-                                                                                              'failed for ' + str(graph_complex))
+            for ((op1, op2), success) in graph_complex.test_pairwise_anti_commutativity().items():
+                self.assertTrue(success, 'Anti-commutativity test failed for the pair of operators %s and %s' % (str(op1), str(op2)))
 
 
 class TestAcyclic(unittest.TestCase):

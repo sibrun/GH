@@ -42,7 +42,7 @@ class SquareZeroTest(TestGraphComplex.SquerZeroTest):
         self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract'])
                         for (even_edges, even_hairs) in itertools.product(edges_types, hairs_types)]
         self.gc_list.append(HairyGraphComplex.HairyGC(v_range, l_range, h_range, False, False, ['et1h']))
-        #TODO: square zero for et1h
+        #TODO: square zero for et1h dif
 
 class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
     def setUp(self):

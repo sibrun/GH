@@ -87,20 +87,17 @@ class GraphComplex(object):
     def square_zero_test(self):
         """For each differential of the graph complex, tests whether it squares to zero.
 
-        :return tuple(bool, bool): (successes, fails) True if there where successful cases and failed cases respectively
-            for each differential of the graph complex. Test was successful if it returns
-            (True, False).
+        Returns a dictionary to report the success of the test for each differential.
+
+        :return dict(differential -> bool): Dictionary (differential -> square zero test successful)
         """
-        successes = True
-        fails = False
+        test_dict = dict()
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
                 (triv_l, succ_l, inc_l, fail_l) = dif.square_zero_test()
-                if succ_l == 0:
-                    successes = False
-                if fail_l > 0:
-                    fails = True
-        return (successes, fails)
+                success = (succ_l > 0 and fail_l == 0)
+                test_dict.update({dif: success})
+        return test_dict
 
     def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
@@ -141,23 +138,21 @@ class GraphComplex(object):
                 dif.plot_cohomology_dim(to_html=to_html, to_csv=to_csv, x_plots=x_plots)
 
     def test_pairwise_anti_commutativity(self, commute=False):
-        """Test pairwise anti-commutativity / commutativity of the op_collections of the graph complex
+        """Test pairwise anti-commutativity / commutativity of the op_collections of the graph complex.
+
+        Returns a dictionary to report the success of the test for each combination of operators.
 
         :param commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
-        :return tuple(bool, bool): (successes, fails) true if there where successful cases and failed cases respectively
-            for each combination of operators of the graph complex. Test was successful if it returns
-            (True, False).
+        :return dict(tuple(GraphOperator.OperatorMatrixCollection, GraphOperator.OperatorMatrixCollection  -> bool):
+            Dictionary (pair of operators -> square zero test successful)
         """
-        successes = True
-        fails = False
+        test_dict = dict()
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
             (triv_l, succ_l, inc_l, fail_l) = self.test_anti_commutativity(op_collection1, op_collection2, commute=commute)
-            if succ_l == 0:
-                successes = False
-            if fail_l > 0:
-                fails = True
-        return (successes, fails)
+            success = (succ_l > 0 and fail_l == 0)
+            test_dict.update({(op_collection1, op_collection2): success})
+        return test_dict
 
     def test_anti_commutativity(self, op_collection1, op_collection2, commute=False, eps=Parameters.commute_test_eps):
         """Tests whether two operators (differentials) anti-commute.
@@ -198,13 +193,10 @@ class GraphComplex(object):
                                     triv_l += 1
                                 elif res == 'succ':
                                     print('success')
-                                    logger.warn('success')
                                     succ_l += 1
                                 elif res == 'inc':
                                     inc_l += 1
                                 elif res == 'fail':
-                                    print('fail')
-                                    logger.error('fail')
                                     print("%s test for %s: failed for the quadruples %s, %s, %s, %s" %
                                                  (case, str(self), str(op1a), str(op1b), str(op2a), str(op2b)))
                                     logger.error("%s test for %s: failed for the quadruples %s, %s, %s, %s" %
