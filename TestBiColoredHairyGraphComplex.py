@@ -33,7 +33,7 @@ class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    #suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
     suite.addTest(SquareZeroTest('test_square_zero'))
     suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
     return suite
