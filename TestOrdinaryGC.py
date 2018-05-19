@@ -1,7 +1,6 @@
 import unittest
 import itertools
 import logging
-from sage.all import *
 import Log
 import TestGraphComplex
 import OrdinaryGraphComplex
@@ -14,7 +13,7 @@ l_range = range(4, 9)
 edges_types = [True, False]
 
 
-class OGCBasisTest(TestGraphComplex.BasisTest):
+class BasisTest(TestGraphComplex.BasisTest):
     def setUp(self):
         self.vs_list = [OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
@@ -36,31 +35,46 @@ class OGCBasisTest(TestGraphComplex.BasisTest):
         self.assertTrue(vs_even.perm_sign(G, p) == 1, 'incorrect permutation sign')
 
 
-class OGCOperatorTest(TestGraphComplex.OperatorTest):
+class OperatorTest(TestGraphComplex.OperatorTest):
     def setUp(self):
         self.op_list = [OrdinaryGraphComplex.ContractEdgesGO.generate_operator(v, l, even_edges) for (v, l, even_edges) in
                         itertools.product(v_range, l_range, edges_types)]
 
 
-class OGCTest(TestGraphComplex.GraphComplexTest):
+class GraphComplexTest(TestGraphComplex.GraphComplexTest):
+    def setUp(self):
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract', 'delete_e'])
+                        for even_edges in edges_types]
+
+
+class SquareZeroTest(TestGraphComplex.SquerZeroTest):
+    def setUp(self):
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
+        self.gc_list.append(OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e']))
+        #TODO: deltet_e differential
+
+
+class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
     def setUp(self):
         self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract', 'delete_e'])]
 
+
 def suite():
-    Log.set_log_file(log_file)
-    Log.set_log_level('warning')
-    logging.warn("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
     suite = unittest.TestSuite()
-    #suite.addTest(OGCBasisTest('test_perm_sign'))
-    #suite.addTest(OGCBasisTest('test_basis_functionality'))
-    #suite.addTest(OGCBasisTest('test_compare_ref_basis'))
-    #suite.addTest(OGCOperatorTest('test_operator_functionality'))
-    #suite.addTest(OGCOperatorTest('test_compare_ref_op_matrix'))
-    suite.addTest(OGCTest('test_graph_complex_functionality'))
-    suite.addTest(OGCTest('test_graph_complex'))
+    suite.addTest(BasisTest('test_perm_sign'))
+    suite.addTest(BasisTest('test_basis_functionality'))
+    suite.addTest(BasisTest('test_compare_ref_basis'))
+    suite.addTest(OperatorTest('test_operator_functionality'))
+    suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
+    suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(SquareZeroTest('test_square_zero'))
+    suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
     return suite
 
 
 if __name__ == '__main__':
+    Log.set_log_file(log_file)
+    Log.set_log_level('warning')
+    logging.warn("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
     runner = unittest.TextTestRunner()
     runner.run(suite())

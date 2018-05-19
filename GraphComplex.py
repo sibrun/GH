@@ -87,7 +87,7 @@ class GraphComplex(object):
     def square_zero_test(self):
         """For each differential of the graph complex, tests whether it squares to zero.
 
-        :return tuple(bool, bool): (successes, fails) true if there where successful cases and failed cases respectively
+        :return tuple(bool, bool): (successes, fails) True if there where successful cases and failed cases respectively
             for each differential of the graph complex. Test was successful if it returns
             (True, False).
         """
@@ -274,3 +274,5 @@ class GraphComplex(object):
             return 'fail'
         except StoreLoad.FileNotFoundError:
             return 'inc'
+
+

@@ -1194,7 +1194,7 @@ class Differential(OperatorMatrixCollection):
     def complex_is_acyclic(self):
         cohomology_dims = self._get_cohomology_dim_dict().values()
         for dim in cohomology_dims:
-            if dim:
+            if dim is not None and not (dim == 0 or dim == '*'):
                 return False
         return True
 

@@ -156,13 +156,58 @@ class GraphComplexTest(unittest.TestCase):
             graph_complex.build_basis(ignore_existing_files=True)
             graph_complex.build_matrix(ignore_existing_files=True)
             graph_complex.compute_rank(ignore_existing_files=True)
+            graph_complex.plot_cohomology_dim(to_html=True, to_csv=True)
 
-    def test_graph_complex(self):
-        logging.warn('----- Test graph complex -----')
+
+class SquerZeroTest(unittest.TestCase):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_square_zero(self):
+        logging.warn('----- Square zero test -----')
         for graph_complex in self.gc_list:
             graph_complex.build_basis()
             graph_complex.build_matrix()
-            graph_complex.compute_rank()
-            self.assertEqual(graph_complex.square_zero_test(), (True, False))
-            self.assertEqual(graph_complex.test_pairwise_anti_commutativity(), (True, False))
+            self.assertEqual(graph_complex.square_zero_test(), (True, False), 'Square zero test failed for ' + str(graph_complex))
+
+
+class AntiCommutativityTest(unittest.TestCase):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_anti_commutativity(self):
+        logging.warn('----- Anti commutativity test -----')
+        for graph_complex in self.gc_list:
+            graph_complex.build_basis()
+            graph_complex.build_matrix()
+            self.assertEqual(graph_complex.test_pairwise_anti_commutativity(), (True, False), 'Anti-commutativity test'
+                                                                                              'failed for ' + str(graph_complex))
+
+
+class TestAcyclic(unittest.TestCase):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_acyclic(self):
+        logging.warn('----- Test acyclic -----')
+        for dif in self.dif_list:
+            self.assertTrue(dif.complex_is_acyclic(), 'Graph complex is not acyclic for ' + str(dif))
 
