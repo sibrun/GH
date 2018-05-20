@@ -1164,7 +1164,7 @@ class Differential(OperatorMatrixCollection):
             rankDD = 0
         cohomology_dim = dimV - rankD - rankDD
         if cohomology_dim < 0:
-            print("Negative cohomology dimension for %s" % str(opD.domain))
+            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
             logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomology_dim
 

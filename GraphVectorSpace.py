@@ -328,14 +328,14 @@ class GraphVectorSpace(VectorSpace):
 
         self._store_basis_g6(list(basis_set))
 
-    def _has_odd_automorphisms(self, G, automList):
+    def _has_odd_automorphisms(self, G, autom_list):
         """Returns whether the graph G has odd automorphisms.
 
         :param G: sage.Graph: Test whether G has odd automoerphisms.
-        :param automList: list(group generators): List of generators of the automorphisms group of graph G.
+        :param autom_list: list(group generators): List of generators of the automorphisms group of graph G.
         :return: bool: True if G has odd automorphisms.
         """
-        for g in automList:
+        for g in autom_list:
             if self.perm_sign(G, list(g.tuple())) == -1:
                return True
         return False

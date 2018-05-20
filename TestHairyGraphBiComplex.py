@@ -9,26 +9,34 @@ log_file = "HGBiC_Unittest.log"
 
 d_range = range(0, 13)
 h_min_range = range(-12, -1)
+even_edges = False
+even_hairs = False
 
 
 class GraphComplexTest(TestGraphComplex.GraphComplexTest):
     def setUp(self):
-        self.gc_list = [HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, False, False)]
+        self.gc_list = [HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, even_edges, even_hairs)]
 
 
-class SquareZeroTest(TestGraphComplex.SquerZeroTest):
+class CohomologyTest(TestGraphComplex.CohomologyTest):
     def setUp(self):
-        self.gc_list = [HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, False, False)]
+        self.gc_list = [HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, even_edges, even_hairs)]
+
+
+class SquareZeroTest(TestGraphComplex.SquareZeroTest):
+    def setUp(self):
+        self.gc_list = [HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, even_edges, even_hairs)]
 
 
 class TestAcyclic(TestGraphComplex.TestAcyclic):
     def setUp(self):
-        self.dif_list = HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, False, False).get_operator_list()
+        self.dif_list = HairyGraphBiComplex.HairyCeEt1hBiGC(d_range, h_min_range, even_edges, even_hairs).get_operator_list()
 
 
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(CohomologyTest('test_cohomology_functionality'))
     suite.addTest(SquareZeroTest('test_square_zero'))
     suite.addTest(TestAcyclic('test_acyclic'))
     return suite

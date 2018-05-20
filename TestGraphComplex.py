@@ -1,3 +1,6 @@
+
+__all__ = ['BasisTest', 'OperatorTest', 'GraphComplexTest', 'SquareZeroTest', 'AntiCommutativityTest', 'TestAcyclic']
+
 from abc import ABCMeta, abstractmethod
 import unittest
 from sage.all import *
@@ -153,13 +156,33 @@ class GraphComplexTest(unittest.TestCase):
     def test_graph_complex_functionality(self):
         logging.warn('----- Test graph complex functionality -----')
         for graph_complex in self.gc_list:
-            graph_complex.build_basis(ignore_existing_files=True)
-            graph_complex.build_matrix(ignore_existing_files=True)
-            graph_complex.compute_rank(ignore_existing_files=True)
+            graph_complex.build_basis(ignore_existing_files=True, n_jobs=6)
+            graph_complex.build_matrix(ignore_existing_files=True, n_jobs=6)
+            graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6)
+            graph_complex.build_basis(info_tracker=True)
+            graph_complex.build_matrix(info_tracker=True)
+            graph_complex.compute_rank(info_tracker=True)
+
+
+class CohomologyTest(unittest.TestCase):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_cohomology_functionality(self):
+        logging.warn('----- Cohomology test -----')
+        for graph_complex in self.gc_list:
+            graph_complex.build_basis(n_jobs=6)
+            graph_complex.build_matrix(n_jobs=6)
             graph_complex.plot_cohomology_dim(to_html=True, to_csv=True)
 
 
-class SquerZeroTest(unittest.TestCase):
+class SquareZeroTest(unittest.TestCase):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -172,8 +195,8 @@ class SquerZeroTest(unittest.TestCase):
     def test_square_zero(self):
         logging.warn('----- Square zero test -----')
         for graph_complex in self.gc_list:
-            graph_complex.build_basis()
-            graph_complex.build_matrix()
+            graph_complex.build_basis(n_jobs=6)
+            graph_complex.build_matrix(n_jobs=6)
             for (dif, success) in graph_complex.square_zero_test().items():
                 self.assertTrue(success, 'Square zero test failed for ' + str(dif))
 
@@ -191,8 +214,8 @@ class AntiCommutativityTest(unittest.TestCase):
     def test_anti_commutativity(self):
         logging.warn('----- Anti commutativity test -----')
         for graph_complex in self.gc_list:
-            graph_complex.build_basis()
-            graph_complex.build_matrix()
+            graph_complex.build_basis(n_jobs=6)
+            graph_complex.build_matrix(n_jobs=6)
             for ((op1, op2), success) in graph_complex.test_pairwise_anti_commutativity().items():
                 self.assertTrue(success, 'Anti-commutativity test failed for the pair of operators %s and %s' % (str(op1), str(op2)))
 

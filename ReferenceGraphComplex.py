@@ -26,8 +26,8 @@ class RefGraphVectorSpace(object):
         graph = Graph(graph6)
         if not sign:
             return graph.canonical_label().graph6_string()
-        canonG, permDict = graph.canonical_label(partition=self.graph_vs.get_partition(), certificate=True)
-        sgn = self.graph_vs.perm_sign(graph, permDict.values())
+        canonG, perm_dict = graph.canonical_label(partition=self.graph_vs.get_partition(), certificate=True)
+        sgn = self.graph_vs.perm_sign(graph, perm_dict.values())
         return (canonG.graph6_string(), sgn)
 
     def get_basis_g6(self):
