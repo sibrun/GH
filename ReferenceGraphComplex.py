@@ -22,10 +22,10 @@ class RefGraphVectorSpace(object):
             raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
         return StoreLoad.load_string_list(self.basis_file_path)
 
-    def _g6_to_canon_g6(self, graph6, sign=False):
+    def _g6_to_canon_g6(self, graph6, sgn=False):
         graph = Graph(graph6)
-        if not sign:
-            return graph.canonical_label().graph6_string()
+        if not sgn:
+            return graph.canonical_label(partition=self.graph_vs.get_partition()).graph6_string()
         canonG, perm_dict = graph.canonical_label(partition=self.graph_vs.get_partition(), certificate=True)
         sgn = self.graph_vs.perm_sign(graph, perm_dict.values())
         return (canonG.graph6_string(), sgn)
@@ -56,7 +56,7 @@ class RefGraphVectorSpace(object):
         lookup = {G6: j for (j, G6) in enumerate(self.graph_vs.get_basis_g6())}
         i = 0
         for G6 in basis_g6:
-            (canonG6, sgn) = self._g6_to_canon_g6(G6, sign=True)
+            (canonG6, sgn) = self._g6_to_canon_g6(G6, sgn=True)
             j = lookup.get(canonG6)
             if j is None:
                 raise ValueError("%s: Graph from ref basis not found in basis" % str(self))

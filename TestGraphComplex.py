@@ -134,11 +134,12 @@ class OperatorTest(unittest.TestCase):
                 self.assertEqual(ref_rank, ref_op.get_rank(), '%s: inconsistent reference rank' % str(op))
                 self.assertEqual(rank, ref_rank, '%s: rank and reference rank not equal' % str(op))
                 logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), rank, ref_rank))
-            ref_M_transformed = ref_op.get_matrix()
+            try:
+                ref_M_transformed = ref_op.get_matrix()
+            except StoreLoad.FileNotFoundError:
+                continue
             self.assertEqual(ref_M_transformed.rank(), ref_rank,
                              '%s: transformed reference matrix has not same rank' % str(op))
-            if op.domain.even_edges:
-                ref_M_transformed = -ref_M_transformed      # TODO: sign error in transformation matrix for even edges
             self.assertTrue(M == ref_M_transformed,
                              '%s: matrix and transformed reference matrix not equal' % str(op))
 

@@ -11,8 +11,8 @@ log_file = "HGC_Unittest.log"
 v_range = range(3, 8)
 l_range = range(3, 7)
 h_range = range(3, 7)
-edges_types = [False]
-hairs_types = [False]
+edges_types = [True, False]
+hairs_types = [True, False]
 
 
 class BasisTest(TestGraphComplex.BasisTest):
@@ -33,40 +33,42 @@ class OperatorTest(TestGraphComplex.OperatorTest):
 
 class GraphComplexTest(TestGraphComplex.GraphComplexTest):
     def setUp(self):
-        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract', 'et1h'])
+        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract'])
                         for (even_edges, even_hairs) in itertools.product(edges_types, hairs_types)]
+        self.gc_list += [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, False, ['et1h']) for
+                         even_edges in edges_types]
 
 
 class CohomologyTest(TestGraphComplex.CohomologyTest):
     def setUp(self):
-        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract', 'et1h'])
+        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract'])
                         for (even_edges, even_hairs) in itertools.product(edges_types, hairs_types)]
+        self.gc_list += [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, False, ['et1h']) for
+                         even_edges in edges_types]
 
 
 class SquareZeroTest(TestGraphComplex.SquareZeroTest):
     def setUp(self):
         self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, even_hairs, ['contract'])
                         for (even_edges, even_hairs) in itertools.product(edges_types, hairs_types)]
-        self.gc_list += [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, False, ['et1h']) for even_edges in edges_types]
-        #TODO: square zero for et1h dif
+        self.gc_list += [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, False, ['et1h']) for
+                         even_edges in edges_types]
 
 class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
     def setUp(self):
-        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, even_edges, False, ['contract', 'et1h'])
-                        for even_edges in edges_types]
-
+        self.gc_list = [HairyGraphComplex.HairyGC(v_range, l_range, h_range, False, False, ['contract', 'et1h'])]
 
 def suite():
     suite = unittest.TestSuite()
     #suite.addTest(BasisTest('test_perm_sign'))
     #suite.addTest(BasisTest('test_basis_functionality'))
-    #suite.addTest(BasisTest('test_compare_ref_basis'))
+    suite.addTest(BasisTest('test_compare_ref_basis'))
     #suite.addTest(OperatorTest('test_operator_functionality'))
-    #suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
-    suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
-    suite.addTest(CohomologyTest('test_cohomology_functionality'))
-    suite.addTest(SquareZeroTest('test_square_zero'))
-    suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
+    suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
+    #suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    #suite.addTest(CohomologyTest('test_cohomology_functionality'))
+    #suite.addTest(SquareZeroTest('test_square_zero'))
+    #suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
     return suite
 
 

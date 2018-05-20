@@ -169,6 +169,8 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 sgn *= Permutation(p).signature()
+            else:
+                sgn *= -1 #TODO overall sign for even edges
             image.append((G1, sgn))
         return image
 
@@ -233,7 +235,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
 
     def operate_on(self, G):
         sgn = 1
-        if self.domain.even_edges:
+        if not self.domain.even_edges:
             sgn *= -1 if self.domain.n_vertices % 2 else 1
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):

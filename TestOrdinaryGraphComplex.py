@@ -11,7 +11,7 @@ log_file = "OGC_Unittest.log"
 
 v_range = range(4, 10)
 l_range = range(4, 9)
-edges_types = [False]
+edges_types = [True, False]
 
 
 class BasisTest(TestGraphComplex.BasisTest):
@@ -44,41 +44,38 @@ class OperatorTest(TestGraphComplex.OperatorTest):
 
 class GraphComplexTest(TestGraphComplex.GraphComplexTest):
     def setUp(self):
-        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract', 'delet_e'])
-                        for even_edges in edges_types]
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
 
 
 class CohomologyTest(TestGraphComplex.CohomologyTest):
     def setUp(self):
-        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract'])
-                        for even_edges in edges_types]
-        #TODO: deltet_e differential for even edges
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
 
 
 class SquareZeroTest(TestGraphComplex.SquareZeroTest):
     def setUp(self):
         self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
-        #self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
-        #TODO: deltet_e differential for even edges
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
 
 
 class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
     def setUp(self):
-        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract'])]
-        #TODO: deltet_e differential for even edges
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract', 'delete_e'])]
 
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(BasisTest('test_perm_sign'))
-    suite.addTest(BasisTest('test_basis_functionality'))
+    #suite.addTest(BasisTest('test_perm_sign'))
+    #uite.addTest(BasisTest('test_basis_functionality'))
     suite.addTest(BasisTest('test_compare_ref_basis'))
-    suite.addTest(OperatorTest('test_operator_functionality'))
+    #suite.addTest(OperatorTest('test_operator_functionality'))
     suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
-    suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
-    suite.addTest(CohomologyTest('test_cohomology_functionality'))
-    suite.addTest(SquareZeroTest('test_square_zero'))
-    suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
+    #suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    #suite.addTest(CohomologyTest('test_cohomology_functionality'))
+    #suite.addTest(SquareZeroTest('test_square_zero'))
+    #suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
     return suite
 
 
