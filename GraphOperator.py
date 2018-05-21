@@ -1270,6 +1270,9 @@ class Differential(OperatorMatrixCollection):
             (default: False).
         :param x_plots, optional: positive int: Number of plots on the x-axis (Default: 2).
         """
+        print(' ')
+        print('Plot cohomology dimensions of the associated graph complex of ' + str(self))
+        logger.warn('Plot cohomology dimensions of the associated graph complex of ' + str(self))
         dim_dict = self.get_cohomology_dim_dict()
         plot_path = self.get_cohomology_plot_path()
         parameter_order = self.get_cohomology_plot_parameter_order()

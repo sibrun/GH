@@ -4,9 +4,12 @@ __all__ = ['BasisTest', 'OperatorTest', 'GraphComplexTest', 'SquareZeroTest', 'A
 from abc import ABCMeta, abstractmethod
 import unittest
 from sage.all import *
-import logging
+import Log
 import StoreLoad
 import ReferenceGraphComplex
+
+
+logger = Log.logger.getChild('test_graph_complex')
 
 
 class BasisTest(unittest.TestCase):
@@ -20,10 +23,10 @@ class BasisTest(unittest.TestCase):
         pass
 
     def test_basis_functionality(self):
-        logging.warn('----- Test basis functionality -----')
+        logger.warn('----- Test basis functionality -----')
         for vs in self.vs_list:
             if not vs.is_valid():
-                logging.info('%s: no basis test, since not valid' % str(vs))
+                logger.info('%s: no basis test, since not valid' % str(vs))
                 continue
             vs.delete_basis_file()
             self.assertFalse(vs.exists_basis_file(), 'basis should have been deleted')
@@ -32,7 +35,7 @@ class BasisTest(unittest.TestCase):
             self.assertTrue(vs.exists_basis_file(), 'basis should exist')
             basis_g6 = vs.get_basis_g6()
             if len(basis_g6) == 0:
-                logging.warn('len(basis_g6) == 0 for %s' % str(vs))
+                logger.warn('len(basis_g6) == 0 for %s' % str(vs))
             for G6 in basis_g6:
                 self.assertIsInstance(G6, basestring, "%s: type of basis_g6 element is not string" % str(vs))
             self.assertEqual(vs.get_dimension(), len(basis_g6), 'dimension not consistent for %s' % str(vs))
@@ -46,16 +49,16 @@ class BasisTest(unittest.TestCase):
                              '%s: error: G.graph6_string is not equal to G6 for G in basis and G6 in basis_g6' % str(vs))
 
     def test_compare_ref_basis(self):
-        logging.warn('----- Compare basis with reference -----')
+        logger.warn('----- Compare basis with reference -----')
         for vs in self.vs_list:
             if not vs.is_valid():
-                logging.info('%s: no basis test, since not valid' % str(vs))
+                logger.info('%s: no basis test, since not valid' % str(vs))
                 continue
             vs.build_basis(ignore_existing_files=True)
             basis_g6 = vs.get_basis_g6()
             ref_vs = ReferenceGraphComplex.RefGraphVectorSpace(vs)
             if not ref_vs.exists_basis_file():
-                logging.warn('%s: no basis test since no reference file for basis' % str(vs))
+                logger.warn('%s: no basis test since no reference file for basis' % str(vs))
                 continue
             ref_basis_g6 = ref_vs.get_basis_g6()
             ref_basis_set = set(ref_basis_g6)
@@ -74,13 +77,13 @@ class OperatorTest(unittest.TestCase):
         pass
 
     def test_operator_functionality(self):
-        logging.warn('----- Test operator functionality -----')
+        logger.warn('----- Test operator functionality -----')
         for op in self.op_list:
             if not op.is_valid():
-                logging.info('%s: no operator test, since not valid' % str(op))
+                logger.info('%s: no operator test, since not valid' % str(op))
                 continue
             if not (op.get_domain().exists_basis_file() and op.get_target().exists_basis_file()):
-                logging.warn('%s: no operator test, domain or target not built' % str(op))
+                logger.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
             op.delete_matrix_file()
             self.assertFalse(op.exists_matrix_file(), '%s matrix file should have been deleted' % str(op))
@@ -106,13 +109,13 @@ class OperatorTest(unittest.TestCase):
             self.assertTrue(M == M_parallel, '%s matrix not equal if computed with parallel jobs' % str(op))
 
     def test_compare_ref_op_matrix(self):
-        logging.warn('----- Compare operator matrix with reference -----')
+        logger.warn('----- Compare operator matrix with reference -----')
         for op in self.op_list:
             if not op.is_valid():
-                logging.info('%s: no operator test, since not valid' % str(op))
+                logger.info('%s: no operator test, since not valid' % str(op))
                 continue
             if not (op.get_domain().exists_basis_file() and op.get_target().exists_basis_file()):
-                logging.warn('%s: no operator test, domain or target not built' % str(op))
+                logger.warn('%s: no operator test, domain or target not built' % str(op))
                 continue
             op.build_matrix(ignore_existing_files=True, n_jobs=1)
             op.compute_rank(ignore_existing_files=True)
@@ -121,19 +124,19 @@ class OperatorTest(unittest.TestCase):
             rank = op.get_matrix_rank()
             ref_op = ReferenceGraphComplex.RefOperatorMatrix(op)
             if not ref_op.exists_matrix_file():
-                logging.warn('%s: no reference file for operator matrix' % str(op))
+                logger.warn('%s: no reference file for operator matrix' % str(op))
                 continue
             ref_M = ref_op.get_matrix_wrt_ref()
             ref_shape = (ref_M.nrows(), ref_M.ncols())
             ref_rank = ref_M.rank()
             self.assertEqual(ref_shape, shape, '%s: shape of matrix and reference matrix not equal' % str(op))
             if not ref_op.exists_rank_file():
-                logging.warn('%s: no reference rank file' % str(op))
+                logger.warn('%s: no reference rank file' % str(op))
                 continue
             else:
                 self.assertEqual(ref_rank, ref_op.get_rank(), '%s: inconsistent reference rank' % str(op))
                 self.assertEqual(rank, ref_rank, '%s: rank and reference rank not equal' % str(op))
-                logging.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), rank, ref_rank))
+                logger.info("%s: matrix rank: %d, ref matrix rank: %d" % (str(op), rank, ref_rank))
             try:
                 ref_M_transformed = ref_op.get_matrix()
             except StoreLoad.FileNotFoundError:
@@ -155,14 +158,14 @@ class GraphComplexTest(unittest.TestCase):
         pass
 
     def test_graph_complex_functionality(self):
-        logging.warn('----- Test graph complex functionality -----')
+        logger.warn('----- Test graph complex functionality -----')
         for graph_complex in self.gc_list:
             graph_complex.build_basis(ignore_existing_files=True, n_jobs=6)
             graph_complex.build_matrix(ignore_existing_files=True, n_jobs=6)
             graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6)
             graph_complex.build_basis(info_tracker=True)
             graph_complex.build_matrix(info_tracker=True)
-            graph_complex.compute_rank(info_tracker=True)
+            #graph_complex.compute_rank(info_tracker=True)
 
 
 class CohomologyTest(unittest.TestCase):
@@ -176,10 +179,11 @@ class CohomologyTest(unittest.TestCase):
         pass
 
     def test_cohomology_functionality(self):
-        logging.warn('----- Cohomology test -----')
+        logger.warn('----- Cohomology test -----')
         for graph_complex in self.gc_list:
             graph_complex.build_basis(n_jobs=6)
             graph_complex.build_matrix(n_jobs=6)
+            graph_complex.compute_rank(n_jobs=6)
             graph_complex.plot_cohomology_dim(to_html=True, to_csv=True)
 
 
@@ -194,7 +198,7 @@ class SquareZeroTest(unittest.TestCase):
         pass
 
     def test_square_zero(self):
-        logging.warn('----- Square zero test -----')
+        logger.warn('----- Square zero test -----')
         for graph_complex in self.gc_list:
             graph_complex.build_basis(n_jobs=6)
             graph_complex.build_matrix(n_jobs=6)
@@ -213,7 +217,7 @@ class AntiCommutativityTest(unittest.TestCase):
         pass
 
     def test_anti_commutativity(self):
-        logging.warn('----- Anti commutativity test -----')
+        logger.warn('----- Anti commutativity test -----')
         for graph_complex in self.gc_list:
             graph_complex.build_basis(n_jobs=6)
             graph_complex.build_matrix(n_jobs=6)
@@ -232,7 +236,7 @@ class TestAcyclic(unittest.TestCase):
         pass
 
     def test_acyclic(self):
-        logging.warn('----- Test acyclic -----')
+        logger.warn('----- Test acyclic -----')
         for dif in self.dif_list:
             self.assertTrue(dif.complex_is_acyclic(), 'Graph complex is not acyclic for ' + str(dif))
 

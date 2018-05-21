@@ -25,6 +25,9 @@ def get_sub_type(even_edges, even_hairs_a, even_hairs_b):
     return sub_type
 
 
+zero_hairs = False      # Option to include zero hairs in the hairy graph complexes.
+
+
 # ------- Graph Vector Space --------
 class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
@@ -68,7 +71,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         l = (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs)
         # all numbers positive
         l = l and self.n_vertices > 0 and self.n_loops >= 0 and \
-            ((self.n_hairs_a >= 0 and self.n_hairs_b >= 0) if Parameters.zero_hairs
+            ((self.n_hairs_a >= 0 and self.n_hairs_b >= 0) if zero_hairs
              else (self.n_hairs_a > 0 and self.n_hairs_b > 0))
         # Can have at most a full graph
         l = l and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2

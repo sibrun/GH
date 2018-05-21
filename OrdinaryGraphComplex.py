@@ -234,15 +234,12 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
         return 'delete edges'
 
     def operate_on(self, G):
-        sgn = 1
-        if not self.domain.even_edges:
-            sgn *= -1 if self.domain.n_vertices % 2 else 1
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             G1 = copy(G)
             G1.delete_edge((u, v))
-            sgn *= -1 if i % 2 else 1
+            sgn = -1 if i % 2 else 1
             image.append((G1, sgn))
         return image
 

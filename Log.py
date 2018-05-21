@@ -1,4 +1,4 @@
-"""Module to set the log level and log file."""
+"""Provides a logger."""
 
 import logging
 import os

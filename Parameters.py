@@ -36,5 +36,4 @@ data_tracker_timeout = 0.2
 #---- Secon Layor Info ----
 second_info = False     # Option to plot information about the sub vector spaces of a degree slice in a graded vector space.
 
-#---- Global Variables ----
-zero_hairs = False      # Option to include zero hairs in the hairy graph complexes.
+

@@ -1,4 +1,8 @@
-import multiprocessing as mp
+"""Module to track information during computations.
+
+"""
+
+import multiprocessing
 import Queue
 import collections
 import pandas
@@ -9,11 +13,19 @@ import Parameters
 
 
 class InfoTracker(object):
+    """Tracks information during computations and displays it as table on a html page.
+
+    Attributes:
+        name (str): Name/Title.
+
+        parameter_list
+
+    """
     def __init__(self, name):
         self.name = name
         self.parameter_list = []
         self.data_dict = collections.OrderedDict()
-        self.queue = mp.Queue()
+        self.queue = multiprocessing.Queue()
         self.p = None
         self.f = tempfile.NamedTemporaryFile(delete=False)
         self.html_path = self.f.name + '.html'
@@ -59,7 +71,7 @@ class InfoTracker(object):
     def start(self):
         self.update_html_file()
         self.show_in_browser()
-        self.p = mp.Process(target=self.track)
+        self.p = multiprocessing.Process(target=self.track)
         self.p.start()
 
     def stop(self):

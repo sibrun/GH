@@ -8,9 +8,9 @@ import HairyGraphComplex
 
 log_file = "HGC_Unittest.log"
 
-v_range = range(3, 8)
-l_range = range(3, 7)
-h_range = range(3, 7)
+v_range = range(1, 8)
+l_range = range(0, 7)
+h_range = range(1, 8)
 edges_types = [True, False]
 hairs_types = [True, False]
 
@@ -60,15 +60,15 @@ class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
 
 def suite():
     suite = unittest.TestSuite()
-    #suite.addTest(BasisTest('test_perm_sign'))
-    #suite.addTest(BasisTest('test_basis_functionality'))
+    suite.addTest(BasisTest('test_perm_sign'))
+    suite.addTest(BasisTest('test_basis_functionality'))
     suite.addTest(BasisTest('test_compare_ref_basis'))
-    #suite.addTest(OperatorTest('test_operator_functionality'))
+    suite.addTest(OperatorTest('test_operator_functionality'))
     suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
-    #suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
-    #suite.addTest(CohomologyTest('test_cohomology_functionality'))
-    #suite.addTest(SquareZeroTest('test_square_zero'))
-    #suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
+    suite.addTest(GraphComplexTest('test_graph_complex_functionality'))
+    suite.addTest(CohomologyTest('test_cohomology_functionality'))
+    suite.addTest(SquareZeroTest('test_square_zero'))
+    suite.addTest(AntiCommutativityTest('test_anti_commutativity'))
     return suite
 
 
