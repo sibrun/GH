@@ -706,24 +706,20 @@ class GraphOperator(Operator, OperatorMatrix):
         :return: ist(tuple(sage.Graph, factor)): List of tuples (GG, factor),
             such that (operator)(graph_sgn_list) = sum(factor * GG)
         """
-        g6_coordinates_dict = self.target.get_g6_coordinates_dict()
-        imageDict = dict()
+        image_dict = dict()
         for (G1, sgn1) in graph_sgn_list:
             G1_image = self.operate_on(G1)
             for (G2, sgn2) in G1_image:
                 (G2_g6, sgn_p) = self.target.graph_to_canon_g6(G2)
-                coord = g6_coordinates_dict.get(G2_g6)
-                if coord is None:
-                    continue
-                v = imageDict.get(coord)
+                v = image_dict.get(G2_g6)
                 new_v = sgn1 * sgn2 * sgn_p
                 if v is not None:
                     new_v += v
                 if new_v:
-                    imageDict.update({coord: new_v})
+                    image_dict.update({G2_g6: new_v})
                 elif v is not None:
-                    imageDict.pop(coord)
-        return imageDict.items()
+                    image_dict.pop(G2_g6)
+        return image_dict.items()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=False, **kwargs):
         """Build the operator matrix and write it to the matrix file if the graph operator is valid.

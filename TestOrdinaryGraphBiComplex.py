@@ -7,7 +7,7 @@ import OrdinaryGraphBiComplex
 
 log_file = "OGBiC_Unittest.log"
 
-d_range = range(0, 17)
+d_range = range(0, 18)
 even_edges = False
 
 

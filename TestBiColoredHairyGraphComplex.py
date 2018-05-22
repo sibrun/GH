@@ -7,7 +7,7 @@ import BiColoredHairyGraphComplex
 
 log_file = "BiCHGC_Unittest.log"
 
-v_range = range(0, 8)
+v_range = range(3, 8)
 l_range = range(0, 5)
 h_a_range = range(0, 6)
 h_b_range = range(0, 6)

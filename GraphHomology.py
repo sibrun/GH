@@ -45,21 +45,21 @@ Examples:
         Build the operator matrices for the differentials 'contract edges' and 'delete edges':
 
             $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
-            $ python GraphHomology.py ordinary -op1 delete_e -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
+            $ python GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
 
         Compute the ranks of the operator matrices:
 
             $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -n_primes 1 -rank
-            $ python GraphHomology.py ordinary -op1 delete_e -v 3,12 -l 0,9 -odd_e -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -n_primes 1 -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py ordinary -op1 contract -op2 delete_e -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
+            $ python GraphHomology.py ordinary -op1 contract -op2 delete -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
 
     Ordinary graph bicomplex 'ce_dele' with the differentials 'contract edges' and 'delete edges':
 
-        $ python GraphHomology.py ordinary -bicomplex ce_dele -d 0,18 -odd_e -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+        $ python GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
 
     Hairy graph complex:
         Build the basis:
@@ -83,7 +83,31 @@ Examples:
 
     Hairy graph bicomplex 'ce_et1h' with the differentials 'contract edges' and 'edge to one hair':
 
-        $ python GraphHomology.py hairy -bicomplex ce_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+        $ python GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
+
+    Bi colored hairy graph complex:
+        Build the basis:
+
+            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_b
+
+        Build the operator matrices for the differentials 'contract edges' and 'split edges':
+
+            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
+            $ python GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
+
+        Compute the ranks of the operator matrices:
+
+            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -n_primes 1 -rank
+            $ python GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -n_primes 1 -rank
+
+        Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
+            plot the cohomology dimensions of the respective graph complexes:
+
+            $ python GraphHomology.py bi_c_hairy -op1 contract -op2 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -square_zero -anti_commute -cohomology
+
+    Bi colored hairy graph bicomplex 'contract_split' with the differentials 'contract edges' and 'split edges':
+
+        $ python GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_b -build_op -rank -square_zero -cohomology
 """
 
 import argparse
@@ -93,6 +117,8 @@ import OrdinaryGraphComplex
 import OrdinaryGraphBiComplex
 import HairyGraphComplex
 import HairyGraphBiComplex
+import BiColoredHairyGraphComplex
+import BiColoredHairyGraphBiComplex
 import Parameters
 
 
@@ -128,9 +154,9 @@ def range_type(arg):
     return range(min, max)
 
 
-graph_types = ['ordinary', 'hairy']
-operators = ['contract', 'delete_e', 'et1h']
-bicomplexes = ['ce_et1h', 'ce_dele']
+graph_types = ['ordinary', 'hairy', 'bi_c_hairy']
+operators = ['contract', 'delete', 'et1h', 'split']
+bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
@@ -142,11 +168,19 @@ parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
 parser.add_argument('-even_h', action='store_true', help='even hairs')
 parser.add_argument('-odd_h', action='store_true', help='odd hairs')
+parser.add_argument('-even_h_a', action='store_true', help='even hairs_a')
+parser.add_argument('-odd_h_a', action='store_true', help='odd hairs_a')
+parser.add_argument('-even_h_b', action='store_true', help='even hairs_b')
+parser.add_argument('-odd_h_b', action='store_true', help='odd hairs_b')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
+parser.add_argument('-hairs_a', type=non_negative_range_type, help='range min,max for number of hairs_a')
+parser.add_argument('-hairs_b', type=non_negative_range_type, help='range min,max for number of hairs_b')
 parser.add_argument('-d', type=non_negative_range_type, help='range min,max for degree of degree slices in bicomplex')
 parser.add_argument('-h_min', type=range_type, help='range min,max for minimal number of hairs in a degree slice of a bicomplex')
+parser.add_argument('-h_a_min', type=range_type, help='range min,max for minimal number of hairs_a in a degree slice of a bicomplex')
+parser.add_argument('-h_b_min', type=range_type, help='range min,max for minimal number of hairs_b in a degree slice of a bicomplex')
 parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
 parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of parallel processes')
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
@@ -247,15 +281,15 @@ if __name__ == "__main__":
 
     if args.graph_type == 'ordinary':
         if args.bicomplex is not None:
-            if args.bicomplex == 'ce_dele':
+            if args.bicomplex == 'contract_delete':
                 if args.d is None:
                     raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
 
-                graph_complex = OrdinaryGraphBiComplex.OrdinaryCeDeleBiGC(args.d, args.even_e)
+                graph_complex = OrdinaryGraphBiComplex.OrdinaryCeDeleBiGC(args.d, even_edges)
             else:
-                raise ValueError('Ordinary graphs bicomplexes: ce_dele')
+                raise ValueError('Ordinary graphs bicomplex: contract_delete')
 
-        elif len(operators) > 0 and set(operators) <= {'contract', 'delete_e'}:
+        elif len(operators) > 0 and set(operators) <= {'contract', 'delete'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
             if args.l is None:
@@ -263,7 +297,7 @@ if __name__ == "__main__":
 
             graph_complex = OrdinaryGraphComplex.OrdinaryGC(args.v, args.l, even_edges, operators)
         else:
-            raise ValueError('Differentials for ordinary graph complex: contract, delete_e')
+            raise ValueError('Differentials for ordinary graph complex: contract, delete')
 
     elif args.graph_type == 'hairy':
         if args.even_h:
@@ -274,13 +308,13 @@ if __name__ == "__main__":
             raise MissingArgumentError('specify -even_h or -odd_h')
 
         if args.bicomplex is not None:
-            if args.bicomplex == 'ce_et1h':
+            if args.bicomplex == 'contract_et1h':
                 if args.d is None:
                     raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
                 if args.h_min is None:
                     raise MissingArgumentError('specify -h_min: range for minimal number of hairs of degree slices in bicomplex')
 
-                graph_complex = HairyGraphBiComplex.HairyCeEt1hBiGC(args.d, args.h_min, args.even_e, args.even_h)
+                graph_complex = HairyGraphBiComplex.HairyCeEt1hBiGC(args.d, args.h_min, even_edges, even_hairs)
             else:
                 raise ValueError('Hairy graphs bicomplexes: ce_et1h')
 
@@ -296,6 +330,53 @@ if __name__ == "__main__":
         else:
             raise ValueError('Differentials for hairy graph complex: contract, et1h')
 
+
+    elif args.graph_type == 'bi_c_hairy':
+        if args.even_h_a:
+            even_hairs_a = True
+        elif args.odd_h_a:
+            even_hairs_a = False
+        else:
+            raise MissingArgumentError('specify -even_h_a or -odd_h_a')
+
+        if args.even_h_b:
+            even_hairs_b = True
+        elif args.odd_h_b:
+            even_hairs_b = False
+        else:
+            raise MissingArgumentError('specify -even_h_b or -odd_h_b')
+
+        if args.bicomplex is not None:
+            if args.bicomplex == 'contract_split':
+                if args.d is None:
+                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
+                if args.h_a_min is None:
+                    raise MissingArgumentError(
+                        'specify -h_a_min: range for minimal number of hairs_a of degree slices in bicomplex')
+                if args.h_b_min is None:
+                    raise MissingArgumentError(
+                        'specify -h_b_min: range for minimal number of hairs_b of degree slices in bicomplex')
+
+                graph_complex = BiColoredHairyGraphBiComplex.BiColoredHairyContractSplitBiGC(args.d, args.h_a_min,
+                                                                                             args.h_b_min, even_edges,
+                                                                                             even_hairs_a, even_hairs_b)
+            else:
+                raise ValueError('Hairy graphs bicomplexes: ce_et1h')
+
+        elif len(operators) > 0 and set(operators) <= {'contract', 'split'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+            if args.hairs_a is None:
+                raise MissingArgumentError('specify -hairs_a: range for number of hairs_a')
+            if args.hairs_b is None:
+                raise MissingArgumentError('specify -hairs_b: range for number of hairs_b')
+
+            graph_complex = BiColoredHairyGraphComplex.BiColoredHairyGC(args.v, args.l, args.hairs_a, args.hairs_b,
+                                                                        even_edges, even_hairs_a, even_hairs_b, operators)
+        else:
+            raise ValueError('Differentials for hairy graph complex: contract, split')
 
     if args.build_b:
         build_basis(graph_complex)
