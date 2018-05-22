@@ -28,7 +28,7 @@ class InfoTracker(object):
 
         html_path (path): Path to the temporary html file.
 
-        url (url): Url.
+        url (url): Url of the html file to open in the webbrowser.
     """
     def __init__(self, name):
         self.name = name

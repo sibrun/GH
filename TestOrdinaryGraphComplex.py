@@ -28,24 +28,24 @@ class OperatorTest(TestGraphComplex.OperatorTest):
 class GraphComplexTest(TestGraphComplex.GraphComplexTest):
     def setUp(self):
         self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
-        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete'])]
 
 
 class CohomologyTest(TestGraphComplex.CohomologyTest):
     def setUp(self):
         self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
-        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete'])]
 
 
 class SquareZeroTest(TestGraphComplex.SquareZeroTest):
     def setUp(self):
         self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, even_edges, ['contract']) for even_edges in edges_types]
-        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete_e'])]
+        self.gc_list += [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['delete'])]
 
 
 class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
     def setUp(self):
-        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract', 'delete_e'])]
+        self.gc_list = [OrdinaryGraphComplex.OrdinaryGC(v_range, l_range, False, ['contract', 'delete'])]
 
 
 def suite():

@@ -919,7 +919,7 @@ class OperatorMatrixCollection(object):
             Tracker is only active if the different operator matrices are not built in parallel.
         """
     def __init__(self, sum_vector_space, op_matrix_list):
-        """Initialze the underlying sum vector space and the list of operator matrices composing the operator.
+        """Initialize the underlying sum vector space and the list of operator matrices composing the operator.
 
         :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Underlying vector space.
         :param op_matrix_list: list(OperatorMatrix): List of operator matrices composing the operator

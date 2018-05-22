@@ -315,6 +315,8 @@ class HairyGC(GraphComplex.GraphComplex):
 
         sum_vector_space = HairyGraphSumVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
         differential_list = []
+        if not differentials <= {'contract', 'et1h'}:
+            raise ValueError("Differentials for hairy graph complex: 'contract', 'et1h'")
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)

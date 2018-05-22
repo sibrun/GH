@@ -12,7 +12,7 @@ import Log
 logger = Log.logger.getChild('nauty_interface')
 
 def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
-    """Creates a list of simple 1vi graphs with at least trivalent vertices
+    """Creates a list of simple 1vi graphs with at least trivalent vertices.
 
     :param n_vertices: non-negative int: Number of vertices.
     :param n_edges: non-negative int: Number of edges.
