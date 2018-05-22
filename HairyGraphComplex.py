@@ -1,3 +1,6 @@
+"""Graph complexes based on simple graphs with hairs. Without multiple edges and multiple hairs per vertex.
+Implemented Differentials: Contract edges, edge to one hair."""
+
 
 __all__ = ['graph_type', 'sub_types', 'HairyGraphVS', 'HairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'EdgeToOneHairGO', 'EdgeToOneHairD', 'HairyGC']
@@ -23,8 +26,41 @@ zero_hairs = False      # Option to include zero hairs in the hairy graph comple
 
 # ------- Graph Vector Space --------
 class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
+    """Hairy graph vector space.
+
+    Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
+    and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
+    composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
+    hair vertex alone.
+
+    Attributes:
+        n_vertices (non-negative int): Number of internal vertices.
+
+        n_loops (non-negative int): Number of loops.
+
+        n_hairs (non-negative int): Number of hairs.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs (bool): Parity of the hair vertices. True for even hairs, False for odd hairs.
+
+        n_edges (non-negative int): Number of edges.
+
+        sub_type (str): Sub type of graphs.
+
+        ogvs (OrdinaryGraphComplex.OrdinaryGVS): Ordinary graph vector space without hairs.
+
+    """
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
+        """Initialize the hairy graph vector space.
+
+        :param n_vertices: non-negative int: Number of internal vertices.
+        :param n_loops: non-negative int: Number of loops.
+        :param n_hairs: non-negative int: Number of hairs.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs: bool: Parity of the hair vertices. True for even hairs, False for odd hairs.
+        """
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.n_hairs = n_hairs
@@ -54,31 +90,31 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('hairs', self.n_hairs)])
 
     def get_partition(self):
-        # all internal vertices are in color 1, the hair vertices are in color 2
+        # All internal vertices are in color 1, the hair vertices are in color 2.
         return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
 
     def is_valid(self):
-        # at least trivalent
+        # At least trivalent internal vertices.
         l = (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs)
-        # all numbers positive
+        # Positive number of vertices, non negative number of loops, non-negative or positive number of hairs.
         l = l and self.n_vertices > 0 and self.n_loops >= 0 and \
             ((self.n_hairs >= 0) if zero_hairs else (self.n_hairs > 0))
-        # Can have at most a full graph
+        # At most a full graph.
         l = l and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
-        # can have at most one hair per vertex
+        # At most one hair per vertex.
         l = l and self.n_vertices >= self.n_hairs
         return l
 
     def get_work_estimate(self):
+        # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        # give estimate of number of graphs
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
-        # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2
-        # degree 1 pieces are hairs, degree 2 vertices are edges and are removed later
-        # z switch prevents multiple hairs and multiple edges
+        # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2.
+        # Degree 1 vertices are hairs, degree 2 vertices are edges and are removed later.
+        # No multiple hairs and edges.
         if not self.is_valid():
             return []
         n_vertices_1 = self.n_vertices
@@ -90,10 +126,10 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return [self._bip_to_ordinary(G) for G in bipartite_graphs]
 
     def perm_sign(self, G, p):
-        # the sign is the same as the corresponding sign in the
-        # ordinary graph complex, apart from an extra contribution from the hair-vertices
+        # The sign is the same as the corresponding sign in the
+        # ordinary graph complex, apart from an extra contribution from the hair-vertices.
         sgn = self.ogvs.perm_sign(G, p)
-        # compute the extra contribution from hairs if necessary
+        # Compute the extra contribution from hairs if necessary.
         if self.even_hairs == self.even_edges:
             hairs = p[self.n_vertices:]
             if len(hairs) != 0:
@@ -101,7 +137,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return sgn
 
     def _bip_to_ordinary(self, G):
-        # translates bipartite into ordinary graph by replacing a bivalent vertex of coulour 2 with an edge
+        # Translates bipartite into ordinary graph by replacing a bivalent vertex of colour 2 with an edge.
         for v in range(self.n_vertices, self.n_vertices + self.n_hairs + self.n_edges):
             neighbors = G.neighbors(v)
             n_l = len(neighbors)

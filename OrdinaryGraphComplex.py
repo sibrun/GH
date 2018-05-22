@@ -25,6 +25,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
     """Ordinary graph vector space.
 
     Sub vector space with specified number of vertices, loops and even or odd edges and at least trivalent vertices.
+    No multiple edges.
 
     Attributes:
         n_vertices (non-negative int): Number of vertices.
@@ -222,11 +223,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         return 'contract edges'
 
     def operate_on(self, G):
-        """Operates on the graph G by contracting an edge.
-
-        :param G: sage.Graph: Ordinary graph to act on.
-        :return:
-        """
+        # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
@@ -274,6 +271,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     """Delete edges graph operator.
 
     Operates on an ordinary graph by deleting an edge.
+    Only for graphs with odd edges.
 
     Attributes:
         sub_type (str): Graphs sub type of the domain.
@@ -342,6 +340,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
         return 'delete edges'
 
     def operate_on(self, G):
+        # Operates on the graph G by deleting an edge.
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
@@ -353,7 +352,10 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
 
 
 class DeleteEdgesD(GraphOperator.Differential):
-    """Delete edges differential."""
+    """Delete edges differential.
+
+    Only for graphs with odd edges.
+    """
     def __init__(self, sum_vector_space):
         """Initialize the delete edges differential with the underlying sum vector space.
 
