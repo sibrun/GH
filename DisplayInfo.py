@@ -1,6 +1,4 @@
-"""Module to track information during computations.
-
-"""
+"""Module to track information during computations."""
 
 import multiprocessing
 import Queue
@@ -16,16 +14,25 @@ class InfoTracker(object):
     """Tracks information during computations and displays it as table on a html page.
 
     Attributes:
-        name (str): Name/Title.
+        name (str): Name/title.
 
-        parameter_list (list(str)): List with the parameter names.
+        parameter_names_list (list(str)): List with the parameter and property names.
 
+        data_dict (dict(tuple -> tuple/list)): Dictionary (parameters -> properties) containing the data.
 
+        queue (Queue): Queue to push new data.
 
+        p (multiprocessing.Process): Process which runs the information trakcer.
+
+        f (tempfile.NamedTemporaryFile): Temporary html file.
+
+        html_path (path): Path to the temporary html file.
+
+        url (url): Url.
     """
     def __init__(self, name):
         self.name = name
-        self.parameter_list = []
+        self.parameter_names_list = []
         self.data_dict = collections.OrderedDict()
         self.queue = multiprocessing.Queue()
         self.p = None
@@ -33,37 +40,41 @@ class InfoTracker(object):
         self.html_path = self.f.name + '.html'
         self.url ='file:{}'.format(pathname2url(self.html_path))
 
-    def set_parameter_list(self, parameter_list):
-        """Sets the name of parameters.
+    def set_parameter_names_list(self, parameter_names_list):
+        """Sets the name of parameters and properties.
 
-        :param parameter_list: list(str): List with the parameter names.
+        :param parameter_names_list: list(str): List with the parameter and property names.
         """
-        self.parameter_list = parameter_list
+        self.parameter_names_list = parameter_names_list
 
-    def get_parameter_list(self):
-        """Returns a lsit with the name of parameters.
+    def get_parameter_names_list(self):
+        """Returns a list with the names of parameters and properties.
 
-        :return: parameter_list: list(str): List with the parameter names.
+        :return: parameter_list: list(str): List with the parameter and property names.
         """
-        return self.parameter_list
+        return self.parameter_names_list
 
-    def get_dict(self):
-        """
+    def get_data_dict(self):
+        """Returns the data dictionary.
 
-        :return:
+        :return: dict(tuple -> tuple/list): Dictionary (parameters -> properties) containing the data.
         """
         return self.data_dict
 
-    def get_list(self):
+    def get_data_list(self):
+        """Returns a list of data entries.
+
+        :return: list(list(int)): Data in form of a list of lists.
+        """
         data_list = []
         for (params, properties) in self.data_dict.items():
-            data_list.append(list(params) + properties)
+            data_list.append(list(params) + list(properties))
         return data_list
 
     def update_data(self, data_dict):
         """Updates the data dictionary with data_dict.
 
-        :param data_dict: dict: New data to update the data dictionary.
+        :param data_dict: dict(tuple -> tuple/list): Dictionary (parameters -> properties) with new data to update the data dictionary.
         """
         self.data_dict.update(data_dict)
 
@@ -72,7 +83,7 @@ class InfoTracker(object):
 
         :return: pandas.DataFrame: Data Frame with the stored information.
         """
-        return pandas.DataFrame(data=self.get_list(), columns=self.get_parameter_list())
+        return pandas.DataFrame(data=self.get_data_list(), columns=self.get_parameter_names_list())
 
     def update_html_file(self):
         """Updates the html file."""
@@ -99,6 +110,8 @@ class InfoTracker(object):
 
     def get_queue(self):
         """Returns the queue for the information input.
+
+        Push updated information to the que in the form of a dict(tuple -> tuple/list) dictionary (parameters -> properties).
 
         :return: Queue: Queue for information input.
         """

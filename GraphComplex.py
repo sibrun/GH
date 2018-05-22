@@ -1,4 +1,4 @@
-"""Module providing an abstract class for a graph complex."""
+"""Provides an abstract class for a graph complex."""
 
 __all__ = ['GraphComplex']
 

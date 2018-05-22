@@ -1,4 +1,4 @@
-"""Module providing abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
+"""Provides abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
 degree slices for bigraded vector spaces."""
 
 
@@ -614,7 +614,7 @@ class SumVectorSpace(VectorSpace):
         except IndexError:
             param_names = property_names = []
         parameter_list = param_names + property_names
-        self.info_tracker.set_parameter_list(parameter_list)
+        self.info_tracker.set_parameter_names_list(parameter_list)
 
     def start_tracker(self):
         """Start the info tracker.

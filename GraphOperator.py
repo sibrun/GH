@@ -1,4 +1,4 @@
-"""Module providing abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
+"""Provides abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
 and bi operator matrices to be used in bicomplexes"""
 
 __all__ = ['OperatorMatrixProperties', 'OperatorMatrix', 'Operator', 'GraphOperator', 'BiOperatorMatrix',
@@ -1054,7 +1054,7 @@ class OperatorMatrixCollection(object):
         except IndexError:
             param_names = []
         parameter_list = param_names + OperatorMatrixProperties.names()
-        self.info_tracker.set_parameter_list(parameter_list)
+        self.info_tracker.set_parameter_names_list(parameter_list)
 
     def start_tracker(self):
         """Start the info tracker.

@@ -20,10 +20,6 @@ class BasisTest(TestGraphComplex.BasisTest):
         self.vs_list = [HairyGraphComplex.HairyGraphVS(v, l, h, even_edges, even_hairs) for (v, l, h, even_edges, even_hairs)
                         in itertools.product(v_range, l_range, h_range, edges_types, hairs_types)]
 
-    def test_perm_sign(self):
-        logging.warn('----- Test permutation sign -----')
-        logging.warn('NOT IMPLEMENTED')         #TODO: implement sign test for hairy graphs
-
 
 class OperatorTest(TestGraphComplex.OperatorTest):
     def setUp(self):
@@ -60,7 +56,6 @@ class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(BasisTest('test_perm_sign'))
     suite.addTest(BasisTest('test_basis_functionality'))
     suite.addTest(BasisTest('test_compare_ref_basis'))
     suite.addTest(OperatorTest('test_operator_functionality'))

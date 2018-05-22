@@ -1,4 +1,4 @@
-"""This module provides Nauty interfaces to generate graphs.
+"""Provides Nauty interfaces to generate graphs.
 For details, see: http://users.cecs.anu.edu.au/~bdm/nauty/
 """
 
