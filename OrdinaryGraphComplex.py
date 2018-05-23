@@ -2,7 +2,7 @@
 Implemented Differentials: Contract edges, delete edges."""
 
 
-__all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinarySumGVS', 'ContractEdgesGO', 'ContractEdgesD',
+__all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinaryGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'DeleteEdgesGO', 'DeleteEdgesD', 'OrdinaryGC']
 
 import itertools
@@ -116,7 +116,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
 
 
-class OrdinarySumGVS(GraphVectorSpace.SumVectorSpace):
+class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of ordinary graph vector spaces with specified edge parity.
 
     Attributes:
@@ -141,7 +141,7 @@ class OrdinarySumGVS(GraphVectorSpace.SumVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
-        super(OrdinarySumGVS, self).__init__(vs_list)
+        super(OrdinaryGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -231,7 +231,6 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
-
             for (j, ee) in enumerate(G1.edges(labels=False)):
                 a, b = ee
                 G1.set_edge_label(a,b,j)
@@ -254,7 +253,7 @@ class ContractEdgesD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: OrdinarySumGVS: Underlying vector space.
+        :param sum_vector_space: OrdinaryGraphSumVS: Underlying vector space.
         """
         super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -359,7 +358,7 @@ class DeleteEdgesD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the delete edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: OrdinarySumGVS: Underlying vector space.
+        :param sum_vector_space: OrdinaryGraphSumVS: Underlying vector space.
         """
         super(DeleteEdgesD, self).__init__(sum_vector_space, DeleteEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -398,7 +397,7 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        sum_vector_space = OrdinarySumGVS(v_range, l_range, even_edges)
+        sum_vector_space = OrdinaryGraphSumVS(v_range, l_range, even_edges)
         differential_list = []
         if not differentials <= {'contract', 'delete'}:
             raise ValueError("Differentials for ordinary graph complex: 'contract', 'delete'")
