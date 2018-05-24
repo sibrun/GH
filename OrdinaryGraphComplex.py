@@ -107,10 +107,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             # For the computation we use that G.edges() returns the edges in lex ordering
             # We first label the edges on a copy of G lexicographically
             G1 = copy(G)
-            for (j,e) in enumerate(G1.edges(labels=False)):
-                (u, v) = e
-                G1.set_edge_label(u, v, j)
-
+            Shared.enumerate_edges(G1)
             # We permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
             return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
@@ -231,9 +228,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
-            for (j, ee) in enumerate(G1.edges(labels=False)):
-                a, b = ee
-                G1.set_edge_label(a,b,j)
+            Shared.enumerate_edges(G1)
             previous_size = G1.size()
             G1.merge_vertices([0,1])
             if (previous_size - G1.size()) != 1:
