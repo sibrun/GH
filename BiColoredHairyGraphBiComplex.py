@@ -1,3 +1,5 @@
+"""Simple bicolored hairy graph bi complex based on the differentials contract edges and split edges.
+Only for graphs with odd edges and even hairs for both hair colors."""
 
 __all__ = ['ContractSplitBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'ContractSplitD',
            'BiColoredHairyContractSplitBiGC']
@@ -14,12 +16,25 @@ import BiColoredHairyGraphComplex
 
 class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
     def __init__(self, domain, target):
+        """Bi operator matrix based on the differentials contract edges and split edges.
+
+        Attributes:
+                sub_type (str): Sub type of graphs.
+        """
         self.sub_type = domain.get_vs_list()[0].sub_type
         super(ContractSplitBiOM, self).__init__(domain, target, BiColoredHairyGraphComplex.ContractEdgesGO,
                                                 BiColoredHairyGraphComplex.SplitEdgesGO)
 
     @staticmethod
     def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one and increases the minimal number of hairs by one for both hair colors.
+
+        :param domain: VertexLoopDegSlice: Potential domain vector space of the operator.
+        :param target: VertexLoopDegSlice: Potential target vector space of the operator.
+        :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
+        """
         (d_deg, d_h_a_min, d_h_b_min) = domain.get_ordered_param_dict().get_value_tuple()
         (t_deg, t_h_a_min, t_h_b_min) = target.get_ordered_param_dict().get_value_tuple()
         return (d_deg - 1, d_h_a_min + 1, d_h_b_min + 1) == (t_deg, t_h_a_min, t_h_b_min)
@@ -34,7 +49,31 @@ class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
 
 
 class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
+    """Degree slice of hairy graphs with the two degrees number of vertices and loops.
+
+    Total degree = n_vertices + n_loops
+
+    Attributes:
+        h_a_min (int): Minimal number of hairs_a. Can be negative.
+
+        h_b_min (int): Minimal number of hairs_b. Can be negative.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): True for even hairs_a, False for odd hairs_b.
+    """
     def __init__(self, deg, h_a_min, h_b_min, even_edges, even_hairs_a, even_hairs_b):
+        """Initialize the degree slice.
+
+        :param deg: non-negative int: Total degree of the degree slice.
+        :param h_a_min: int: Minimal number of hairs_a.
+        :param h_b_min: int: Minimal number of hairs_b.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs_b, False for odd hairs_b.
+        """
         self.h_a_min = h_a_min
         self.h_b_min = h_b_min
         super(VertexLoopDegSlice, self).__init__(
@@ -50,7 +89,36 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
 
 
 class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
+    """Bi graded vector space based on simple hairy graphs with two colors of hairs.
+
+    Bi grading according to the number of vertices and loops.
+    Direct sum of degree slices.
+
+    Attributes:
+        deg_range (range): Range for the total degree.
+
+        h_a_min_range (range): Range for minimal number of hairs_a for the degree slice with the highest degree.
+
+        h_b_min_range (range): Range for minimal number of hairs_b for the degree slice with the highest degree.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): True for even hairs_b, False for odd hairs_b.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a, even_hairs_b):
+        """ Initialize the bi graded vector space.
+
+        :param deg_range: range: Range for the degree.
+        :param h_a_min_range: range: Range for minimal number of hairs_a for the degree slice with the highest degree.
+        :param h_b_min_range: range: Range for minimal number of hairs_b for the degree slice with the highest degree.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs_b, False for odd hairs_b.
+        """
         self.deg_range = deg_range
         self.h_a_min_range = h_a_min_range
         self.h_b_min_range = h_b_min_range
@@ -74,7 +142,15 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
 
 
 class ContractSplitD(GraphOperator.Differential):
+    """Differential on the bi graded vector space based on the operators contract edges and split edges.
+
+    Only for graphs with odd edges and even hairs for both hair colors.
+    """
     def __init__(self, graded_sum_vs):
+        """Initialize the contract and split edges differential with the underlying bi graded vector space.
+
+        :param graded_sum_vs: VertexLoopBigradedSumVS: Underlying bi graded vector space.
+        """
         super(ContractSplitD, self).__init__(graded_sum_vs, ContractSplitBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
@@ -101,7 +177,35 @@ class ContractSplitD(GraphOperator.Differential):
 
 
 class BiColoredHairyContractSplitBiGC(GraphComplex.GraphComplex):
+    """Bi complex based on simple hairy graphs and the differentials contract edges and split edges.
+
+    Only for graphs with odd edges and even hairs for both hair colors.
+
+    Attributes:
+        deg_range (range): Range for the total degree.
+
+        h_a_min_range (range): Range for minimal number of hairs_a for the degree slice with the highest degree.
+
+        h_b_min_range (range): Range for minimal number of hairs_b for the degree slice with the highest degree.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): True for even hairs_b, False for odd hairs_b.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a, even_hairs_b):
+        """Initialize the bi complex.
+
+        :param deg_range: range: Range for the degree.
+        :param h_a_min_range: range: Range for minimal number of hairs_a for the degree slice with the highest degree.
+        :param h_b_min_range: range: Range for minimal number of hairs_b for the degree slice with the highest degree.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs_b, False for odd hairs_b.
+        """
         self.sub_type = BiColoredHairyGraphComplex.get_sub_type(even_edges, even_hairs_a, even_hairs_b)
 
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a,

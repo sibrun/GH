@@ -28,6 +28,8 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
     def is_match(domain, target):
         """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
 
+        The bi operator reduces the degree by one.
+
         :param domain: VertexLoopDegSlice: Potential domain vector space of the operator.
         :param target: VertexLoopDegSlice: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
