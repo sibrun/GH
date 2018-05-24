@@ -1,4 +1,5 @@
-"""Ordinary simple graph bi complex based on the differentials contract edges and delete edges."""
+"""Ordinary simple graph bi complex based on the differentials contract edges and delete edges.
+Only for graphs with odd edges."""
 
 __all__ = ['ContractDeleteBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'ContractDeleteD',
            'OrdinaryContractDeleteBiGC']
@@ -45,7 +46,20 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
 
 
 class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
+    """Degree slice of ordinary graphs with the two degrees number of vertices and loops.
+
+    Degree = n_vertices + n_loops
+
+    Attributes:
+        even_edges (bool): True for even edges, False for odd edges.
+
+    """
     def __init__(self, deg, even_edges):
+        """Initialize the degree slice.
+
+        :param deg: non-negative int: Degree of the degree slice.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        """
         self.even_edges = even_edges
         super(VertexLoopDegSlice, self).__init__(
             [OrdinaryGraphComplex.OrdinaryGVS(v, deg - v, self.even_edges) for v in range(0, deg + 1)], deg)
@@ -58,7 +72,24 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
 
 
 class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
+    """Bi graded vector space based on ordinary simple graphs.
+
+    Bi grading according to the number of vertices and loops.
+    Direct sum of degree slices.
+
+    Attributes:
+        deg_range (range): Range for the degree.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, deg_range, even_edges):
+        """ Initialize the bi graded vector space.
+
+        :param deg_range: range: Range for the degree.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        """
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
@@ -72,7 +103,15 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
 
 
 class ContractDeleteD(GraphOperator.Differential):
+    """Differential on the bi graded vector space based on the operators contract edges and delete edges.
+
+    Only for odd edges.
+    """
     def __init__(self, graded_sum_vs):
+        """Initialize the contract and delete edges differential with the underlying bi graded vector space.
+
+        :param graded_sum_vs: VertexLoopBigradedSumVS: Underlying bi graded vector space.
+        """
         super(ContractDeleteD, self).__init__(graded_sum_vs, ContractDeleteBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
@@ -89,7 +128,23 @@ class ContractDeleteD(GraphOperator.Differential):
 
 
 class OrdinaryContractDeleteBiGC(GraphComplex.GraphComplex):
+    """Bi complex based on ordinary simple graphs and the differentials contract edges and delete edges.
+
+    Only for odd edges.
+
+    Attributes:
+        deg_range (range): Range for the degree.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, deg_range, even_edges):
+        """Initialize the bi complex.
+
+        :param deg_range: range: Range for the degree.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        """
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(self.even_edges)
