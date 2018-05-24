@@ -171,6 +171,8 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def is_match(domain, target):
         """Check whether domain and target match to generate a corresponding contract edges graph operator.
 
+        The contract edges operator reduces the number of vertices by one.
+
         :param domain: OrdinaryGVS: Potential domain vector space of the operator.
         :param target: OrdinaryGVS: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
@@ -284,6 +286,8 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     @staticmethod
     def is_match(domain, target):
         """Check whether domain and target match to generate a corresponding delete edges graph operator.
+
+        The delete edge operator reduces the number of loops by one.
 
         :param domain: OrdinaryGVS: Potential domain vector space of the operator.
         :param target: OrdinaryGVS: Potential target vector space of the operator.

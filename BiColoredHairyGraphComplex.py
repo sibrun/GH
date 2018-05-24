@@ -1,3 +1,7 @@
+"""Graph complexes based on simple graphs with two colours of hairs. Without multiple edges and multiple hairs of the
+ same colour per vertex.
+Implemented Differentials: Contract edges, split edges."""
+
 
 __all__ = ['graph_type', 'get_sub_type', 'BiColoredHairyGraphVS', 'BiColoredHairyGraphSumVS', 'ContractEdgesGO',
            'ContractEdgesD', 'SplitEdgesGO', 'SplitEdgesD', 'BiColoredHairyGC']
@@ -30,8 +34,47 @@ zero_hairs = False      # Option to include zero hairs in the hairy graph comple
 
 # ------- Graph Vector Space --------
 class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
+    """Hairy graph vector space with two colours of hairs.
+
+    Sub vector space with specified number of vertices, loops, hairs per colour, even or odd edges, even or odd hair vertices
+    per colour and at least trivalent vertices. No multiple edges and not mor than one hair per colour is attached to a vertex.
+    One hair is composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the
+    parity of the hair vertex alone.
+
+    Attributes:
+        n_vertices (non-negative int): Number of internal vertices.
+
+        n_loops (non-negative int): Number of loops.
+
+        n_hairs_a (non-negative int): Number of hairs of the first colour.
+
+        n_hairs_b (non-negative int): Number of hairs of the second colour.
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): Parity of the hair vertices of the first colour. True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): Parity of the hair vertices of the second colour. True for even hairs_b, False for odd hairs_b.
+
+        n_edges (non-negative int): Number of edges.
+
+        sub_type (str): Sub type of graphs.
+
+        ogvs (OrdinaryGraphComplex.OrdinaryGVS): Ordinary graph vector space without hairs.
+
+    """
 
     def __init__(self, n_vertices, n_loops, n_hairs_a, n_hairs_b, even_edges, even_hairs_a, even_hairs_b):
+        """Initialize the bi colored hairy graph vector space.
+
+        :param n_vertices: non-negative int: Number of internal vertices.
+        :param n_loops: non-negative int: Number of loops.
+        :param n_hairs_a: non-negative int: Number of hairs of the first colour.
+        :param n_hairs_b: non-negative int: Number of hairs of the second colour.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: Parity of the hair vertices of the first colour. True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: Parity of the hair vertices of the second colour. True for even hairs_a, False for odd hairs_b.
+        """
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.n_hairs_a = n_hairs_a
@@ -62,33 +105,33 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                                    ('hairs_a', self.n_hairs_a), ('hairs_b', self.n_hairs_b)])
 
     def get_partition(self):
-        # all internal vertices are in color 1, the hair vertices are in color 2
+        # All internal vertices are in color 1, the hairs_a vertices are in color 2, and the hairs_b vertices are in color 3.
         return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs_a)),
                 list(range(self.n_vertices + self.n_hairs_a, self.n_vertices + self.n_hairs))]
 
     def is_valid(self):
-        # at least trivalent
+        # At least trivalent internal vertices
         l = (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs)
-        # all numbers positive
+        # Positive number of vertices, non negative number of loops, non-negative or positive number of hairs for each color.
         l = l and self.n_vertices > 0 and self.n_loops >= 0 and \
             ((self.n_hairs_a >= 0 and self.n_hairs_b >= 0) if zero_hairs
              else (self.n_hairs_a > 0 and self.n_hairs_b > 0))
-        # Can have at most a full graph
+        # At most a full graph.
         l = l and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
-        # can have at most one hair per vertex
+        # At most one hair of each color per vertex.
         l = l and self.n_vertices >= max(self.n_hairs_a, self.n_hairs_b)
         return l
 
     def get_work_estimate(self):
+        #TODO
+        # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        # give estimate of number of graphs
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
-        # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2
-        # degree 1 pieces are hairs, degree 2 vertices are edges and are removed later
-        # z switch prevents multiple hairs and multiple edges
+        # First produce all hairy graphs in the same way as for hairy graph vector spaces.
+        # Then assign the hairs to colour a and b respectively by generating all shuffles of the hairs.
         if not self.is_valid():
             return []
         n_vertices_1 = self.n_vertices
@@ -103,10 +146,10 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return list(itertools.chain.from_iterable(list_of_lists))
 
     def perm_sign(self, G, p):
-        # the sign is the same as the corresponding sign in the
-        # ordinary graph complex, apart from an extra contribution from the hair-vertices
+        # The sign is the same as the corresponding sign in the
+        # ordinary graph complex, apart from an extra contribution from the hair-vertices.
         sgn = self.ogvs.perm_sign(G, p)
-        # compute the extra contribution from hairs if necessary
+        # Compute the extra contribution from hairs_a and hairs_b separately.
         if self.even_hairs_a == self.even_edges:
             hairs_a = p[self.n_vertices: self.n_vertices + self.even_hairs_a]
             if len(hairs_a) != 0:
@@ -118,7 +161,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return sgn
 
     def _bip_to_ordinary(self, G):
-        # translates bipartite into ordinary graph by replacing a bivalent vertex of coulour 2 with an edge
+        # Translates bipartite into ordinary graph by replacing a bivalent vertex of colour 2 with an edge.
         for v in range(self.n_vertices, self.n_vertices + self.n_hairs + self.n_edges):
             neighbors = G.neighbors(v)
             n_l = len(neighbors)
@@ -132,6 +175,8 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return G
 
     def _hairy_to_bi_colored_hairy(self, G):
+        # Translate hairy graphs to bi colored hairy graphs.
+        # Generate all shuffles of the two hair types and assign the hairs to colour a and b respectively.
         hair_shuffles = ShuffleProduct(list(range(self.n_vertices, self.n_vertices + self.n_hairs_a)),
                                        list(range(self.n_vertices + self.n_hairs_a, self.n_vertices + self.n_hairs)))
         bi_colored_hairy_graphs = []
@@ -144,7 +189,36 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
 
 class BiColoredHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
+    """Direct sum of bi colored hairy graph vector spaces with specified edge and hair parity.
+
+    Attributes:
+        v_range (range): Range for the number of vertices.
+
+        l_range (range): Range for the number of loops.
+
+        h_a_range (range): Range for the number of hairs of the first colour.
+
+        h_b_range (range): Range for the number of hairs of the second colour..
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): True for even hairs_b, False for odd hairs_b.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, v_range, l_range, h_a_range, h_b_range, even_edges, even_hairs_a, even_hairs_b):
+        """Initialize the sum vector space.
+
+        :param v_range: range: Range for the number of vertices.
+        :param l_range: range: Range for the number of loops.
+        :param h_a_range: range: Range for the number of hairs_a.
+        :param h_b_range: range: Range for the number of hairs_b.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs_b, False for odd hairs_b.
+        """
         self.v_range = v_range
         self.l_range = l_range
         self.h_a_range = h_a_range
@@ -168,18 +242,49 @@ class BiColoredHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
 # ------- Operators --------
 class ContractEdgesGO(HairyGraphComplex.ContractEdgesGO):
+    """Contract edges graph operator.
+
+    Operates on a hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
+
+    Attributes:
+        sub_type (str): Graphs sub type of the domain.
+    """
     def __init__(self, domain, target):
+        """Initialize the domain and target vector space of the contract edges graph operator.
+
+        :param domain: BiColoredHairyGraphVS: Domain vector space of the operator.
+        :param target: BiColoredHairyGraphVS: Target vector space of the operator.
+        """
         self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+
+        The contract edges operator reduces the number of vertices by one.
+
+        :param domain: BiColoredHairyGraphVS: Potential domain vector space of the operator.
+        :param target: BiColoredHairyGraphVS: Potential target vector space of the operator.
+        :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
+        """
         return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops and \
                domain.n_hairs_a == target.n_hairs_a and domain.n_hairs_b == target.n_hairs_b \
                and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops,n_hairs_a, n_hairs_b, even_edges, even_hairs_a, even_hairs_b):
+        """Returns a contract edges graph operator.
+
+        :param n_vertices: non-negative int: Number of vertices of the domain.
+        :param n_loops: non-negative int: Number of loops of the domain.
+        :param n_hairs_a: non-negative int: Number of hairs_a.
+        :param n_hairs_b: non-negative int: Number of hairs_b.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs, False for odd hairs_b.
+        :return: ContractEdgesGO: Contract edges graph operator based on the specified domain vector space.
+        """
         domain = BiColoredHairyGraphVS(n_vertices, n_loops, n_hairs_a, n_hairs_b, even_edges, even_hairs_a, even_hairs_b)
         target = BiColoredHairyGraphVS(n_vertices - 1, n_loops, n_hairs_a, n_hairs_b, even_edges, even_hairs_a,
                                        even_hairs_b)
@@ -195,7 +300,12 @@ class ContractEdgesGO(HairyGraphComplex.ContractEdgesGO):
 
 
 class ContractEdgesD(GraphOperator.Differential):
+    """Contract edges differential."""
     def __init__(self, sum_vector_space):
+        """Initialize the contract edges differential with the underlying sum vector space.
+
+        :param sum_vector_space: BiColoredHairyGraphVS: Underlying vector space.
+        """
         super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -208,18 +318,52 @@ class ContractEdgesD(GraphOperator.Differential):
 
 
 class SplitEdgesGO(GraphOperator.GraphOperator):
+    """Split edges graph operator.
+
+    Operates on a bi colored hairy graph by deleting an edge and adding a hair of colour a to one of the adjacent vertices and
+    a hair of colour b to the other adjacent vertex.
+    Only for graphs with odd edges, even hairs_a, and even hairs_b.
+
+    Attributes:
+        sub_type (str): Graphs sub type of the domain.
+    """
     def __init__(self, domain, target):
+        """Initialize the domain and target vector space of the contract edges graph operator.
+
+        :param domain: BiColoredHairyGraphVS: Domain vector space of the operator.
+        :param target: BiColoredHairyGraphVS: Target vector space of the operator.
+        """
         self.sub_type = domain.sub_type
         super(SplitEdgesGO, self).__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+
+        The split edges operator reduces the number of loops by one and increases the number of hairs by one for each
+        colour of hairs.
+
+        :param domain: BiColoredHairyGraphVS: Potential domain vector space of the operator.
+        :param target: BiColoredHairyGraphVS: Potential target vector space of the operator.
+        :return: bool: True if domain and target match to generate a corresponding split edges graph operator.
+        """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops and \
                domain.n_hairs_a + 1 == target.n_hairs_a and domain.n_hairs_b + 1 == target.n_hairs_b \
                and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops,n_hairs_a, n_hairs_b, even_edges, even_hairs_a, even_hairs_b):
+        """Returns a split edges graph operator.
+
+        :param n_vertices: non-negative int: Number of vertices of the domain.
+        :param n_loops: non-negative int: Number of loops of the domain.
+        :param n_hairs_a: non-negative int: Number of hairs_a.
+        :param n_hairs_b: non-negative int: Number of hairs_b.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs, False for odd hairs_b.
+        :return: SplitEdgesGO: Split edges graph operator based on the specified domain vector space.
+        """
         domain = BiColoredHairyGraphVS(n_vertices, n_loops, n_hairs_a, n_hairs_b, even_edges, even_hairs_a, even_hairs_b)
         target = BiColoredHairyGraphVS(n_vertices, n_loops - 1, n_hairs_a + 1, n_hairs_b + 1, even_edges, even_hairs_a,
                                        even_hairs_b)
@@ -234,6 +378,7 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
+        # Returns as work estimate: domain.n_edges * log(target dimension, 2)
         if not self.is_valid():
             return 0
         try:
@@ -248,11 +393,13 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
         return 'split edges'
 
     def operate_on(self,G):
+        # Operates on a bi colored hairy graph by deleting an edge and adding a hair of colour a to one of the adjacent
+        # vertices and a hair of colour b to the other adjacent vertex.
         sgn0 = -1 if G.order() % 2 else 1
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a hair-vertex can be cut
+            # Only edges not connected to a hair-vertex can be split.
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             G1 = copy(G)
@@ -301,7 +448,15 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
 
 
 class SplitEdgesD(GraphOperator.Differential):
+    """Split edges differential.
+
+    Only for graphs with odd edges, even hairs_a, and even hairs_b.
+    """
     def __init__(self, sum_vector_space):
+        """Initialize the split edges differential with the underlying sum vector space.
+
+        :param sum_vector_space: BiColoredHairyGraphSumVS: Underlying vector space.
+        """
         super(SplitEdgesD, self).__init__(sum_vector_space, SplitEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -315,7 +470,37 @@ class SplitEdgesD(GraphOperator.Differential):
 
 # ------- Graph Complex --------
 class BiColoredHairyGC(GraphComplex.GraphComplex):
+    """Graph complex for bi colored hairy graphs.
+
+    Attributes:
+        v_range (range): Range for the number of vertices.
+
+        l_range (range): Range for the number of loops.
+
+        h_a_range (range): Range for the number of hairs of the first colour.
+
+        h_b_range (range): Range for the number of hairs of the second colour..
+
+        even_edges (bool): True for even edges, False for odd edges.
+
+        even_hairs_a (bool): True for even hairs_a, False for odd hairs_a.
+
+        even_hairs_b (bool): True for even hairs_b, False for odd hairs_b.
+
+        sub_type (str): Sub type of graphs.
+    """
     def __init__(self, v_range, l_range, h_a_range, h_b_range, even_edges, even_hairs_a, even_hairs_b, differentials):
+        """Initialize the graph complex.
+
+        :param v_range: range: Range for the number of vertices.
+        :param l_range: range: Range for the number of loops.
+        :param h_a_range: range: Range for the number of hairs_a.
+        :param h_b_range: range: Range for the number of hairs_b.
+        :param even_edges: bool: True for even edges, False for odd edges.
+        :param even_hairs_a: bool: True for even hairs_a, False for odd hairs_a.
+        :param even_hairs_b: bool: True for even hairs_b, False for odd hairs_b.
+        :param differentials: list(str): List of differentials. Options: 'contract', 'split'.
+        """
         self.v_range = v_range
         self.l_range = l_range
         self.h_a_range = h_a_range

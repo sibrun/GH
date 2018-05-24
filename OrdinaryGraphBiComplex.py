@@ -57,7 +57,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
     def __init__(self, deg, even_edges):
         """Initialize the degree slice.
 
-        :param deg: non-negative int: Degree of the degree slice.
+        :param deg: non-negative int: Total degree of the degree slice.
         :param even_edges: bool: True for even edges, False for odd edges.
         """
         self.even_edges = even_edges
@@ -78,7 +78,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
     Direct sum of degree slices.
 
     Attributes:
-        deg_range (range): Range for the degree.
+        deg_range (range): Range for the total degree.
 
         even_edges (bool): True for even edges, False for odd edges.
 
@@ -133,7 +133,7 @@ class OrdinaryContractDeleteBiGC(GraphComplex.GraphComplex):
     Only for odd edges.
 
     Attributes:
-        deg_range (range): Range for the degree.
+        deg_range (range): Range for the total degree.
 
         even_edges (bool): True for even edges, False for odd edges.
 

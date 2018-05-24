@@ -106,6 +106,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return l
 
     def get_work_estimate(self):
+        # TODO
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
@@ -129,7 +130,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # The sign is the same as the corresponding sign in the
         # ordinary graph complex, apart from an extra contribution from the hair-vertices.
         sgn = self.ogvs.perm_sign(G, p)
-        # Compute the extra contribution from hairs if necessary.
+        # Compute the extra contribution from hairs.
         if self.even_hairs == self.even_edges:
             hairs = p[self.n_vertices:]
             if len(hairs) != 0:
@@ -198,7 +199,7 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 class ContractEdgesGO(GraphOperator.GraphOperator):
     """Contract edges graph operator.
 
-    Operates on a hairy graph by contracting an edge and unifying the two adjacent vertices.
+    Operates on a hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
 
     Attributes:
         sub_type (str): Graphs sub type of the domain.
@@ -206,8 +207,8 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
-        :param domain: OrdinaryGVS: Domain vector space of the operator.
-        :param target: OrdinaryGVS: Target vector space of the operator.
+        :param domain: HairyGraphVS: Domain vector space of the operator.
+        :param target: HairyGraphVS: Target vector space of the operator.
         """
         self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
@@ -216,8 +217,10 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def is_match(domain, target):
         """Check whether domain and target match to generate a corresponding contract edges graph operator.
 
-        :param domain: HairyGVS: Potential domain vector space of the operator.
-        :param target: HairyGVS: Potential target vector space of the operator.
+        The contract edges operator reduces the number of vertices by one.
+
+        :param domain: HairyGraphVS: Potential domain vector space of the operator.
+        :param target: HairyGraphVS: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
         """
         return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
@@ -225,7 +228,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        """Returns a contract edge graph operator.
+        """Returns a contract edges graph operator.
 
         :param n_vertices: non-negative int: Number of vertices of the domain.
         :param n_loops: non-negative int: Number of loops of the domain.
@@ -294,11 +297,11 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
 
 class ContractEdgesD(GraphOperator.Differential):
-    """Contract edgges differential."""
+    """Contract edges differential."""
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: OrdinarySumGVS: Underlying vector space.
+        :param sum_vector_space: HairyGraphSumVS: Underlying vector space.
         """
         super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -324,8 +327,8 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the edge to one hair graph operator.
 
-        :param domain: OrdinaryGVS: Domain vector space of the operator.
-        :param target: OrdinaryGVS: Target vector space of the operator.
+        :param domain: HairyGraphVS: Domain vector space of the operator.
+        :param target: HairyGraphVS: Target vector space of the operator.
         """
         self.sub_type = domain.sub_type
         super(EdgeToOneHairGO, self).__init__(domain, target)
@@ -334,8 +337,10 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
     def is_match(domain, target):
         """Check whether domain and target match to generate a corresponding edge to one hair graph operator.
 
-        :param domain: OrdinaryGVS: Potential domain vector space of the operator.
-        :param target: OrdinaryGVS: Potential target vector space of the operator.
+        The edge to one hair operator reduces the number of loops by one and increases the number of hairs by one.
+
+        :param domain: HairyGraphVS: Potential domain vector space of the operator.
+        :param target: HairyGraphVS: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding edge to one hair graph operator.
         """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
@@ -385,7 +390,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a hair-vertex can be cut
+            # Only edges not connected to a hair-vertex can be cut
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             G1 = copy(G)
