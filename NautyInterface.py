@@ -35,6 +35,7 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
 def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
     """Creates a list of bipartite graphs, vertices of the first colour have degree in the range min_deg_1:max_deg_1,
     vertices of the second colour have degree in the range min_deg_2:max_deg_2.
+
     :param n_vertices_1: non-negative int: Number of vertices of the first colour.
     :param n_vertices_2: non-negative int: Number of vertices of the second colour.
     :param deg_range_1: tuple(non-negative int, non-negative int): (min, max) degree of the vertices of the first colour.
