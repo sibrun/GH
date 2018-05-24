@@ -62,8 +62,6 @@ def suite():
 
 
 if __name__ == '__main__':
-    Log.set_log_file(log_file)
-    Log.set_log_level('warning')
-    logging.warn("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
+    print("\n#####################################\n" + "----- Start test suite for ordinary graph complex -----")
     runner = unittest.TextTestRunner()
     runner.run(suite())

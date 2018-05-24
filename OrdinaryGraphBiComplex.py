@@ -1,5 +1,7 @@
+"""Ordinary simple graph bi complex based on the differentials contract edges and delete edges."""
 
-__all__ = ['CeDeleBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'CeDeleD', 'OrdinaryCeDeleBiGC']
+__all__ = ['ContractDeleteBiOM', 'VertexLoopDegSlice', 'VertexLoopBigradedSumVS', 'ContractDeleteD',
+           'OrdinaryContractDeleteBiGC']
 
 import os
 import GraphVectorSpace
@@ -10,14 +12,25 @@ import Parameters
 import OrdinaryGraphComplex
 
 
-class CeDeleBiOM(GraphOperator.BiOperatorMatrix):
+class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
+    """Bi operator matrix based on the differentials contract edges and delete edges.
+
+    Attributes:
+            sub_type (str): Sub type of graphs.
+    """
     def __init__(self, domain, target):
         self.sub_type = domain.get_vs_list()[0].sub_type
-        super(CeDeleBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
-                                         OrdinaryGraphComplex.DeleteEdgesGO)
+        super(ContractDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+                                                 OrdinaryGraphComplex.DeleteEdgesGO)
 
     @staticmethod
     def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        :param domain: VertexLoopDegSlice: Potential domain vector space of the operator.
+        :param target: VertexLoopDegSlice: Potential target vector space of the operator.
+        :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
+        """
         (d_deg,) = domain.get_ordered_param_dict().get_value_tuple()
         (t_deg,) = target.get_ordered_param_dict().get_value_tuple()
         return d_deg - 1 == t_deg
@@ -58,9 +71,9 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         return Shared.OrderedDict([('deg', self.deg_range)])
 
 
-class CeDeleD(GraphOperator.Differential):
+class ContractDeleteD(GraphOperator.Differential):
     def __init__(self, graded_sum_vs):
-        super(CeDeleD, self).__init__(graded_sum_vs, CeDeleBiOM.generate_op_matrix_list(graded_sum_vs))
+        super(ContractDeleteD, self).__init__(graded_sum_vs, ContractDeleteBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
         return 'contract edges and delete edges'
@@ -75,13 +88,13 @@ class CeDeleD(GraphOperator.Differential):
         return Shared.OrderedDict([('deg', deg_range)])
 
 
-class OrdinaryCeDeleBiGC(GraphComplex.GraphComplex):
+class OrdinaryContractDeleteBiGC(GraphComplex.GraphComplex):
     def __init__(self, deg_range, even_edges):
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(self.even_edges)
         graded_sum_vs = VertexLoopBigradedSumVS(self.deg_range, self.even_edges)
-        super(OrdinaryCeDeleBiGC, self).__init__(graded_sum_vs, [CeDeleD(graded_sum_vs)])
+        super(OrdinaryContractDeleteBiGC, self).__init__(graded_sum_vs, [ContractDeleteD(graded_sum_vs)])
 
     def __str__(self):
         return '<%s graphs bi-complex with %s>' % (OrdinaryGraphComplex.graph_type, str(self.sub_type))

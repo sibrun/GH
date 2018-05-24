@@ -285,7 +285,7 @@ if __name__ == "__main__":
                 if args.d is None:
                     raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
 
-                graph_complex = OrdinaryGraphBiComplex.OrdinaryCeDeleBiGC(args.d, even_edges)
+                graph_complex = OrdinaryGraphBiComplex.OrdinaryContractDeleteBiGC(args.d, even_edges)
             else:
                 raise ValueError('Ordinary graphs bicomplex: contract_delete')
 
