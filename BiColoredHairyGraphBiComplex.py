@@ -35,9 +35,7 @@ class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
         :param target: VertexLoopDegSlice: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
         """
-        (d_deg, d_h_a_min, d_h_b_min) = domain.get_ordered_param_dict().get_value_tuple()
-        (t_deg, t_h_a_min, t_h_b_min) = target.get_ordered_param_dict().get_value_tuple()
-        return (d_deg - 1, d_h_a_min + 1, d_h_b_min + 1) == (t_deg, t_h_a_min, t_h_b_min)
+        return domain.deg - 1 == target.deg and domain.h_a_min + 1 == target.h_a_min and domain.h_b_min + 1 == target.h_b_min 
 
     def get_matrix_file_path(self):
         s = "bi_D_contract_split_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()

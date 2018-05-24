@@ -34,9 +34,7 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
         :param target: VertexLoopDegSlice: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
         """
-        (d_deg,) = domain.get_ordered_param_dict().get_value_tuple()
-        (t_deg,) = target.get_ordered_param_dict().get_value_tuple()
-        return d_deg - 1 == t_deg
+        return domain.deg - 1 == target.deg
 
     def get_matrix_file_path(self):
         s = "bi_D_ce_dele_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()

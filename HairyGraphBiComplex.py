@@ -34,9 +34,7 @@ class CeEt1hBiOM(GraphOperator.BiOperatorMatrix):
         :param target: VertexLoopDegSlice: Potential target vector space of the operator.
         :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
         """
-        (d_deg, d_h_min) = domain.get_ordered_param_dict().get_value_tuple()
-        (t_deg, t_h_min) = target.get_ordered_param_dict().get_value_tuple()
-        return (d_deg, d_h_min) == (t_deg + 1, t_h_min - 1)
+        return domain.deg - 1 == target.deg and domain.h_min + 1 == target.h_min
 
     def get_matrix_file_path(self):
         s = "bi_D_ce_et1h_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()

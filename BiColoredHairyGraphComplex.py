@@ -228,7 +228,7 @@ class BiColoredHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         vs_list = []
         for (v, l, h_a, h_b) in itertools.product(self.v_range, self.l_range, self.h_a_range, self.h_b_range):
             if even_hairs_a == even_hairs_b and h_a < h_b:
-                continue # Symmetry between a and b hairs.
+                continue # Symmetry between a and b hairs. TODO: sinnvoll???
             vs_list.append(BiColoredHairyGraphVS(v, l, h_a, h_b, even_edges, even_hairs_a, even_hairs_b))
         super(BiColoredHairyGraphSumVS, self).__init__(vs_list)
 
