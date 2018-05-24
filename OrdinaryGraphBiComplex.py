@@ -48,7 +48,7 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
 class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
     """Degree slice of ordinary graphs with the two degrees number of vertices and loops.
 
-    Degree = n_vertices + n_loops
+    Total degree = n_vertices + n_loops
 
     Attributes:
         even_edges (bool): True for even edges, False for odd edges.
@@ -105,7 +105,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
 class ContractDeleteD(GraphOperator.Differential):
     """Differential on the bi graded vector space based on the operators contract edges and delete edges.
 
-    Only for odd edges.
+    Only for graphs with odd edges.
     """
     def __init__(self, graded_sum_vs):
         """Initialize the contract and delete edges differential with the underlying bi graded vector space.

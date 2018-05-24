@@ -1,5 +1,5 @@
 """Graph complexes based on simple graphs with two colours of hairs. Without multiple edges and multiple hairs of the
- same colour per vertex.
+same colour per vertex.
 Implemented Differentials: Contract edges, split edges."""
 
 

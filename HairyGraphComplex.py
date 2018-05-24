@@ -1,4 +1,6 @@
 """Graph complexes based on simple graphs with hairs. Without multiple edges and multiple hairs per vertex.
+One hair is composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity
+of the hair vertex alone.
 Implemented Differentials: Contract edges, edge to one hair."""
 
 
@@ -75,8 +77,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def __eq__(self, other):
-        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs \
-               and self.sub_type == other.sub_type
+        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs
 
     def get_basis_file_path(self):
         s = "gra%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()

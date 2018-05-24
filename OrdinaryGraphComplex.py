@@ -57,8 +57,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def __eq__(self, other):
-        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
-               and self.even_edges == other.even_edges
+        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops
 
     def get_basis_file_path(self):
         s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
