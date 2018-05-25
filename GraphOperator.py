@@ -493,7 +493,8 @@ class OperatorMatrix(object):
         elif self.exists_rank_file():
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
-        try:
+        self._compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, eps=eps)
+        """try:
             rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, eps=eps)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
@@ -501,7 +502,7 @@ class OperatorMatrix(object):
                 return
             else:
                 raise error
-        self._store_rank_dict(rank_dict)
+        self._store_rank_dict(rank_dict)"""
 
     def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
                       eps=Parameters.estimate_rank_eps):
