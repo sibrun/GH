@@ -99,7 +99,7 @@ class GraphComplex(object):
                 test_dict.update({dif: success})
         return test_dict
 
-    def compute_rank(self, exact=False, n_primes=1, rheinfall=None, ignore_existing_files=False, n_jobs=1,
+    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
         """Computes the ranks for all operators of the graph complex.
 
@@ -117,7 +117,7 @@ class GraphComplex(object):
             (Default: False). Only active if different ranks are not computed in parallel.
         """
         for op_collection in self.operator_collection_list:
-            op_collection.compute_rank(exact=exact, n_primes=n_primes, rheinfall=rheinfall,
+            op_collection.compute_rank(exact=exact, mod_p=mod_p, rheinfall=rheinfall,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        info_tracker=info_tracker)
 

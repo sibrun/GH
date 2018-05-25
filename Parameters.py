@@ -14,7 +14,7 @@ square_zero_test_eps = 1e-6
 commute_test_eps = 1e-6
 
 #---- Rank Computation ----
-primes = [32189, 31277, 32183, 31121]   # List of prime numbers to be used in rank computations.
+prime = 32189   # List of prime numbers to be used in rank computations.
 rheinfall_options = {"int64"}
 
 #---- Display Parameters ----

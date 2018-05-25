@@ -461,7 +461,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, n_primes=1, rheinfall= None, ignore_existing_files=False, skip_if_no_matrix=True):
+    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
         """Computes the rank of the operator matrix.
 
         Computes the rank of the operator matrix and stores it in the rank file. The rank can be determined with
@@ -490,7 +490,7 @@ class OperatorMatrix(object):
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
-            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, rheinfall=rheinfall)
+            rank_dict = self._compute_rank(exact=exact, mod_p=mod_p, rheinfall=rheinfall)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
@@ -499,7 +499,7 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, n_primes=1, rheinfall=None, primes=Parameters.primes):
+    def _compute_rank(self, exact=False, mod_p=True, rheinfall=None, prime=Parameters.prime):
         if self.is_trivial() or self.get_matrix_entries() == 0:
             rank_dict = {'exact': 0}
         else:
@@ -509,14 +509,12 @@ class OperatorMatrix(object):
                     M = self.get_matrix_transposed()
                     rank_exact = M.rank()
                     rank_dict.update({'exact': rank_exact})
-                if n_primes >= 1:
-                    n = min(n_primes, len(primes))
-                    for p in primes[0:n]:
-                        M = self.get_matrix_transposed()
-                        M.change_ring(GF(p))
-                        rank_mod_p = M.rank()
-                        info = 'mod_%d' % p
-                        rank_dict.update({info: rank_mod_p})
+                if mod_p:
+                    M = self.get_matrix_transposed()
+                    M.change_ring(GF(prime))
+                    rank_mod_p = M.rank()
+                    info = 'mod_%d' % prime
+                    rank_dict.update({info: rank_mod_p})
                 if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
                     info = "rheinfall_" + rheinfall
@@ -1003,7 +1001,7 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, n_primes=1, rheinfall=None, sort_key='size', ignore_existing_files=False,
+    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
@@ -1027,7 +1025,7 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.start_tracker()
         self.sort(key=sort_key)
-        Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
+        Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, mod_p=mod_p,
                           rheinfall=rheinfall, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
