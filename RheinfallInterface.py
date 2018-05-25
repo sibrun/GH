@@ -11,6 +11,7 @@ def rank(rheinfall_option, matrix_file):
     rheinfall_option = "./%s %s %s" % (rheinfall_option, matrix_file, temp_rank_file)
     os.system(rheinfall_option)
     rank = int(StoreLoad.load_line(temp_rank_file))
+    print(rank)
     StoreLoad.delete_file_and_empty_dir(temp_rank_file)
     return rank
 
