@@ -461,8 +461,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=False, eps=Parameters.estimate_rank_eps,
-                     ignore_existing_files=False, skip_if_no_matrix=True):
+    def compute_rank(self, exact=False, n_primes=1, rheinfall= None, ignore_existing_files=False, skip_if_no_matrix=True):
         """Computes the rank of the operator matrix.
 
         Computes the rank of the operator matrix and stores it in the rank file. The rank can be determined with
@@ -477,9 +476,6 @@ class OperatorMatrix(object):
         :param exact: bool, optional: Compute the exact rank (Default: False)
         :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
             different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
-        :param estimate: bool, optional: If True estimate rank using interpolative mthods offered by the scipy package
-            (Default: False).
-        :param eps: positive float, optional: Epsilon for estimating the rank (Default: Parameters.estimate_rank_eps).
         :param ignore_existing_files: bool, optional: If True an existing rank file is ignored. If False and a rank file
             exists, the rank is not recomputed (Default: False).
         :param skip_if_no_matrix: bool, optional: If true and the matrix file cannot be found skip computing the rank
@@ -493,29 +489,18 @@ class OperatorMatrix(object):
         elif self.exists_rank_file():
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
-        self._compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, eps=eps)
-        """try:
-            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, estimate=estimate, eps=eps)
+        try:
+            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, rheinfall=None)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
                 return
             else:
                 raise error
-        self._store_rank_dict(rank_dict)"""
+        self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
-                      eps=Parameters.estimate_rank_eps):
-        RheinfallInterface.rank_int64(self.get_matrix_file_path(), self.get_rank_file_path())
-
-    def _get_rank(self):
-        rank = int(StoreLoad.load_line(self.get_rank_file_path()))
-        return (rank, 0, 0)
-
-    """
-    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
-                      eps=Parameters.estimate_rank_eps):
-        if self.is_trivial():
+    def _compute_rank(self, exact=False, n_primes=1, rheinfall=None, primes=Parameters.primes):
+        if self.is_trivial() or self.get_matrix_entries() == 0:
             rank_dict = {'exact': 0}
         else:
             rank_dict = {}
@@ -532,11 +517,9 @@ class OperatorMatrix(object):
                         rank_mod_p = M.rank()
                         info = 'mod_%d' % p
                         rank_dict.update({info: rank_mod_p})
-                if estimate and min(self.get_matrix_shape()) >= Parameters.min_size_for_rank_estimate:
-                    rank_est = estimate_rank(aslinearoperator(self.get_matrix_scipy_transposed()), eps=eps)
-                    if rank_est != min(self.get_matrix_shape()):
-                        rank_est -= 1
-                    rank_dict.update({'estimate': rank_est})
+                if rheinfall is not None and rheinfall in Parameters.rheinfall_commands:
+                    rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
+                    rank_dict.update({rheinfall: rank_rheinfall})
             except StoreLoad.FileNotFoundError:
                 raise StoreLoad.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
@@ -583,7 +566,6 @@ class OperatorMatrix(object):
                 print('Rank modulo a prime and estimated rank not equal for %s' % str(self))
                 logger.warn('Rank modulo a prime and estimated rank not equal for %s' % str(self))
         return (rank_exact, rank_mod_p, rank_est)
-        """
 
     def get_matrix_rank(self):
         """Returns the matrix rank.
@@ -1020,15 +1002,13 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, n_primes=1,estimate=False, sort_key='size', ignore_existing_files=False,
+    def compute_rank(self, exact=False, n_primes=1, rheinfall=None, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
         :param exact: bool, optional: Compute the exact rank (Default: False)
         :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
             different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
-        :param estimate: bool, optional: If True estimate rank using interpolative mthods offered by the scipy package
-            (Default: False).
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
             'work_estimate', 'size', 'entries' (Default: 'size').
         :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and

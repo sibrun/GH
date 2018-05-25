@@ -99,15 +99,13 @@ class GraphComplex(object):
                 test_dict.update({dif: success})
         return test_dict
 
-    def compute_rank(self, exact=False, n_primes=1, estimate=False, ignore_existing_files=False, n_jobs=1,
+    def compute_rank(self, exact=False, n_primes=1, rheinfall=None, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
         """Computes the ranks for all operators of the graph complex.
 
         :param exact: bool, optional: Compute the exact rank (Default: False)
         :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
             different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
-        :param estimate: bool, optional: If True estimate rank using interpolative mthods offered by the scipy package
-            (Default: False).
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
             'work_estimate', 'size', 'entries' (Default: 'size').
         :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
@@ -119,7 +117,7 @@ class GraphComplex(object):
             (Default: False). Only active if different ranks are not computed in parallel.
         """
         for op_collection in self.operator_collection_list:
-            op_collection.compute_rank(exact=exact, n_primes=n_primes, estimate=estimate,
+            op_collection.compute_rank(exact=exact, n_primes=n_primes, rheinfall=rheinfall,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        info_tracker=info_tracker)
 

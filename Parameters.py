@@ -12,12 +12,10 @@ log_dir = "log"
 #---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6
 commute_test_eps = 1e-6
-estimate_rank_eps = 1e-6
 
 #---- Rank Computation ----
-primes = [127, 32189, 31277, 32183, 31121]   # List of prime numbers to be used in rank computations.
-min_size_for_rank_estimate = 40     # Minimal size for the number of rows or columns of the matrix to allow
-                                    # estimating the rank. The method is not reliable for small matrices.
+primes = [32189, 31277, 32183, 31121]   # List of prime numbers to be used in rank computations.
+rheinfall_commands = {"rank-int64"}
 
 #---- Display Parameters ----
 x_width = 0.4           # x width of the unit squares in the cohomology dimension plots.
