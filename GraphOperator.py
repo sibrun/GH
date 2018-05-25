@@ -19,6 +19,7 @@ import Shared
 import Parameters
 import PlotCohomology
 import DisplayInfo
+import RheinfallInterface
 import GraphVectorSpace
 
 logger = Log.logger.getChild('graph_operator')
@@ -504,6 +505,15 @@ class OperatorMatrix(object):
 
     def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
                       eps=Parameters.estimate_rank_eps):
+        RheinfallInterface.rank_int64(self.get_matrix_file_path(), self.get_rank_file_path())
+
+    def _get_rank(self):
+        rank = int(StoreLoad.load_line(self.get_rank_file_path()))
+        return (rank, 0, 0)
+
+"""
+    def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
+                      eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
             rank_dict = {'exact': 0}
         else:
@@ -571,7 +581,7 @@ class OperatorMatrix(object):
             if rank_est is not None and rank_mod_p != rank_est:
                 print('Rank modulo a prime and estimated rank not equal for %s' % str(self))
                 logger.warn('Rank modulo a prime and estimated rank not equal for %s' % str(self))
-        return (rank_exact, rank_mod_p, rank_est)
+        return (rank_exact, rank_mod_p, rank_est)"""
 
     def get_matrix_rank(self):
         """Returns the matrix rank.
