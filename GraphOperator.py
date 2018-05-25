@@ -490,7 +490,7 @@ class OperatorMatrix(object):
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
-            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, rheinfall=None)
+            rank_dict = self._compute_rank(exact=exact, n_primes=n_primes, rheinfall=rheinfall)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
