@@ -7,7 +7,7 @@ def rank(rheinfall_option, matrix_file):
     if not (rheinfall_option in Parameters.rheinfall_options):
         raise ValueError('Possible options for rheinfall: ' + str(Parameters.rheinfall_options))
     rank_suffix = 'rank.txt'
-    temp_rank_file = os.path.join(matrix_file, rank_suffix)
+    temp_rank_file = matrix_file + rank_suffix
     print(temp_rank_file)
     rheinfall_command = "./rank-%s %s %s" % (rheinfall_option, matrix_file, temp_rank_file)
     print(rheinfall_command)
