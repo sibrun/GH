@@ -49,8 +49,6 @@ class OperatorMatrixProperties(object):
         self.shape = None
         self.entries = None
         self.rank = None
-        self.rank_mod_p = None
-        self.rank_est = None
 
     @classmethod
     def names(cls):
@@ -58,7 +56,7 @@ class OperatorMatrixProperties(object):
 
         :return: list(str): Names of the matrix properties.
         """
-        return ['valid', 'shape', 'entries', 'rank', 'rank_mod_p', 'rank_estimate']
+        return ['valid', 'shape', 'entries', 'rank']
 
     @staticmethod
     def sort_variables():
@@ -73,7 +71,7 @@ class OperatorMatrixProperties(object):
 
         :return: list(int): Matrix properties.
         """
-        return [self.valid, self.shape, self.entries, self.rank, self.rank_mod_p, self.rank_est]
+        return [self.valid, self.shape, self.entries, self.rank]
 
 
 class OperatorMatrix(object):
@@ -461,7 +459,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
+    def compute_rank(self, exact=False, mod_p=False, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
         """Computes the rank of the operator matrix.
 
         Computes the rank of the operator matrix and stores it in the rank file. The rank can be determined with
@@ -499,7 +497,7 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, mod_p=True, rheinfall=None, prime=Parameters.prime):
+    def _compute_rank(self, exact=False, mod_p=False, rheinfall=None, prime=Parameters.prime):
         if self.is_trivial() or self.get_matrix_entries() == 0:
             rank_dict = {'exact': 0}
         else:
@@ -545,44 +543,20 @@ class OperatorMatrix(object):
             rank_dict.update({mode: int(rank)})
         return rank_dict
 
-    def _get_rank(self):
-        if not self.is_valid():
-            return (0, 0, 0)
-        rank_dict = self._load_rank_dict()
-        rank_exact = rank_dict.pop('exact', None)
-        if rank_exact == 0:
-            return (0, 0, 0)
-        rank_est = rank_dict.pop('estimate', None)
-        rank_mod_p = None
-        ranks_mod_p = rank_dict.values()
-        if len(ranks_mod_p) >= 1:
-            if len(set(ranks_mod_p)) == 1:
-                rank_mod_p = ranks_mod_p[0]
-            else:
-                print('Ranks modulo different primes not equal for %s' % str(self))
-                logger.warn('Ranks modulo different primes not equal for %s' % str(self))
-            if rank_est is not None and rank_mod_p != rank_est:
-                print('Rank modulo a prime and estimated rank not equal for %s' % str(self))
-                logger.warn('Rank modulo a prime and estimated rank not equal for %s' % str(self))
-        return (rank_exact, rank_mod_p, rank_est)
-
     def get_matrix_rank(self):
         """Returns the matrix rank.
-        The most exact version found in the rank file is returned in the order: exact rank, rank modulo a prime,
-        estimated rank. If the rank modulo different primes is available they are compared and a warning is given if
-        they don't match.
         :return: non-negative int: Matrix rank.
         :raise StoreLoad.FileNotFoundError: Raised if the rank file is not found.
         """
         if not self.is_valid():
             return 0
-        (rank_exact, rank_mod_p, rank_est) = self._get_rank()
-        if rank_exact is not None:
-            return rank_exact
-        if rank_mod_p is not None:
-            return rank_mod_p
-        logger.warn('Estimated rank for %s' % str(self))
-        return rank_est
+        rank_dict = self._load_rank_dict()
+        ranks = rank_dict.values()
+        if len(ranks) == 0:
+            raise ValueError("No matrix rank stored in rank file for " + str(self))
+        if len(set(ranks)) != 1:
+            raise ValueError("Matrix rank computed with different methods are not equal for " + str(self))
+        return ranks[0]
 
     def get_sort_size(self):
         """Returns the min(nrows, ncolumns) to be used as a sort key. If the matrix shape is unknown the constant
@@ -621,7 +595,7 @@ class OperatorMatrix(object):
         except StoreLoad.FileNotFoundError:
             pass
         try:
-            (self.properties.rank, self.properties.rank_mod_p, self.properties.rank_est) = self._get_rank()
+            self.properties.rank = self.get_matrix_rank()
         except StoreLoad.FileNotFoundError:
             pass
 
@@ -1001,7 +975,7 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, sort_key='size', ignore_existing_files=False,
+    def compute_rank(self, exact=False, mod_p=False, rheinfall=None, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 

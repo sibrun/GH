@@ -99,7 +99,7 @@ class GraphComplex(object):
                 test_dict.update({dif: success})
         return test_dict
 
-    def compute_rank(self, exact=False, mod_p=True, rheinfall=None, ignore_existing_files=False, n_jobs=1,
+    def compute_rank(self, exact=False, mod_p=False, rheinfall=None, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
         """Computes the ranks for all operators of the graph complex.
 
