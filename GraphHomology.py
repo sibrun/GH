@@ -188,7 +188,7 @@ parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
 parser.add_argument('-info', action='store_true', help='display info during calculations in browser')
 parser.add_argument('-exact', action='store_true', help='exact matrix rank computation')
-parser.add_argument('-modp', action='store_true', help='compute matrix rank modulo a prime number')
+parser.add_argument('-mod', action='store_true', help='compute matrix rank modulo a prime number')
 parser.add_argument('-rheinfall', type=str, choices=Parameters.rheinfall_options, help="compute matrix rank using rheinfall library")
 parser.add_argument('-build', action='store_true', help='build vector space basis and operator matrix')
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
@@ -237,7 +237,7 @@ def test_commutativity(graph_complex):
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
     logger.warn("\n----- Compute Ranks -----\n")
-    graph_complex.compute_rank(exact=args.exact, mod_p=args.modp, rheinfall=args.rheinfall,
+    graph_complex.compute_rank(exact=args.exact, mod_p=args.mod, rheinfall=args.rheinfall,
                                ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, info_tracker=args.info)
 
 
