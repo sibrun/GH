@@ -517,6 +517,7 @@ class OperatorMatrix(object):
                         rank_mod_p = M.rank()
                         info = 'mod_%d' % p
                         rank_dict.update({info: rank_mod_p})
+                print(rheinfall)
                 if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
                     info = "rheinfall_" + rheinfall
