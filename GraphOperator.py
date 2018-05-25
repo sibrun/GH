@@ -511,7 +511,7 @@ class OperatorMatrix(object):
         rank = int(StoreLoad.load_line(self.get_rank_file_path()))
         return (rank, 0, 0)
 
-"""
+    """
     def _compute_rank(self, exact=False, n_primes=1, primes=Parameters.primes, estimate=False,
                       eps=Parameters.estimate_rank_eps):
         if self.is_trivial():
@@ -581,7 +581,8 @@ class OperatorMatrix(object):
             if rank_est is not None and rank_mod_p != rank_est:
                 print('Rank modulo a prime and estimated rank not equal for %s' % str(self))
                 logger.warn('Rank modulo a prime and estimated rank not equal for %s' % str(self))
-        return (rank_exact, rank_mod_p, rank_est)"""
+        return (rank_exact, rank_mod_p, rank_est)
+        """
 
     def get_matrix_rank(self):
         """Returns the matrix rank.
@@ -1171,7 +1172,7 @@ class Differential(OperatorMatrixCollection):
         cohomology_dim = dimV - rankD - rankDD
         if cohomology_dim < 0:
             raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
-            logger.error("Negative cohomology dimension for %s" % str(opD.domain))
+            #logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomology_dim
 
     def _get_cohomology_dim_dict(self):
