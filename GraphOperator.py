@@ -515,6 +515,8 @@ class OperatorMatrix(object):
                     rank_dict.update({info: rank_mod_p})
                 if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
+                    if rank_rheinfall == 0:
+                        return self._compute_rank(exact=True)
                     info = "rheinfall_" + rheinfall
                     rank_dict.update({info: rank_rheinfall})
             except StoreLoad.FileNotFoundError:
@@ -555,7 +557,7 @@ class OperatorMatrix(object):
         if len(ranks) == 0:
             raise ValueError("No matrix rank stored in rank file for " + str(self))
         if len(set(ranks)) != 1:
-            raise ValueError("Matrix rank computed with different methods are not equal for " + str(self))
+            raise ValueError("Matrix ranks computed with different methods are not equal for " + str(self))
         return ranks[0]
 
     def get_sort_size(self):
