@@ -97,7 +97,7 @@ class OperatorTest(unittest.TestCase):
                              '%s: matrix shape not consistent with vector space dimensions' % str(op))
             op.delete_rank_file()
             self.assertFalse(op.exists_rank_file(), '%s rank file should have been deleted' % str(op))
-            op.compute_rank()
+            op.compute_rank(mod_p=True)
             self.assertTrue(op.exists_rank_file(), '%s rank file should exist' % str(op))
             self.assertEqual(op.get_matrix_rank(), rank, '%s: inconsistent rank' % str(op))
             entries = op.get_matrix_entries()
@@ -118,7 +118,7 @@ class OperatorTest(unittest.TestCase):
                 print('%s: no operator test, domain or target not built' % str(op))
                 continue
             op.build_matrix(ignore_existing_files=True, n_jobs=1)
-            op.compute_rank(ignore_existing_files=True)
+            op.compute_rank(ignore_existing_files=True, mod_p=True)
             M = op.get_matrix()
             shape = op.get_matrix_shape()
             rank = op.get_matrix_rank()
@@ -162,7 +162,7 @@ class GraphComplexTest(unittest.TestCase):
         for graph_complex in self.gc_list:
             graph_complex.build_basis(ignore_existing_files=True, n_jobs=6)
             graph_complex.build_matrix(ignore_existing_files=True, n_jobs=6)
-            graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6)
+            graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6, mod_p=True)
             graph_complex.build_basis(info_tracker=True)
             graph_complex.build_matrix(info_tracker=True)
             #graph_complex.compute_rank(info_tracker=True)
@@ -183,7 +183,7 @@ class CohomologyTest(unittest.TestCase):
         for graph_complex in self.gc_list:
             graph_complex.build_basis(n_jobs=6)
             graph_complex.build_matrix(n_jobs=6)
-            graph_complex.compute_rank(n_jobs=6)
+            graph_complex.compute_rank(n_jobs=6, mod_p=True)
             graph_complex.plot_cohomology_dim(to_html=True, to_csv=True)
 
 
