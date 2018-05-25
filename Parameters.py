@@ -15,7 +15,7 @@ commute_test_eps = 1e-6
 
 #---- Rank Computation ----
 prime = 32189   # List of prime numbers to be used in rank computations.
-rheinfall_options = {"int", "int32", "int64", "mod", "mpq", "mpz"}
+rheinfall_options = {"int", "int32", "int64", "mpq", "mpz"}
 
 #---- Display Parameters ----
 x_width = 0.4           # x width of the unit squares in the cohomology dimension plots.
