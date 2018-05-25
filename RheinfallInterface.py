@@ -9,6 +9,7 @@ def rank(rheinfall_option, matrix_file):
     rank_suffix = 'rank.txt'
     temp_rank_file = os.path.join(matrix_file, rank_suffix)
     rheinfall_command = "./rank-%s %s %s" % (rheinfall_option, matrix_file, temp_rank_file)
+    print(rheinfall_command)
     os.system(rheinfall_command)
     rank = int(StoreLoad.load_line(temp_rank_file))
     print(rank)
