@@ -189,7 +189,7 @@ parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='
 parser.add_argument('-info', action='store_true', help='display info during calculations in browser')
 parser.add_argument('-exact', action='store_true', help='exact matrix rank computation')
 parser.add_argument('-n_primes', type=non_negative_int, default=1, help='compute matrix rank modulo n_primes different prime numbers')
-parser.add_argument('-rheinfall', type=str, choices=Parameters.rheinfall_commands, help="compute matrix rank using rheinfall library")
+parser.add_argument('-rheinfall', type=str, choices=Parameters.rheinfall_options, help="compute matrix rank using rheinfall library")
 parser.add_argument('-build', action='store_true', help='build vector space basis and operator matrix')
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='build operator matrix')

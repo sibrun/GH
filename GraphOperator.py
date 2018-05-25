@@ -517,9 +517,10 @@ class OperatorMatrix(object):
                         rank_mod_p = M.rank()
                         info = 'mod_%d' % p
                         rank_dict.update({info: rank_mod_p})
-                if rheinfall is not None and rheinfall in Parameters.rheinfall_commands:
+                if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
-                    rank_dict.update({rheinfall: rank_rheinfall})
+                    info = "rheinfall_" + rheinfall
+                    rank_dict.update({info: rank_rheinfall})
             except StoreLoad.FileNotFoundError:
                 raise StoreLoad.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
@@ -1027,7 +1028,7 @@ class OperatorMatrixCollection(object):
             self.start_tracker()
         self.sort(key=sort_key)
         Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, n_primes=n_primes,
-                          estimate=estimate, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+                          rheinfall=rheinfall, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
 
