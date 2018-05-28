@@ -472,9 +472,13 @@ class OperatorMatrix(object):
             Estimated rank using interpolative methods offered by the scipy package:
                 scipy.linalg.interpolative.estimate_rank
 
-        :param exact: bool, optional: Compute the exact rank (Default: False)
-        :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
-            different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
+        :param exact: bool, optional: Compute the exact rank (Default: False).
+        :param mod_p: bool: Determine the rank over a finite field w.r.t. a prime number (Default: False).
+            The prime number is set in the Parameters module.
+        :param linbox: bool: Use linbox's Black box method to compute the exact rank (Default: False).
+            See: http://www.linalg.org/ and https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+        :param rheinfall: str: Use rhainfall to compute the rank. Options: Parameters.rheinfall_options (Default: None).
+            See: https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         :param ignore_existing_files: bool, optional: If True an existing rank file is ignored. If False and a rank file
             exists, the rank is not recomputed (Default: False).
         :param skip_if_no_matrix: bool, optional: If true and the matrix file cannot be found skip computing the rank
@@ -988,9 +992,13 @@ class OperatorMatrixCollection(object):
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
-        :param exact: bool, optional: Compute the exact rank (Default: False)
-        :param n_primes: non-negative int, optional: Number of primes. Determine the rank over a finite field w.r.t.
-            different prime numbers (Default: 1). If set to 0 rank is not computed modulo a prime number.
+        :param exact: bool, optional: Compute the exact rank (Default: False).
+        :param mod_p: bool: Determine the rank over a finite field w.r.t. a prime number (Default: False).
+            The prime number is set in the Parameters module.
+        :param linbox: bool: Use linbox's Black box method to compute the exact rank (Default: False).
+            See: http://www.linalg.org/ and https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+        :param rheinfall: str: Use rhainfall to compute the rank. Options: Parameters.rheinfall_options (Default: None).
+            See: https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
             'work_estimate', 'size', 'entries' (Default: 'size').
         :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
