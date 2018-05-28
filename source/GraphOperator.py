@@ -460,7 +460,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=False, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
+    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
         """Computes the rank of the operator matrix.
 
         Computes the rank of the operator matrix and stores it in the rank file. The rank can be determined with
@@ -502,7 +502,7 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, mod_p=False, linbox=False, rheinfall=None, prime=Parameters.prime):
+    def _compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, prime=Parameters.prime):
         if self.is_trivial() or self.get_matrix_entries() == 0:
             rank_dict = {'exact': 0}
         else:
@@ -518,11 +518,9 @@ class OperatorMatrix(object):
                     rank_mod_p = M.rank()
                     info = 'mod_%d' % prime
                     rank_dict.update({info: rank_mod_p})
-                if linbox:
-                    rank_linbox = LinboxInterface.rank(self.get_matrix_file_path())
-                    if rank_linbox == 0:
-                        return self._compute_rank(exact=True)
-                    info = "linbox"
+                if linbox is not None and linbox in Parameters.linbox_options:
+                    rank_linbox = LinboxInterface.rank(linbox, self.get_matrix_file_path())
+                    info = "linbox_" + linbox
                     rank_dict.update({info: rank_linbox})
                 if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
@@ -988,7 +986,7 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=False, rheinfall=None, sort_key='size', ignore_existing_files=False,
+    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
