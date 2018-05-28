@@ -40,74 +40,74 @@ Examples:
     Ordinary graph complex:
         Build the basis:
 
-            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b
+            $ python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b
 
         Build the operator matrices for the differentials 'contract edges' and 'delete edges':
 
-            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
-            $ python GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_op
 
         Compute the ranks of the operator matrices:
 
-            $ python GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
-            $ python GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py ordinary -op1 contract -op2 delete -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
+            $ python ./source/GraphHomology.py ordinary -op1 contract -op2 delete -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
 
     Ordinary graph bicomplex 'ce_dele' with the differentials 'contract edges' and 'delete edges':
 
-        $ python GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
 
     Hairy graph complex:
         Build the basis:
 
-            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_b
+            $ python ./source/GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_b
 
         Build the operator matrices for the differentials 'contract edges' and 'edge to one hair':
 
-            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
-            $ python GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -build_op
 
         Compute the ranks of the operator matrices:
 
-            $ python GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
-            $ python GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py hairy -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
+            $ python ./source/GraphHomology.py hairy -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
 
     Hairy graph bicomplex 'ce_et1h' with the differentials 'contract edges' and 'edge to one hair':
 
-        $ python GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
 
     Bi colored hairy graph complex:
         Build the basis:
 
-            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_b
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_b
 
         Build the operator matrices for the differentials 'contract edges' and 'split edges':
 
-            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
-            $ python GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -build_op
 
         Compute the ranks of the operator matrices:
 
-            $ python GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
-            $ python GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
 
-            $ python GraphHomology.py bi_c_hairy -op1 contract -op2 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -square_zero -anti_commute -cohomology
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -op2 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -square_zero -anti_commute -cohomology
 
     Bi colored hairy graph bicomplex 'contract_split' with the differentials 'contract edges' and 'split edges':
 
-        $ python GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
 """
 
 import argparse
