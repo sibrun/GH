@@ -37,6 +37,8 @@ Prerequisites:
             (sage-sh)$ pip -install pandas
 
 Examples:
+    In order to run the Graph Homology code, change to the directory GH, activate sage, and run:
+
     Ordinary graph complex:
         Build the basis:
 
