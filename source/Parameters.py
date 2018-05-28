@@ -1,13 +1,14 @@
 """General parameters."""
 
 import sys
+import os
 
 #---- Genearal Parameters ----
 #---- Directory Names ----
-data_dir = "data"
-plots_dir = "plots"
-ref_data_dir = "data_ref"
-log_dir = "log"
+data_dir = os.path.join(os.pardir, "data")
+plots_dir = os.path.join(os.pardir, "plots")
+ref_data_dir = os.path.join(os.pardir, "data_ref")
+log_dir = os.path.join(os.pardir, "log")
 
 #---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6
