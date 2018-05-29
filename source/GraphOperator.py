@@ -183,40 +183,64 @@ class OperatorMatrix(object):
 
     @abstractmethod
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
+        """Build the operator matrix and write it to the matrix file if the graph operator is valid.
+
+        The operator matrix is stored in the SMS format to the matrix file. The header line contains the shape of the
+        matrix (nrows = domain dimension, ncols = target dimension) and the data type of the SMS format. In the file the
+        matrix entries are listed as (domain index, target index, value).
+
+        :param ignore_existing_files: Option to ignore an existing matrix file. Ignore an existing file and
+            rebuild the operator matrix if True, otherwise skip rebuilding the matrix file if there exists a
+            matrix file already (Default: False).
+        :type ignore_existing_files: bool
+        :param skip_if_no_basis: Skip building the matrix if the domain or target basis is not built
+            (Default: True). If False and a basis file is missing an error is raised.
+        :type skip_if_no_basis: bool
+        :param progress_bar: Option to show a progress bar (Default: False).
+        :type progress_bar: bool
+        :param kwargs: Accept further keyword arguments without influence.
+
+        .. seealso:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
+        """
         pass
 
     @staticmethod
     @abstractmethod
     def is_match(domain, target):
-        """Returns whether domain and target vector space match to build an operator matrix.
+        """Return whether domain and target vector space match to build an operator matrix.
 
-        :param domain: GraphVectorSpace.VectorSpace: Potential domain vector space for an operator matrix.
-        :param target: GraphVectorSpace.VectorSpace: Potential target vector space for an operator matrix.
-        :return: bool: True if domain and target match to build an operator matrix.
+        :param domain: Potential domain vector space for an operator matrix.
+        :type domain: GraphVectorSpace.VectorSpace
+        :param target: Potential target vector space for an operator matrix.
+        :type targetGraphVectorSpace.VectorSpace
+        :return:True if domain and target match to build an operator matrix.
+        :rtype: bool
         """
         pass
 
     def exists_matrix_file(self):
         """Return whether there exists a matrix file.
 
-        :return: bool: True if a matrix file is found.
+        :return: True if a matrix file is found.
+        :rtype: bool
         """
         return os.path.isfile(self.get_matrix_file_path())
 
     def exists_rank_file(self):
         """Return whether there exists a rank file.
 
-        :return: bool: True if a rank file is found.
+        :return: True if a rank file is found.
+        :rtype: bool
         """
         return os.path.isfile(self.get_rank_file_path())
 
     def delete_matrix_file(self):
-        """Deletes the matrix file."""
+        """Delete the matrix file."""
         if os.path.isfile(self.get_matrix_file_path()):
             os.remove(self.get_matrix_file_path())
 
     def delete_rank_file(self):
-        """Deletes the rank file."""
+        """Delete the rank file."""
         if os.path.isfile(self.get_rank_file_path()):
             os.remove(self.get_rank_file_path())
 
@@ -224,14 +248,17 @@ class OperatorMatrix(object):
         """Store the operator matrix in SMS format to the matrix file.
 
         The header line contains the shape of the matrix (nrows = domain dimension, ncols = target dimension) and
-        the data type of the SMS format (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
-        matrix entries are listed as (domain index, target index, value).
+        the data type of the SMS format. In the file the matrix entries are listed as (domain index, target index, value).
 
-        :param matrix_list: list(tuple(non-negative int, non-negative int, int)): List of matrix entries in the form
-                (domain index, target index, value). The list entries must be ordered lexicographically.
-        :param shape: tuple(non-negative int, non-negative int): Tuple containing the matrix shape =
-                (nrows = domain dimension, ncols = target dimension).
-        :param data_type: str (optional): data_type for the SMS format.
+        :param matrix_list: List of matrix entries in the form (domain index, target index, value).
+            The list entries must be ordered lexicographically.
+        :type matrix_list: list(tuple(int, int, int))
+        :param shape: Tuple containing the matrix shape = (nrows = domain dimension, ncols = target dimension).
+        :type shape: tuple(int, int)
+        :param data_type: data_type for the SMS format.
+        :type data_type: str
+
+        ..seealso:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
         """
         (d, t) = shape
         stringList = []
@@ -242,13 +269,13 @@ class OperatorMatrix(object):
         StoreLoad.store_string_list(stringList, self.get_matrix_file_path())
 
     def _load_matrix_list(self):
-        """Loads the operator matrix in the SMS format from the matrix file.
+        """Load the operator matrix in the SMS format from the matrix file.
 
-        Returns the matrix list, i.e. a list of the non-zero matrix entries, and the matrix shape, i.e. a tuple with
+        Return the matrix list, i.e. a list of the non-zero matrix entries, and the matrix shape, i.e. a tuple with
         the number of rows and columns.
 
-        :return: tuple(list(tuple(non-negative int, non-negative int, int)), tuple(non-negative int, non-negative int)):
-                (matrix_list = list((domain index, target index, value), shape = (domain dimension, target dimension))
+        :return: : (matrix_list = list((domain index, target index, value), shape = (domain dimension, target dimension))
+        :rtype: tuple(list(tuple(int, int, int)), tuple(int, int))
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -280,10 +307,10 @@ class OperatorMatrix(object):
         return (matrix_list, shape)
 
     def get_matrix_list(self):
-        """Returns the list of nonzero matrix entries.
+        """Return the list of nonzero matrix entries.
 
-        :return: list(tuple(non-negative int, non-negative int, int)): List of matrix entries in the form
-            (domain index, target index, value).
+        :return: List of matrix entries in the form (domain index, target index, value).
+        :rtype: list(tuple(int, int, int))
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -889,18 +916,18 @@ class OperatorMatrixCollection(object):
     Collection of operator matrices composing an operator on a sum vector space.
 
     Attributes:
-        sum_vector_space (GraphVectorSpace.SumVectorSpace): Underlying sum vector space.
-
-        op_matrix_list (list(OperatorMatrix)): List of operator matrices composing the operator.
-
-        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the operator matrices in op_matrix_list.
+        - sum_vector_space (GraphVectorSpace.SumVectorSpace): Underlying sum vector space.
+        - op_matrix_list (list(OperatorMatrix)): List of operator matrices composing the operator.
+        - info_tracker (DisplayInfo.InfoTracker): Tracker for information about the operator matrices in op_matrix_list.
             Tracker is only active if the different operator matrices are not built in parallel.
         """
     def __init__(self, sum_vector_space, op_matrix_list):
         """Initialize the underlying sum vector space and the list of operator matrices composing the operator.
 
-        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Underlying vector space.
-        :param op_matrix_list: list(OperatorMatrix): List of operator matrices composing the operator
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: GraphVectorSpace.SumVectorSpace
+        :param op_matrix_list: List of operator matrices composing the operator
+        :type op_matrix_list: list(OperatorMatrix)
         """
         self.sum_vector_space = sum_vector_space
         self.op_matrix_list = op_matrix_list
@@ -908,40 +935,47 @@ class OperatorMatrixCollection(object):
 
     @abstractmethod
     def get_type(self):
-        """Returns a unique description of the operator type.
+        """Return a unique description of the operator type.
 
-        :return: str: Unique description of the operator type. Example:
-            'contract edges'
+        :return: Unique description of the operator type.
+        :rtype: str
+
+        :Example:
+        'contract edges'
         """
         pass
 
     def __str__(self):
-        """Returns a unique description of the operator.
+        """Return a unique description of the operator.
 
-        :return: str: Unique description of the operator.
+        :return: Unique description of the operator.
+        :rtype: str
         """
         return '<%s operator matrix collection on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     def get_op_list(self):
-        """Returns the operator matrix list composing the operator.
+        """Return the operator matrix list composing the operator.
 
-        :return: list(OperatorMatrix): List of operator matrices composing the operator.
+        :return: List of operator matrices composing the operator.
+        :rtype: list(OperatorMatrix)
         """
         return self.op_matrix_list
 
     def get_vector_space(self):
-        """Returns the underlying vector space.
+        """Return the underlying vector space.
 
-        :return: GraphVectorSpace.SumVectorSpace: Underlying direct sum of graph vector spaces.
+        :return: Underlying direct sum of graph vector spaces.
+        :rtype: GraphVectorSpace.SumVectorSpace
         """
         return self.sum_vector_space
 
     def sort(self, key='work_estimate'):
-        """Sorts the list of sub vector spaces.
+        """Sort the list of sub vector spaces.
 
         Possible sort keys: 'work_estimate', 'size', 'entries'.
 
         :param key: Sort key. Options: 'work_estimate', 'size', 'entries'.
+        :type key: str
         :raise  ValueError: If an unknown sort key is given.
         """
         if key == 'work_estimate':
@@ -956,15 +990,19 @@ class OperatorMatrixCollection(object):
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the operator matrices of the operator.
 
-        :param ignore_existing_files: bool, optional: Option to ignore  existing matrix files. Ignore existing files and
+        :param ignore_existing_files: Option to ignore  existing matrix files. Ignore existing files and
             rebuild the operator matrices if True, otherwise skip rebuilding a matrix file if there exists already a
             matrix file (Default: False).
-        :param n_jobs: positive int, optional: Option to build different matrices in parallel using
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to build different matrices in parallel using
                 n_jobs parallel processes (Default: 1).
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
+        :type n_jobs: int
+        :param progress_bar: Option to show a progress bar (Default: False).
+        :type progress_bar: bool
             Only active if different matrices are not built in parallel.
-        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page
+        :param info_tracker: Option to plot information about the sub vector spaces in a web page
             (Default: False). Only active if different matrices are not built in parallel.
+        :type info_tracker: bool
         """
         print(' ')
         print('Build matrices of %s' % str(self))
@@ -990,22 +1028,33 @@ class OperatorMatrixCollection(object):
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
-        :param exact: bool, optional: Compute the exact rank (Default: False).
-        :param mod_p: bool: Determine the rank over a finite field w.r.t. a prime number (Default: False).
+        :param exact: Compute the exact rank (Default: False).
+        :type exact: bool
+        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
             The prime number is set in the Parameters module.
-        :param linbox: bool: Use linbox's Black box method to compute the exact rank (Default: False).
-            See: http://www.linalg.org/ and https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-        :param rheinfall: str: Use rhainfall to compute the rank. Options: Parameters.rheinfall_options (Default: None).
-            See: https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        :type mod_p: bool
+        :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
+            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type linbox: str
+        :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
+        :type rheinfall: str
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
             'work_estimate', 'size', 'entries' (Default: 'size').
-        :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
+        :type sort_key: str
+        :param ignore_existing_files: Option to ignore existing rank files. Ignore existing files and
             recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
             rank file (Default: False).
-        :param n_jobs: positive int, optional: Option to compute different ranks in parallel using
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to compute different ranks in parallel using
                 n_jobs parallel processes (Default: 1).
-        :param info_tracker: bool, optional: Option to plot information about the operator matrices in a web page
+        :type n_jobs: int
+        :param info_tracker: Option to plot information about the operator matrices in a web page
             (Default: False). Only active if different ranks are not computed in parallel.
+        :type info_tracker: bool
+
+        .. seealso:: - http://www.linalg.org/
+                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         print(' ')
         print('Compute ranks of %s' % str(self))
@@ -1052,15 +1101,15 @@ class OperatorMatrixCollection(object):
     def update_tracker(self, op):
         """Update info tracker for the operator matrix op.
 
-        :param op: OperatorMatrix: Operator matrix for which to update the properties and message it to the info tracker.
+        :param op: Operator matrix for which to update the properties and message it to the info tracker.
+        :type op: OperatorMatrix
         """
         op.update_properties()
         message = {tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
-        """Stop tracking information about the underlying operator matrices.
-        """
+        """Stop tracking information about the underlying operator matrices."""
         self.info_tracker.stop()
 
 
@@ -1071,18 +1120,21 @@ class Differential(OperatorMatrixCollection):
     def __init__(self, sum_vector_space, op_matrix_list):
         """Initialze the underlying sum vector space and the list of operator matrices composing the differential.
 
-        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Underlying vector space.
-        :param op_matrix_list: list(OperatorMatrix): List of operator matrices composing the differential
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: GraphVectorSpace.SumVectorSpace
+        :param op_matrix_list: List of operator matrices composing the differential
+        :type op_matrix_list: list(OperatorMatrix)
         """
         super(Differential, self).__init__(sum_vector_space, op_matrix_list)
 
     @abstractmethod
     def get_cohomology_plot_path(self):
-        """Returns the path to the cohomology plot file.
+        """Return the path to the cohomology plot file.
 
         File name without ending.
 
-        :return: path: Path to the cohomology plot file.
+        :return: Path to the cohomology plot file.
+        :rtype: path
         """
         pass
 
@@ -1090,30 +1142,35 @@ class Differential(OperatorMatrixCollection):
         pass
 
     def get_ordered_cohomology_param_range_dict(self):
-        """Returns an ordered dictionary of parameter ranges for the sub vector spaces of the underlying sum vector space.
+        """Return an ordered dictionary of parameter ranges for the sub vector spaces of the underlying sum vector space.
 
-         :return Shared.OrderedDict: Ordered dictionary of parameter ranges. Example:
-                 Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+         :return: Ordered dictionary of parameter ranges.
+         :rtype: Shared.OrderedDict
+         :Example: Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
          """
         return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):
-        """Returns a unique description of the differential.
+        """Return a unique description of the differential.
 
-        :return: str: Unique description of the differential.
+        :return: Unique description of the differential.
+        :rtype: str
         """
         return '<%s differential on %s>' % (self.get_type(), str(self.sum_vector_space))
 
     @staticmethod
     def cohomology_dim(opD, opDD):
-        """Computes the cohomology dimension, i.e. dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
+        """Compute the cohomology dimension, i.e. dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
 
         The domain vector space of opD must correspond to the target vector space of opDD.
         A warning is printed a negative cohomology dimension results.
 
-        :param opD: OperatorMatrix: First operator matrix relevant for the cohomology dimension.
-        :param opDD: OperatorMatrix: Second operator matrix relevant for the cohomology dimension.
-        :return: int: Cohomology dimension dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
+        :param opD: First operator matrix relevant for the cohomology dimension.
+        :type opD: OperatorMatrix
+        :param opDD: Second operator matrix relevant for the cohomology dimension.
+        :type opDD: OperatorMatrix
+        :return: Cohomology dimension dim(ker(opD)/im(opDD)) = dim(opD.domain) - rank(opD) - rank(opDD).
+        :rtype: int
         """
         try:
             dimV = opD.get_domain().get_dimension()
@@ -1145,9 +1202,10 @@ class Differential(OperatorMatrixCollection):
         return cohomology_dim
 
     def _get_cohomology_dim_dict(self):
-        """Returns a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
+        """Return a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
 
-        :return: dict: Dictionary (vector space -> cohomology dimension)
+        :return: Dictionary (vector space -> cohomology dimension)
+        :rtype: dict(GraphVectorSpace.VectorSpace -> int)
         """
         cohomology_dim_dict = dict()
         for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
@@ -1157,9 +1215,10 @@ class Differential(OperatorMatrixCollection):
         return cohomology_dim_dict
 
     def get_cohomology_dim_dict(self):
-        """Returns a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
+        """Return a dictionary for the cohomology dimensions of the sub vector spaces of the underlying vector space.
 
-        :return: dict: Dictionary (vector space parameters -> cohomology dimension)
+        :return: Dictionary (vector space parameters -> cohomology dimension)
+        :rtype: dict(tuple(int) -> int)
         """
         cohomology_dim = self._get_cohomology_dim_dict()
         dim_dict = dict()
@@ -1168,6 +1227,11 @@ class Differential(OperatorMatrixCollection):
         return dim_dict
 
     def complex_is_acyclic(self):
+        """Test whether the associated comples is acyclic.
+
+        :return: True if the associated comples is acyclic.
+        :rtype: bool
+        """
         cohomology_dims = self._get_cohomology_dim_dict().values()
         for dim in cohomology_dims:
             if dim is not None and not (dim == 0 or dim == '*'):
@@ -1177,13 +1241,15 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         """Generic test whether the differential squares to zero.
 
-        Searches for matching pairs in the list of underlying operator matrices and test whether they square to zero.
-        Reports for how many of them the test was trivially successful (because at least two matrices are trivial),
+        Searche for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+        Report for how many of them the test was trivially successful (because at least two matrices are trivial),
         successful, inconclusive (because matrices are missing) or unsuccessful.
 
-        :param eps: positive float, optional: Threshold for the square zero test (Default: Parameters.square_zero_test_eps).
-        :return: tuple(int, int, int, int): Tuple with the number of pairs for which the square zero test was a
+        :param eps: Threshold for the square zero test (Default: Parameters.square_zero_test_eps).
+        :type eps: float
+        :return: Tuple with the number of pairs for which the square zero test was a
             (trivial success, success, inconclusive, fail).
+        :rtype: tuple(int, int, int, int)
         """
         print(' ')
         print("Square zero test for %s:" % str(self))
@@ -1237,14 +1303,17 @@ class Differential(OperatorMatrixCollection):
         return 'fail'
 
     def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
-        """Plots the cohomology dimensions.
+        """Plot the cohomology dimensions.
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
-        :param to_html: bool, optional: Option to generate a html file with a table of the cohomology dimensions
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions
             (Dafault: False).
-        :param to_csv: bool, optional: Option to generate a csv file with a table of the cohomology dimensions
+        :type to_html: bool
+        :param to_csv: Option to generate a csv file with a table of the cohomology dimensions
             (default: False).
-        :param x_plots, optional: positive int: Number of plots on the x-axis (Default: 2).
+        :type to_csv: bool
+        :param x_plots: Number of plots on the x-axis (Default: 2).
+        :type x_plots: int
         """
         print(' ')
         print('Plot cohomology dimensions of the associated graph complex of ' + str(self))
