@@ -1,4 +1,4 @@
-"""Provides abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
+"""Provide abstract classes for vector spaces, graph vector spaces, direct sum of vector spaces and
 degree slices for bigraded vector spaces."""
 
 

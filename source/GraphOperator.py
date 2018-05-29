@@ -199,6 +199,8 @@ class OperatorMatrix(object):
         :param progress_bar: Option to show a progress bar (Default: False).
         :type progress_bar: bool
         :param kwargs: Accept further keyword arguments without influence.
+        :raise StoreLoad.FileNotFoundError: Raised if skip_if_no_basis is True and the domain or target basis file is
+            not found.
 
         .. seealso:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
         """
@@ -322,14 +324,17 @@ class OperatorMatrix(object):
         return matrix_list
 
     def get_shifted_matrix_list(self, domain_start, target_start):
-        """Returns the list of nonzero matrix entries with indices shifted by the domain and target start indices.
+        """Return the list of nonzero matrix entries with indices shifted by the domain and target start indices.
 
         The shifted matrix list is used to build the operator matrix of bioperators in bicomplexes.
 
-        :param domain_start: non-negative int: Domain start index.
-        :param target_start: non-negative int: Target start index.
-        :return: list(tuple(non-negative int, non-negative int, int)): List of matrix entries in the form
+        :param domain_start: Domain start index.
+        :type domain_start: int
+        :param target_start: Target start index.
+        :type target_start: int
+        :return: List of matrix entries in the form
             (domain index + domain start index, target index + target start index, value).
+        :rtype: : list(tuple(int, int, int))
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -344,9 +349,10 @@ class OperatorMatrix(object):
         return shifted_matrix_list
 
     def get_matrix_shape(self):
-        """Returns the matrix shape.
+        """Return the matrix shape.
 
-        :return: tuple(non-negative int, non-negative): Matrix shape = (nrows = target dimension, ncolumns = domain dimension).
+        :return: Matrix shape = (nrows = target dimension, ncolumns = domain dimension).
+        :rtype: tuple(int, int)
         :raise StoreLoad.FileNotFoundError: Raised if there is neither a matrix file nor the basis files of the domain and
             target vector spaces.
         """
@@ -364,11 +370,12 @@ class OperatorMatrix(object):
         return (t, d)
 
     def get_matrix_shape_entries(self):
-        """Returns the matrix shape and the number of non-zero matrix entries.
+        """Return the matrix shape and the number of non-zero matrix entries.
 
-        :return: tuple(tuple(non-negative int, non-negative), non-negative int): (matrix shape, entries).
+        :return: (matrix shape, entries).
                 Matrix shape = (nrows = target dimension, ncolumns = domain dimension) and number of non-zero matrix
                 entries.
+        :rtype: tuple(tuple(int, int), int)
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -384,9 +391,10 @@ class OperatorMatrix(object):
             raise StoreLoad.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
 
     def get_matrix_entries(self):
-        """Returns the number of non-zero matrix entries.
+        """Return the number of non-zero matrix entries.
 
-        :return: non-negative int: Number of non-zero matrix entries.
+        :return: int: Number of non-zero matrix entries.
+        :rtype: int
         :raise StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -400,9 +408,10 @@ class OperatorMatrix(object):
         return entries
 
     def is_trivial(self):
-        """Returns whether the matrix is trivial, i.e. is not valid, has zero dimension or hasn't any non-zero entries
+        """Return whether the matrix is trivial, i.e. is not valid, has zero dimension or hasn't any non-zero entries
 
-        :return: bool: True if the matrix is trivial (not valid, zero dimension or no non-zero entries).
+        :return: True if the matrix is trivial (not valid, zero dimension or no non-zero entries).
+        :rtype: bool
         :raise StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file or the basis files of domain and
                 target cannot be found.
         :raise ValueError: Raised in the following cases:
@@ -421,9 +430,10 @@ class OperatorMatrix(object):
         return False
 
     def get_matrix_transposed(self):
-        """Returns the transposed operator matrix as sparse sage matrix over Z.
+        """Return the transposed operator matrix as sparse sage matrix over Z.
 
-        :return: sage.Matrix_sparse: Transposed operator matrix with shape (domain dimension, target dimension).
+        :return: Transposed operator matrix with shape (domain dimension, target dimension).
+        :rtype: Matrix_sparse
         :raise StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
                 The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
@@ -444,9 +454,10 @@ class OperatorMatrix(object):
         return M
 
     def get_matrix(self):
-        """Returns the operator matrix as sparse sage matrix over Z.
+        """Return the operator matrix as sparse sage matrix over Z.
 
-        :return: sage.Matrix_sparse: Operator matrix with shape (target dimension, domain dimension).
+        :return: Operator matrix with shape (target dimension, domain dimension).
+        :rtype: Matrix_sparse
         :raise StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file cannot be found or if
             the matrix is not valid and the domain and target basis files cannot be found.
         :raise ValueError: Raised in the following cases:
@@ -461,9 +472,10 @@ class OperatorMatrix(object):
         return M
 
     def get_matrix_scipy_transposed(self):
-        """Returns the transposed operator matrix as sparse csc matrix.
+        """Return the transposed operator matrix as sparse csc matrix.
 
-        :return: scipy.sparse.csc_martix: Transposed operator matrix with shape (domain dimension, target dimension).
+        :return: Transposed operator matrix with shape (domain dimension, target dimension).
+        :rtype: scipy.sparse.csc_martix
         :raise StoreLoad.FileNotFoundError: Raised if the matrix is valid and the matrix file cannot be found or if
             the matrix is not valid and the domain and target basis files cannot be found.
         :raise ValueError: Raised in the following cases:
@@ -487,30 +499,39 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
-        """Computes the rank of the operator matrix.
+    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False,
+                     skip_if_no_matrix=True):
+        """Compute the rank of the operator matrix.
 
-        Computes the rank of the operator matrix and stores it in the rank file. The rank can be determined with
+        Compute the rank of the operator matrix and stores it in the rank file. The rank can be determined with
         different modes:
-            Exact rank of the operator matrix defined over Z.
-            Rank modulo a prime number, i.e. rank of the operator matrix defined over a finite field defined by a
-                prime number. It can be determined w.r.t. different prime numbers. The list of prime numbers can be
-                chosen in the module Parameters.
-            Estimated rank using interpolative methods offered by the scipy package:
-                scipy.linalg.interpolative.estimate_rank
+            - Exact rank of the operator matrix defined over Z. Based on sage.
+            - Rank modulo a prime number, i.e. rank of the operator matrix defined over a finite field defined by a
+              prime number.
+            - Use linbox to determine the rank over the rational numbers or over a finite field, i.e. with all
+              calculations modulo a prime number.
+            - Use rheinfall to determine the rank over Z or the rational numbers or modulo 64 bit integers.
+        The prime number is set in the module Parameters.
 
-        :param exact: bool, optional: Compute the exact rank (Default: False).
-        :param mod_p: bool: Determine the rank over a finite field w.r.t. a prime number (Default: False).
+        :param exact: Compute the exact rank (Default: False).
+        :type exact: bool
+        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
             The prime number is set in the Parameters module.
-        :param linbox: bool: Use linbox's Black box method to compute the exact rank (Default: False).
-            See: http://www.linalg.org/ and https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-        :param rheinfall: str: Use rhainfall to compute the rank. Options: Parameters.rheinfall_options (Default: None).
-            See: https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
-        :param ignore_existing_files: bool, optional: If True an existing rank file is ignored. If False and a rank file
-            exists, the rank is not recomputed (Default: False).
-        :param skip_if_no_matrix: bool, optional: If true and the matrix file cannot be found skip computing the rank
-            (Default: True). If False and the matrix file cannot be found raise an error.
+        :type mod_p: bool
+        :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
+            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type linbox: str
+        :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
+        :type rheinfall: str
+        :param ignore_existing_files: Option to ignore an existing rank file. Ignore existing file and
+            recompute the rank if True, otherwise skip recomputing the rank if there exists already a
+            rank file (Default: False).
+        :type ignore_existing_files: bool
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found and skip_if_no_matrix = False.
+
+        .. seealso:: - http://www.linalg.org/
+                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         if not self.is_valid():
             return
@@ -582,8 +603,10 @@ class OperatorMatrix(object):
         return rank_dict
 
     def get_matrix_rank(self):
-        """Returns the matrix rank.
-        :return: non-negative int: Matrix rank.
+        """Return the matrix rank.
+
+        :return: Matrix rank.
+        :rtype: int
         :raise StoreLoad.FileNotFoundError: Raised if the rank file is not found.
         """
         if not self.is_valid():
@@ -597,10 +620,11 @@ class OperatorMatrix(object):
         return ranks[0]
 
     def get_sort_size(self):
-        """Returns the min(nrows, ncolumns) to be used as a sort key. If the matrix shape is unknown the constant
+        """Return the min(nrows, ncolumns) to be used as a sort key. If the matrix shape is unknown the constant
         Parameters.max_sort_value is returned.
 
-        :return: Returns the min(nrows, ncolumns) or a constant to be used as a sort key
+        :return: min(nrows, ncolumns) or a constant to be used as a sort key
+        :rtype: int
         """
         try:
             sort_size = min(self.get_matrix_shape())
@@ -609,10 +633,11 @@ class OperatorMatrix(object):
         return sort_size
 
     def get_sort_entries(self):
-        """Returns the number of nonzero entries to be used as a sort key. If the number of entries is unknown the
+        """Return the number of nonzero entries to be used as a sort key. If the number of entries is unknown the
         constant Parameters.max_sort_value is returned.
 
-        :return: Returns the number of non-zero entries or a constant to be used as a sort key
+        :return: Number of non-zero entries or a constant to be used as a sort key
+        :rtype: int
         """
         try:
             sort_entries = self.get_matrix_entries()
@@ -638,9 +663,10 @@ class OperatorMatrix(object):
             pass
 
     def get_properties(self):
-        """Returns the operator matrix properties.
+        """Return the operator matrix properties.
 
-        :return OperatorMatrixProperties: Operator matrix properties.
+        :return: Operator matrix properties.
+        :rtype: OperatorMatrixProperties
         """
         return self.properties
 
@@ -651,9 +677,10 @@ class Operator(object):
 
     @abstractmethod
     def get_type(self):
-        """Returns a unique description of the operator type.
+        """Return a unique description of the operator type.
 
-        :return str: Unique description of the operator.
+        :return: Unique description of the operator type.
+        :rtype: str
             """
         pass
 
@@ -661,8 +688,10 @@ class Operator(object):
     def operate_on(self, G):
         """For G a sage graph returns a list of pairs (GG, factor), such that (operator)(G) = sum(factor * GG).
 
-        :param G: sage.Graph: Graph on which the operator is applied.
-        :return: list(tuple(sage.Graph, factor)): List of tuples (GG, factor), such that (operator)(G) = sum(factor * GG)
+        :param G: Graph on which the operator is applied.
+        :type G: Graph
+        :return: List of tuples (GG, factor), such that (operator)(G) = sum(factor * GG)
+        :rtype: list(tuple(Graph, factor))
         """
         pass
 
@@ -680,14 +709,14 @@ class GraphOperator(Operator, OperatorMatrix):
 
     @classmethod
     def generate_op_matrix_list(cls, sum_vector_space):
-        """Returns a list of all possible graph operators of this type with domain and target being sub vector spaces
+        """Return a list of all possible graph operators of this type with domain and target being sub vector spaces
         of the sum vector space.
 
-        :param sum_vector_space: GraphVectorSpace.SumVectorSpace: Sum vector space of graphs on which the graph
+        :param sum_vector_space: Sum vector space of graphs on which the graph
             operator is based.
-
-        :return: list(GraphOperator): List of all possible graph operators with domain and target in the sum vector
-            space.
+        :type sum_vector_space: GraphVectorSpace.SumVectorSpace
+        :return: List of all possible graph operators with domain and target in the sum vector space.
+        :rtype: list(GraphOperator)
         """
         op_matrix_list = []
         for (domain, target) in itertools.permutations(sum_vector_space.get_vs_list(), 2):
@@ -696,20 +725,22 @@ class GraphOperator(Operator, OperatorMatrix):
         return op_matrix_list
 
     def __str__(self):
-        """Returns a unique description of the graph operator.
+        """Return a unique description of the graph operator.
 
-        :return: str: Unique description of the graph operator.
+        :return: Unique description of the graph operator.
+        :rtype: str
         """
         return '<%s graph operator, domain: %s>' % (self.get_type(), str(self.domain))
 
     def operate_on_list(self, graph_sgn_list):
-        """Operates on the output of the operate on method of the graph operator.
+        """Operate on the output of the operate on method of the graph operator.
 
         This method is intended to act with the graph operator twice on a graph.
 
         :param graph_sgn_list: Output of the operate_on method of the same graph operator.
-        :return: ist(tuple(sage.Graph, factor)): List of tuples (GG, factor),
-            such that (operator)(graph_sgn_list) = sum(factor * GG)
+        :type graph_sgn_list: list(tuple(Graph, factor))
+        :return: List of tuples (GG, factor), such that (operator)(graph_sgn_list) = sum(factor * GG)
+        :rtype: list(tuple(Graph, factor))
         """
         image_dict = dict()
         for (G1, sgn1) in graph_sgn_list:
@@ -727,23 +758,6 @@ class GraphOperator(Operator, OperatorMatrix):
         return image_dict.items()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=False, **kwargs):
-        """Build the operator matrix and write it to the matrix file if the graph operator is valid.
-
-        The operator matrix is stored in the SMS format to the matrix file. The header line contains the shape of the
-        matrix (nrows = domain dimension, ncols = target dimension) and the data type of the SMS format
-        (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
-        matrix entries are listed as (domain index, target index, value).
-
-        :param ignore_existing_files: bool, optional: Option to ignore an existing matrix file. Ignore an existing file and
-            rebuild the operator matrix if True, otherwise skip rebuilding the matrix file if there exists a
-            matrix file already (Default: False).
-        :param skip_if_no_basis: bool, optional: Skip building the matrix if the domain or target basis is not built
-            (Default: True). If False and a basis file is missing an error is raised.
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
-        :param kwargs: Accept further keyword arguments without influence.
-        :raise StoreLoad.FileNotFoundError: Raised if skip_if_no_basis is True and the domain or target basis file is
-            not found.
-        """
         if not self.is_valid():
             return
         if (not ignore_existing_files) and self.exists_matrix_file():
@@ -813,10 +827,14 @@ class BiOperatorMatrix(OperatorMatrix):
     def __init__(self, domain, target, operator_cls1, operator_cls2):
         """Initialize domain and target degree slice and the two operator classes composing the bi operator.
 
-        :param domain: GraphVectorSpace.DegSlice: Domain degree slice.
-        :param target: GraphVectorSpace.DegSlice: Target degree slice.
+        :param domain: Domain degree slice.
+        :type domain: GraphVectorSpace.DegSlice
+        :param target: Target degree slice.
+        :type target: GraphVectorSpace.DegSlice
         :param operator_cls1: First operator class to compose the bi operator.
+        :type operator_cls1: OperatorMatrix
         :param operator_cls2: Second operator class to compose the bi operator.
+        :type operator_cls2: OperatorMatrix
         """
         super(BiOperatorMatrix, self).__init__(domain, target)
         self.operator_cls1 = operator_cls1
@@ -824,12 +842,14 @@ class BiOperatorMatrix(OperatorMatrix):
 
     @classmethod
     def generate_op_matrix_list(cls, graded_sum_vs):
-        """Returns a list of all possible bi operator matrices of this type with domain and target being degree slices
+        """Return a list of all possible bi operator matrices of this type with domain and target being degree slices
         of the graded sum vector space.
 
-        :param graded_sum_vs: GraphVectorSpace.SumVectorSpace: Graded sum vector space composed of degree slices.
-        :return: list(BiOperatorMatrix): List of all possible bi operator matrices with domain and target
-            being degree slices of the graded sum vector space.
+        :param graded_sum_vs: Graded sum vector space composed of degree slices.
+        :type graded_sum_vs: GraphVectorSpace.SumVectorSpace
+        :return: List of all possible bi operator matrices with domain and target being degree slices of the
+            graded sum vector space.
+        :rtype: list(BiOperatorMatrix)
         """
         graded_sum_vs_list = graded_sum_vs.get_vs_list()
         bi_op_matrix_list = []
@@ -839,9 +859,10 @@ class BiOperatorMatrix(OperatorMatrix):
         return bi_op_matrix_list
 
     def __str__(self):
-        """Returns a unique description of the bi operator matrix.
+        """Return a unique description of the bi operator matrix.
 
-        :return: str: Uniqe description of the bi operator matrix.
+        :return: Unique description of the bi operator matrix.
+        :rtype: str
         """
         return '<Bi operator matrix on domain: %s>' % str(self.domain)
 
@@ -849,29 +870,17 @@ class BiOperatorMatrix(OperatorMatrix):
         return True
 
     def get_work_estimate(self):
-        """Estimates the work needed to build the bi operator matrix by the product of the dimensions of domain and target.
+        """Estimate the work needed to build the bi operator matrix by the product of the dimensions of domain and target.
 
         Used to schedule the order of building the operator matrices.
 
-        :return: non-negative int: Estimate the work to build the operator matrix.
+        :return int: Estimate the work to build the operator matrix.
+        :rtype: int
         """
 
         return self.domain.get_dimension() * self.target.get_dimension()
 
     def build_matrix(self, ignore_existing_files=False, progress_bar=False, **kwargs):
-        """Build the bi operator matrix composed of the underlying operator matrices and write it to the matrix file.
-
-        The bi operator matrix is stored in the SMS format to the matrix file. The header line contains the shape of the
-        matrix (nrows = domain dimension, ncols = target dimension) and the data type of the SMS format
-        (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html). In the file the
-        matrix entries are listed as (domain index, target index, value).
-
-        :param ignore_existing_files: bool, optional: Option to ignore an existing matrix file. Ignore an existing file and
-            rebuild the operator matrix if True, otherwise skip rebuilding the matrix file if there exists a
-            matrix file already (Default: False).
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
-        :param kwargs: Accept further keyword arguments without influence.
-        """
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         print(' ')
@@ -1324,5 +1333,3 @@ class Differential(OperatorMatrixCollection):
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
                                   x_plots=x_plots, parameter_order=parameter_order)
-
-

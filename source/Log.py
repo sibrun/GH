@@ -1,4 +1,4 @@
-"""Provides a common logger."""
+"""Provide a common logger."""
 
 import logging
 import os

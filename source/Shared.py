@@ -1,4 +1,4 @@
-"""Provides shared code."""
+"""Provide shared code."""
 
 __all__ = ['Perm', 'OrderedDict', 'enumerate_edges', 'edge_perm_sign', 'shifted_edge_perm_sign', 'permute_to_left',
            'matrix_norm', 'power_2']

@@ -1,4 +1,4 @@
-"""Provides functions to plot lists as well as 2 and 3 dimensional arrays.
+"""Provide functions to plot lists as well as 2 and 3 dimensional arrays.
 
 Intended to plot the cohomology dimensions."""
 
@@ -16,17 +16,24 @@ import Shared
 
 
 def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv=False, x_plots=2, parameter_order=None):
-    """Plots the values in the dictionary value_dict.
+    """Plot the values in the dictionary value_dict.
 
-    :param value_dict: dict(tuple -> int): Dictionary (parameters tuple -> value) containing the values to be ploted.
-    :param ordered_param_range_dict: Shared.OrderedDict(str -> range): Ordered dictionary (parameter name -> range of the parameter).
-    :param path: path: Path to the plot file without suffix.
-    :param to_html: bool, optional: Option to plot a html list (Default: False).
-    :param to_csv: bool, optional: Option to build a csv file (Default: False).
-    :param x_plots: positive int, optional: Number of plots on the x-axis (Default: 2)
-    :param parameter_order: tuple(non-negative int), optional: Permutation of the parameter indices, to specify the order of
-        the parameters (Default: None/given ordering). Only for plots. Example: (1, 2, 0) to plot the second parameter
-        on the x-axis, the third on the y-axis and the first on the z-axis.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :type value_dict: dict(tuple -> int)
+    :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
+    :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
+    :param path: Path to the plot file without suffix.
+    :type path: path
+    :param to_html: Option to plot a html list (Default: False).
+    :type to_html: bool
+    :param to_csv: Option to build a csv file (Default: False).
+    :type to_csv: bool
+    :param x_plots: Number of plots on the x-axis (Default: 2)
+    :type x_plots: int
+    :param parameter_order: Permutation of the parameter indices, to specify the order of
+           the parameters (Default: None/given ordering). Only for plots. Example: (1, 2, 0) to plot the second parameter
+           on the x-axis, the third on the y-axis and the first on the z-axis.
+    :type parameter_order: tuple(int)
     """
     if len(ordered_param_range_dict) == 2:
         if parameter_order is not None:
@@ -43,13 +50,20 @@ def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv
 
 
 def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=False):
-    """Plots the values in the dictionary value_dict in a html list and/or a csv file.
+    """Plot the values in the dictionary value_dict in a html list and/or a csv file.
 
-    :param value_dict: dict(tuple -> int): Dictionary (parameters tuple -> value) containing the values to be ploted.
-    :param ordered_param_range_dict: Shared.OrderedDict(str -> range): Ordered dictionary (parameter name -> range of the parameter).
-    :param path: path: Path to the plot file without suffix.
-    :param to_html: bool, optional: Option to plot a html list (Default: True).
-    :param to_csv: bool, optional: Option to build a csv file (Default: False).
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :type value_dict: dict(tuple -> int)
+    :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
+    :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
+    :param path: Path to the plot file without suffix.
+    :type path: path
+    :param to_html: Option to plot a html list (Default: False).
+    :type to_html: bool
+    :param to_csv: Option to build a csv file (Default: False).
+    :type to_csv: bool
+    :param x_plots: Number of plots on the x-axis (Default: 2)
+    :type x_plots: int
     """
     StoreLoad.generate_path(path)
     data_list = []
@@ -71,14 +85,18 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
 
 
 def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
-    """Plots a 2 dimensional array given by the value_dict.
+    """Plot a 2 dimensional array given by the value_dict.
 
-    :param value_dict: dict(tuple -> int): Dictionary (parameters tuple -> value) containing the values to be ploted.
-    :param ordered_param_range_dict: Shared.OrderedDict(str -> range): Ordered dictionary (parameter name -> range of the parameter).
-    :param path: path: Path to the plot file without suffix.
-    :param parameter_order: list(non-negative int), optional: Permutation of the parameter indices, to specify the order of
-        the parameters (Default: None/given ordering). Example: (1, 0) to plot the second parameter on the x-axis
-        and the first on the y-axis.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :type value_dict: dict(tuple -> int)
+    :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
+    :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
+    :param path: Path to the plot file without suffix.
+    :type path: path
+    :param parameter_order: Permutation of the parameter indices, to specify the order of
+           the parameters (Default: None/given ordering). Example: (1, 0) to plot the second parameter on the x-axis
+           and the first on the y-axis.
+    :type parameter_order: list(int)
     """
     path += '.png'
     if parameter_order in {(0, 1), (1, 0)}:
@@ -138,16 +156,21 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
 
 
 def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1, 2), x_plots=2):
-    """Plots a 3 dimensional array given by the value_dict as a list of 2 dimensional plots with
+    """Plot a 3 dimensional array given by the value_dict as a list of 2 dimensional plots with
     x_plots per line.
 
-    :param value_dict: dict(tuple -> int): Dictionary (parameters tuple -> value) containing the values to be ploted.
-    :param ordered_param_range_dict: Shared.OrderedDict(str -> range): Ordered dictionary (parameter name -> range of the parameter).
-    :param path: path: Path to the plot file without suffix.
-    :param x_plots: positive int, optional: Number of plots on the x-axis (Default: 2)
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :type value_dict: dict(tuple -> int)
+    :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
+    :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
+    :param path: Path to the plot file without suffix.
+    :type path: path
+    :param x_plots: Number of plots on the x-axis (Default: 2)
+    :type x_plots: int
     :param parameter_order: tuple(non-negative int), optional: Permutation of the parameter indices, to specify the order of
-        the parameters (Default: None/given ordering). Only for plots. Example: (1, 2, 0) to plot the second parameter
-        on the x-axis, the third on the y-axis and the first on the z-axis.
+           the parameters (Default: None/given ordering). Only for plots. Example: (1, 2, 0) to plot the second parameter
+           on the x-axis, the third on the y-axis and the first on the z-axis.
+    :type parameter_order: list(int)
     """
     path += '.png'
     if parameter_order in {(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)}:
