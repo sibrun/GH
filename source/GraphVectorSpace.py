@@ -100,45 +100,54 @@ class VectorSpace(object):
 
     @abstractmethod
     def __eq__(self, other):
-        """Comparing two vector spaces.
+        """Compare two vector spaces.
 
         :param other: VectorSpace: Vector space to be compared with.
-        :return: bool: True if the compared vector spaces are equal.
+        :return: True if the compared vector spaces are equal.
+        :rtype: bool
         """
         pass
 
     @abstractmethod
     def __str__(self):
-        """Unique description of the vector space.
+        """Return a unique description of the vector space.
 
-        :return: str: Unique description of the vector space.
+        :return: Unique description of the vector space.
+        :rtype: str
         """
         pass
 
     @abstractmethod
     def get_dimension(self):
-        """Returns the dimension of the vector space.
+        """Return the dimension of the vector space.
 
-        :return non-negative int: Dimension of the vector space.
+        :return: Dimension of the vector space.
+        :rtype: int
         """
         pass
 
     @abstractmethod
     def get_ordered_param_dict(self):
-        """Returns an ordered dictionary of parameters, identifying the vector space.
+        """Return an ordered dictionary of parameters, identifying the vector space.
 
-        :return: Shared.OrderedDict: Ordered dictionary of parameters. Example:
-                SH.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+        :return: Ordered dictionary of parameters.
+        :rtype: OrderedDict
+
+        :Example:
+
+        Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+
         """
         pass
 
     @abstractmethod
     def get_work_estimate(self):
-        """Estimates the work needed to build the vector space basis.
+        """Estimate the work needed to build the vector space basis.
 
         Arbitrary units. Used to schedule the order of building the basis of different vector spaces.
 
-        :return: non-negative int: Estimate the work to build the basis. Arbitrary units.
+        :return: Estimate the work to build the basis. Arbitrary units.
+        :rtype: int
         """
         pass
 
@@ -146,11 +155,13 @@ class VectorSpace(object):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the vector space basis.
 
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
-        :param ignore_existing_files: bool, optional: Option to ignore existing basis file. Ignore existing file and
+        :param progress_bar: Option to show a progress bar (Default: False).
+        :param ignore_existing_files: Option to ignore an existing basis file. Ignore an existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
-                 (Default: False).
+                (Default: False).
         :param kwargs: Accepting further keyword arguments.
+        :type progress_bar: bool
+        :type ignore_existing_files: bool
         """
         pass
 
@@ -160,16 +171,18 @@ class VectorSpace(object):
         pass
 
     def get_properties(self):
-        """Returns the vector space properties.
+        """Return the vector space properties.
 
-        :return: VectorSpaceProperties: Vector space properties.
+        :return: Vector space properties.
+        :rtype: VectorSpaceProperties
         """
         return self.properties
 
     def get_sort_dim(self):
-        """Dimension for sorting vector spaces.
+        """Return the dimension for sorting vector spaces.
 
-        :return:non-negative int: Dimension of the vector space if known, constant Parameters.max_sort_value otherwise.
+        :return: Dimension of the vector space if known, the constant Parameters:max_sort_value otherwise.
+        :rtype: int
         """
         try:
             sort_dim = self.get_dimension()
@@ -197,15 +210,20 @@ class GraphVectorSpace(VectorSpace):
 
     @abstractmethod
     def get_type(self):
-        """Returns a unique description of the graph type.
+        """Return a unique description of the graph type.
 
-        :return: str: Type of graphs. Example: 'ordinary graphs with even edges'.
+        :return: Type of graphs.
+        :rtype: str
+
+        :Example:
+
+        ordinary graphs with even edges
         """
         pass
 
     @abstractmethod
     def get_basis_file_path(self):
-        """Returns the path to the basis file.
+        """Return the path to the basis file.
 
         :return: path: Path to the basis file.
         """
