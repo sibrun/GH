@@ -109,12 +109,13 @@ def shifted_edge_perm_sign(graph):
     return Perm.shifted(p).signature()
 
 
-def permute_to_left((u, v), vertex_range):
+def permute_to_left(pair, vertex_range):
     """Permutes u,v to the left of the range vertex_range and returns the induced permutation.
 
     :param vertex_range: range: Range of vertices.
     :return: list(non-negative int): Permutation which permutes u,v to the left of the range vertex_range.
     """
+    (u, v) = pair
     p = list(vertex_range)
     min_index = min(vertex_range)
     p[min_index] = u
@@ -127,7 +128,6 @@ def permute_to_left((u, v), vertex_range):
             p[idx] = j
             idx += 1
     return Perm(p).inverse()
-
 
 
 def matrix_norm(M):

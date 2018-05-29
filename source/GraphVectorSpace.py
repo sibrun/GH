@@ -24,7 +24,7 @@ class VectorSpaceProperties(object):
     """Properties of a vector space.
 
     Attributes:
-        dimension (non-negative int): Dimension of the vector space.
+        dimension (int): Dimension of the vector space.
     """
     def __init__(self):
         """Initialize the vector space properties with None."""
@@ -32,24 +32,27 @@ class VectorSpaceProperties(object):
 
     @classmethod
     def names(cls):
-        """Returns a list of the names of the vector space properties.
+        """Return a list of the names of the vector space properties.
 
-        :return: list(str): Names of the vector space properties.
+        :return: Names of the vector space properties.
+        :rtype: list(str)
         """
         return ['dimension']
 
     @staticmethod
     def sort_variables():
-        """Returns a list of the vector space properties used as sort keys for vector spaces.
+        """Return a list of the vector space properties used as sort keys for vector spaces.
 
-        :return: list(str): Names of the vector space properties, used as sort keys for vector spaces matrices.
+        :return: Names of the vector space properties, used as sort keys for vector spaces matrices.
+        :rtype: list(str)
         """
         return VectorSpaceProperties.names()
 
     def list(self):
         """Returns a list of the vector space properties.
 
-        :return: list: Vector space properties.
+        :return: Vector space properties.
+        :rtype: list
         """
         return [self.dimension]
 
@@ -60,7 +63,7 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
     Attributes:
         valid (bool): Validity of the parameter combination of the graph vector space.
 
-        dimension (non-negative int): Dimension of the graph vector space.
+        dimension (int): Dimension of the graph vector space.
     """
     def __init__(self):
         """Initialize the graph vector space properties with None."""
@@ -69,16 +72,18 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
 
     @classmethod
     def names(cls):
-        """Returns a list of names of the graph vector space properties.
+        """Return a list of names of the graph vector space properties.
 
-        :return: list(str): Names of the graph vector space properties.
+        :return:  Names of the graph vector space properties.
+        :rtype: list(str)
         """
         return ['valid', 'dimension']
 
     def list(self):
         """Returns a list of the graph vector space properties.
 
-        :return: list: Graph vector space properties.
+        :return: Graph vector space properties.
+        :rtype: list
         """
         return [self.valid, self.dimension]
 
@@ -131,9 +136,9 @@ class VectorSpace(object):
         """Return an ordered dictionary of parameters, identifying the vector space.
 
         :return: Ordered dictionary of parameters.
-         OrderedDict
+        :rtype: Shared.OrderedDict
 
-
+        :Example:
 
         Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
 
@@ -181,7 +186,7 @@ class VectorSpace(object):
     def get_sort_dim(self):
         """Return the dimension for sorting vector spaces.
 
-        :return: Dimension of the vector space if known, the constant Parameters:max_sort_value otherwise.
+        :return: Dimension of the vector space if known, the constant Parameters.max_sort_value otherwise.
         :rtype: int
         """
         try:
@@ -225,77 +230,91 @@ class GraphVectorSpace(VectorSpace):
     def get_basis_file_path(self):
         """Return the path to the basis file.
 
-        :return: path: Path to the basis file.
+        :return: Path to the basis file.
+        :rtype: path
         """
         pass
 
     def get_ref_basis_file_path(self):
-        """Returns the path to the reference basis file.
+        """Return the path to the reference basis file.
 
         Refers to reference data (if available) for testing.
 
-        :return: path: Path to the reference basis file.
+        :return: Path to the reference basis file.
+        :rtype: path
         """
         pass
 
     @abstractmethod
     def get_partition(self):
-        """Returns the partition of the vertices in different colours.
+        """Return the partition of the vertices in different colours.
 
         The partition of vertices is respected for the canonical labelling as well as for the automorphism group of
         graphs.
 
-        :return: list(list(non-negative int): List of lists. Partition of the vertices in different colours. Example:
-                [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+        :return: List of lists. Partition of the vertices in different colours.
+        :rtype: list(list(int))
+
+        :Example:
+
+        [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
         """
         pass
 
     @abstractmethod
     def is_valid(self):
-        """Returns the validity of the parameter combination for the graph vector space.
+        """Return the validity of the parameter combination for the graph vector space.
 
-        :return: bool: True if the graph vector space is valid.
+        :return: True if the graph vector space is valid.
+        :rtype: bool
         """
         pass
 
     @abstractmethod
     def get_generating_graphs(self):
-        """Returns a set of graphs whose isomorphism classes span the graph vector space. (Not necessarily freely!)
+        """Return a set of graphs whose isomorphism classes span the graph vector space. (Not necessarily freely!)
 
-        :return: list(sage.Graph): List of sage graphs spanning the graph vector space.
+        :return: List of sage graphs spanning the graph vector space.
+        :rtype: list(Graph)
         """
         pass
 
     @abstractmethod
     def perm_sign(self, G, p):
-        """Returns the sign of the permutation of the edges of the graph G, induced by the relabelling by
+        """Return the sign of the permutation of the edges of the graph G, induced by the relabelling by
         the permutation p.
 
         For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
         Here vertex j becomes vertex p[j] in the new graph.
 
-        :param G: sage.Graph: Sage graph.
-        :param p: list(non-negative int): List of the images of the permutation of the edges of graph G.
-        :return: int: Sign of the edge permutation of graph G induced by the relabelling by p.
+        :param G: Sage graph.
+        :type G: Graph
+        :param p:  List of the images of the permutation of the edges of graph G.
+        :type p: list(int):
+        :return: Sign of the edge permutation of graph G induced by the relabelling by p.
+        :rtype: int
         """
         pass
 
     def __str__(self):
-        """Unique description of the graph vector space.
+        """Return a unique description of the graph vector space.
 
-        :return: str: Unique description of the graph vector space.
+        :return: Unique description of the graph vector space.
+        :rtype: str
         """
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
     def graph_to_canon_g6(self, graph):
-        """Returns the graph6 string of the canonically labeled graph and the corresponding permutation sign.
+        """Return the graph6 string of the canonically labeled graph and the corresponding permutation sign.
 
         Labels the sage Graph graph canonically using the sage method for canonical labelling and respecting the
         partition of the vertices.
 
-        :param graph: sage.Graph: Graph to be canonically labeled.
-        :return: tuple(str, int): Tuple containing the graph6 string of the canonically labeled graph and the
+        :param graph: Graph to be canonically labeled.
+        :type graph: Graph
+        :return: Tuple containing the graph6 string of the canonically labeled graph and the
             corresponding permutation sign.
+        :rtype: tuple(str, int)
         """
         canonG, perm_dict = graph.canonical_label(partition=self.get_partition(), certificate=True)
         sgn = self.perm_sign(graph, perm_dict.values())
@@ -309,10 +328,12 @@ class GraphVectorSpace(VectorSpace):
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the vector
         space. The canonical labeling respects the partition of the vertices.
 
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
-        :param ignore_existing_files: bool, optional: Option to ignore existing basis file. Ignore existing file and
+        :param progress_bar: Option to show a progress bar (Default: False).
+        :type progress_bar: bool
+        :param ignore_existing_files: Option to ignore existing basis file. Ignore existing file and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
                 (Default: False).
+        :type ignore_existing_files: bool
         :param kwargs: Accepting further keyword arguments, which have no influence.
         """
         if not self.is_valid():
@@ -347,11 +368,14 @@ class GraphVectorSpace(VectorSpace):
         self._store_basis_g6(list(basis_set))
 
     def _has_odd_automorphisms(self, G, autom_list):
-        """Returns whether the graph G has odd automorphisms.
+        """Return whether the graph G has odd automorphisms.
 
-        :param G: sage.Graph: Test whether G has odd automoerphisms.
-        :param autom_list: list(group generators): List of generators of the automorphisms group of graph G.
-        :return: bool: True if G has odd automorphisms.
+        :param G: Test whether G has odd automoerphisms.
+        :type G: Graph
+        :param autom_list: List of generators of the automorphisms group of graph G.
+        :type autom_list: list(group generators)
+        :return: True if G has odd automorphisms.
+        :rtype: bool
         """
         for g in autom_list:
             if self.perm_sign(G, list(g.tuple())) == -1:
