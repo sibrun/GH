@@ -1,4 +1,4 @@
-"""Provides abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
+"""Provide abstract classes for operator matrices, graph operators, operator matrix collections, differentials,
 and bi operator matrices to be used in bicomplexes"""
 
 __all__ = ['OperatorMatrixProperties', 'OperatorMatrix', 'Operator', 'GraphOperator', 'BiOperatorMatrix',
@@ -9,8 +9,6 @@ import itertools
 from tqdm import tqdm
 import collections
 import scipy.sparse as sparse
-from scipy.sparse.linalg import aslinearoperator as aslinearoperator
-from scipy.linalg.interpolative import estimate_rank as estimate_rank
 from sage.all import *
 import Log
 import StoreLoad
@@ -30,19 +28,10 @@ class OperatorMatrixProperties(object):
     """Properties of an operator matrix.
 
     Attributes:
-        valid (bool): Validity of the operator matrix.
-
-        shape (tuple(non-negative int, non-negative int)): Shape of the operator matrix.
-
-        entries (non-negative int): Number of nonzero entries of the sparse matrix.
-
-        rank (non-negative int): Exact rank of the operator matrix defined over Z.
-
-        rank_mod_p (non-negative int): Rank of the matrix defined over a finite field. Gauss elimination modulo a prime.
-        Under bound for the exact matrix rank.
-
-        rank_est (non-negative int): Estimated rank using interpolative algorithms offered by the scipy module:
-            scipy.linalg.interpolative.estimate_rank
+        - valid (bool): Validity of the operator matrix.
+        - shape (tuple(int, int)): Shape of the operator matrix.
+        - entries (int): Number of nonzero entries of the sparse matrix.
+        - rank (int): Rank of the operator matrix.
     """
     def __init__(self):
         """Initialize the matrix properties with None."""
@@ -53,52 +42,54 @@ class OperatorMatrixProperties(object):
 
     @classmethod
     def names(cls):
-        """Returns a list of the names of the matrix properties.
+        """Return a list of the names of the matrix properties.
 
-        :return: list(str): Names of the matrix properties.
+        :return: Names of the matrix properties.
+        :rtype: list(str)
         """
         return ['valid', 'shape', 'entries', 'rank']
 
     @staticmethod
     def sort_variables():
-        """Returns a list of the matrix properties used as sort keys for operator matrices.
+        """Return a list of the matrix properties used as sort keys for operator matrices.
 
-        :return: list(str): Names of the matrix properties, used as sort keys for operator matrices.
+        :return: Names of the matrix properties, used as sort keys for operator matrices.
+        :rtype: list(str)
         """
         return ['valid', 'entries']
 
     def list(self):
-        """Returns a list of the matrix properties.
+        """Return a list of the matrix properties.
 
-        :return: list(int): Matrix properties.
+        :return: Matrix properties.
+        :rtype: list(int)
         """
         return [self.valid, self.shape, self.entries, self.rank]
 
 
 class OperatorMatrix(object):
-    """Operator matrices class.
+    """Operator matrix class.
 
     Abstract class defining the interface for an operator matrix.
 
     Attributes:
-        domain (GraphVectorSpace.VectorSpace): Domain vector space.
-
-        target (GraphVectorSpace.VectorSpace): Target vector space.
-
-        properties (OperatorMatrixProperties): Operator matrix properties object, containing information like
+        - domain (GraphVectorSpace.VectorSpace): Domain vector space.
+        - target (GraphVectorSpace.VectorSpace): Target vector space.
+        - properties (OperatorMatrixProperties): Operator matrix properties object, containing information like
             validity, shape, number of nonzero entries, and rank.
     """
     __metaclass__ = ABCMeta
 
-    # Data type to store matrizes using the SMS (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html) format.
+    # Data type to store the matrix using the SMS (http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html) format.
     data_type = "M"
 
     def __init__(self, domain, target):
         """Initialize domain and target graph vector spaces and initialize the operator matrix properties with None.
 
-        :param domain: GraphVectorSpace.VectorSpace: Domain vector space.
-        :param target: GraphVectorSpace.VectorSpace: Target vector space.
-
+        :param domain: Domain vector space.
+        :type domain: GraphVectorSpace.VectorSpace
+        :param target: Target vector space.
+        :type target: GraphVectorSpace.VectorSpace
         :raise: ValueError: Raised if domain and target don't match to build the operator matrix.
         """
         if not self.is_match(domain, target):
@@ -109,75 +100,84 @@ class OperatorMatrix(object):
         self.properties = OperatorMatrixProperties()
 
     def get_domain(self):
-        """Returns the domain graph vector space of the operator matrix.
+        """Return the domain graph vector space of the operator matrix.
 
-        :return: GraphVectorSpace.VectorSpace: Domain vector space.
+        :return: Domain vector space.
+        :rtype: GraphVectorSpace.VectorSpace
         """
         return self.domain
 
     def get_target(self):
-        """Returns the target graph vector space of the operator matrix.
+        """Return the target graph vector space of the operator matrix.
 
-        :return: GraphVectorSpace.VectorSpace: Target vector space.
+        :return: Target vector space.
+        :rtype: GraphVectorSpace.VectorSpace
         """
         return self.target
 
     @abstractmethod
     def __str__(self):
-        """Returns a unique description of the graph operator matrix.
+        """Return a unique description of the graph operator matrix.
 
-        :return: str: Unique description of the graph operator matrix.
+        :return: Unique description of the graph operator matrix.
+        :rtype: str
         """
         pass
 
     @abstractmethod
     def get_matrix_file_path(self):
-        """Returns the path for the operator matrix file.
+        """Return the path for the operator matrix file.
 
-        :return: path: Path to the operator matrix file.
+        :return: Path to the operator matrix file.
+        :rtype: path
         """
         pass
 
     @abstractmethod
     def get_rank_file_path(self):
-        """Returns the path for the matrix rank file.
+        """Return the path for the matrix rank file.
 
-        :return: path: Path to the matrix rank file.
+        :return: Path to the matrix rank file.
+        :rtype: path
         """
         pass
 
     def get_ref_matrix_file_path(self):
-        """Returns the path for the reference operator matrix file.
+        """Return the path for the reference operator matrix file.
 
-        Refers to reference data (if available) for testing.
+        Refer to reference data (if available) for testing.
 
-        :return: path: Path to the reference operator matrix file.
+        :return: Path to the reference operator matrix file.
+        :rtype: path
         """
         pass
 
     def get_ref_rank_file_path(self):
-        """Returns the path for the reference matrix rank file.
+        """Return the path for the reference matrix rank file.
 
-        Refers to reference data (if available) for testing.
+        Refer to reference data (if available) for testing.
 
-        :return: path: Path to the reference matrix rank file.
+        :return: Path to the reference matrix rank file.
+        :rtype: path
         """
         pass
 
     def is_valid(self):
-        """Returns the validity of the parameter combination for the operator matrix.
+        """Return the validity of the parameter combination for the operator matrix.
 
-        :return: bool: True if the domain and target vector spaces are valid, False otherwise.
+        :return: True if the domain and target vector spaces are valid, False otherwise.
+        :rtype: bool
         """
         return self.domain.is_valid() and self.target.is_valid()
 
     @abstractmethod
     def get_work_estimate(self):
-        """Estimates the work needed to build the operator matrix.
+        """Estimate the work needed to build the operator matrix.
 
         Arbitrary units. Used to schedule the order of building the operator matrices.
 
-        :return: non-negative int: Estimate the work to build the operator matrix. Arbitrary units.
+        :return: Estimate the work to build the operator matrix. Arbitrary units.
+        :rtype: int
         """
         pass
 

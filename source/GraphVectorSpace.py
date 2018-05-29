@@ -24,7 +24,7 @@ class VectorSpaceProperties(object):
     """Properties of a vector space.
 
     Attributes:
-        dimension (int): Dimension of the vector space.
+        - dimension (int): Dimension of the vector space.
     """
     def __init__(self):
         """Initialize the vector space properties with None."""
@@ -61,9 +61,8 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
     """Properties of a graph vector space.
 
     Attributes:
-        valid (bool): Validity of the parameter combination of the graph vector space.
-
-        dimension (int): Dimension of the graph vector space.
+        - valid (bool): Validity of the parameter combination of the graph vector space.
+        - dimension (int): Dimension of the graph vector space.
     """
     def __init__(self):
         """Initialize the graph vector space properties with None."""
@@ -94,7 +93,7 @@ class VectorSpace(object):
     Abstract class defining the interface for a vector space.
 
     Attributes:
-        properties (VectorSpaceProperties): Vector space properties, containing the dimension.
+        - properties (VectorSpaceProperties): Vector space properties, containing the dimension.
     """
 
     __metaclass__ = ABCMeta
@@ -202,8 +201,8 @@ class GraphVectorSpace(VectorSpace):
     Abstract class defining the interface for graph vector spaces. It implements the interface vector space and
     provides a method to build the basis.
 
-    Attributes:
-        properties (GraphVectorSpaceProperties): Graph vector space properties, containing information about
+    Attributes
+        - properties (GraphVectorSpaceProperties): Graph vector space properties, containing information about
             dimension and validity.
 
     """
@@ -253,7 +252,7 @@ class GraphVectorSpace(VectorSpace):
         graphs.
 
         :return: List of lists. Partition of the vertices in different colours.
-        :rtype: list(list(int))
+        :rtype: list(list(int)) 
 
         :Example:
 
@@ -287,10 +286,10 @@ class GraphVectorSpace(VectorSpace):
         For G a graph and p a permutation of the edges, returns the sign induced by the relabelling by p.
         Here vertex j becomes vertex p[j] in the new graph.
 
-        :param G: Sage graph.
+        :param G: Input graph.
         :type G: Graph
         :param p:  List of the images of the permutation of the edges of graph G.
-        :type p: list(int):
+        :type p: list(int)
         :return: Sign of the edge permutation of graph G induced by the relabelling by p.
         :rtype: int
         """
@@ -385,14 +384,16 @@ class GraphVectorSpace(VectorSpace):
     def exists_basis_file(self):
         """Return whether there exists a basis file.
 
-        :return: bool: True if there exists a basis file, False otherwise.
+        :return: True if there exists a basis file, False otherwise.
+        :rtype: bool
         """
         return os.path.isfile(self.get_basis_file_path())
 
     def get_dimension(self):
-        """Returns the Dimension of the vector space.
+        """Return the Dimension of the vector space.
 
-        :return: non-negative int: Dimension of the vector space
+        :return: int: Dimension of the vector space
+        :rtype: int
 
         :raise StoreLoad.FileNotFoundError: Raised if no basis file found.
         """
@@ -405,25 +406,27 @@ class GraphVectorSpace(VectorSpace):
             raise StoreLoad.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
 
     def _store_basis_g6(self, basis_list):
-        """Stores the basis to the basis file.
+        """Store the basis to the basis file.
 
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the
         vector space.
         The first line of the basis file contains the dimension of the vector space.
 
-        :param basis_list: list(str): List of graph6 strings representing the vector space basis.
+        :param basis_list: List of graph6 strings representing the vector space basis.
+        :type basis_list: list(str)
         """
         basis_list.insert(0, str(len(basis_list)))
         StoreLoad.store_string_list(basis_list, self.get_basis_file_path())
 
     def _load_basis_g6(self):
-        """Loads the basis from the basis file.
+        """Load the basis from the basis file.
 
         Raises an exception if no basis file found or if the dimension in the header of the basis file doesn't
         correspond to the dimension of the basis.
 
-        :return: list(graph6 string): List of graph6 strings of canonically labeled graphs building a basis of the
+        :return: List of graph6 strings of canonically labeled graphs building a basis of the
             vector space.
+        :rtype: list(str)
         :raise StoreLoad.FileNotFoundError: Raised if no basis file found.
         :raise ValueError: Raised if dimension in header doesn't correspond to the basis dimension.
         """
@@ -436,9 +439,10 @@ class GraphVectorSpace(VectorSpace):
         return basis_list
 
     def get_basis_g6(self):
-        """Returns the basis of the vector space as list of graph6 strings.
+        """Return the basis of the vector space as list of graph6 strings.
 
-        :return: list(graph6 str): List of graph6 strings representing the basis elements.
+        :return: List of graph6 strings representing the basis elements.
+        :rtype: list(str)
         """
         if not self.is_valid():
             # Return empty list if graph vector space is not valid.
@@ -447,16 +451,18 @@ class GraphVectorSpace(VectorSpace):
         return self._load_basis_g6()
 
     def get_basis(self):
-        """Returns the basis of the vector space as list of sage graphs.
+        """Return the basis of the vector space as list of sage graphs.
 
-        :return: list(sage.Graph): List of sage graphs representing the basis elements.
+        :return: List of sage graphs representing the basis elements.
+        :rtype: list(Graph)
         """
         return map(Graph, self.get_basis_g6())
 
     def get_g6_coordinates_dict(self):
-        """Returns a dictionary to translate from the graph6 string of graphs in the basis to their coordinates.
+        """Return a dictionary to translate from the graph6 string of graphs in the basis to their coordinates.
 
-        :return: dict(graph6 str -> int): Dictionary to translate from graph6 string to the coordinate of a basis element.
+        :return: Dictionary to translate from graph6 string to the coordinate of a basis element.
+        :rtype: dict(str -> int)
         """
         return {G6: i for (i, G6) in enumerate(self.get_basis_g6())}
 
@@ -488,12 +494,10 @@ class SumVectorSpace(VectorSpace):
     Abstract class. Implements the interface vector space.
 
     Attributes:
-        vs_list (list(VectorSpace)): List of sub vector spaces.
-
-        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
+        - vs_list (list(VectorSpace)): List of sub vector spaces.
+        - info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
             Tracker is only active if the basis of different vector spaces are not built in parallel.
-
-        properties (VectorSpaceProperties): Vector space properties object, containing information about the
+        - properties (VectorSpaceProperties): Vector space properties object, containing information about the
             dimension.
     """
     __metaclass__ = ABCMeta
@@ -501,7 +505,8 @@ class SumVectorSpace(VectorSpace):
     def __init__(self, vs_list):
         """Initialize with a list of vector spaces.
 
-        :param vs_list: list(VectorSpace): List of vector spaces to initialize the sum vector space.
+        :param vs_list:  List of vector spaces to initialize the sum vector space.
+        :type vs_list: list(VectorSpace)
         """
         self.vs_list = vs_list
         self.info_tracker = None
@@ -512,49 +517,60 @@ class SumVectorSpace(VectorSpace):
 
     @abstractmethod
     def get_type(self):
-        """Returns a unique description of the type of graphs.
+        """Return a unique description of the type of graphs.
 
-        :return str: Type of graphs. Example: 'ordinary graphs with even edges'.
+        :return: Type of graphs. Example: 'ordinary graphs with even edges'.
+        :rtype: str
         """
         pass
 
     @abstractmethod
     def get_ordered_param_range_dict(self):
-        """Returns an ordered dictionary of parameter ranges, for the sub vector spaces of the sum vector space.
+        """Return an ordered dictionary of parameter ranges, for the sub vector spaces of the sum vector space.
 
-         :return Shared.OrderedDict: Ordered dictionary of parameter ranges. Example:
-                 Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+        :return: Ordered dictionary of parameter ranges.
+        :rtype:  Shared.OrderedDict
+
+        :Example:
+
+        Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
          """
         pass
 
     def get_ordered_param_dict(self):
-        """Returns an ordered dictionary of parameters, identifying the vector space.
+        """Return an ordered dictionary of parameters, identifying the vector space.
 
-         :return Shared.OrderedDict: Ordered dictionary of parameters. Example:
-                 Shared.OrderedDict([('deg', self.deg)])
+        :return: Ordered dictionary of parameters.
+        :rtype: Shared.OrderedDict
+
+        :Example:
+        Shared.OrderedDict([('deg', self.deg)])
          """
         pass
 
     def __str__(self):
-        """Unique description of the vector space.
+        """Return a unique description of the vector space.
 
-        :return str: Unique description of the vector space.
+        :return: Unique description of the vector space.
+        :rtype: str
         """
         return '<%s vector space with parameters: %s>' % (str(self.get_type()), str(self.get_ordered_param_range_dict()))
 
     def get_vs_list(self):
-        """Returns the list of sub vector spaces.
+        """Return the list of sub vector spaces.
 
-        :return list(VectorSpace): List of sub vector spaces.
+        :return: List of sub vector spaces.
+        :rtype: list(VectorSpace)
         """
         return self.vs_list
 
     def get_work_estimate(self):
-        """Estimates the work needed to build the vector space basis.
+        """Estimate the work needed to build the vector space basis.
 
         Arbitrary units. Used to schedule the order of building the basis of different vector spaces.
 
-        :return non-negative int: Estimate the work to build the basis. Arbitrary units.
+        :return: Estimate the work to build the basis. Arbitrary units.
+        :rtype: int
         """
         work_estimate = 0
         for vs in self.vs_list:
@@ -562,9 +578,10 @@ class SumVectorSpace(VectorSpace):
         return work_estimate
 
     def get_dimension(self):
-        """Returns the dimension of the sum vector space.
+        """Return the dimension of the sum vector space.
 
-        :return non-negative int: Dimension of the sum vector space.
+        :return: Dimension of the sum vector space.
+        :rtype: int
         """
         dim = 0
         for vs in self.vs_list:
@@ -584,12 +601,13 @@ class SumVectorSpace(VectorSpace):
             pass
 
     def contains(self, vector_space):
-        """Determines whether the vector space vector_space is a sub vector space of the sum vector space.
+        """Determine whether the vector space vector_space is a sub vector space of the sum vector space.
 
-        :param vector_space: VectorSpace: Test whether this vector space is contained in the sum vector space.
-        :return: bool: True if the vector space vector_space is a sub vector space of the sum vector space.
+        :param vector_space: Test whether this vector space is contained in the sum vector space.
+        :type vector_space: VectorSpace
+        :return: True if the vector space vector_space is a sub vector space of the sum vector space.
+        :rtype: bool
         """
-
         for vs in self.vs_list:
             if vs == vector_space:
                 return True
@@ -598,7 +616,8 @@ class SumVectorSpace(VectorSpace):
     def sort(self, key='work_estimate'):
         """Sort the sub vector spaces to schedule building the basis.
 
-        :param key: str, optional: Choose between sort key 'work_estimate' and 'dim' for dimension (Default: 'work_estimate')
+        :param key: Choose between sort key 'work_estimate' and 'dim' for dimension (Default: 'work_estimate')
+        :type key: str
         :raise ValueError: Raises exception if sort key is neither 'work_estimate' nor 'dim'
         """
         if isinstance(self, DegSlice):
@@ -615,15 +634,19 @@ class SumVectorSpace(VectorSpace):
 
         Call build_basis for each sub vector space of the sum vector space.
 
-        :param ignore_existing_files: bool, optional: Option to ignore existing basis files. Ignore existing files and
+        :param ignore_existing_files: Option to ignore existing basis files. Ignore existing files and
                 rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
-                 (Default: False).
-        :param n_jobs: positive int, optional: Option to compute the basis of the different sub vector spaces in parallel using
+                (Default: False).
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to compute the basis of the different sub vector spaces in parallel using
                 n_jobs parallel processes (Default: 1).
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False). Only active if the basis of
+        :type n_jobs: int
+        :param progress_bar: Option to show a progress bar (Default: False). Only active if the basis of
                 different sub vector spaces ar not built in parallel.
-        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page.
+        :type progress_bar: bool
+        :param info_tracker: Option to plot information about the sub vector spaces in a web page.
                 Only active if basis not built in parallel processes (Default: False).
+        :type info_tracker: bool
         """
         print(' ')
         print('Build basis of %s' % str(self))
@@ -674,7 +697,8 @@ class SumVectorSpace(VectorSpace):
     def update_tracker(self, vector_space):
         """Update info tracker for the vector space vector_space.
 
-        :param vector_space: VectorSpace: Vector space for which to update the properties and message it to the info tracker.
+        :param vector_space: Vector space for which to update the properties and message it to the info tracker.
+        :type vector_space: VectorSpace
         """
         vector_space.update_properties()
         message = {tuple(vector_space.get_ordered_param_dict().values()): vector_space.get_properties().list()}
@@ -692,31 +716,31 @@ class DegSlice(SumVectorSpace):
     Abstract class. Implementing SumVectorSpace.
 
     Attributes:
-        deg (int): Degree of the degree slice.
-
-        vs_list (list(VectorSpace)): List of sub vector spaces.
-
-        info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
+        - deg (int): Degree of the degree slice.
+        - vs_list (list(VectorSpace)): List of sub vector spaces.
+        - info_tracker (DisplayInfo.InfoTracker): Tracker for information about the vector spaces in vs_list.
             Tracker is only active if the basis of different vector spaces are not built in parallel.
-
-        properties (VectorSpaceProperties): Vector space properties object, containing information about the
+        - properties (VectorSpaceProperties): Vector space properties object, containing information about the
             dimension.
     """
 
     def __init__(self, vs_list, deg):
-        """Initialize with a list of vector spaces and a degree.
+        """Initialize the degree slice with a list of vector spaces and a degree.
 
-        :param vs_list: list(VectorSpace): List of vector spaces to initialize the sum vector space.
-        :param deg: int: Degree of the degree slice.
+        :param vs_list: List of vector spaces to initialize the sum vector space.
+        :type vs_list: list(VectorSpace)
+        :param deg: Degree of the degree slice.
+        :type deg: int
         """
         self.deg = deg
         super(DegSlice, self).__init__(vs_list)
         self.start_idx_dict = None
 
     def __str__(self):
-        """Unique description of the vector space.
+        """Return a unique description of the vector space.
 
-        :return str: Unique description of the vector space.
+        :return: Unique description of the vector space.
+        :rtype: str
         """
         return '<degree slice with parameters: %s>' % str(self.get_ordered_param_dict())
 
@@ -728,19 +752,24 @@ class DegSlice(SumVectorSpace):
 
     @abstractmethod
     def __eq__(self, other):
-        """Comparing two degree slices.
+        """Compare two degree slices.
 
-        :param other: DegSlice: Degree slice to be compared with.
-        :return: bool: True if the compared degree slices are equal.
+        :param other: Degree slice to be compared with.
+        :type other: DegSlice
+        :return: True if the compared degree slices are equal.
+        :rtype: bool
         """
         pass
 
     @abstractmethod
     def get_ordered_param_dict(self):
-        """Returns an ordered dictionary of parameters, identifying the degree slice.
+        """Return an ordered dictionary of parameters, identifying the degree slice.
 
-         :return Shared.OrderedDict: Ordered dictionary of parameters. Example:
-                 Shared.OrderedDict([('deg', self.deg)])
+        :return: Ordered dictionary of parameters.
+        :rtype: Shared.OrderedDict
+
+        :Example:
+        Shared.OrderedDict([('deg', self.deg)])
          """
         pass
 
@@ -748,7 +777,6 @@ class DegSlice(SumVectorSpace):
         """Build the basis of the sub vector spaces of the degree slice.
 
         :param kwargs: Forward keword arguments to the build basis method of the SumVectorSpace.
-
         :raise ValueError: If the basis of the degree slice is not completely built, i.e. not for all valid sub vector
                 spaces there exists a basis file.
         """
@@ -757,7 +785,7 @@ class DegSlice(SumVectorSpace):
             raise ValueError('Degree slice %s should be completely built' % str(self))
 
     def build_start_idx_dict(self):
-        """Builds a dictionary of start indices of the sub vector spaces.
+        """Build a dictionary of start indices of the sub vector spaces.
 
         The dictionary contains the coordinate of the first basis vector of each sub vector space as basis vector of the
         degree slice.
@@ -770,12 +798,14 @@ class DegSlice(SumVectorSpace):
             start_idx += dim
 
     def get_start_idx(self, vector_space):
-        """Returns the start index of the sub vector space vector_space.
+        """Return the start index of the sub vector space vector_space.
 
-        Returns the coordinate of the first basis vector of the sub vector space as basis vector of the degree slice.
+        Return the coordinate of the first basis vector of the sub vector space as basis vector of the degree slice.
 
-        :param vector_space: VectorSpace: Sub vector space of which to get the start index.
-        :return: non-negative int: Start index of the sub vector space vector_space.
+        :param vector_space: Sub vector space of which to get the start index.
+        :type vector_space: VectorSpace
+        :return: Start index of the sub vector space vector_space.
+        :rtype: int
         :raise ValueError: If vector_space is not a sub vector space of the degree slice.
         """
         if self.start_idx_dict is None:
@@ -790,7 +820,8 @@ class DegSlice(SumVectorSpace):
 
         For all valid sub vector spaces of the degree slice a basis file should exist.
 
-        :return bool: True if the degree slice is complete, False otherwise.
+        :return: True if the degree slice is complete, False otherwise.
+        :rtype: bool
         """
         if len(self.vs_list) != self.deg + 1:
             return False
