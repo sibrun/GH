@@ -1,4 +1,4 @@
-"""Provides an abstract class for a graph complex."""
+"""Provide an abstract class for a graph complex."""
 
 __all__ = ['GraphComplex']
 
@@ -17,9 +17,8 @@ class GraphComplex(object):
     """Graph complex.
 
     Attributes:
-        sum_vector_space (GraphVectorSpace.SumVectorSpace): Vector space.
-
-        operator_collection_list (list(GraphOperator.OperatorMatrixCollection)): List of operators (differentials).
+        - sum_vector_space (GraphVectorSpace.SumVectorSpace): Vector space.
+        - operator_collection_list (list(GraphOperator.OperatorMatrixCollection)): List of operators (differentials).
     """
     __metaclass__ = ABCMeta
 
@@ -32,52 +31,62 @@ class GraphComplex(object):
     def __str__(self):
         """Unique description of the graph complex.
 
-        :return: str: Unique description of the graph complex.
+        :return: Unique description of the graph complex.
+        :rtype: str
         """
         pass
 
     def get_vector_space(self):
-        """Returns the underlying vector space of the graph complex.
+        """Return the underlying vector space of the graph complex.
 
-        :return: GraphVectorSpace.SumVectorSpace: Vector space of the graph complex.
+        :return: Vector space of the graph complex.
+        :rtype: GraphVectorSpace.SumVectorSpace
         """
         return self.sum_vector_space
 
     def get_operator_list(self):
-        """Returns the list of operators (differential).
+        """Return the list of operators (differential).
 
-        :return: list(GraphOperator.OperatorMatrixCollection): List of operators of the graph complex.
+        :return: List of operators of the graph complex.
+        :rtype: list(GraphOperator.OperatorMatrixCollection)
         """
         return self.operator_collection_list
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        """Builds the basis of the underlying vector space.
+        """Build the basis of the underlying vector space.
 
-        :param ignore_existing_files: bool, optional: Option to ignore existing basis files. Ignore existing files and
-                rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
-                (Default: False).
-        :param n_jobs: positive int, optional: Option to compute the basis of the different sub vector spaces in parallel
-                using n_jobs parallel processes (Default: 1).
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False). Only active if the basis of
-                different sub vector spaces ar not built in parallel.
-        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page.
-                Only active if basis not built in parallel processes (Default: False).
+        :param ignore_existing_files: Option to ignore existing basis files. Ignore existing files and
+               rebuild the basis if True, otherwise skip rebuilding the basis file if there exists a basis file already
+               (Default: False).
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to compute the basis of the different sub vector spaces in parallel
+               using n_jobs parallel processes (Default: 1).
+        :type n_jobs: int
+        :param progress_bar: Option to show a progress bar (Default: False). Only active if the basis of
+               different sub vector spaces ar not built in parallel.
+        :type progress_bar: bool
+        :param info_tracker: Option to plot information about the sub vector spaces in a web page.
+               Only active if basis not built in parallel processes (Default: False).
+        :type info_tracker: bool
         """
         self.sum_vector_space.build_basis(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                           progress_bar=progress_bar, info_tracker=info_tracker)
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        """Builds the matrices for all operators of the graph complex.
+        """Build the matrices for all operators of the graph complex.
 
-        :param ignore_existing_files: bool, optional: Option to ignore  existing matrix files. Ignore existing files and
-            rebuild the operator matrices if True, otherwise skip rebuilding a matrix file if there exists already a
-            matrix file (Default: False).
-        :param n_jobs: positive int, optional: Option to build different matrices in parallel using
-                n_jobs parallel processes (Default: 1).
-        :param progress_bar: bool, optional: Option to show a progress bar (Default: False).
-            Only active if different matrices are not built in parallel.
-        :param info_tracker: bool, optional: Option to plot information about the sub vector spaces in a web page
-            (Default: False). Only active if different matrices are not built in parallel.
+        :param ignore_existing_files: Option to ignore existing matrix files. Ignore existing files and
+               rebuild the operator matrices if True, otherwise skip rebuilding a matrix file if there exists already a
+               matrix file (Default: False).
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to build different matrices in parallel using n_jobs parallel processes (Default: 1).
+        :type n_jobs: int
+        :param progress_bar: Option to show a progress bar (Default: False).
+               Only active if different matrices are not built in parallel.
+        :type progress_bar: bool
+        :param info_tracker: Option to plot information about the sub vector spaces in a web page (Default: False).
+               Only active if different matrices are not built in parallel.
+        :type info_tracker: bool
         """
 
         for op_collection in self.operator_collection_list:
@@ -85,11 +94,12 @@ class GraphComplex(object):
                              info_tracker=info_tracker)
 
     def square_zero_test(self):
-        """For each differential of the graph complex, tests whether it squares to zero.
+        """For each differential of the graph complex, test whether it squares to zero.
 
-        Returns a dictionary to report the success of the test for each differential.
+        Return a dictionary to report the success of the test for each differential.
 
-        :return dict(differential -> bool): Dictionary (differential -> square zero test successful)
+        :return: Dictionary (differential -> square zero test successful)
+        :rtype: dict(differential -> bool)
         """
         test_dict = dict()
         for dif in self.operator_collection_list:
@@ -101,24 +111,35 @@ class GraphComplex(object):
 
     def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
-        """Computes the ranks for all operators of the graph complex.
+        """Compute the ranks of the operator matrices.
 
-        :param exact: bool, optional: Compute the exact rank (Default: False).
-        :param mod_p: bool: Determine the rank over a finite field w.r.t. a prime number (Default: False).
-            The prime number is set in the Parameters module.
-        :param linbox: bool: Use linbox's Black box method to compute the exact rank (Default: False).
-            See: http://www.linalg.org/ and https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-        :param rheinfall: str: Use rhainfall to compute the rank. Options: Parameters.rheinfall_options (Default: None).
-            See: https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        :param exact: Compute the exact rank (Default: False).
+        :type exact: bool
+        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
+               The prime number is set in the Parameters module.
+        :type mod_p: bool
+        :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
+               'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type linbox: str
+        :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
+        :type rheinfall: str
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
-            'work_estimate', 'size', 'entries' (Default: 'size').
-        :param ignore_existing_files: bool, optional: Option to ignore existing rank files. Ignore existing files and
-            recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
-            rank file (Default: False).
-        :param n_jobs: positive int, optional: Option to compute different ranks in parallel using
-                n_jobs parallel processes (Default: 1).
-        :param info_tracker: bool, optional: Option to plot information about the operator matrices in a web page
-            (Default: False). Only active if different ranks are not computed in parallel.
+               'work_estimate', 'size', 'entries' (Default: 'size').
+        :type sort_key: str
+        :param ignore_existing_files: Option to ignore existing rank files. Ignore existing files and
+               recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
+               rank file (Default: False).
+        :type ignore_existing_files: bool
+        :param n_jobs: Option to compute different ranks in parallel using
+               n_jobs parallel processes (Default: 1).
+        :type n_jobs: int
+        :param info_tracker: Option to plot information about the operator matrices in a web page (Default: False).
+               Only active if different ranks are not computed in parallel.
+        :type info_tracker: bool
+
+        .. seealso:: - http://www.linalg.org/
+                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         for op_collection in self.operator_collection_list:
             op_collection.compute_rank(exact=exact, mod_p=mod_p, linbox=linbox, rheinfall=rheinfall,
@@ -126,14 +147,15 @@ class GraphComplex(object):
                                        info_tracker=info_tracker)
 
     def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
-        """Plots the cohomology dimensions for each differential of the graph complex
+        """Plot the cohomology dimensions for each differential of the graph complex
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
-        :param to_html: bool, optional: Option to generate a html file with a table of the cohomology dimensions
-            (Dafault: False).
-        :param to_csv: bool, optional: Option to generate a csv file with a table of the cohomology dimensions
-            (default: False).
-        :param x_plots, optional: positive int: Number of plots on the x-axis (Default: 2).
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Default: False).
+        :type to_html: bool
+        :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (Default: False).
+        :type to_csv: bool
+        :param x_plots: Number of plots on the x-axis (Default: 2).
+        :type x_plots: int
         """
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
@@ -142,12 +164,13 @@ class GraphComplex(object):
     def test_pairwise_anti_commutativity(self, commute=False):
         """Test pairwise anti-commutativity / commutativity of the op_collections of the graph complex.
 
-        Returns a dictionary to report the success of the test for each combination of operators.
+        Return a dictionary to report the success of the test for each combination of operators.
 
-        :param commute (bool, optional): If True test for commutativity, otherwise test for anti-commutativity
+        :param commute: If True test for commutativity, otherwise test for anti-commutativity
                 (Default: False).
-        :return dict(tuple(GraphOperator.OperatorMatrixCollection, GraphOperator.OperatorMatrixCollection  -> bool):
-            Dictionary (pair of operators -> square zero test successful)
+        :type commute: bool
+        :return: Dictionary (pair of operators -> square zero test successful)
+        :rtype: dict(tuple(GraphOperator.OperatorMatrixCollection, GraphOperator.OperatorMatrixCollection)  -> bool)
         """
         test_dict = dict()
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
@@ -164,13 +187,17 @@ class GraphComplex(object):
         (because at least two matrices are trivial), successful, inconclusive (because matrices are missing) or
         unsuccessful.
 
-        :param op_collection1: GraphOperator.OperatorMatrixCollection: First operator (differential).
-        :param op_collection2: raphOperator.OperatorMatrixCollection: Second operator (differential).
-        :param commute: ool, optional: If True test for commutativity, otherwise test for anti-commutativity
-                (Default: False).
-        :param eps: positive float, optional: Threshold for equivalence of matrices (Default: Parameters.commute_test_eps).
-        :return: tuple(int, int, int, int): Tuple with the number of quadruples for which the (anti-)commutativity test was a
-            (trivial success, success, inconclusive, fail).
+        :param op_collection1: First operator (differential).
+        :type op_collection1: GraphOperator.OperatorMatrixCollection
+        :param op_collection2: Second operator (differential).
+        :type op_collection2:  raphOperator.OperatorMatrixCollection
+        :param commute: If True test for commutativity, otherwise test for anti-commutativity (Default: False).
+        :type commute: bool
+        :param eps: Threshold for equivalence of matrices (Default: Parameters.commute_test_eps).
+        :type eps: float
+        :return: Tuple with the number of quadruples for which the (anti-)commutativity test was a
+                 (trivial success, success, inconclusive, fail).
+        :rtype: tuple(int, int, int, int)
         """
         case = 'anti-commutativity' if not commute else 'commutativity'
         print(' ')
@@ -268,5 +295,3 @@ class GraphComplex(object):
             return 'fail'
         except StoreLoad.FileNotFoundError:
             return 'inc'
-
-

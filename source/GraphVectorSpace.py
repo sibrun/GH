@@ -322,7 +322,7 @@ class GraphVectorSpace(VectorSpace):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the basis of the vector space.
 
-        Creates the basis file if the vector space is valid, otherwise skips building a basis. If there exists already
+        Create the basis file if the vector space is valid, otherwise skips building a basis. If there exists already
         a basis file rebuild the basis if ignore_existing_file is True, otherwise skip building a basis.
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the vector
         space. The canonical labeling respects the partition of the vertices.

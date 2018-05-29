@@ -13,7 +13,6 @@ Welcome to Graph Homology's documentation!
 .. automodule:: Parameters
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance:  
     
 .. automodule:: GraphComplex
@@ -84,61 +83,51 @@ Welcome to Graph Homology's documentation!
 .. automodule:: StoreLoad
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: Shared
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: Parallel
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: NautyInterface
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: LinboxInterface
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: RheinfallInterface
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: PlotCohomology
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: DisplayInfo
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: Profiling
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
 .. automodule:: Log
     :members:
     :undoc-members:
-    :inherited-members:
     :show-inheritance: 
     
     

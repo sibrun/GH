@@ -1040,25 +1040,25 @@ class OperatorMatrixCollection(object):
         :param exact: Compute the exact rank (Default: False).
         :type exact: bool
         :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
-            The prime number is set in the Parameters module.
+               The prime number is set in the Parameters module.
         :type mod_p: bool
         :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
-            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+               'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
         :type linbox: str
         :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
         :type rheinfall: str
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
-            'work_estimate', 'size', 'entries' (Default: 'size').
+               'work_estimate', 'size', 'entries' (Default: 'size').
         :type sort_key: str
         :param ignore_existing_files: Option to ignore existing rank files. Ignore existing files and
-            recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
-            rank file (Default: False).
+               recompute the ranks if True, otherwise skip recomputing the rank if there exists already a
+               rank file (Default: False).
         :type ignore_existing_files: bool
         :param n_jobs: Option to compute different ranks in parallel using
-                n_jobs parallel processes (Default: 1).
+               n_jobs parallel processes (Default: 1).
         :type n_jobs: int
-        :param info_tracker: Option to plot information about the operator matrices in a web page
-            (Default: False). Only active if different ranks are not computed in parallel.
+        :param info_tracker: Option to plot information about the operator matrices in a web page (Default: False).
+               Only active if different ranks are not computed in parallel.
         :type info_tracker: bool
 
         .. seealso:: - http://www.linalg.org/

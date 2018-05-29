@@ -17,7 +17,7 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
     """Bi operator matrix based on the differentials contract edges and delete edges.
 
     Attributes:
-            sub_type (str): Sub type of graphs.
+            - sub_type (str): Sub type of graphs.
     """
     def __init__(self, domain, target):
         self.sub_type = domain.get_vs_list()[0].sub_type
@@ -30,9 +30,12 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
 
         The bi operator reduces the degree by one.
 
-        :param domain: VertexLoopDegSlice: Potential domain vector space of the operator.
-        :param target: VertexLoopDegSlice: Potential target vector space of the operator.
+        :param domain: Potential domain vector space of the operator.
+        :type domain: VertexLoopDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: VertexLoopDegSlice
         :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
         """
         return domain.deg - 1 == target.deg
 
@@ -51,14 +54,16 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
     Total degree = n_vertices + n_loops
 
     Attributes:
-        even_edges (bool): True for even edges, False for odd edges.
+        - even_edges (bool): True for even edges, False for odd edges.
 
     """
     def __init__(self, deg, even_edges):
         """Initialize the degree slice.
 
-        :param deg: non-negative int: Total degree of the degree slice.
-        :param even_edges: bool: True for even edges, False for odd edges.
+        :param deg: Total degree of the degree slice.
+        :type deg: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
         """
         self.even_edges = even_edges
         super(VertexLoopDegSlice, self).__init__(
@@ -78,17 +83,17 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
     Direct sum of degree slices.
 
     Attributes:
-        deg_range (range): Range for the total degree.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        sub_type (str): Sub type of graphs.
+        - deg_range (range): Range for the total degree.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, deg_range, even_edges):
         """ Initialize the bi graded vector space.
 
-        :param deg_range: range: Range for the degree.
-        :param even_edges: bool: True for even edges, False for odd edges.
+        :param deg_range: Range for the degree.
+        :type deg_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
         """
         self.deg_range = deg_range
         self.even_edges = even_edges
@@ -110,7 +115,8 @@ class ContractDeleteD(GraphOperator.Differential):
     def __init__(self, graded_sum_vs):
         """Initialize the contract and delete edges differential with the underlying bi graded vector space.
 
-        :param graded_sum_vs: VertexLoopBigradedSumVS: Underlying bi graded vector space.
+        :param graded_sum_vs: Underlying bi graded vector space.
+        :type graded_sum_vs: VertexLoopBigradedSumVS
         """
         super(ContractDeleteD, self).__init__(graded_sum_vs, ContractDeleteBiOM.generate_op_matrix_list(graded_sum_vs))
 
@@ -133,17 +139,17 @@ class OrdinaryContractDeleteBiGC(GraphComplex.GraphComplex):
     Only for odd edges.
 
     Attributes:
-        deg_range (range): Range for the total degree.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        sub_type (str): Sub type of graphs.
+        - deg_range (range): Range for the total degree.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, deg_range, even_edges):
         """Initialize the bi complex.
 
-        :param deg_range: range: Range for the degree.
-        :param even_edges: bool: True for even edges, False for odd edges.
+        :param deg_range: Range for the degree.
+        :type deg_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
         """
         self.deg_range = deg_range
         self.even_edges = even_edges

@@ -28,23 +28,22 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
     No multiple edges.
 
     Attributes:
-        n_vertices (non-negative int): Number of vertices.
-
-        n_loops (non-negative int): Number of loops.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        n_edges (non-negative int): Number of edges.
-
-        sub_type (str): Sub type of graphs.
+        - n_vertices (int): Number of vertices.
+        - n_loops (int): Number of loops.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - n_edges (int): Number of edges.
+        - sub_type (str): Sub type of graphs.
 
     """
     def __init__(self, n_vertices, n_loops, even_edges):
         """Initialize the ordinary graph vector space.
 
-        :param n_vertices: non-negative int: Number of vertices.
-        :param n_loops: non-negative int: Number of loops.
-        :param even_edges: bool: True for even edges, False for odd edges.
+        :param n_vertices: int: Number of vertices.
+        :type n_vertices: int
+        :param n_loops: int: Number of loops.
+        :type n_loops: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
         """
         self.n_vertices = n_vertices
         self.n_loops = n_loops
@@ -116,20 +115,20 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of ordinary graph vector spaces with specified edge parity.
 
     Attributes:
-        v_range (range): Range for the number of vertices.
-
-        l_range (range): Range for the number of loops.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        sub_type (str): Sub type of graphs.
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, v_range, l_range, even_edges):
         """Initialize the sum vector space.
 
-        :param v_range: range: Range for the number of vertices.
-        :param l_range: range: Range for the number of loops.
-        :param even_edges: bool: True for even edges, False for odd edges.
+        :param v_range: Range for the number of vertices.
+        :type v_range: range
+        :param l_range: Range for the number of loops.
+        :type l_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
         """
         self.v_range = v_range
         self.l_range = l_range
@@ -153,13 +152,15 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     Operates on an ordinary graph by contracting an edge and unifying the two adjacent vertices.
 
     Attributes:
-        sub_type (str): Graphs sub type of the domain.
+        - sub_type (str): Graphs sub type of the domain.
     """
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
-        :param domain: OrdinaryGVS: Domain vector space of the operator.
-        :param target: OrdinaryGVS: Target vector space of the operator.
+        :param domain: Domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Target vector space of the operator.
+        :type target: OrdinaryGVS
         """
         if not ContractEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for contract edges operator")
@@ -172,21 +173,28 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
         The contract edges operator reduces the number of vertices by one.
 
-        :param domain: OrdinaryGVS: Potential domain vector space of the operator.
-        :param target: OrdinaryGVS: Potential target vector space of the operator.
-        :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
+        :param domain: Potential domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Potential target vector space of the operator.
+        :type target: OrdinaryGVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
         """
         return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops \
                 and domain.even_edges == target.even_edges
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
-        """Returns a contract edge graph operator.
+        """Return a contract edge graph operator.
 
-        :param n_vertices: non-negative int: Number of vertices of the domain.
-        :param n_loops: non-negative int: Number of loops of the domain.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :return: ContractEdgesGO: Contract edges graph operator based on the specified domain vector space.
+        :param n_vertices: Number of vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype:ContractEdgesGO
         """
         domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
         target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
@@ -249,7 +257,8 @@ class ContractEdgesD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: OrdinaryGraphSumVS: Underlying vector space.
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: OrdinaryGraphSumVS
         """
         super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -269,13 +278,15 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     Only for graphs with odd edges.
 
     Attributes:
-        sub_type (str): Graphs sub type of the domain.
+        - sub_type (str): Graphs sub type of the domain.
     """
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the delete edges graph operator.
 
-        :param domain: OrdinaryGVS: Domain vector space of the operator.
-        :param target: OrdinaryGVS: Target vector space of the operator.
+        :param domain: Domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Target vector space of the operator.
+        :type target: OrdinaryGVS
         """
         if not DeleteEdgesGO.is_match(domain, target):
             raise ValueError("Domain and target not consistent for delete edges operator")
@@ -288,21 +299,28 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
 
         The delete edge operator reduces the number of loops by one.
 
-        :param domain: OrdinaryGVS: Potential domain vector space of the operator.
-        :param target: OrdinaryGVS: Potential target vector space of the operator.
-        :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
+        :param domain: Potential domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Potential target vector space of the operator.
+        :type target: OrdinaryGVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
         """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
                 and domain.even_edges == target.even_edges
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
-        """Returns a delete edge graph operator.
+        """Return a delete edge graph operator.
 
-        :param n_vertices: non-negative int: Number of vertices of the domain.
-        :param n_loops: non-negative int: Number of loops of the domain.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :return: ContractEdgesGO: Contract edges graph operator based on the specified domain vector space.
+        :param n_vertices: Number of vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
         target = OrdinaryGVS(n_vertices, n_loops - 1, even_edges)
@@ -356,7 +374,8 @@ class DeleteEdgesD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the delete edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: OrdinaryGraphSumVS: Underlying vector space.
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: OrdinaryGraphSumVS
         """
         super(DeleteEdgesD, self).__init__(sum_vector_space, DeleteEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -374,21 +393,22 @@ class OrdinaryGC(GraphComplex.GraphComplex):
     """Graph complex for ordinary graphs.
 
     Attributes:
-        v_range (range): Range for the number of vertices.
-
-        l_range (range): Range for the number of loops.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        sub_type (str): Sub type of graphs.
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, v_range, l_range, even_edges, differentials):
         """Initialize the graph complex.
 
-        :param v_range: range: Range for the number of vertices.
-        :param l_range: range: Range for the number of loops.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param differentials: list(str): List of differentials. Options: 'contract', 'delete'.
+        :param v_range: Range for the number of vertices.
+        :type v_range: range
+        :param l_range: Range for the number of loops.
+        :type l_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param differentials: List of differentials. Options: 'contract', 'delete'.
+        :type differentials: list(str)
         """
         self.v_range = v_range
         self.l_range = l_range

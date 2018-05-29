@@ -1,4 +1,4 @@
-"""Module providing implementations for graph vector spaces and operator matrices based on reference data.
+"""Provide implementations for graph vector spaces and operator matrices based on reference data.
 
 It provides functionality to compare the basis of a vector space as well as the operator matrices with
 reference data.
@@ -17,50 +17,55 @@ logger = Log.logger.getChild('ref_graph_complex')
 class RefGraphVectorSpace(object):
     """Reference graph vector space.
 
-    Reads the graph vector space basis from the reference data file and provides
+    Read the graph vector space basis from the reference data file and provide
     the transformation matrix to change the coordinate from the reference basis to the basis.
 
     Attributes:
-        graph_vs (GraphVectorSpace.GraphVectorSpace): Graph vector space to be compared with reference data.
-
-        basis_file_path (path): Path to reference basis file.
+        - graph_vs (GraphVectorSpace.GraphVectorSpace): Graph vector space to be compared with reference data.
+        - basis_file_path (path): Path to reference basis file.
     """
     def __init__(self, graph_vs):
         """Initialize graph vector space.
 
-        :param graph_vs: GraphVectorSpace.GraphVectorSpace: Graph vector space to be compared with reference data.
+        :param graph_vs: Graph vector space to be compared with reference data.
+        :type graph_vs: GraphVectorSpace.GraphVectorSpace
         """
         self.graph_vs = graph_vs
         self.basis_file_path = graph_vs.get_ref_basis_file_path()
 
     def __str__(self):
-        """Returns a unique description of the reference graph vector space based on the reference file path.
+        """Return a unique description of the reference graph vector space based on the reference file path.
 
-        :return: str: Description of the reference graph vector space.
+        :return: Description of the reference graph vector space.
+        :rtype: str
         """
         return "<Reference vector space: %s>" % str(self.basis_file_path)
 
     def __eq__(self, other):
-        """Compares two reference graph vector spaces.
+        """Compare two reference graph vector spaces.
 
-        :param other: RefGraphVectorSpace: Reference graph vector space to be compared with.
-        :return: bool: True if the two reference graph vector spaces are equal.
+        :param other: Reference graph vector space to be compared with.
+        :type other: RefGraphVectorSpace
+        :return: True if the two reference graph vector spaces are equal.
+        :rtype: bool
         """
         return self.graph_vs == other.graph_vs
 
     def exists_basis_file(self):
-        """Checks whether the reference basis file exists.
+        """Check whether the reference basis file exists.
 
-        :return: bool: True if the reference basis file is found.
+        :return: True if the reference basis file is found.
+        :rtype: bool
         """
         return (self.basis_file_path is not None) and os.path.isfile(self.basis_file_path)
 
     def _load_basis_g6(self):
-        """ Loads the reference basis list from the reference file.
+        """Load the reference basis list from the reference file.
 
-        The implementation depends on the reference data.
+        :Note: The implementation depends on the reference data.
 
-        :return: list(str): List of graph6 strings representing the reference basis.
+        :return: List of graph6 strings representing the reference basis.
+        :rtype: list(str)
         :raise StoreLoad.FileNotFoundError: If the reference basis file is not found.
         """
         if not self.exists_basis_file():
@@ -76,9 +81,10 @@ class RefGraphVectorSpace(object):
         return (canonG.graph6_string(), sgn)
 
     def get_basis_g6(self):
-        """Returns the reference basis as list of graph6 strings.
+        """Return the reference basis as list of graph6 strings.
 
-        :return: list(str): Reference basis as list of graph6 strings.
+        :return: Reference basis as list of graph6 strings.
+        :rtype: list(str)
         :raise StoreLoad.FileNotFoundError: If the reference basis file is not found.
         """
         basis_g6 = self._load_basis_g6()
@@ -88,17 +94,19 @@ class RefGraphVectorSpace(object):
         return basis_g6_canon
 
     def get_dimension(self):
-        """Returns the dimension of the reference vector space.
+        """Return the dimension of the reference vector space.
 
-        :return: non-negative int: Dimension of the reference vector space.
+        :return: Dimension of the reference vector space.
+        :rtype: int
         :raise StoreLoad.FileNotFoundError: If the reference basis file is not found.
         """
         return len(self._load_basis_g6())
 
     def get_transformation_matrix(self):
-        """Returns the coordinate transformation matrix, to transform from the reference basis to the basis.
+        """Return the coordinate transformation matrix, to transform from the reference basis to the basis.
 
-        :return:
+        :return: Transformation matrix to transform from the reference basis to the basis.
+        :rtype: Matrix_sparse
         """
         basis_g6 = self._load_basis_g6()
         dim = len(basis_g6)
@@ -120,19 +128,15 @@ class RefGraphVectorSpace(object):
 class RefOperatorMatrix(object):
     """Reference operator matrix.
 
-    Reads the operator matrix from the reference data file and provides operator matrix w.r.t. the reference basis
+    Read the operator matrix from the reference data file and provides operator matrix w.r.t. the reference basis
     as well as to the basis.
 
     Attributes:
-        op_matrix (GraphOperator.GraphOperatorMatrix): Graph operator matrix to be compared with reference data.
-
-        domain (RefGraphVectorSpace): Reference domain vector space of the reference matrix.
-
-        target (RefGraphVectorSpace): Reference target vector space of the reference matrix.
-
-        matrix_file_path (path): Path to the reference matrix file.
-
-        rank_file_path (path): Path to the reference rank file.
+        - op_matrix (GraphOperator.GraphOperatorMatrix): Graph operator matrix to be compared with reference data.
+        - domain (RefGraphVectorSpace): Reference domain vector space of the reference matrix.
+        - target (RefGraphVectorSpace): Reference target vector space of the reference matrix.
+        - matrix_file_path (path): Path to the reference matrix file.
+        - rank_file_path (path): Path to the reference rank file.
 
     """
     def __init__(self, op_matrix):
@@ -143,31 +147,33 @@ class RefOperatorMatrix(object):
         self.rank_file_path = self.op_matrix.get_ref_rank_file_path()
 
     def __str__(self):
-        """Returns a unique description of the reference operator matrix based on the reference file path.
+        """Return a unique description of the reference operator matrix based on the reference file path.
 
-        :return: str: Description of the reference operator matrix.
+        :return: Description of the reference operator matrix.
+        :rtype: str
         """
         return "<Reference operator: %s>" % str(self.matrix_file_path)
 
     def exists_matrix_file(self):
-        """Checks whether the reference matrix file exists.
+        """Check whether the reference matrix file exists.
 
-        :return: bool: True if the reference matrix file is found.
+        :return: True if the reference matrix file is found.
+        :rtype: bool
         """
         return os.path.isfile(self.matrix_file_path)
 
     def _load_matrix(self):
-        """ Loads the reference matrix list from the reference file.
+        """ Load the reference matrix list from the reference file.
 
         The implementation depends on the reference data.
 
-        :return: tuple(list(tuple(non-negative int, non-negative int, int)), tuple(non-negative int, non-negative int)):
-            (matrix_list = list((domain index, target index, value), shape = (domain dimension, target dimension))
+        :return: (matrix_list = list((domain index, target index, value), shape = (domain dimension, target dimension))
+        :rtype: tuple(list(tuple(int, int, int)), tuple(int, int))
         :raise StoreLoad.FileNotFoundError: If the reference matrix file is not found.
         :raise: ValueError: Raised in the following cases:
-            End line missing.
-            Negative matrix index.
-            Matrix index too large.
+                End line missing.
+                Negative matrix index.
+                Matrix index too large.
         """
         if not self.exists_matrix_file():
            raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
@@ -192,14 +198,15 @@ class RefOperatorMatrix(object):
         return (entriesList, shape)
 
     def get_matrix_wrt_ref(self):
-        """Returns the reference matrix w.r.t. the reference basis.
+        """Return the reference matrix w.r.t. the reference basis.
 
-        :return: sage.Matrix_sparse: Reference Matrix as sparse sage matrix w.r.t. the reference basis.
+        :return: Reference Matrix as sparse sage matrix w.r.t. the reference basis.
+        :rtype: Matrix_sparse
         :raise StoreLoad.FileNotFoundError: If the reference matrix file or reference basis is not found.
         :raise: ValueError: Raised in the following cases:
-            End line missing.
-            Negative matrix index.
-            Matrix index too large.
+                End line missing.
+                Negative matrix index.
+                Matrix index too large.
         """
 
         (entriesList, shape) = self._load_matrix()
@@ -213,15 +220,16 @@ class RefOperatorMatrix(object):
         return M.transpose()
 
     def get_matrix(self):
-        """Returns the reference matrix w.r.t. the basis.
+        """Return the reference matrix w.r.t. the basis.
 
-        :return: sage.Matrix_sparse: Reference Matrix as sparse sage matrix w.r.t. the basis.
+        :return: Reference Matrix as sparse sage matrix w.r.t. the basis.
+        :rtype: Matrix_sparse
         :raise StoreLoad.FileNotFoundError: If the reference matrix file or reference basis is not found.
         :raise: ValueError: Raised in the following cases:
-            End line missing.
-            Negative matrix index.
-            Matrix index too large.
-           """
+                End line missing.
+                Negative matrix index.
+                Matrix index too large.
+        """
         M = self.get_matrix_wrt_ref()
         T_domain = self.domain.get_transformation_matrix()
         T_target = self.target.get_transformation_matrix()
@@ -231,17 +239,19 @@ class RefOperatorMatrix(object):
         return T_target.inverse() * M * T_domain
 
     def exists_rank_file(self):
-        """Checks whether the reference rank file exists.
+        """Check whether the reference rank file exists.
 
-        :return: bool: True if the reference rank file is found.
+        :return: True if the reference rank file is found.
+        :rtype: bool
         """
         return os.path.isfile(self.rank_file_path)
 
     def get_rank(self):
-        """Returns the reference rank from the reference rank file.
+        """Return the reference rank from the reference rank file.
 
-        :return: non-negative int: Reference rank.
-        :raise StoreLoad.FileNotFoundError: If refrence rank file not found.
+        :return: Reference rank.
+        :rtype: int
+        :raise StoreLoad.FileNotFoundError: Raised if reference rank file not found.
         """
         if not self.exists_rank_file():
            raise StoreLoad.FileNotFoundError("%s: Reference rank file not found" % str(self))

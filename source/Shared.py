@@ -43,7 +43,7 @@ class Perm:
         """Generate a permutation not necessarily starting at zero.
 
         :Note: The inverse of the returned permutation does not correspond to the inverse of the permutation induced by
-        p but rather to the corresponding inverse permutation of the shifted indices starting at zero.
+               p but rather to the corresponding inverse permutation of the shifted indices starting at zero.
 
         :param p: Image of the permutation with consecutive indices.
         :type p: list(int)
