@@ -131,9 +131,9 @@ class VectorSpace(object):
         """Return an ordered dictionary of parameters, identifying the vector space.
 
         :return: Ordered dictionary of parameters.
-        :rtype: OrderedDict
+         OrderedDict
 
-        :Example:
+
 
         Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
 
