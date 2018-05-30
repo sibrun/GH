@@ -199,7 +199,9 @@ parser.add_argument('-build', action='store_true', help='build vector space basi
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='build operator matrix')
 parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
-parser.add_argument('-cohomology', action='store_true', help='compute cohomology')
+parser.add_argument('-cohomology', action='store_true', help='compute cohomology dimensions')
+parser.add_argument('-csv', action='store_true', help='export cohomolgy dimension to csv file')
+parser.add_argument('-html', action='store_true', help='cexport cohomolgy dimension to html file')
 parser.add_argument('-square_zero', action='store_true', help='square zero test')
 parser.add_argument('-anti_commute', action='store_true', help='test anti-commutativity of differentials')
 parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
@@ -249,7 +251,7 @@ def rank(graph_complex):
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def cohomology(graph_complex):
     logger.warn("\n----- Compute Cohomology -----\n")
-    graph_complex.plot_cohomology_dim()
+    graph_complex.plot_cohomology_dim(to_csv=args.csv, to_html=args.html)
 
 
 class MissingArgumentError(RuntimeError):
