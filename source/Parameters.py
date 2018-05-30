@@ -15,9 +15,8 @@ square_zero_test_eps = 1e-6
 commute_test_eps = 1e-6
 
 #---- Rank Computation ----
-prime = 32189   # List of prime numbers to be used in rank computations.
-linbox_options = {"rational", "mod"}
-rheinfall_options = {"int64", "mpq", "mpz"}
+prime = 32189   # Prime number to be used in rank computations.
+
 
 #---- Display Parameters ----
 x_width = 0.4           # x width of the unit squares in the cohomology dimension plots.

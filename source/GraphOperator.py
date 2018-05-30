@@ -566,7 +566,7 @@ class OperatorMatrix(object):
                     rank_mod_p = M.rank()
                     info = 'mod_%d' % prime
                     rank_dict.update({info: rank_mod_p})
-                if linbox is not None and linbox in Parameters.linbox_options:
+                if linbox is not None and linbox in LinboxInterface.linbox_options:
                     rank_linbox = LinboxInterface.rank(linbox, self.get_matrix_file_path(), prime=prime)
                     info = "linbox_%s_%d" % (linbox, prime)
                     rank_dict.update({info: rank_linbox})
@@ -1315,11 +1315,10 @@ class Differential(OperatorMatrixCollection):
         """Plot the cohomology dimensions.
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
-        :param to_html: Option to generate a html file with a table of the cohomology dimensions
-            (Dafault: False).
+
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Dafault: False).
         :type to_html: bool
-        :param to_csv: Option to generate a csv file with a table of the cohomology dimensions
-            (default: False).
+        :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (default: False).
         :type to_csv: bool
         :param x_plots: Number of plots on the x-axis (Default: 2).
         :type x_plots: int
