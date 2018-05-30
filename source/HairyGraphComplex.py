@@ -36,32 +36,30 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     hair vertex alone.
 
     Attributes:
-        n_vertices (non-negative int): Number of internal vertices.
-
-        n_loops (non-negative int): Number of loops.
-
-        n_hairs (non-negative int): Number of hairs.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        even_hairs (bool): Parity of the hair vertices. True for even hairs, False for odd hairs.
-
-        n_edges (non-negative int): Number of edges.
-
-        sub_type (str): Sub type of graphs.
-
-        ogvs (OrdinaryGraphComplex.OrdinaryGVS): Ordinary graph vector space without hairs.
+        - n_vertices (int): Number of internal vertices.
+        - n_loops (int): Number of loops.
+        - n_hairs (int): Number of hairs.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - even_hairs (bool): Parity of the hair vertices. True for even hairs, False for odd hairs.
+        - n_edges (int): Number of edges.
+        - sub_type (str): Sub type of graphs.
+        - ogvs (OrdinaryGraphComplex.OrdinaryGVS): Ordinary graph vector space without hairs.
 
     """
 
     def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
         """Initialize the hairy graph vector space.
 
-        :param n_vertices: non-negative int: Number of internal vertices.
-        :param n_loops: non-negative int: Number of loops.
-        :param n_hairs: non-negative int: Number of hairs.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param even_hairs: bool: Parity of the hair vertices. True for even hairs, False for odd hairs.
+        :param n_vertices: Number of internal vertices.
+        :type n_vertices: int
+        :param n_loops: Number of loops.
+        :type n_loops: int
+        :param n_hairs: Number of hairs.
+        :type n_hairs: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param even_hairs: Parity of the hair vertices. True for even hairs, False for odd hairs.
+        :type even_hairs: bool
         """
         self.n_vertices = n_vertices
         self.n_loops = n_loops
@@ -157,26 +155,26 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of hairy graph vector spaces with specified edge and hair parity.
 
     Attributes:
-        v_range (range): Range for the number of vertices.
-
-        l_range (range): Range for the number of loops.
-
-        h_range (range): Range for the number of hairs.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        even_hairs (bool): True for even hairs, False for odd hairs.
-
-        sub_type (str): Sub type of graphs.
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - h_range (range): Range for the number of hairs.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - even_hairs (bool): True for even hairs, False for odd hairs.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         """Initialize the sum vector space.
 
-        :param v_range: range: Range for the number of vertices.
-        :param l_range: range: Range for the number of loops.
-        :param h_range: range: Range for the number of hairs.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param even_hairs: bool: True for even hairs, False for odd hairs.
+        :param v_range: Range for the number of vertices.
+        :type v_range: range
+        :param l_range: Range for the number of loops.
+        :type l_range: range
+        :param h_range: Range for the number of hairs.
+        :type h_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param even_hairs: True for even hairs, False for odd hairs.
+        :type even_hairs: bool
         """
         self.v_range = v_range
         self.l_range = l_range
@@ -200,16 +198,18 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 class ContractEdgesGO(GraphOperator.GraphOperator):
     """Contract edges graph operator.
 
-    Operates on a hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
+    Operate on a hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
 
     Attributes:
-        sub_type (str): Graphs sub type of the domain.
+        - sub_type (str): Graphs sub type of the domain.
     """
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
-        :param domain: HairyGraphVS: Domain vector space of the operator.
-        :param target: HairyGraphVS: Target vector space of the operator.
+        :param domain: Domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Target vector space of the operator.
+        :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
@@ -220,23 +220,32 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
         The contract edges operator reduces the number of vertices by one.
 
-        :param domain: HairyGraphVS: Potential domain vector space of the operator.
-        :param target: HairyGraphVS: Potential target vector space of the operator.
-        :return: bool: True if domain and target match to generate a corresponding contract edges graph operator.
+        :param domain: Potential domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Potential target vector space of the operator.
+        :type target: HairyGraphVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
         """
         return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
                and domain.n_hairs == target.n_hairs and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        """Returns a contract edges graph operator.
+        """Return a contract edges graph operator.
 
-        :param n_vertices: non-negative int: Number of vertices of the domain.
-        :param n_loops: non-negative int: Number of loops of the domain.
-        :param n_hairs: non-negative int: Number of hairs.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param even_hairs: bool: True for even hairs, False for odd hairs.
-        :return: ContractEdgesGO: Contract edges graph operator based on the specified domain vector space.
+        :param n_vertices: Number of vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param n_hairs: Number of hairs.
+        :type n_hairs: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param even_hairs: True for even hairs, False for odd hairs.
+        :type even_hairs: bool
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype: ContractEdgesGO
         """
         domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
         target = HairyGraphVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
@@ -302,7 +311,8 @@ class ContractEdgesD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
-        :param sum_vector_space: HairyGraphSumVS: Underlying vector space.
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: HairyGraphSumVS
         """
         super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -323,13 +333,15 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
     Only for graphs with odd hairs.
 
     Attributes:
-        sub_type (str): Graphs sub type of the domain.
+        - sub_type (str): Graphs sub type of the domain.
     """
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the edge to one hair graph operator.
 
-        :param domain: HairyGraphVS: Domain vector space of the operator.
-        :param target: HairyGraphVS: Target vector space of the operator.
+        :param domain: Domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Target vector space of the operator.
+        :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
         super(EdgeToOneHairGO, self).__init__(domain, target)
@@ -340,23 +352,32 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
 
         The edge to one hair operator reduces the number of loops by one and increases the number of hairs by one.
 
-        :param domain: HairyGraphVS: Potential domain vector space of the operator.
-        :param target: HairyGraphVS: Potential target vector space of the operator.
-        :return: bool: True if domain and target match to generate a corresponding edge to one hair graph operator.
+        :param domain: Potential domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Potential target vector space of the operator.
+        :type target: HairyGraphVS
+        :return: True if domain and target match to generate a corresponding edge to one hair graph operator.
+        :rtype: bool
         """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
                and domain.n_hairs + 1 == target.n_hairs and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        """Returns an edge to one hair graph operator.
+        """Return an edge to one hair graph operator.
 
-        :param n_vertices: non-negative int: Number of vertices of the domain.
-        :param n_loops: non-negative int: Number of loops of the domain.
-        :param n_hairs: non-negative int: Number of hairs.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param even_hairs: bool: True for even hairs, False for odd hairs.
-        :return: EdgeToOneHairGO: Edge to one hair graph operator based on the specified domain vector space.
+        :param n_vertices: Number of vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param n_hairs: Number of hairs.
+        :type n_hairs: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param even_hairs: True for even hairs, False for odd hairs.
+        :type even_hairs: bool
+        :return: Edge to one hair graph operator based on the specified domain vector space.
+        :rtype: EdgeToOneHairGO
         """
         domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
         target = HairyGraphVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
@@ -385,7 +406,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         return 'edge to one hair'
 
     def operate_on(self,G):
-        # Operates on a hairy graph by deleting an edge and adding a hair to one of the vertices adjacent to the
+        # Operate on a hairy graph by deleting an edge and adding a hair to one of the vertices adjacent to the
         # deleted edge.
         sgn0 = -1 if G.order() % 2 else 1
         image=[]
@@ -425,7 +446,8 @@ class EdgeToOneHairD(GraphOperator.Differential):
     def __init__(self, sum_vector_space):
         """Initialize the edge to one hair differential with the underlying sum vector space.
 
-        :param sum_vector_space: HairyGraphSumVS: Underlying vector space.
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: HairyGraphSumVS
         """
         super(EdgeToOneHairD, self).__init__(sum_vector_space, EdgeToOneHairGO.generate_op_matrix_list(sum_vector_space))
 
@@ -446,27 +468,28 @@ class HairyGC(GraphComplex.GraphComplex):
     """Graph complex for hairy graphs.
 
     Attributes:
-        v_range (range): Range for the number of vertices.
-
-        l_range (range): Range for the number of loops.
-
-        h_range (range): Range for the number of hairs.
-
-        even_edges (bool): True for even edges, False for odd edges.
-
-        even_hairs (bool): True for even hairs, False for odd hairs.
-
-        sub_type (str): Sub type of graphs.
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - h_range (range): Range for the number of hairs.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - even_hairs (bool): True for even hairs, False for odd hairs.
+        - sub_type (str): Sub type of graphs.
     """
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, differentials):
         """Initialize the graph complex.
 
-        :param v_range: range: Range for the number of vertices.
-        :param l_range: range: Range for the number of loops.
-        :param n_hairs: non-negative int: Number of hairs.
-        :param even_edges: bool: True for even edges, False for odd edges.
-        :param even_hairs: bool: True for even hairs, False for odd hairs.
-        :param differentials: list(str): List of differentials. Options: 'contract', 'et1h'.
+        :param v_range: Range for the number of vertices.
+        :type v_range: range
+        :param l_range: Range for the number of loops.
+        :type l_range: range
+        :param h_range: Range for the number of hairs.
+        :type  h_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :param even_hairs: True for even hairs, False for odd hairs.
+        :type even_hairs: bool
+        :param differentials: List of differentials. Options: 'contract', 'et1h'.
+        :type differentials: list(str)
         """
         self.v_range = v_range
         self.l_range = l_range
