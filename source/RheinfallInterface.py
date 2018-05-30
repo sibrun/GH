@@ -11,7 +11,7 @@ def rank(rheinfall_option, matrix_file):
         raise ValueError('Possible options for rheinfall: ' + str(rheinfall_options))
     rheinfall_path = os.path.join(os.path.curdir, "source", "rank")
     with tempfile.NamedTemporaryFile() as temp_rank_file:
-        rheinfall_command = "%s-%s %s %s" % (rheinfall_path, rheinfall_option, matrix_file, temp_rank_file)
+        rheinfall_command = "%s-%s %s %s" % (rheinfall_path, rheinfall_option, matrix_file, temp_rank_file.name)
         os.system(rheinfall_command)
         rank = int(temp_rank_file.read())
     return rank

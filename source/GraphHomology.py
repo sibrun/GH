@@ -61,7 +61,7 @@ Examples:
 
     Ordinary graph bicomplex 'ce_dele' with the differentials 'contract edges' and 'delete edges':
 
-        $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology -csv
 
     Hairy graph complex:
         Build the basis:
