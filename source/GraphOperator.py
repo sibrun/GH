@@ -568,9 +568,9 @@ class OperatorMatrix(object):
                     rank_dict.update({info: rank_mod_p})
                 if linbox is not None and linbox in LinboxInterface.linbox_options:
                     rank_linbox = LinboxInterface.rank(linbox, self.get_matrix_file_path(), prime=prime)
-                    info = "linbox_%s_%d" % (linbox, prime)
+                    info = "linbox_%s" % linbox if linbox == "rational" else "linbox_%s_%d" % (linbox, prime)
                     rank_dict.update({info: rank_linbox})
-                if rheinfall is not None and rheinfall in Parameters.rheinfall_options:
+                if rheinfall is not None and rheinfall in RheinfallInterface.rheinfall_options:
                     rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
                     if rank_rheinfall == 0:
                         return self._compute_rank(exact=True)
