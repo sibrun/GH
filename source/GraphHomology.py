@@ -59,7 +59,7 @@ Examples:
 
             $ python ./source/GraphHomology.py ordinary -op1 contract -op2 delete -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
 
-    Ordinary graph bicomplex 'ce_dele' with the differentials 'contract edges' and 'delete edges':
+    Ordinary graph bicomplex 'contract_delete' with the differentials 'contract edges' and 'delete edges':
 
         $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology -csv
 
@@ -83,7 +83,7 @@ Examples:
 
             $ python ./source/GraphHomology.py hairy -op1 contract -op2 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -square_zero -anti_commute -cohomology
 
-    Hairy graph bicomplex 'ce_et1h' with the differentials 'contract edges' and 'edge to one hair':
+    Hairy graph bicomplex 'contract_et1h' with the differentials 'contract edges' and 'edge to one hair':
 
         $ python ./source/GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
 
