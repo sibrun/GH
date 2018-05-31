@@ -17,7 +17,6 @@ commute_test_eps = 1e-6
 #---- Rank Computation ----
 prime = 32189   # Prime number to be used in rank computations.
 
-
 #---- Display Parameters ----
 x_width = 0.4           # x width of the unit squares in the cohomology dimension plots.
 y_width = 0.4           # y width of the unit squares in the cohomology dimension plots.

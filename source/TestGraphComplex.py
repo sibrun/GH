@@ -165,7 +165,7 @@ class GraphComplexTest(unittest.TestCase):
             graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6, mod_p=True)
             graph_complex.build_basis(info_tracker=True)
             graph_complex.build_matrix(info_tracker=True)
-            #graph_complex.compute_rank(info_tracker=True)
+            graph_complex.compute_rank(info_tracker=True, mod_p=True)
 
 
 class CohomologyTest(unittest.TestCase):

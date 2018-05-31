@@ -32,7 +32,7 @@ Prerequisites:
 
             (sage-sh)$ pip -install tqdm
 
-    pandas: Install the tqdm module in the sage python version:
+    pandas: Install the pandas module in the sage python version:
 
             (sage-sh)$ pip -install pandas
 
