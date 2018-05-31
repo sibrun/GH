@@ -68,6 +68,14 @@ More examples for hairy graph complexes can be found in the file [GraphHomology.
 
 Feel free to extend this library with more examples of graph complexes.
 
+## Documentation
+In order to generate a documentation using [sphinx](http://www.sphinx-doc.org/en/master/#) change to the folder 
+[GH/docs](https://github.com/sibrun/GH/tree/master/docs) and generate a html documentation with:
+```
+make html
+```
+The html documentation will be found under GH/docs/build/html/idex.html.
+
 ## Authors
 
 * **Simon Brun** 
