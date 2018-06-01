@@ -673,13 +673,7 @@ class SumVectorSpace(VectorSpace):
 
         Set the names of the variables to be displayed.
         """
-        try:
-            param_names = self.vs_list[0].get_ordered_param_dict().keys()
-            property_names = self.vs_list[0].get_properties().names()
-        except IndexError:
-            param_names = property_names = []
-        parameter_list = param_names + property_names
-        self.info_tracker.set_parameter_names_list(parameter_list)
+        self.info_tracker.set_header_list(self._get_info_header_list())
 
     def start_tracker(self):
         """Start the info tracker.
@@ -707,6 +701,16 @@ class SumVectorSpace(VectorSpace):
     def stop_tracker(self):
         """Stop tracking informations about the sub vector spaces."""
         self.info_tracker.stop()
+
+    def _get_info_header_list(self):
+        try:
+            param_names = self.vs_list[0].get_ordered_param_dict().keys()
+            property_names = self.vs_list[0].get_properties().names()
+        except IndexError:
+            param_names = property_names = []
+        return param_names + property_names
+
+
 
 
 class DegSlice(SumVectorSpace):

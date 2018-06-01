@@ -25,7 +25,7 @@ class InfoTracker(object):
     """
     def __init__(self, name):
         self.name = name
-        self.parameter_names_list = []
+        self.header_list = []
         self.data_dict = collections.OrderedDict()
         self.queue = multiprocessing.Queue()
         self.p = None
@@ -33,21 +33,21 @@ class InfoTracker(object):
         self.html_path = self.f.name + '.html'
         self.url ='file:{}'.format(pathname2url(self.html_path))
 
-    def set_parameter_names_list(self, parameter_names_list):
-        """Set the name of parameters and properties.
+    def set_header_list(self, header_list):
+        """Set the names of parameters and properties.
 
-        :param parameter_names_list: List with the parameter and property names.
-        :type parameter_names_list: list(str)
+        :param header_list: List with the parameter and property names.
+        :type header_list: list(str)
         """
-        self.parameter_names_list = parameter_names_list
+        self.header_list = header_list
 
-    def get_parameter_names_list(self):
+    def get_header_list(self):
         """Return a list with the names of parameters and properties.
 
         :return: parameter_list: List with the parameter and property names.
         :rtype list(str)
         """
-        return self.parameter_names_list
+        return self.header_list
 
     def get_data_dict(self):
         """Return the data dictionary.
@@ -82,7 +82,7 @@ class InfoTracker(object):
         :return: Data Frame with the stored information.
         :rtype: pandas.DataFrame
         """
-        return pandas.DataFrame(data=self.get_data_list(), columns=self.get_parameter_names_list())
+        return pandas.DataFrame(data=self.get_data_list(), columns=self.get_header_list())
 
     def update_html_file(self):
         """Update the html file."""

@@ -1087,12 +1087,7 @@ class OperatorMatrixCollection(object):
 
         Set the names of the variables to be displayed.
         """
-        try:
-            param_names = self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys()
-        except IndexError:
-            param_names = []
-        parameter_list = param_names + OperatorMatrixProperties.names()
-        self.info_tracker.set_parameter_names_list(parameter_list)
+        self.info_tracker.set_header_list(self._get_info_header_list())
 
     def start_tracker(self):
         """Start the info tracker.
@@ -1120,6 +1115,13 @@ class OperatorMatrixCollection(object):
     def stop_tracker(self):
         """Stop tracking information about the underlying operator matrices."""
         self.info_tracker.stop()
+
+    def _get_info_header_list(self):
+        try:
+            param_names = self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys()
+        except IndexError:
+            param_names = []
+        return param_names + OperatorMatrixProperties.names()
 
 
 class Differential(OperatorMatrixCollection):
