@@ -537,6 +537,10 @@ class SumVectorSpace(VectorSpace):
          """
         pass
 
+    @abstractmethod
+    def get_info_plot_path(self):
+        pass
+
     def get_ordered_param_dict(self):
         """Return an ordered dictionary of parameters, identifying the vector space.
 
@@ -650,6 +654,7 @@ class SumVectorSpace(VectorSpace):
         """
         print(' ')
         print('Build basis of %s' % str(self))
+        info_tracker = False if isinstance(self, DegSlice) and not Parameters.second_info else info_tracker
         if n_jobs > 1:
             # If mor than 1 process progress bar and info tracker are not activated.
             progress_bar = False
@@ -663,8 +668,7 @@ class SumVectorSpace(VectorSpace):
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
-        info = info_tracker if Parameters.second_info else False
-        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, info_tracker=info)
+        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.update_tracker(vs)
 
@@ -701,6 +705,17 @@ class SumVectorSpace(VectorSpace):
     def stop_tracker(self):
         """Stop tracking informations about the sub vector spaces."""
         self.info_tracker.stop()
+
+    def plot_info(self, to_html=False, to_csv=True):
+        if isinstance(self, DegSlice) and not Parameters.second_info:
+            return
+        path = self.get_info_plot_path()
+        header_list = self._get_info_header_list()
+        data_list = []
+        for vs in self.vs_list:
+            vs.update_properties()
+            data_list.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
+        DisplayInfo.plot_info(data_list, header_list, path, to_html=to_html, to_csv=to_csv)
 
     def _get_info_header_list(self):
         try:

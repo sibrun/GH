@@ -52,6 +52,11 @@ class GraphComplex(object):
         """
         return self.operator_collection_list
 
+    def plot_info(self, to_html=False, to_csv=True):
+        self.sum_vector_space.plot_info(to_html=to_html, to_csv=to_csv)
+        for op_collection in self.operator_collection_list:
+            op_collection.plot_info(to_html=to_html, to_csv=to_csv)
+
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the basis of the underlying vector space.
 

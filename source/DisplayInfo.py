@@ -10,6 +10,16 @@ from urllib import pathname2url
 import Parameters
 
 
+def plot_info(data_list, header_list, path, to_html=False, to_csv=True):
+    data_frame = pandas.DataFrame(data=data_list, columns=header_list)
+    if to_html:
+        html_path = path + '.html'
+        data_frame.to_html(html_path)
+    if to_csv:
+        csv_path = path + '.csv'
+        data_frame.to_csv(csv_path)
+
+
 class InfoTracker(object):
     """Track information during computations and displays it as table on a html page.
 

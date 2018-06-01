@@ -205,6 +205,7 @@ parser.add_argument('-html', action='store_true', help='cexport cohomolgy dimens
 parser.add_argument('-square_zero', action='store_true', help='square zero test')
 parser.add_argument('-anti_commute', action='store_true', help='test anti-commutativity of differentials')
 parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
+parser.add_argument('-plot_info', action='store_true', help='plot information about vector spaces and operator matrices')
 
 args = parser.parse_args()
 
@@ -252,6 +253,12 @@ def rank(graph_complex):
 def cohomology(graph_complex):
     logger.warn("\n----- Compute Cohomology -----\n")
     graph_complex.plot_cohomology_dim(to_csv=args.csv, to_html=args.html)
+
+
+@Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
+def plot_info(graph_complex):
+    logger.warn("\n----- Plot Info -----\n")
+    graph_complex.plot_info(to_csv=args.csv, to_html=args.html)
 
 
 class MissingArgumentError(RuntimeError):
@@ -385,6 +392,8 @@ if __name__ == "__main__":
         else:
             raise ValueError('Differentials for hairy graph complex: contract, split')
 
+    if args.plot_info:
+        plot_info(graph_complex)
     if args.build_b:
         build_basis(graph_complex)
     if args.build_op:

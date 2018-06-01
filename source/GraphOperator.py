@@ -954,6 +954,10 @@ class OperatorMatrixCollection(object):
         """
         pass
 
+    @abstractmethod
+    def get_info_plot_path(self):
+        pass
+
     def __str__(self):
         """Return a unique description of the operator.
 
@@ -1098,7 +1102,7 @@ class OperatorMatrixCollection(object):
         self.set_tracker_parameters()
         op_info_dict = collections.OrderedDict()
         for op in self.op_matrix_list:
-            op_info_dict.update({tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()})
+            op_info_dict.update({tuple(op.get_domain().get_ordered_param_dict().values()): op.get_properties().list()})
         self.info_tracker.update_data(op_info_dict)
         self.info_tracker.start()
 
@@ -1109,12 +1113,21 @@ class OperatorMatrixCollection(object):
         :type op: OperatorMatrix
         """
         op.update_properties()
-        message = {tuple(op.domain.get_ordered_param_dict().values()): op.get_properties().list()}
+        message = {tuple(op.get_domain().get_ordered_param_dict().values()): op.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
         """Stop tracking information about the underlying operator matrices."""
         self.info_tracker.stop()
+
+    def plot_info(self, to_html=False, to_csv=True):
+        path = self.get_info_plot_path()
+        header_list = self._get_info_header_list()
+        data_list = []
+        for op in self.op_matrix_list:
+            op.update_properties()
+            data_list.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
+        DisplayInfo.plot_info(data_list, header_list, path, to_html=to_html, to_csv=to_csv)
 
     def _get_info_header_list(self):
         try:
