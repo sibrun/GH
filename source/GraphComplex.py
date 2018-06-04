@@ -114,7 +114,7 @@ class GraphComplex(object):
                 test_dict.update({dif: success})
         return test_dict
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False, n_jobs=1,
+    def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, n_jobs=1,
                      info_tracker=False):
         """Compute the ranks of the operator matrices.
 
@@ -147,7 +147,7 @@ class GraphComplex(object):
                     - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         for op_collection in self.operator_collection_list:
-            op_collection.compute_rank(exact=exact, mod_p=mod_p, linbox=linbox, rheinfall=rheinfall,
+            op_collection.compute_rank(sage=sage, linbox=linbox, rheinfall=rheinfall,
                                        ignore_existing_files=ignore_existing_files, n_jobs=n_jobs,
                                        info_tracker=info_tracker)
 

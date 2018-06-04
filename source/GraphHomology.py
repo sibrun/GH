@@ -51,8 +51,8 @@ Examples:
 
         Compute the ranks of the operator matrices:
 
-            $ python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
-            $ python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -sage mod -rank
+            $ python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -sage mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
@@ -61,7 +61,7 @@ Examples:
 
     Ordinary graph bicomplex 'contract_delete' with the differentials 'contract edges' and 'delete edges':
 
-        $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology -csv
+        $ python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology -csv
 
     Hairy graph complex:
         Build the basis:
@@ -75,8 +75,8 @@ Examples:
 
         Compute the ranks of the operator matrices:
 
-            $ python ./source/GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
-            $ python ./source/GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py hairy -op1 contract -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -sage mod -rank
+            $ python ./source/GraphHomology.py hairy -op1 et1h -v 3,11 -l 0,10 -hairs 0,9 -odd_e -odd_h -n_jobs 4 -sage mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
@@ -85,7 +85,7 @@ Examples:
 
     Hairy graph bicomplex 'contract_et1h' with the differentials 'contract edges' and 'edge to one hair':
 
-        $ python ./source/GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py hairy -bicomplex contract_et1h -d 0,14 -h_min ,-12,-1 -odd_e -odd_h -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology
 
     Bi colored hairy graph complex:
         Build the basis:
@@ -99,8 +99,8 @@ Examples:
 
         Compute the ranks of the operator matrices:
 
-            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
-            $ python ./source/GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -rank
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 contract -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -sage mod -rank
+            $ python ./source/GraphHomology.py bi_c_hairy -op1 split -v 3,8 -l 0,5 -hairs_a 0,6 -hairs_b 0,6 -odd_e -even_h_a -even_h_b -n_jobs 4 -sage mod -rank
 
         Test whether the operators square to zero, i.e. build a differential, test whether the operators anti-commute, and
             plot the cohomology dimensions of the respective graph complexes:
@@ -109,7 +109,7 @@ Examples:
 
     Bi colored hairy graph bicomplex 'contract_split' with the differentials 'contract edges' and 'split edges':
 
-        $ python ./source/GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology
+        $ python ./source/GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology
 """
 
 import argparse
@@ -158,6 +158,27 @@ def range_type(arg):
     return range(min, max)
 
 
+def linbox_options(arg):
+    options = [str(item) for item in arg.split(',')]
+    if not set(options) <= LinboxInterface.linbox_options:
+        raise argparse.ArgumentTypeError('linbox options: ' + str(LinboxInterface.linbox_options))
+    return options
+
+
+def rheinfall_options(arg):
+    options = [str(item) for item in arg.split(',')]
+    if not set(options) <= RheinfallInterface.rheinfall_options:
+        raise argparse.ArgumentTypeError('rheinfall options: ' + str(RheinfallInterface.rheinfall_options))
+    return options
+
+
+def sage_rank_options(arg):
+    options = [str(item) for item in arg.split(',')]
+    if not set(options) <= Parameters.sage_rank_options:
+        raise argparse.ArgumentTypeError('sage rank options: ' + str(Parameters.sage_rank_options))
+    return options
+
+
 graph_types = ['ordinary', 'hairy', 'bi_c_hairy']
 operators = ['contract', 'delete', 'et1h', 'split']
 bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split']
@@ -191,10 +212,9 @@ parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
 parser.add_argument('-info', action='store_true', help='display info during calculations in browser')
-parser.add_argument('-exact', action='store_true', help='exact matrix rank computation')
-parser.add_argument('-linbox', type=str, choices=LinboxInterface.linbox_options, help='compute matrix ranks using the linbox library')
-parser.add_argument('-mod', action='store_true', help='compute matrix ranks modulo a prime number')
-parser.add_argument('-rheinfall', type=str, choices=RheinfallInterface.rheinfall_options, help="compute matrix ranks using the rheinfall library")
+parser.add_argument('-sage', type=sage_rank_options, help='compute matrix ranks using the sage library, options: ' + str(Parameters.sage_rank_options))
+parser.add_argument('-linbox', type=linbox_options, help='compute matrix ranks using the linbox library, options: ' + str(LinboxInterface.linbox_options))
+parser.add_argument('-rheinfall', type=str, choices=RheinfallInterface.rheinfall_options, help="compute matrix ranks using the rheinfall library, options: " + str(RheinfallInterface.rheinfall_options))
 parser.add_argument('-build', action='store_true', help='build vector space basis and operator matrix')
 parser.add_argument('-build_b', action='store_true', help='build vector space basis')
 parser.add_argument('-build_op', action='store_true', help='build operator matrix')
@@ -245,7 +265,7 @@ def test_commutativity(graph_complex):
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
     logger.warn("\n----- Compute Ranks -----\n")
-    graph_complex.compute_rank(exact=args.exact, mod_p=args.mod, linbox=args.linbox, rheinfall=args.rheinfall,
+    graph_complex.compute_rank(sage=args.sage, linbox=args.linbox, rheinfall=args.rheinfall,
                                ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, info_tracker=args.info)
 
 

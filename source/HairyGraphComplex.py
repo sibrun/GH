@@ -324,12 +324,12 @@ class ContractEdgesD(GraphOperator.Differential):
         return 'contract edges'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contract_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_info_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "info_contract_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
@@ -464,12 +464,12 @@ class EdgeToOneHairD(GraphOperator.Differential):
         return 'edge to one hair'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_edge_to_one_hair_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_info_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "info_edge_to_one_hair_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 

@@ -144,6 +144,10 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
 
+    def get_info_plot_path(self):
+        s = "info_vector_space_%s_%s" % (graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
 
 # ------- Operators --------
 class ContractEdgesGO(GraphOperator.GraphOperator):
@@ -266,8 +270,13 @@ class ContractEdgesD(GraphOperator.Differential):
         return 'contract edges'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contrct_edges_D_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 
@@ -383,8 +392,13 @@ class DeleteEdgesD(GraphOperator.Differential):
         return 'delete edges'
 
     def get_cohomology_plot_path(self):
-        sub_type = self.sum_vector_space.get_vs_list()[0].sub_type
+        sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_delete_edges_D_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_delete_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 

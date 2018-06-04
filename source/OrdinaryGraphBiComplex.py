@@ -66,6 +66,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         :type even_edges: bool
         """
         self.even_edges = even_edges
+        self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
         super(VertexLoopDegSlice, self).__init__(
             [OrdinaryGraphComplex.OrdinaryGVS(v, deg - v, self.even_edges) for v in range(0, deg + 1)], deg)
 
@@ -74,6 +75,10 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
 
     def __eq__(self, other):
         return self.deg == other.deg
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_degree_slice_deg_%d_%s_%s" % (self.deg, OrdinaryGraphComplex.graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, OrdinaryGraphComplex.graph_type, self.sub_type, s)
 
 
 class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
@@ -106,6 +111,10 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('deg', self.deg_range)])
 
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_bigraded_vector_space_%s_%s" % (OrdinaryGraphComplex.graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, OrdinaryGraphComplex.graph_type, self.sub_type, s)
+
 
 class ContractDeleteD(GraphOperator.Differential):
     """Differential on the bi graded vector space based on the operators contract edges and delete edges.
@@ -126,6 +135,11 @@ class ContractDeleteD(GraphOperator.Differential):
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contract_edges_delete_edges_D_%s_%s" % (OrdinaryGraphComplex.graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, OrdinaryGraphComplex.graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_delete_D_%s_%s" % (OrdinaryGraphComplex.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, OrdinaryGraphComplex.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):

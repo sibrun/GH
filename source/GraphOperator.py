@@ -499,8 +499,7 @@ class OperatorMatrix(object):
         M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
         return M
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, ignore_existing_files=False,
-                     skip_if_no_matrix=True):
+    def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
         """Compute the rank of the operator matrix.
 
         Compute the rank of the operator matrix and stores it in the rank file. The rank can be determined with
@@ -541,7 +540,7 @@ class OperatorMatrix(object):
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
         try:
-            rank_dict = self._compute_rank(exact=exact, mod_p=mod_p, linbox=linbox, rheinfall=rheinfall)
+            rank_dict = self._compute_rank(sage=sage, linbox=linbox, rheinfall=rheinfall)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
                 logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
@@ -550,32 +549,50 @@ class OperatorMatrix(object):
                 raise error
         self._store_rank_dict(rank_dict)
 
-    def _compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, prime=Parameters.prime):
+    def _compute_rank(self, sage=None, linbox=None, rheinfall=None, prime=Parameters.prime):
+        if type(sage) == str:
+            sage = [sage]
+        if type(linbox) == str:
+            linbox = [linbox]
+        if type(rheinfall) == str:
+            rheinfall = [rheinfall]
         if self.is_trivial() or self.get_matrix_entries() == 0:
             rank_dict = {'exact': 0}
         else:
             rank_dict = {}
             try:
-                if exact:
-                    M = self.get_matrix_transposed()
-                    rank_exact = M.rank()
-                    rank_dict.update({'exact': rank_exact})
-                if mod_p:
-                    M = self.get_matrix_transposed()
-                    M.change_ring(GF(prime))
-                    rank_mod_p = M.rank()
-                    info = 'mod_%d' % prime
-                    rank_dict.update({info: rank_mod_p})
-                if linbox is not None and linbox in LinboxInterface.linbox_options:
-                    rank_linbox = LinboxInterface.rank(linbox, self.get_matrix_file_path(), prime=prime)
-                    info = "linbox_%s" % linbox if linbox == "rational" else "linbox_%s_%d" % (linbox, prime)
-                    rank_dict.update({info: rank_linbox})
-                if rheinfall is not None and rheinfall in RheinfallInterface.rheinfall_options:
-                    rank_rheinfall = RheinfallInterface.rank(rheinfall, self.get_matrix_file_path())
-                    if rank_rheinfall == 0:
-                        return self._compute_rank(exact=True)
-                    info = "rheinfall_" + rheinfall
-                    rank_dict.update({info: rank_rheinfall})
+                if sage is not None:
+                    if not set(sage) <= Parameters.sage_rank_options:
+                        raise ValueError("Options for rank computations with sage: " + str(Parameters.sage_rank_options))
+                    for option in sage:
+                        if option == 'integer':
+                            M = self.get_matrix_transposed()
+                            rank_exact = M.rank()
+                            rank_dict.update({'sage_integer': rank_exact})
+                        if option == 'mod':
+                            M = self.get_matrix_transposed()
+                            M.change_ring(GF(prime))
+                            rank_mod_p = M.rank()
+                            info = 'sage_mod_%d' % prime
+                            rank_dict.update({info: rank_mod_p})
+                if linbox is not None:
+                    if not set(linbox) <= LinboxInterface.linbox_options:
+                        raise ValueError("Options for rank computations with linbox: " +
+                                         str(LinboxInterface.linbox_options))
+                    for option in linbox:
+                        rank_linbox = LinboxInterface.rank(option, self.get_matrix_file_path(), prime=prime)
+                        info = "linbox_%s" % linbox if option == "rational" else "linbox_%s_%d" % (option, prime)
+                        rank_dict.update({info: rank_linbox})
+                if rheinfall is not None:
+                    if not set(rheinfall) <= RheinfallInterface.rheinfall_options:
+                        raise ValueError("Options for rank computations with rheinfall: " +
+                                         str(RheinfallInterface.rheinfall_options))
+                    for option in rheinfall:
+                        rank_rheinfall = RheinfallInterface.rank(option, self.get_matrix_file_path())
+                        if rank_rheinfall == 0:
+                            return self._compute_rank(sage='integer')
+                        info = "rheinfall_" + option
+                        rank_dict.update({info: rank_rheinfall})
             except StoreLoad.FileNotFoundError:
                 raise StoreLoad.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
@@ -1037,7 +1054,7 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.update_tracker(op)
 
-    def compute_rank(self, exact=False, mod_p=False, linbox=None, rheinfall=None, sort_key='size', ignore_existing_files=False,
+    def compute_rank(self, sage=None, linbox=None, rheinfall=None, sort_key='size', ignore_existing_files=False,
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
@@ -1076,8 +1093,8 @@ class OperatorMatrixCollection(object):
         if info_tracker:
             self.start_tracker()
         self.sort(key=sort_key)
-        Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, exact=exact, mod_p=mod_p,
-                          linbox=linbox, rheinfall=rheinfall, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+        Parallel.parallel(self._compute_single_rank, self.op_matrix_list, n_jobs=n_jobs, sage=sage, linbox=linbox,
+                          rheinfall=rheinfall, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
 
