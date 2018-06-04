@@ -8,9 +8,11 @@ import tempfile
 import webbrowser
 from urllib import pathname2url
 import Parameters
+import StoreLoad
 
 
 def plot_info(data_list, header_list, path, to_html=False, to_csv=True):
+    StoreLoad.generate_path(path)
     data_frame = pandas.DataFrame(data=data_list, columns=header_list)
     if to_html:
         html_path = path + '.html'

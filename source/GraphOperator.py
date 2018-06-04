@@ -1137,14 +1137,14 @@ class OperatorMatrixCollection(object):
         """Stop tracking information about the underlying operator matrices."""
         self.info_tracker.stop()
 
-    def plot_info(self, to_html=False, to_csv=True):
+    def plot_info(self):
         path = self.get_info_plot_path()
         header_list = self._get_info_header_list()
         data_list = []
         for op in self.op_matrix_list:
             op.update_properties()
             data_list.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
-        DisplayInfo.plot_info(data_list, header_list, path, to_html=to_html, to_csv=to_csv)
+        DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):
         try:

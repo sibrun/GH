@@ -21,7 +21,7 @@ class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
         Attributes:
                 - sub_type (str): Sub type of graphs.
         """
-        self.sub_type = domain.get_vs_list()[0].sub_type
+        self.sub_type = domain.sub_type
         super(ContractSplitBiOM, self).__init__(domain, target, BiColoredHairyGraphComplex.ContractEdgesGO,
                                                 BiColoredHairyGraphComplex.SplitEdgesGO)
 
@@ -38,7 +38,8 @@ class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
         :return: True if domain and target match to generate a corresponding bi operator matrix.
         :rtype: bool
         """
-        return domain.deg - 1 == target.deg and domain.h_a_min + 1 == target.h_a_min and domain.h_b_min + 1 == target.h_b_min 
+        return domain.deg - 1 == target.deg and domain.h_a_min + 1 == target.h_a_min and \
+               domain.h_b_min + 1 == target.h_b_min
 
     def get_matrix_file_path(self):
         s = "bi_D_contract_split_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
@@ -79,6 +80,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         """
         self.h_a_min = h_a_min
         self.h_b_min = h_b_min
+        self.sub_type = BiColoredHairyGraphComplex.get_sub_type(even_edges, h_a_min, h_b_min)
         super(VertexLoopDegSlice, self).__init__(
             [BiColoredHairyGraphComplex.BiColoredHairyGraphVS(v, deg - v, self.h_a_min + v, self.h_b_min + v,
                                                               even_edges, even_hairs_a, even_hairs_b)
@@ -89,6 +91,12 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
 
     def __eq__(self, other):
         return self.deg == other.deg and self.h_a_min == other.h_a_min and self.h_b_min == other.h_b_min
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_degree_slice_deg_%d_h_a_min_%d_h_b_min_%d_%s_%s" % (self.deg, self.h_a_min, self.h_b_min,
+                                                                                  BiColoredHairyGraphComplex.graph_type,
+                                                                                  self.sub_type)
+        return os.path.join(Parameters.plots_dir, BiColoredHairyGraphComplex.graph_type, self.sub_type, s)
 
 
 class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
@@ -143,6 +151,10 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         return Shared.OrderedDict([('deg', self.deg_range), ('min_hairs_a', self.h_a_min_range),
                                    ('min_hairs_b', self.h_b_min_range)])
 
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_bigraded_vector_space_%s_%s" % (BiColoredHairyGraphComplex.graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, BiColoredHairyGraphComplex.graph_type, self.sub_type, s)
+
 
 class ContractSplitD(GraphOperator.Differential):
     """Differential on the bi graded vector space based on the operators contract edges and split edges.
@@ -163,6 +175,11 @@ class ContractSplitD(GraphOperator.Differential):
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contract_edges_split_edges_D_%s_%s" % (BiColoredHairyGraphComplex.graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, BiColoredHairyGraphComplex.graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_split_edges_D_%s_%s" % (BiColoredHairyGraphComplex.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, BiColoredHairyGraphComplex.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):

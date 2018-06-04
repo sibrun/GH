@@ -706,7 +706,7 @@ class SumVectorSpace(VectorSpace):
         """Stop tracking informations about the sub vector spaces."""
         self.info_tracker.stop()
 
-    def plot_info(self, to_html=False, to_csv=True):
+    def plot_info(self):
         if isinstance(self, DegSlice) and not Parameters.second_info:
             return
         path = self.get_info_plot_path()
@@ -715,7 +715,7 @@ class SumVectorSpace(VectorSpace):
         for vs in self.vs_list:
             vs.update_properties()
             data_list.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
-        DisplayInfo.plot_info(data_list, header_list, path, to_html=to_html, to_csv=to_csv)
+        DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):
         try:

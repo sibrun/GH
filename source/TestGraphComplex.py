@@ -163,7 +163,7 @@ class GraphComplexTest(unittest.TestCase):
             graph_complex.build_basis(ignore_existing_files=True, n_jobs=6)
             graph_complex.build_matrix(ignore_existing_files=True, n_jobs=6)
             graph_complex.compute_rank(ignore_existing_files=True, n_jobs=6, sage='mod')
-            graph_complex.plot_info(to_csv=True, to_html=True)
+            graph_complex.plot_info()
             graph_complex.build_basis(info_tracker=True)
             graph_complex.build_matrix(info_tracker=True)
             graph_complex.compute_rank(info_tracker=True, sage='mod')

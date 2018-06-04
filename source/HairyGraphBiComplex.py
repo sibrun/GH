@@ -20,7 +20,7 @@ class CeEt1hBiOM(GraphOperator.BiOperatorMatrix):
             - sub_type (str): Sub type of graphs.
     """
     def __init__(self, domain, target):
-        self.sub_type = domain.get_vs_list()[0].sub_type
+        self.sub_type = domain.sub_type
         super(CeEt1hBiOM, self).__init__(domain, target, HairyGraphComplex.ContractEdgesGO,
                                          HairyGraphComplex.EdgeToOneHairGO)
 
@@ -73,6 +73,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         self.h_min = h_min
         self.even_edges = even_edges
         self.even_hairs = even_hairs
+        self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
         super(VertexLoopDegSlice, self).__init__(
             [HairyGraphComplex.HairyGraphVS(v, deg - v, self.h_min + v, self.even_edges, self.even_hairs)
              for v in range(0, deg + 1)], deg)
@@ -82,6 +83,11 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
 
     def __eq__(self, other):
         return self.deg == other.deg and self.h_min == other.h_min
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_degree_slice_deg_%d_h_min_%d_%s_%s" % (self.deg, self.h_min, HairyGraphComplex.graph_type,
+                                                                     self.sub_type)
+        return os.path.join(Parameters.plots_dir, HairyGraphComplex.graph_type, self.sub_type, s)
 
 
 class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
@@ -125,6 +131,10 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('deg', self.deg_range), ('min_hairs', self.h_min_range)])
 
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_bigraded_vector_space_%s_%s" % (HairyGraphComplex.graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, HairyGraphComplex.graph_type, self.sub_type, s)
+
 
 class ContractEdgeToOneHD(GraphOperator.Differential):
     """Differential on the bi graded vector space based on the operators contract edges and edge to one hair.
@@ -145,6 +155,11 @@ class ContractEdgeToOneHD(GraphOperator.Differential):
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
         s = "cohomology_dim_contract_edges_edge_to_one_hair_D_%s_%s" % (HairyGraphComplex.graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, HairyGraphComplex.graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_edge_to_one_hair_D_%s_%s" % (HairyGraphComplex.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, HairyGraphComplex.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):

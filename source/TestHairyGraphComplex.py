@@ -56,8 +56,8 @@ class AntiCommutativityTest(TestGraphComplex.AntiCommutativityTest):
 
 def suite():
     suite = unittest.TestSuite()
-    #suite.addTest(BasisTest('test_basis_functionality'))
-    #suite.addTest(BasisTest('test_compare_ref_basis'))
+    suite.addTest(BasisTest('test_basis_functionality'))
+    suite.addTest(BasisTest('test_compare_ref_basis'))
     suite.addTest(OperatorTest('test_operator_functionality'))
     suite.addTest(OperatorTest('test_compare_ref_op_matrix'))
     suite.addTest(GraphComplexTest('test_graph_complex_functionality'))

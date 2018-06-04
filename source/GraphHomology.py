@@ -278,7 +278,7 @@ def cohomology(graph_complex):
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def plot_info(graph_complex):
     logger.warn("\n----- Plot Info -----\n")
-    graph_complex.plot_info(to_csv=args.csv, to_html=args.html)
+    graph_complex.plot_info()
 
 
 class MissingArgumentError(RuntimeError):

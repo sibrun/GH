@@ -20,7 +20,7 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
             - sub_type (str): Sub type of graphs.
     """
     def __init__(self, domain, target):
-        self.sub_type = domain.get_vs_list()[0].sub_type
+        self.sub_type = domain.sub_type
         super(ContractDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
                                                  OrdinaryGraphComplex.DeleteEdgesGO)
 
@@ -139,7 +139,7 @@ class ContractDeleteD(GraphOperator.Differential):
 
     def get_info_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
-        s = "info_contract_delete_D_%s_%s" % (OrdinaryGraphComplex.graph_type, sub_type)
+        s = "info_contract_edges_delete_edges_D_%s_%s" % (OrdinaryGraphComplex.graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, OrdinaryGraphComplex.graph_type, sub_type, s)
 
     def get_ordered_cohomology_param_range_dict(self):
