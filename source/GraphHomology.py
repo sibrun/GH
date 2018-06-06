@@ -141,7 +141,7 @@ def int_value(arg):
     if len(temp) == 2:
         (prefix, value) = temp
     else:
-        raise argparse.ArgumentTypeError('integer [,-]value expected')
+        raise argparse.ArgumentTypeError('integer ,[-]value expected')
     return int(value)
 
 
