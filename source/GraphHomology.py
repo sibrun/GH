@@ -144,10 +144,7 @@ def int_value(arg):
         value = temp
     else:
         raise argparse.ArgumentTypeError('integer [,-]value expected')
-    value = int(value)
-    if value < 0:
-        raise argparse.ArgumentTypeError('non negative integer expected')
-    return value
+    return int(value)
 
 
 def non_negative_range_type(arg):
