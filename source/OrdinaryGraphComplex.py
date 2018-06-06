@@ -120,7 +120,7 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
         - even_edges (bool): True for even edges, False for odd edges.
         - sub_type (str): Sub type of graphs.
     """
-    def __init__(self, v_range, l_range, even_edges):
+    def __init__(self, v_range, l_range, even_edges, shift_loops_minus_vertices=1):
         """Initialize the sum vector space.
 
         :param v_range: Range for the number of vertices.
@@ -135,7 +135,13 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        if shift_loops_minus_vertices is None:
+            vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+        else:
+            vs_list = []
+            for (v, l) in itertools.product(self.v_range, self.l_range):
+                if l - v <= shift_loops_minus_vertices:
+                    vs_list.append(OrdinaryGVS(v, l, self.even_edges))
         super(OrdinaryGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
@@ -412,7 +418,7 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         - even_edges (bool): True for even edges, False for odd edges.
         - sub_type (str): Sub type of graphs.
     """
-    def __init__(self, v_range, l_range, even_edges, differentials):
+    def __init__(self, v_range, l_range, even_edges, differentials, shift_loops_minus_vertices=1):
         """Initialize the graph complex.
 
         :param v_range: Range for the number of vertices.
@@ -429,7 +435,8 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        sum_vector_space = OrdinaryGraphSumVS(v_range, l_range, even_edges)
+        sum_vector_space = OrdinaryGraphSumVS(v_range, l_range, even_edges,
+                                              shift_loops_minus_vertices=shift_loops_minus_vertices)
         differential_list = []
         if not differentials <= {'contract', 'delete'}:
             raise ValueError("Differentials for ordinary graph complex: 'contract', 'delete'")

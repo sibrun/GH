@@ -199,6 +199,7 @@ parser.add_argument('-even_h_b', action='store_true', help='even hairs_b')
 parser.add_argument('-odd_h_b', action='store_true', help='odd hairs_b')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
+parser.add_argument('-shift', type=int, default=1, help='maximal shift = loops - vertices')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
 parser.add_argument('-hairs_a', type=non_negative_range_type, help='range min,max for number of hairs_a')
 parser.add_argument('-hairs_b', type=non_negative_range_type, help='range min,max for number of hairs_b')
@@ -329,7 +330,8 @@ if __name__ == "__main__":
             if args.l is None:
                 raise MissingArgumentError('specify -l: range for number of loops')
 
-            graph_complex = OrdinaryGraphComplex.OrdinaryGC(args.v, args.l, even_edges, operators)
+            graph_complex = OrdinaryGraphComplex.OrdinaryGC(args.v, args.l, even_edges, operators,
+                                                            shift_loops_minus_vertices=args.shift)
         else:
             raise ValueError('Differentials for ordinary graph complex: contract, delete')
 
