@@ -140,8 +140,6 @@ def int_value(arg):
     temp = arg.split(',')
     if len(temp) == 2:
         (prefix, value) = temp
-    elif len(temp) == 1:
-        value = temp
     else:
         raise argparse.ArgumentTypeError('integer [,-]value expected')
     return int(value)
@@ -221,7 +219,7 @@ parser.add_argument('-h_min', type=range_type, help='range min,max for minimal n
 parser.add_argument('-h_a_min', type=range_type, help='range min,max for minimal number of hairs_a in a degree slice of a bicomplex')
 parser.add_argument('-h_b_min', type=range_type, help='range min,max for minimal number of hairs_b in a degree slice of a bicomplex')
 parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
-parser.add_argument('-n_jobs', type=positive_int, default=1, help='number of parallel processes')
+parser.add_argument('-n_jobs', type=int, default=1, help='number of parallel processes')
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
 parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
