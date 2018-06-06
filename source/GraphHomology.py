@@ -136,7 +136,14 @@ def positive_int(value):
     return value
 
 
-def non_negative_int(value):
+def int_value(arg):
+    temp = arg.split(',')
+    if len(temp) == 2:
+        (prefix, value) = temp
+    elif len(temp) == 1:
+        value = temp
+    else:
+        raise argparse.ArgumentTypeError('integer [,-]value expected')
     value = int(value)
     if value < 0:
         raise argparse.ArgumentTypeError('non negative integer expected')
@@ -144,17 +151,26 @@ def non_negative_int(value):
 
 
 def non_negative_range_type(arg):
-    (min, max) = map(non_negative_int, arg.split(','))
+    temp = arg.split(',')
+    if len(temp) != 2:
+        raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
+    (min, max) = map(int, temp)
     if min >= max:
         raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
     return range(min, max)
 
 
 def range_type(arg):
-    (prefix, min, max) = arg.split(',')
+    temp = arg.split(',')
+    if len(temp) == 3:
+        (prefix, min, max) = temp
+    elif len(temp) == 2:
+        (min, max) = temp
+    else:
+        raise argparse.ArgumentTypeError('range [,-]min,max with min < max expected')
     (min, max) = map(int, (min, max))
     if min >= max:
-        raise argparse.ArgumentTypeError('range min,max with min < max expected')
+        raise argparse.ArgumentTypeError('range [,-]min,max with min < max expected')
     return range(min, max)
 
 
@@ -199,7 +215,7 @@ parser.add_argument('-even_h_b', action='store_true', help='even hairs_b')
 parser.add_argument('-odd_h_b', action='store_true', help='odd hairs_b')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
-parser.add_argument('-shift', type=int, default=1, help='maximal shift = loops - vertices')
+parser.add_argument('-shift', type=int_value, default=1, help='maximal shift = loops - vertices')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
 parser.add_argument('-hairs_a', type=non_negative_range_type, help='range min,max for number of hairs_a')
 parser.add_argument('-hairs_b', type=non_negative_range_type, help='range min,max for number of hairs_b')
