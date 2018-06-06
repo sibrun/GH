@@ -581,7 +581,7 @@ class OperatorMatrix(object):
                                          str(LinboxInterface.linbox_options))
                     for option in linbox:
                         rank_linbox = LinboxInterface.rank(option, self.get_matrix_file_path(), prime=prime)
-                        info = "linbox_%s" % linbox if option == "rational" else "linbox_%s_%d" % (option, prime)
+                        info = "linbox_%s" % option if option == "rational" else "linbox_%s_%d" % (option, prime)
                         rank_dict.update({info: rank_linbox})
                 if rheinfall is not None:
                     if not set(rheinfall) <= RheinfallInterface.rheinfall_options:
