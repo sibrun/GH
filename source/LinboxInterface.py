@@ -35,8 +35,6 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
             linbox_command = "%s %s %s" % (linbox_path, matrix_file, temp_rank_file.name)
         else:
             linbox_command = "%s %s %s %d" % (linbox_path, matrix_file, temp_rank_file.name, prime)
-        print(linbox_command)
         os.system(linbox_command)
         rank = int(temp_rank_file.read())
-        print(rank)
     return rank
