@@ -14,7 +14,7 @@ Install the pandas and tqdm modules:
 (sage-sh)$ pip -install tqdm
 (sage-sh)$ pip -install pandas
 ```
-Furthermore, in order to generate graphs up to isomorphism classes the graph library [nauty](http://pallini.di.uniroma1.it/) is needed.
+Furthermore, in order to generate graphs up to isomorphism the graph library [nauty](http://pallini.di.uniroma1.it/) is needed.
 
 Small matrices can be handled using the sage function to compute exact ranks.
 
@@ -63,7 +63,7 @@ $ sage --python ./source/GraphHomology.py ordinary -op1 contract -op2 delete -v 
 ```
 The comhomology dimensions of the bicomplex with the two differentials contract edges and delete edges can be computed with:
 ```
-$ sage --python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -mod -build_b -build_op -rank -square_zero -cohomology -csv
+$ sage --python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology -csv
 ```
 
 More examples for hairy graph complexes can be found in the file [GraphHomology.py](https://github.com/sibrun/GH/blob/master/source/GraphHomology.py).
