@@ -10,11 +10,13 @@ Building the basis and operator matrix as well as computing the matrix rank can 
 different parameters. Use the option (-n_jobs) to specify the number of parallel jobs.
 However, building a single basis or matrix file or computing a rank for a specific matrix can not be done in parallel.
 
-There are options to ignore existing files (-ignore_ex), to display informations (-info), to show a progress bar (-pbar),
-for logging (-log warning), and for profiling (-profile).
+There are options to ignore existing files (-ignore_ex), to display information (-info), plot information to a html file
+(-plot_info), to show a progress bar (-pbar), for logging (-log warning), and for profiling (-profile).
 
-Display informations and show a progress bar are only available if not several processes work in parallel
+Display information and show a progress bar are only available if not several processes work in parallel
 (default: -n_jobs=1).
+
+There
 
 Prerequisites:
     sagemath: This software is based on the sage math library.
@@ -35,6 +37,26 @@ Prerequisites:
     pandas: Install the pandas module in the sage python version:
 
             (sage-sh)$ pip -install pandas
+
+    nauty: Used to generate graphs up to isomorphisms.
+        Download nauty from:
+
+            http://pallini.di.uniroma1.it/
+
+    linbox: Used to determine the rank of matrices.
+        Download linbox from:
+
+            https://github.com/linbox-team
+
+    rheinfall: Used to determine the rank of matrices.
+        Download rheinfall from:
+
+            https://github.com/riccardomurri/rheinfall
+
+    For rank computations the corresponding example code of linbox or rheinfall is used.
+    Replace the rank files by the ones provided in the folder GH/linbox_rheinfall_modified_rank and compile them.
+    Finally move the executables to the folder GH/source.
+
 
 Examples:
     In order to run the Graph Homology code, change to the directory GH, activate sage, and run:
