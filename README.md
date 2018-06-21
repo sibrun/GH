@@ -53,8 +53,8 @@ $ sage --python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -o
 ```
 Then compute the ranks of the operator matrices:
 ```
-$ sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
-$ sage --python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -mod -rank
+$ sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -sage mod -rank
+$ sage --python ./source/GraphHomology.py ordinary -op1 delete -v 3,12 -l 0,9 -odd_e -n_jobs 4 -sage mod -rank
 ```
 Finally test whether the operators square to zero, i.e. build a differential, whether they anti-commute and plot the 
 cohomology dimensions of the associated graph complexs for each differential:
