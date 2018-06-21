@@ -16,6 +16,12 @@ There are options to ignore existing files (-ignore_ex), to display information 
 Display information and show a progress bar are only available if not several processes work in parallel
 (default: -n_jobs=1).
 
+There are different options to compute the rank of operator matrices.
+Use sage to determine the exact rank over the integers (-sage integer) or over a finite field (-sage mod).
+Use linbox to determine the exact rank over the rationals (-linbox rational) or over a finite field (-linbox mod).
+Use rheinfall to determine the exact rank over Z (-rheinfall mpz), over the rationals (-rheinfall mpq) or modulo 64
+bit integers (-rheinfall int64).
+
 There
 
 Prerequisites:
