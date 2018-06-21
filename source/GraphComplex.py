@@ -53,6 +53,7 @@ class GraphComplex(object):
         return self.operator_collection_list
 
     def plot_info(self):
+        """Plot information about the underlying vector space an operator collections."""
         self.sum_vector_space.plot_info()
         for op_collection in self.operator_collection_list:
             op_collection.plot_info()
@@ -118,16 +119,14 @@ class GraphComplex(object):
                      info_tracker=False):
         """Compute the ranks of the operator matrices.
 
-        :param exact: Compute the exact rank (Default: False).
-        :type exact: bool
-        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
-               The prime number is set in the Parameters module.
-        :type mod_p: bool
+        :param sage: Use sage to compute the rank. Options: 'integer' (exact rank over the integers),
+            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type sage: str or list(str)
         :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
                'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
-        :type linbox: str
+        :type linbox: str or list(str)
         :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
-        :type rheinfall: str
+        :type rheinfall: str or list(str)
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
                'work_estimate', 'size', 'entries' (Default: 'size').
         :type sort_key: str

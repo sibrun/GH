@@ -504,24 +504,21 @@ class OperatorMatrix(object):
 
         Compute the rank of the operator matrix and stores it in the rank file. The rank can be determined with
         different modes:
-            - Exact rank of the operator matrix defined over Z. Based on sage.
-            - Rank modulo a prime number, i.e. rank of the operator matrix defined over a finite field defined by a
-              prime number.
+            - Use sage to determine the rank over the integers or over a finite field, i.e. with all
+              calculations modulo a prime number.
             - Use linbox to determine the rank over the rational numbers or over a finite field, i.e. with all
               calculations modulo a prime number.
-            - Use rheinfall to determine the rank over Z or the rational numbers or modulo 64 bit integers.
+            - Use rheinfall to determine the rank over the integers, the rational numbers or modulo 64 bit integers.
         The prime number is set in the module Parameters.
 
-        :param exact: Compute the exact rank (Default: False).
-        :type exact: bool
-        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
-            The prime number is set in the Parameters module.
-        :type mod_p: bool
+        :param sage: Use sage to compute the rank. Options: 'integer' (exact rank over the integers),
+            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type sage: str or list(str)
         :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
             'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
-        :type linbox: str
+        :type linbox: str or list(str)
         :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
-        :type rheinfall: str
+        :type rheinfall: str or list(str)
         :param ignore_existing_files: Option to ignore an existing rank file. Ignore existing file and
             recompute the rank if True, otherwise skip recomputing the rank if there exists already a
             rank file (Default: False).
@@ -1058,16 +1055,14 @@ class OperatorMatrixCollection(object):
                      n_jobs=1, info_tracker=False):
         """Compute the ranks of the operator matrices.
 
-        :param exact: Compute the exact rank (Default: False).
-        :type exact: bool
-        :param mod_p: Determine the rank over a finite field w.r.t. a prime number (Default: False).
-               The prime number is set in the Parameters module.
-        :type mod_p: bool
+        :param sage: Use sage to compute the rank. Options: 'integer' (exact rank over the integers),
+            'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
+        :type sage: str or list(str)
         :param linbox: Use linbox to compute the rank. Options: 'rational' (exact rank over the rational numbers),
                'mod' (rank over a finite field, i.e. calculations modulo a prime number (Default: None).
-        :type linbox: str
+        :type linbox: str or list(str)
         :param rheinfall: Use rhainfall to compute the rank. Options: 'int64', 'mpq', 'mpz' (Default: None).
-        :type rheinfall: str
+        :type rheinfall: str or list(str)
         :param sort_key: Sort the operator matrices to schedule the rank computation according to the sort key:
                'work_estimate', 'size', 'entries' (Default: 'size').
         :type sort_key: str
@@ -1138,6 +1133,7 @@ class OperatorMatrixCollection(object):
         self.info_tracker.stop()
 
     def plot_info(self):
+        """Plot information about the operator matrices of the operator matrix collection to a html file."""
         path = self.get_info_plot_path()
         header_list = self._get_info_header_list()
         data_list = []

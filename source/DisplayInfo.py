@@ -11,7 +11,21 @@ import Parameters
 import StoreLoad
 
 
-def plot_info(data_list, header_list, path, to_html=False, to_csv=True):
+def plot_info(data_list, header_list, path, to_html=True, to_csv=False):
+    """Write a data list to a html or csv file.
+
+    :param data_list:
+    :type data_list: list(list)
+    :param header_list: List with the parameter and property names.
+    :type header_list: list(str)
+    :param path: Path to the file without suffix.
+    :type path: path
+    :param to_html: Option to write data to a html file (Default: True).
+    :type to_html: bool
+    :param to_csv: Option to write data to a csv file (Default: False).
+    :type to_csv: bool
+    :return:
+    """
     StoreLoad.generate_path(path)
     data_frame = pandas.DataFrame(data=data_list, columns=header_list)
     if to_html:
@@ -36,6 +50,11 @@ class InfoTracker(object):
         - url (url): Url of the html file to open in the webbrowser.
     """
     def __init__(self, name):
+        """Initialize the info tracker.
+
+        :param name: Name describing the info tracker.
+        :type name: str
+        """
         self.name = name
         self.header_list = []
         self.data_dict = collections.OrderedDict()
@@ -73,7 +92,7 @@ class InfoTracker(object):
         """Return a list of data entries.
 
         :return: Data in form of a list of lists.
-        :rtype: list(list(int))
+        :rtype: list(list)
         """
         data_list = []
         for (params, properties) in self.data_dict.items():

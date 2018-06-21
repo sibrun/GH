@@ -707,6 +707,7 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.stop()
 
     def plot_info(self):
+        """Plot information about the sub vector spaces to a html file."""
         if isinstance(self, DegSlice) and not Parameters.second_info:
             return
         path = self.get_info_plot_path()
