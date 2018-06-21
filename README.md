@@ -5,7 +5,7 @@ Compute the cohomology dimensions of graph complexes.
 ## Getting Started
 
 ### Prerequisites
-Install the [sage math](http://www.sagemath.org) library and activate the sage shell:
+This graph homology library is based on the sage math library. Install the [sage math](http://www.sagemath.org) library and activate the sage shell:
 ```
 $ sage -sh
 ```
@@ -14,6 +14,8 @@ Install the pandas and tqdm modules:
 (sage-sh)$ pip -install tqdm
 (sage-sh)$ pip -install pandas
 ```
+Furthermore, in order to generate graphs up to isomorphism classes the graph library [nauty](http://pallini.di.uniroma1.it/) is needed.
+
 Small matrices can be handled using the sage function to compute exact ranks.
 
 In order to determine ranks of large matrices [linbox](https://github.com/linbox-team) and or [rheinfall](https://github.com/riccardomurri/rheinfall)
@@ -70,9 +72,9 @@ Feel free to extend this library with more examples of graph complexes.
 
 ## Documentation
 In order to generate a documentation using [sphinx](http://www.sphinx-doc.org/en/master/#) change to the folder 
-[GH/docs](https://github.com/sibrun/GH/tree/master/docs) and generate a html documentation with:
+[GH/docs](https://github.com/sibrun/GH/tree/master/docs) activate the sage shell and generate a html documentation with:
 ```
-make html
+(sage-sh) make html
 ```
 The html documentation will be found under GH/docs/build/html/idex.html.
 
