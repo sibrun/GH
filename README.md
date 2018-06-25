@@ -74,7 +74,7 @@ Feel free to extend this library with more examples of graph complexes.
 In order to generate a documentation using [sphinx](http://www.sphinx-doc.org/en/master/#) change to the folder 
 [GH/docs](https://github.com/sibrun/GH/tree/master/docs) activate the sage shell and generate a html documentation with:
 ```
-(sage-sh) make html
+(sage-sh)$ make html
 ```
 The html documentation will be found under GH/docs/build/html/idex.html.
 
