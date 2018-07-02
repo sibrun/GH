@@ -777,7 +777,7 @@ class GraphOperator(Operator, OperatorMatrix):
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
         try:
-            domainBasis = self.domain.get_basis()
+            domain_basis = self.domain.get_basis()
         except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
                 raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
@@ -787,7 +787,7 @@ class GraphOperator(Operator, OperatorMatrix):
                              "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
-            targetBasis6 = self.target.get_basis_g6()
+            target_basis6 = self.target.get_basis_g6()
         except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
                 raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
@@ -802,24 +802,24 @@ class GraphOperator(Operator, OperatorMatrix):
             self._store_matrix_list([], shape)
             return
 
-        lookup = {G6: j for (j, G6) in enumerate(targetBasis6)}
+        lookup = {G6: j for (j, G6) in enumerate(target_basis6)}
         desc = 'Build matrix of %s operator: Domain: %s' % (str(self.get_type()), str(self.domain.get_ordered_param_dict()))
 
         #if not progress_bar:
         print(desc)
         list_of_lists = []
-        #for domain_basis_element in tqdm(list(enumerate(domainBasis)), desc=desc, disable=(not progress_bar)):
-        for domain_basis_element in list(enumerate(domainBasis)):
+        #for domain_basis_element in tqdm(list(enumerate(domain_basis)), desc=desc, disable=(not progress_bar)):
+        for domain_basis_element in list(enumerate(domain_basis)):
             list_of_lists.append(self._generate_matrix_list(domain_basis_element, lookup))
-        matrixList = list(itertools.chain.from_iterable(list_of_lists))
-        matrixList.sort()
-        self._store_matrix_list(matrixList, shape)
+        matrix_list = list(itertools.chain.from_iterable(list_of_lists))
+        matrix_list.sort()
+        self._store_matrix_list(matrix_list, shape)
 
     def _generate_matrix_list(self, domain_basis_element, lookup):
-        (domainIndex, G) = domain_basis_element
-        imageList = self.operate_on(G)
+        (domain_index, G) = domain_basis_element
+        image_list = self.operate_on(G)
         canon_images = dict()
-        for (GG, prefactor) in imageList:
+        for (GG, prefactor) in image_list:
             (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
             sgn0 = canon_images.get(GGcanon6)
             sgn0 = sgn0 if sgn0 is not None else 0
@@ -827,9 +827,9 @@ class GraphOperator(Operator, OperatorMatrix):
         matrix_list = []
         for (image, factor) in canon_images.items():
             if factor:
-                targetIndex = lookup.get(image)
-                if targetIndex is not None:
-                    matrix_list.append((domainIndex, targetIndex, factor))
+                target_index = lookup.get(image)
+                if target_index is not None:
+                    matrix_list.append((domain_index, target_index, factor))
         return matrix_list
 
 

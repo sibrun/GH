@@ -322,7 +322,7 @@ class GraphVectorSpace(VectorSpace):
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the basis of the vector space.
 
-        Create the basis file if the vector space is valid, otherwise skips building a basis. If there exists already
+        Create the basis file if the vector space is valid, otherwise skip building a basis. If there exists already
         a basis file rebuild the basis if ignore_existing_file is True, otherwise skip building a basis.
         The basis file contains a list of graph6 strings for canonically labeled graphs building a basis of the vector
         space. The canonical labeling respects the partition of the vertices.
@@ -342,14 +342,14 @@ class GraphVectorSpace(VectorSpace):
             # Skip building a basis file if there exists already one and ignore_existing_file is False.
             return
 
-        generatingList = self.get_generating_graphs()
+        generating_list = self.get_generating_graphs()
 
         desc = 'Build basis: ' + str(self.get_ordered_param_dict())
         #if not progress_bar:
         print(desc)
         basis_set = set()
-        #for G in tqdm(generatingList, desc=desc, disable=(not progress_bar)):
-        for G in generatingList:
+        #for G in tqdm(generating_list, desc=desc, disable=(not progress_bar)):
+        for G in generating_list:
             # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set
             # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:
@@ -376,8 +376,8 @@ class GraphVectorSpace(VectorSpace):
         :return: True if G has odd automorphisms.
         :rtype: bool
         """
-        for g in autom_list:
-            if self.perm_sign(G, list(g.tuple())) == -1:
+        for p in autom_list:
+            if self.perm_sign(G, list(p.tuple())) == -1:
                return True
         return False
 
