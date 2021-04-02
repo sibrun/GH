@@ -549,7 +549,7 @@ class BiColoredHairyGC(GraphComplex.GraphComplex):
         sum_vector_space = BiColoredHairyGraphSumVS(self.v_range, self.l_range, self.h_a_range, self.h_b_range,
                                                     even_edges, even_hairs_a, even_hairs_b)
         differential_list = []
-        if not differentials <= {'contract', 'split'}:
+        if not set(differentials).issubset( ['contract', 'split']):
             raise ValueError("Differentials for bi colored hairy graph complex: 'contract', 'split'")
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)

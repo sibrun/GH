@@ -28,7 +28,7 @@ zero_v_symbol = '-'     # Symbol to indicate that the dimension of the vector sp
                         # of the cohomology.
 
 #---- Max Values for Sorting ----
-max_sort_value = sys.maxint     # Return value if dimension or shape is unknown
+max_sort_value = sys.maxsize     # Return value if dimension or shape is unknown
 
 #---- Data Tracker Parameters ----
 data_tracker_timeout = 0.2

@@ -1,12 +1,12 @@
 """Module to track information during computations."""
 
 import multiprocessing
-import Queue
+import queue
 import collections
 import pandas
 import tempfile
 import webbrowser
-from urllib import pathname2url
+from urllib.request import pathname2url
 import Parameters
 import StoreLoad
 
