@@ -16,6 +16,8 @@ log_file = "WHGC_Unittest.log"
 
 tt = WHairyGraphComplex.WHairyGraphVS(4,3,1,2)
 tt.build_basis()
+#tt.plot_all_graphs_to_file()
+tt.display_basis_plots()
 
 # class BasisTest(TestGraphComplex.BasisTest):
 #     def setUp(self):

@@ -9,6 +9,7 @@ import webbrowser
 from urllib.request import pathname2url
 import Parameters
 import StoreLoad
+import os
 
 
 def plot_info(data_list, header_list, path, to_html=True, to_csv=False):
@@ -34,6 +35,56 @@ def plot_info(data_list, header_list, path, to_html=True, to_csv=False):
     if to_csv:
         csv_path = path + '.csv'
         data_frame.to_csv(csv_path)
+
+
+def display_html(shtml):
+    """Display the given html code in a browser"""
+    s = 'temp.html'
+    temp_path = os.path.join(Parameters.temp_folder, s)
+    with open(temp_path, "w") as html_file:
+        html_file.write(shtml)
+    url = 'file:{}'.format(pathname2url(os.path.abspath(temp_path)))
+    webbrowser.open_new_tab(url)
+
+def display_html_body(s):
+    """Displays a html page with the string s as body"""
+    pre='''<!DOCTYPE html>
+    <html>
+    <head>
+    <meta
+    http - equiv = "refresh"
+    content = "10">
+    <title> graph
+    list </title>
+    <style>
+    p
+    {
+        text - align: center;
+    }
+    div
+    {
+        display: inline - block;
+    }
+    img
+    {
+        height: 200px;
+    max - width:200
+    px;
+    width: expression(this.width > 200 ? 200: true);
+    }
+    svg
+    {
+        height: 200px;
+    max - width:200
+    px;
+    width: expression(this.width > 200 ? 200: true);
+    }
+    </style>
+    </head>
+    <body>'''
+
+    post='</body></html>'
+    display_html(pre+s+post)
 
 
 class InfoTracker(object):

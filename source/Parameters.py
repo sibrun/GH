@@ -9,6 +9,7 @@ data_dir = "data"
 plots_dir = "plots"
 ref_data_dir = "data_ref"
 log_dir = "log"
+temp_folder = "temp"
 
 #---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6

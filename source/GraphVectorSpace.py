@@ -487,6 +487,69 @@ class GraphVectorSpace(VectorSpace):
             except StoreLoad.FileNotFoundError:
                 pass
 
+    # Visualization
+
+    def get_plot_path(self):
+        """
+        :return:Returns the directory to store plots of the graphs in this vector space.
+        :rtype: str"""
+        return os.path.splitext(self.get_basis_file_path())[0]+'_plots'
+
+
+    def plot_graph(self, G):
+        """ Plots a graph for use in the visuaization routines.
+        This method can be overwritten to provide custom visualization.
+        :param G: The graph to be drawn. Must belong to this vector space.
+        :type G: Graph.
+        :return: Graphics object such as produced by Graph.plot()
+        :rtype: Graphics
+        """
+        return G.plot(partition=self.get_partition(), vertex_labels=False)
+
+    def plot_graph_to_file(self, G):
+        """ Plots a single graph and stores it into the standard file path.
+        Does not canonize the graph before plot.
+        The filename is the graphs g6 code.
+        :param G: The graph to be drawn. Must belong to this vector space.
+        :type G: Graph.
+        """
+        g6 = self.graph_to_ascii(G)
+        path = os.path.join(self.get_plot_path(), g6 + '.png')
+        StoreLoad.generate_path(path)
+        P = self.plot_graph(G)
+        P.save(path)
+
+    def plot_all_graphs_to_file(self, skip_existing=False):
+        """ Plots all graphs in the basis of this vector space and stores then into their repsective file paths.
+        The respective filename is the index of the graph in the basis (plus .png).
+        """
+        ba = self.get_basis()
+        for (j,G) in enumerate(ba):
+            path = os.path.join(self.get_plot_path(),  '%d.png' % (j))
+            if (not skip_existing) or (not os.path.isfile(path)):
+                StoreLoad.generate_path(path)
+                P = self.plot_graph(G)
+                P.save(path)
+    
+    def display_basis_plots(self):
+        """Displays pictures of the basis elements in a web browser"""
+        self.plot_all_graphs_to_file(skip_existing=True)
+        ba = self.get_basis_g6()
+        sarr = ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(j, ba[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j))) \
+                for j in range(0,self.get_dimension()) ]
+        s = ' '.join( sarr )
+        DisplayInfo.display_html_body("<table>"+s+"</table>")
+    
+    # def display_idict(self, d):
+    #     # assumes the graphs have been plotted already?????todo
+    #     to_plot = [j for j,nr in d.iteritems()]
+    #     self.plot_graphsi(to_plot,ignore_existing=False)
+
+    #     sarr = ["<tr><td>{}</td><td><img src='{}'></td>".format(nr,os.path.join("..",self.plot_path, '%d.png' % (j))) \
+    #             for j, nr in d.iteritems()]
+    #     s = ' '.join( sarr )
+    #     Display.display_html_body("<table>"+s+"</table>")
+
 
 class SumVectorSpace(VectorSpace):
     """Direct sum of vector spaces.

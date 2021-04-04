@@ -92,6 +92,9 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # and the hair vertices are in colors 4,...,n+3.
         return [list(range(0, self.n_vertices)) ] + [ [j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
 
+    def plot_graph(self, G):
+        return G.plot(partition=self.get_partition(), vertex_labels=True)
+
     def is_valid(self):
         # At least trivalent internal vertices.
         l = (3 * self.n_vertices + self.n_ws <= 2 * self.n_edges + self.n_hairs )
