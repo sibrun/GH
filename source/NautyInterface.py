@@ -94,11 +94,11 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
     with tempfile.NamedTemporaryFile() as f:
         nauty_command = 'genbgL -clq -Z1 -d%d:%d -D%d:%d %d %d %d:%d %s' % \
                    (min_deg_1, min_deg_2, max_deg_1, max_deg_2, n_vertices_1, n_vertices_2, n_edges, n_edges, f.name)
-        print(nauty_command)
+        #print(nauty_command)
         #logger.warn('call nauty to generate bipartite graphs: ' + nauty_command)
         os.system(nauty_command)
         list_g6 = f.read().splitlines()
-        print(list_g6)
+        #print(list_g6)
         #if len(list_g6) == 0:
             #print('Call nauty to generate bipartite graphs: ' + nauty_command)
             #print('List of bipartite graphs generated using nauty has zero length')

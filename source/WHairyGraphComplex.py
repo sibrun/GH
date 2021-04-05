@@ -68,7 +68,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices
         self.sub_type = "w"
         super(WHairyGraphVS, self).__init__()
-        self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(self.n_vertices + self.n_hairs+2, self.n_loops, True)
+        self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(self.n_vertices + self.n_hairs+2, self.n_loops, False)
 
     def get_type(self):
         return 'wgraphs'
@@ -93,7 +93,12 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return [list(range(0, self.n_vertices)) ] + [ [j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
 
     def plot_graph(self, G):
-        return G.plot(partition=self.get_partition(), vertex_labels=True)
+        GG = Graph(G, loops=True)
+        # add proper tadpole if needed
+        if GG.size() < self.n_edges + self.n_hairs:
+            GG.add_edge(self.n_vertices, self.n_vertices)
+        
+        return GG.plot(partition=self.get_partition(), vertex_labels=True)
 
     def is_valid(self):
         # At least trivalent internal vertices.
@@ -161,6 +166,13 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             # graphs with omega-tadpole, and valency of the eps vertex 0, not counting the tadpole
             hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops-1, self.n_hairs+1) 
             ret6 = [GG for G in hairy for GG in self._hairy_to_w_hair_2w(G, addtadpole=True)]
+
+            # graphs w/o omega tadpole, and valency of the eps vertex equals 1
+            hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops-1, self.n_hairs+2) 
+            ret7 = [GG for G in hairy for GG in self._hairy_to_w_hairhair_2w(G)]
+            # graphs with omega-tadpole, and valency of the eps vertex 1, not counting the tadpole
+            hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops-2, self.n_hairs+2) 
+            ret8 = [GG for G in hairy for GG in self._hairy_to_w_hairhair_2w(G, addtadpole=True)]
         else:
             # graphs w/o omega tadpole, and valency of the eps vertex at least two
             hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops, self.n_hairs) 
@@ -175,22 +187,26 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             hairy = self.get_hairy_graphs(self.n_vertices, self.n_loops-1, self.n_hairs) 
             ret4 = [GG for G in hairy for GG in self._hairy_to_w_wedge_1eps1w(G, addtadpole=True)]
             # graphs w/o omega tadpole, and valency of the eps vertex equals 0
-            hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops, self.n_hairs+1) 
+            hairy = self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs+1) 
             ret5 = [GG for G in hairy for GG in self._hairy_to_w_hair_1w(G)]
             # graphs with omega-tadpole, and valency of the eps vertex 0, not counting the tadpole
-            hairy = self.get_hairy_graphs(self.n_vertices+1, self.n_loops-1, self.n_hairs+1) 
+            hairy = self.get_hairy_graphs(self.n_vertices, self.n_loops-1, self.n_hairs+1) 
             ret6 = [GG for G in hairy for GG in self._hairy_to_w_hair_1w(G, addtadpole=True) for G in hairy]
-  
+            ret7 = []
+            ret8 = [] #todo...
+
         # Produce all permutations of the hairs
         all_perm = [ list(range(0,self.n_vertices+2)) + list(p) for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2)) ]
         #return [G.relabel(p, inplace=False) for p in all_perm ]
 
-        return [G.relabel(p, inplace=False) for p in all_perm for G in ret1 + ret2 + ret3 +ret4 +ret5 +ret6 ]
+        return [G.relabel(p, inplace=False) for p in all_perm for G in ret1 + ret2 + ret3 +ret4 +ret5 +ret6 +ret7 +ret8 ]
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the
         # ordinary graph complex, apart from an extra contribution from the hair-vertices.
         sgn = self.ogvs.perm_sign(G, p)
+
+
         # Compute the extra contribution from hairs.
         # if self.even_hairs == self.even_edges:
         #     hairs = p[self.n_vertices:]
@@ -232,13 +248,18 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # with eps a new vertex of valency one
         # Assumes we have n_vertices + 1 vertices in the graph
         for i in range(0,self.n_vertices + 1):
-            for j in range(0,self.n_vertices + 1):
+            for j in range(0,self.n_vertices + self.n_hairs + 1):
                 if G.has_edge(i,j) and G.degree(i) == self.n_ws + 1:
                     # found valid combination, relabel
                     GG = G.relabel({ i:self.n_vertices + 1, self.n_vertices+1 : self.n_vertices+self.n_hairs+1}, inplace=False)
                     GG.add_vertex(i)
                     GG.relabel({i:self.n_vertices, self.n_vertices:i})
-                    newj = i if j==self.n_vertices else j
+                    newj = j
+                    if j==self.n_vertices:
+                        newj = i
+                    elif j==self.n_vertices+1:
+                        newj=self.n_vertices+self.n_hairs+1
+
                     GG.delete_edge(self.n_vertices+1, newj)
                     GG.add_edge(self.n_vertices, newj)
                     yield GG
@@ -249,7 +270,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Assumes we have n_vertices + 1 vertices in the graph
         if self.n_ws != 1:
             return
-        for i in range(0,self.n_vertices + 1):
+        for i in range(0,self.n_vertices + 1 + self.n_hairs):
             for j in range(0,self.n_vertices + 1):
                 if G.has_edge(i,j):
                     # found valid combination, relabel such that i becomes eps
@@ -290,34 +311,55 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     GG.relabel({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1})
                     GG.delete_edge(self.n_vertices, self.n_vertices +1)
                     yield GG
+
+    def _hairy_to_w_hairhair_2w(self, G, addtadpole=False):
+        # Translates hairy graph into w graph
+        # with eps a new vertex of valency one
+        # Assumes we have n_vertices + 1 vertices in the graph and n_hairs+2 hairs
+        # One hair points towards the new omega vertex, the other becomes eps
+        # We can only consider graphs where both targets of the hairs are connected by an edge
+        # because other graphs are covered by other routines
+        for i in range(0,self.n_vertices + 1):
+            for j in range(self.n_vertices +1, self.n_vertices+self.n_hairs+3):
+                if G.has_edge(i,j) and G.degree(i) == self.n_ws+1:
+                    for k in range(self.n_vertices +1, self.n_vertices+self.n_hairs+2):
+                        if (k != j) and G.has_edge(i,G.neighbors(k)[0]):
+                            # found valid combination, relabel such that i becomes w and k becomes eps
+                            GG = G.relabel({ i:self.n_vertices, k: self.n_vertices+1, self.n_vertices+1 : k, self.n_vertices:i }, inplace=False)
+                            GG.relabel({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1})
+                            #GG.delete_edge(self.n_vertices, self.n_vertices +1)
+                            newj = k if j==self.n_vertices+1 else j
+                            GG.delete_vertex(newj)
+                            GG.relabel(range(0,self.n_vertices+self.n_hairs+2))
+                            yield GG
+
+
+
     
     def _hairy_to_w_hair_1w(self, G, addtadpole=False):
         # Translates hairy graph into w graph  
         # with eps a new vertex of valency zero
         # Assumes we have n_vertices vertices in the graph and n_hairs+1 hairs
-        for i in range(0,self.n_vertices):
-            for j in range(self.n_vertices, self.n_vertices+self.n_hairs+1):
-                if G.has_edge(i,j) and G.degree(i) == self.n_ws+1:
-                    # found valid combination, relabel such that i becomes w and j becomes eps
-                    GG = G.relabel({ self.n_vertices : self.n_vertices+self.n_hairs+1 }, inplace=False)
-                    newj = self.n_vertices+self.n_hairs+1 if j== self.n_vertices else j
-                    GG.relabel({self.n_vertices+1: newj, newj: self.n_vertices+1})
-                    GG.add_vertex(self.n_vertices)
-                    yield GG
+        for j in range(self.n_vertices, self.n_vertices+self.n_hairs+1):
+            # found valid combination, relabel such that i becomes w and j becomes eps
+            GG = G.relabel({ self.n_vertices : self.n_vertices+self.n_hairs+1 }, inplace=False)
+            newj = self.n_vertices+self.n_hairs+1 if j== self.n_vertices else j
+            GG.relabel({self.n_vertices+1: newj, newj: self.n_vertices+1})
+            GG.add_vertex(self.n_vertices)
+            yield GG
 
 
-class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
-    """Direct sum of hairy graph vector spaces with specified edge and hair parity.
+class WHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
+    """Direct sum of hairy graph vector spaces with specified number of omega hairs.
 
     Attributes:
         - v_range (range): Range for the number of vertices.
         - l_range (range): Range for the number of loops.
         - h_range (range): Range for the number of hairs.
-        - even_edges (bool): True for even edges, False for odd edges.
-        - even_hairs (bool): True for even hairs, False for odd hairs.
+        - w_range (range): number of omega hairs
         - sub_type (str): Sub type of graphs.
     """
-    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
+    def __init__(self, v_range, l_range, h_range, w_range):
         """Initialize the sum vector space.
 
         :param v_range: Range for the number of vertices.
@@ -334,22 +376,21 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.v_range = v_range
         self.l_range = l_range
         self.h_range = h_range
-        self.even_edges = even_edges
-        self.even_hairs = even_hairs
-        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
+        self.w_range = w_range
+        self.sub_type = ""
 
-        vs_list = [HairyGraphVS(v, l, h, self.even_edges, self.even_hairs) for
-                   (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        super(HairyGraphSumVS, self).__init__(vs_list)
+        vs_list = [WHairyGraphVS(v, l, h, w) for
+                   (v, l, h, w) in itertools.product(self.v_range, self.l_range, self.h_range, self.w_range)]
+        super(WHairyGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
-        return '%s graphs with %s' % (graph_type, self.sub_type)
+        return 'whairy graphs'
 
     def get_ordered_param_range_dict(self):
-        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range)])
+        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range), ('ws', self.w_range)])
 
     def get_info_plot_path(self):
-        s = "info_vector_space_%s_%s" % (graph_type, self.sub_type)
+        s = "info_vector_space_%s" % graph_type
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
 
@@ -357,7 +398,7 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 class ContractEdgesGO(GraphOperator.GraphOperator):
     """Contract edges graph operator.
 
-    Operate on a hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
+    Operate on a w-hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
 
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
@@ -387,10 +428,10 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
-               and domain.n_hairs == target.n_hairs and domain.sub_type == target.sub_type
+               and domain.n_hairs == target.n_hairs and domain.n_ws == target.n_ws
 
     @classmethod
-    def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
+    def generate_operator(cls, n_vertices, n_loops, n_hairs, n_ws):
         """Return a contract edges graph operator.
 
         :param n_vertices: Number of vertices of the domain.
@@ -406,24 +447,24 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :return: Contract edges graph operator based on the specified domain vector space.
         :rtype: ContractEdgesGO
         """
-        domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairyGraphVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        domain = WHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
+        target = WHairyGraphVS(n_vertices - 1, n_loops, n_hairs, n_ws)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -446,22 +487,67 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         image=[]
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a hair-vertex can be contracted
-            if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
+            # only edges not connected to a numbered hair-vertex can be contracted
+            if u >= self.domain.n_vertices+2 or v >= self.domain.n_vertices+2:
                 continue
-            pp = Shared.permute_to_left((u, v), range(0, self.domain.n_vertices + self.domain.n_hairs))
-            sgn = self.domain.perm_sign(G, pp)
-            G1 = copy(G)
-            G1.relabel(pp, inplace=True)
+
+            # ensure u<v (this should be always true anyway actually)
+            if u>v:
+                u,v = v,u
+            
+            sgn = 1 if i % 2 == 0 else -1
+            previous_size = G.size()
+            previous_has_tadpole = (previous_size - self.domain.n_vertices - self.domain.n_hairs < self.domain.n_loops) 
+            sgn *= -1 if previous_has_tadpole else 1
+            G1 = G.copy()
+            # label all edges to determine sign later
             Shared.enumerate_edges(G1)
-            previous_size = G1.size()
-            G1.merge_vertices([0, 1])
-            if (previous_size - G1.size()) != 1:
-                continue
-            G1.relabel(list(range(0, G1.order())), inplace=True)
-            if not self.domain.even_edges:
-                sgn *= Shared.shifted_edge_perm_sign(G1)
-            image.append((G1, sgn))
+
+            # we always delete the lower index vertex. This ensures that the extra vertices are never deleted
+            if v <= self.domain.n_vertices:
+                G1.merge_vertices([v, u])
+                if (previous_size - G1.size()) != 1:
+                    continue
+                G1.relabel(range(0,self.domain.n_vertices+1+self.domain.n_hairs), inplace=True)
+                # find edge permutation sign 
+                sgn *= Shared.shifted_edge_perm_sign2(G1)
+                image.append((G1, sgn))
+            elif v==self.domain.n_vertices+1:
+                # the second vertex is now omega, so we need to merge the vertex with the eps vertex
+                # after reonnecting one of the edges to omega
+                # we assume that u != eps, because this is forbidden in our graphs
+                G1.delete_edge(u,v)
+                # special care must be taken since a tadpole could be created at eps
+                # and this is true iff there is an edge u-eps
+                eps = self.domain.n_vertices
+                new_has_tadpole = G1.has_edge(u,eps)
+                # double tadpole => zero
+                if new_has_tadpole and previous_has_tadpole:
+                    continue
+                if new_has_tadpole:
+                    # remove the edge and compute the appropriate sign
+                    k = G1.edge_label(u,eps)
+                    G1.delete_edge(u,eps)
+                    sgn *= 1 if ( (k % 2==0) == (k<i) ) else -1
+                # loop over other neighbors w to be connected to omega
+                for w in G1.neighbors(u):
+                    G2 = G1.copy()
+                    sgn2 = sgn
+                    # reconnect the w-v-edge to omega (i.e., to v)
+                    old_label = G2.edge_label(u,w)
+                    G2.delete_edge(u,w)
+                    G2.add_edge(w,v, old_label)
+                    
+                    # now merge u and eps
+                    G2.merge_vertices([eps, u])
+                    # in case we have too few edges some double edges have been created => zero
+                    if (previous_size - G2.size()) != (2 if new_has_tadpole else 1):
+                        continue
+                    G2.relabel(range(0,self.domain.n_vertices+1+self.domain.n_hairs), inplace=True)
+                    # find edge permutation sign 
+                    sgn2 *= Shared.shifted_edge_perm_sign2(G2)
+                    image.append((G2, sgn2))
+
         return image
 
 
@@ -488,163 +574,18 @@ class ContractEdgesD(GraphOperator.Differential):
         s = "info_contract_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
-
-class EdgeToOneHairGO(GraphOperator.GraphOperator):
-    """Edge to one hair graph operator.
-
-    Operates on a hairy graph by deleting an edge and adding a hair to one of the vertices adjacent to the
-    deleted edge.
-    Only for graphs with odd hairs.
-
-    Attributes:
-        - sub_type (str): Graphs sub type of the domain.
-    """
-    def __init__(self, domain, target):
-        """Initialize the domain and target vector space of the edge to one hair graph operator.
-
-        :param domain: Domain vector space of the operator.
-        :type domain: HairyGraphVS
-        :param target: Target vector space of the operator.
-        :type target: HairyGraphVS
-        """
-        self.sub_type = domain.sub_type
-        super(EdgeToOneHairGO, self).__init__(domain, target)
-
-    @staticmethod
-    def is_match(domain, target):
-        """Check whether domain and target match to generate a corresponding edge to one hair graph operator.
-
-        The edge to one hair operator reduces the number of loops by one and increases the number of hairs by one.
-
-        :param domain: Potential domain vector space of the operator.
-        :type domain: HairyGraphVS
-        :param target: Potential target vector space of the operator.
-        :type target: HairyGraphVS
-        :return: True if domain and target match to generate a corresponding edge to one hair graph operator.
-        :rtype: bool
-        """
-        return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
-               and domain.n_hairs + 1 == target.n_hairs and domain.sub_type == target.sub_type
-
-    @classmethod
-    def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
-        """Return an edge to one hair graph operator.
-
-        :param n_vertices: Number of vertices of the domain.
-        :type n_vertices: int
-        :param n_loops: Number of loops of the domain.
-        :type n_loops: int
-        :param n_hairs: Number of hairs.
-        :type n_hairs: int
-        :param even_edges: True for even edges, False for odd edges.
-        :type even_edges: bool
-        :param even_hairs: True for even hairs, False for odd hairs.
-        :type even_hairs: bool
-        :return: Edge to one hair graph operator based on the specified domain vector space.
-        :rtype: EdgeToOneHairGO
-        """
-        domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairyGraphVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
-        return cls(domain, target)
-
-    def get_matrix_file_path(self):
-        s = "edge_to_one_hairD%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_rank_file_path(self):
-        s = "edge_to_one_hairD%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_work_estimate(self):
-        if not self.is_valid():
-            return 0
-        try:
-            target_dim = self.target.get_dimension()
-        except StoreLoad.FileNotFoundError:
-            return 0
-        if target_dim == 0:
-            return 0
-        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
-
-    def get_type(self):
-        return 'edge to one hair'
-
-    def operate_on(self,G):
-        # Operate on a hairy graph by deleting an edge and adding a hair to one of the vertices adjacent to the
-        # deleted edge.
-        sgn0 = -1 if G.order() % 2 else 1
-        image=[]
-        for (i, e) in enumerate(G.edges(labels=False)):
-            (u, v) = e
-            # Only edges not connected to a hair-vertex can be cut
-            if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
-                continue
-            G1 = copy(G)
-            if not self.domain.even_edges:
-                Shared.enumerate_edges(G1)
-                e_label = G1.edge_label(u, v)
-            G1.delete_edge((u, v))
-            new_hair_idx = self.domain.n_vertices + self.domain.n_hairs
-            G1.add_vertex(new_hair_idx)
-            G2 = copy(G1)
-            G1.add_edge((u, new_hair_idx))
-            G2.add_edge((v, new_hair_idx))
-            if not self.domain.even_edges:
-                G1.set_edge_label(u, new_hair_idx, e_label)
-                G2.set_edge_label(v, new_hair_idx, e_label)
-                sgn1 = Shared.edge_perm_sign(G1)
-                sgn2 = Shared.edge_perm_sign(G2)
-            else:
-                sgn1 = 1
-                sgn2 = -1
-            image.append((G1, sgn1*sgn0))
-            image.append((G2, sgn2*sgn0))
-        return image
-
-
-class EdgeToOneHairD(GraphOperator.Differential):
-    """Edge to one hair differential.
-
-    Only for graphs with odd hairs.
-    """
-    def __init__(self, sum_vector_space):
-        """Initialize the edge to one hair differential with the underlying sum vector space.
-
-        :param sum_vector_space: Underlying vector space.
-        :type sum_vector_space: HairyGraphSumVS
-        """
-        super(EdgeToOneHairD, self).__init__(sum_vector_space, EdgeToOneHairGO.generate_op_matrix_list(sum_vector_space))
-
-    def get_type(self):
-        return 'edge to one hair'
-
-    def get_cohomology_plot_path(self):
-        sub_type = self.sum_vector_space.sub_type
-        s = "cohomology_dim_edge_to_one_hair_D_%s_%s" % (graph_type, sub_type)
-        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
-    def get_info_plot_path(self):
-        sub_type = self.sum_vector_space.sub_type
-        s = "info_edge_to_one_hair_D_%s_%s" % (graph_type, sub_type)
-        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
-    def get_cohomology_plot_parameter_order(self):
-        return (1, 2, 0)
-
-
 # ------- Graph Complex --------
-class HairyGC(GraphComplex.GraphComplex):
+class WHairyGC(GraphComplex.GraphComplex):
     """Graph complex for hairy graphs.
 
     Attributes:
         - v_range (range): Range for the number of vertices.
         - l_range (range): Range for the number of loops.
         - h_range (range): Range for the number of hairs.
-        - even_edges (bool): True for even edges, False for odd edges.
-        - even_hairs (bool): True for even hairs, False for odd hairs.
+        - w_range (range): Range for the number of omega hairs
         - sub_type (str): Sub type of graphs.
     """
-    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, differentials):
+    def __init__(self, v_range, l_range, h_range, w_range, differentials):
         """Initialize the graph complex.
 
         :param v_range: Range for the number of vertices.
@@ -663,21 +604,17 @@ class HairyGC(GraphComplex.GraphComplex):
         self.v_range = v_range
         self.l_range = l_range
         self.h_range = h_range
-        self.even_edges = even_edges
-        self.even_hairs = even_hairs
-        self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
+        self.w_range = w_range
+        self.sub_type = ""
 
-        sum_vector_space = HairyGraphSumVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        sum_vector_space = WHairyGraphSumVS(self.v_range, self.l_range, self.h_range, self.w_range)
         differential_list = []
-        if not differentials <= {'contract', 'et1h'}:
-            raise ValueError("Differentials for hairy graph complex: 'contract', 'et1h'")
+        if not set(differentials).issubset(['contract']):
+            raise ValueError("Differentials for hairy graph complex: 'contract'")
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
-        if 'et1h' in differentials:
-            edge_to_one_hair_dif = EdgeToOneHairD(sum_vector_space)
-            differential_list.append(edge_to_one_hair_dif)
-        super(HairyGC, self).__init__(sum_vector_space, differential_list)
+        super(WHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

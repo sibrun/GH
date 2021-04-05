@@ -294,7 +294,7 @@ class OperatorMatrix(object):
             raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions"
                              % str(self.get_matrix_file_path()))
         tail = map(int, stringList.pop().split(" "))
-        if not tail == [0, 0, 0]:
+        if not list(tail) == [0, 0, 0]:
             raise ValueError("%s: End line missing or matrix not correctly read from file"
                              % str(self.get_matrix_file_path()))
         matrix_list = []

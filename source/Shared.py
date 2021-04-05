@@ -120,6 +120,19 @@ def shifted_edge_perm_sign(graph):
     p = [j for (a, b, j) in graph.edges()]
     return Perm.shifted(p).signature()
 
+def shifted_edge_perm_sign2(graph):
+    """Return the sign of the permutation induced by the order of edges of the graph,
+    that is the sign of the permutation needed to bring the edge labels in ascending order.
+    :param graph: Input graph.
+    :type graph: Graph
+    :return: Sign of the permutation induced by the order of edges of the graph.
+    :rtype: int
+    """
+
+    L = [(j,i) for i, (a, b, j) in enumerate(graph.edges())]
+    L.sort()
+    p = [i for j,i in L]
+    return Perm.shifted(p).signature()
 
 def permute_to_left(pair, vertex_range):
     """Permute pair to the left of the range vertex_range and returns the induced permutation.

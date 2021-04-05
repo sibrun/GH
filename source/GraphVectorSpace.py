@@ -783,7 +783,7 @@ class SumVectorSpace(VectorSpace):
 
     def _get_info_header_list(self):
         try:
-            param_names = self.vs_list[0].get_ordered_param_dict().keys()
+            param_names = list(self.vs_list[0].get_ordered_param_dict().keys())
             property_names = self.vs_list[0].get_properties().names()
         except IndexError:
             param_names = property_names = []
