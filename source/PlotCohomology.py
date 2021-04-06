@@ -9,7 +9,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import logging
-import pandas
+try:
+    import pandas
+except ImportError:
+    pass # todo
 import StoreLoad
 import Parameters
 import Shared
@@ -74,7 +77,7 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
             value = Parameters.zero_v_symbol
         data_list.append(list(key) + [value])
     data_list.sort()
-    columns = ordered_param_range_dict.keys()+['dimension']
+    columns = list(ordered_param_range_dict.keys())+['dimension']
     data_frame = pandas.DataFrame(data=data_list, columns=columns)
     if to_html:
         html_path = path + '.html'

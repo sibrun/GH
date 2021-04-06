@@ -26,6 +26,9 @@ graph_type = "whairy"
 
 zero_hairs = False      # Option to include zero hairs in the hairy graph complexes.
 
+def dict_to_list(d, n):
+    return [(d[j] if j in d else j)   for j in range(n)]
+    
 
 # ------- Graph Vector Space --------
 class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
@@ -76,6 +79,9 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs and self.n_ws == other.n_ws
 
+    def __hash__(self):
+        return hash("wgra%d_%d_%d_%d" % self.get_ordered_param_dict().get_value_tuple())
+
     def get_basis_file_path(self):
         s = "wgra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, s)
@@ -116,6 +122,8 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         if not self.is_valid():
             return 0
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+
+
 
     def get_hairy_graphs(self, nvertices, nloops, nhairs):
         # Produces all hairy graphs with nhairs hairs, that are the last vertices in the ordering
@@ -236,9 +244,9 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             for j in range(0,self.n_vertices + 2):
                 if G.has_edge(i,j) and G.degree(i) == self.n_ws + 1:
                     # found valid combination: make our two vertices the last two int vertices
-                    GG = G.relabel({ i:self.n_vertices + 1, self.n_vertices+1:i }, inplace=False)
+                    GG = G.relabel(dict_to_list( { i:self.n_vertices + 1, self.n_vertices+1:i }, G.order()), inplace=False)
                     newj = i if j==self.n_vertices+1 else j
-                    GG.relabel({newj : self.n_vertices, self.n_vertices: newj})
+                    GG.relabel(dict_to_list({newj : self.n_vertices, self.n_vertices: newj}, GG.order()))
                     #j: self.n_vertices, self.n_vertices : j,
                     GG.delete_edge(self.n_vertices, self.n_vertices + 1)
                     yield GG
@@ -251,9 +259,9 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             for j in range(0,self.n_vertices + self.n_hairs + 1):
                 if G.has_edge(i,j) and G.degree(i) == self.n_ws + 1:
                     # found valid combination, relabel
-                    GG = G.relabel({ i:self.n_vertices + 1, self.n_vertices+1 : self.n_vertices+self.n_hairs+1}, inplace=False)
+                    GG = G.relabel(dict_to_list({ i:self.n_vertices + 1, self.n_vertices+1 : self.n_vertices+self.n_hairs+1},G.order()), inplace=False)
                     GG.add_vertex(i)
-                    GG.relabel({i:self.n_vertices, self.n_vertices:i})
+                    GG.relabel(dict_to_list({i:self.n_vertices, self.n_vertices:i}, GG.order()))
                     newj = j
                     if j==self.n_vertices:
                         newj = i
@@ -274,7 +282,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             for j in range(0,self.n_vertices + 1):
                 if G.has_edge(i,j):
                     # found valid combination, relabel such that i becomes eps
-                    GG = G.relabel({ i:self.n_vertices, self.n_vertices+1 : self.n_vertices+self.n_hairs+1, self.n_vertices:i }, inplace=False)
+                    GG = G.relabel(dict_to_list({ i:self.n_vertices, self.n_vertices+1 : self.n_vertices+self.n_hairs+1, self.n_vertices:i }, G.order()), inplace=False)
                     GG.add_vertex(self.n_vertices+1)
                     newj = i if j==self.n_vertices else j
                     GG.delete_edge(self.n_vertices, newj)
@@ -291,7 +299,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             for j in range(0,self.n_vertices):
                 if G.has_edge(i,j):
                     # found valid combination, relabel to make place for w and eps
-                    GG = G.relabel({ self.n_vertices : self.n_vertices+self.n_hairs, self.n_vertices+1:self.n_vertices+self.n_hairs+1 }, inplace=False)
+                    GG = G.relabel(dict_to_list({ self.n_vertices : self.n_vertices+self.n_hairs, self.n_vertices+1:self.n_vertices+self.n_hairs+1 },G.order), inplace=False)
                     GG.add_vertex(self.n_vertices)
                     GG.add_vertex(self.n_vertices+1)
                     GG.delete_edge(i,j)
@@ -307,8 +315,9 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             for j in range(self.n_vertices +1, self.n_vertices+self.n_hairs+2):
                 if G.has_edge(i,j) and G.degree(i) == self.n_ws+1:
                     # found valid combination, relabel such that i becomes w and j becomes eps
-                    GG = G.relabel({ i:self.n_vertices, j: self.n_vertices+1, self.n_vertices+1 : j, self.n_vertices:i }, inplace=False)
-                    GG.relabel({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1})
+                    GG = copy(G)
+                    GG.relabel(dict_to_list({ i:self.n_vertices, j: self.n_vertices+1, self.n_vertices+1 : j, self.n_vertices:i }, GG.order()))
+                    GG.relabel(dict_to_list({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1}, GG.order()))
                     GG.delete_edge(self.n_vertices, self.n_vertices +1)
                     yield GG
 
@@ -322,15 +331,16 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         for i in range(0,self.n_vertices + 1):
             for j in range(self.n_vertices +1, self.n_vertices+self.n_hairs+3):
                 if G.has_edge(i,j) and G.degree(i) == self.n_ws+1:
-                    for k in range(self.n_vertices +1, self.n_vertices+self.n_hairs+2):
+                    for k in range(self.n_vertices +1, self.n_vertices+self.n_hairs+3):
                         if (k != j) and G.has_edge(i,G.neighbors(k)[0]):
                             # found valid combination, relabel such that i becomes w and k becomes eps
-                            GG = G.relabel({ i:self.n_vertices, k: self.n_vertices+1, self.n_vertices+1 : k, self.n_vertices:i }, inplace=False)
-                            GG.relabel({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1})
+                            GG = copy(G)
+                            GG.relabel(dict_to_list({ i:self.n_vertices, k: self.n_vertices+1, self.n_vertices+1 : k, self.n_vertices:i }, GG.order()))
+                            GG.relabel(dict_to_list({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1}, GG.order()))
                             #GG.delete_edge(self.n_vertices, self.n_vertices +1)
                             newj = k if j==self.n_vertices+1 else j
                             GG.delete_vertex(newj)
-                            GG.relabel(range(0,self.n_vertices+self.n_hairs+2))
+                            GG.relabel(list(range(0,self.n_vertices+self.n_hairs+2)))
                             yield GG
 
 
@@ -499,7 +509,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             previous_size = G.size()
             previous_has_tadpole = (previous_size - self.domain.n_vertices - self.domain.n_hairs < self.domain.n_loops) 
             sgn *= -1 if previous_has_tadpole else 1
-            G1 = G.copy()
+            G1 = copy(G)
             # label all edges to determine sign later
             Shared.enumerate_edges(G1)
 
@@ -531,7 +541,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                     sgn *= 1 if ( (k % 2==0) == (k<i) ) else -1
                 # loop over other neighbors w to be connected to omega
                 for w in G1.neighbors(u):
-                    G2 = G1.copy()
+                    G2 = copy(G1)
                     sgn2 = sgn
                     # reconnect the w-v-edge to omega (i.e., to v)
                     old_label = G2.edge_label(u,w)
@@ -618,3 +628,11 @@ class WHairyGC(GraphComplex.GraphComplex):
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
+
+    def print_dim_and_eulerchar(self):
+        for w in self.w_range:
+            for h in self.h_range:
+                for l in self.l_range:
+                    ds = [WHairyGraphVS(v,l,h,w).get_dimension() for v in self.v_range ]
+                    eul = sum( [(1 if j%2==0 else -1) * d for j,d in enumerate(ds)] )
+                    print("Dimensions ",w,h,l, ":", ds, "Euler", eul)

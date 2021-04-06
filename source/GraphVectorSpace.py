@@ -359,8 +359,10 @@ class GraphVectorSpace(VectorSpace):
                 # The canonical labelling respects the partition of the vertices.
                 autom_list = G.automorphism_group(partition=self.get_partition()).gens()
                 canonG = G.canonical_label(partition=self.get_partition())
+
             canon6 = canonG.graph6_string()
-            if not canon6 in basis_set:
+
+            if not (canon6 in basis_set):
                 if not self._has_odd_automorphisms(G, autom_list):
                     basis_set.add(canon6)
 
@@ -377,7 +379,9 @@ class GraphVectorSpace(VectorSpace):
         :rtype: bool
         """
         for p in autom_list:
-            if self.perm_sign(G, list(p.tuple())) == -1:
+            pd = p.dict()
+            pp = [pd[j] for j in range(G.order())]
+            if self.perm_sign(G, pp) == -1:
                return True
         return False
 
@@ -778,7 +782,7 @@ class SumVectorSpace(VectorSpace):
         data_list = []
         for vs in self.vs_list:
             vs.update_properties()
-            data_list.append(vs.get_ordered_param_dict().values() + vs.get_properties().list())
+            data_list.append(list(vs.get_ordered_param_dict().values()) + vs.get_properties().list())
         DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):

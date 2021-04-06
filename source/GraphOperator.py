@@ -626,7 +626,7 @@ class OperatorMatrix(object):
         if not self.is_valid():
             return 0
         rank_dict = self._load_rank_dict()
-        ranks = rank_dict.values()
+        ranks = list(rank_dict.values())
         if len(ranks) == 0:
             raise ValueError("No matrix rank stored in rank file for " + str(self))
         if len(set(ranks)) != 1:
@@ -1139,12 +1139,12 @@ class OperatorMatrixCollection(object):
         data_list = []
         for op in self.op_matrix_list:
             op.update_properties()
-            data_list.append(op.domain.get_ordered_param_dict().values() + op.get_properties().list())
+            data_list.append(list(op.domain.get_ordered_param_dict().values()) + op.get_properties().list())
         DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):
         try:
-            param_names = self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys()
+            param_names = list(self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys())
         except IndexError:
             param_names = []
         return param_names + OperatorMatrixProperties.names()
@@ -1234,7 +1234,7 @@ class Differential(OperatorMatrixCollection):
             rankDD = 0
         cohomology_dim = dimV - rankD - rankDD
         if cohomology_dim < 0:
-            raise ValueError("Negative cohomology dimension for %s" % str(opD.domain))
+            raise ValueError("Negative cohomology dimension for %s (%d - %d - %d)" % (str(opD.domain), dimV , rankD , rankDD) )
             #logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomology_dim
 

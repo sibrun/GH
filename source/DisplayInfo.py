@@ -3,10 +3,19 @@
 import multiprocessing
 import queue
 import collections
-import pandas
+
+try:
+    from urllib.request import pathname2url
+except ImportError:
+    from urllib import pathname2url
+
+try:
+    import pandas
+except ImportError:
+    pass # todo
+
 import tempfile
 import webbrowser
-from urllib.request import pathname2url
 import Parameters
 import StoreLoad
 import os
