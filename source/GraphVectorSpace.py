@@ -544,6 +544,16 @@ class GraphVectorSpace(VectorSpace):
         s = ' '.join( sarr )
         DisplayInfo.display_html_body("<table>"+s+"</table>")
     
+    def display_vector(self, v):
+        """Displays a table (with pictures) in a html file of the vector v.
+        v can be either a dict or a list.
+        """
+        self.plot_all_graphs_to_file(skip_existing=True)
+        sarr = ["<tr><td>({})</td><td>{}</td><td><img src='{}'></td>".format(j, v[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j))) \
+                for j in range(0,self.get_dimension()) ]
+        s = ' '.join( sarr )
+        DisplayInfo.display_html_body("<table>"+s+"</table>")
+    
     # def display_idict(self, d):
     #     # assumes the graphs have been plotted already?????todo
     #     to_plot = [j for j,nr in d.iteritems()]

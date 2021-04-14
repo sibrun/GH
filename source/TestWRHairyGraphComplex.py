@@ -3,10 +3,10 @@ import itertools
 import logging
 import Log
 import TestGraphComplex
-import WHairyGraphComplex
+import WRHairyGraphComplex
 from sage.all import *
 
-log_file = "WHGC_Unittest.log"
+log_file = "WRHGC_Unittest.log"
 
 
 def check_graphs_vs_basis(GVS, w):
@@ -25,12 +25,26 @@ def check_graphs_vs_basis(GVS, w):
                 print(g6, " exists with index ", ba.index(g6))
 
 
-def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
-    tt = WHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices, n_loops, n_hairs, n_ws)
-    tu = WHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices-1, n_loops, n_hairs, n_ws)
+def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_basis=False):
+    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices, n_loops, n_hairs, n_ws)
+    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices-1, n_loops, n_hairs, n_ws)
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
     C = D2*D1
+
+    print(D1) 
+    print(D2) 
+    print(C) 
+
+    ba0 = tt.domain.get_basis_g6()
+    ba1 = tu.domain.get_basis_g6()
+    ba2 = tu.target.get_basis_g6()
+
+    if plot_basis:
+        tt.domain.display_basis_plots()
+        tu.domain.display_basis_plots()
+        tu.target.display_basis_plots()
+
 
     if (j_to_pick<0):
         for i in range(0,C.nrows()):
@@ -42,13 +56,7 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
             print("success, squares to zero")
             return
         else:
-            print("Does not square to zero, checking index ", j_to_pick)
-    # print(D1) 
-    # print(D2) 
-    # print(C) 
-    ba0 = tt.domain.get_basis_g6()
-    ba1 = tu.domain.get_basis_g6()
-    ba2 = tu.target.get_basis_g6()
+            print("Does not square to zero, checking index ", j_to_pick, " g6code ", ba0[j_to_pick])
 
     G = Graph(ba0[j_to_pick])
     w = tt.operate_on(G)
@@ -102,7 +110,8 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
 #tt.display_basis_plots()
 
 # WGC = WHairyGraphComplex.WHairyGC(range(0,11), range(5,7), range(0,4), range(2,3) , ['contract'])
-WGC = WHairyGraphComplex.WHairyGC(range(0,6), range(0,2), range(0,4), range(1,2) , ['contract'])
+WGC = WRHairyGraphComplex.WRHairyGC(range(0,14), range(5,6), range(3,4), range(2,3) , ['contract'])
+# WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=True)
@@ -111,7 +120,7 @@ WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=T
 # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 
-WGC.square_zero_test()
+# WGC.square_zero_test()
 
 WGC.compute_rank(ignore_existing_files=True, sage="mod")
 # WGC.plot_cohomology_dim(to_html=True)
@@ -122,12 +131,12 @@ WGC.print_cohomology_dim()
 
 # WGC.plot_info()
 
-# tt = WHairyGraphComplex.WHairyGraphVS(3,4,1,2)
+# tt = WRHairyGraphComplex.WRHairyGraphVS(3,3,0,2)
 # tt.build_basis(ignore_existing_files=True)
 # tt.plot_all_graphs_to_file(skip_existing=False)
 # tt.display_basis_plots()
 
-# DSquareTestSingle(8,4,2,2)
+# DSquareTestSingle(4,3,0,2, plot_basis=False)
 
 
 # HG = WHairyGraphComplex.WHairyGraphVS(7,4,2,2)
