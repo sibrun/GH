@@ -10,7 +10,7 @@ log_file = "WRHGC_Unittest.log"
 
 
 def check_graphs_vs_basis(GVS, w):
-    # Takes a list of graphs and checks whether they are found in the basis 
+    # Takes a list of graphs and checks whether they are found in the basis
     ba = GVS.get_basis_g6()
     for HH in w:
         H = Graph(HH) if type(HH) is str else H
@@ -26,15 +26,17 @@ def check_graphs_vs_basis(GVS, w):
 
 
 def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_basis=False):
-    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices, n_loops, n_hairs, n_ws)
-    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(n_vertices-1, n_loops, n_hairs, n_ws)
+    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws)
+    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices-1, n_loops, n_hairs, n_ws)
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
     C = D2*D1
 
-    print(D1) 
-    print(D2) 
-    print(C) 
+    print(D1)
+    print(D2)
+    print(C)
 
     ba0 = tt.domain.get_basis_g6()
     ba1 = tu.domain.get_basis_g6()
@@ -45,51 +47,134 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_bas
         tu.domain.display_basis_plots()
         tu.target.display_basis_plots()
 
-
-    if (j_to_pick<0):
-        for i in range(0,C.nrows()):
-            for j in range(0,C.ncols()):
-                if C[i,j] != 0:
-                    print(i,j, C[i,j])
+    if (j_to_pick < 0):
+        for i in range(0, C.nrows()):
+            for j in range(0, C.ncols()):
+                if C[i, j] != 0:
+                    print(i, j, C[i, j])
                     j_to_pick = j
-        if j_to_pick <0:
+        if j_to_pick < 0:
             print("success, squares to zero")
             return
         else:
-            print("Does not square to zero, checking index ", j_to_pick, " g6code ", ba0[j_to_pick])
+            print("Does not square to zero, checking index ",
+                  j_to_pick, " g6code ", ba0[j_to_pick])
 
     G = Graph(ba0[j_to_pick])
     w = tt.operate_on(G)
 
-    #check whether graphs are in basis
+    # check whether graphs are in basis
     for H, x in w:
         g6, sgn = tu.domain.graph_to_canon_g6(H)
-        autom_list = H.automorphism_group(partition=tu.domain.get_partition()).gens()
+        autom_list = H.automorphism_group(
+            partition=tu.domain.get_partition()).gens()
         if tu.domain._has_odd_automorphisms(H, autom_list):
             print(g6, " has odd automorphisms")
         else:
             if not g6 in ba1:
-                print(g6, " not found in basis ", " v=",x)
+                print(g6, " not found in basis ", " v=", x)
             else:
-                print(g6, " exists at index ", ba1.index(g6), " v=",x)
+                print(g6, " exists at index ", ba1.index(g6), " v=", x)
 
     # compute D^2
-    ww = [ (HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H) ]
+    ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
     wwd = {}
-    for H,x in ww:
+    for H, x in ww:
         g6, sgn = tu.target.graph_to_canon_g6(H)
         if g6 in wwd:
             wwd[g6] += x
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag=false
+    nonzeroflag = false
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag=true
+            nonzeroflag = true
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
+
+
+def PSquareTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
+    # Tests whether the projector squares to itself
+    symmp = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
+    symmp.build_matrix(ignore_existing_files=False)
+    P = symmp.get_matrix()
+    diff = P*P - factorial(n_hairs) * P  # should be zero
+    diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    print(diffs)
+
+
+def PPTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind1, rep_ind2):
+    # tests whether two projectors have zero product
+    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws, rep_ind1)
+    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws, rep_ind2)
+    symmp1.build_matrix(ignore_existing_files=False)
+    symmp2.build_matrix(ignore_existing_files=False)
+    P1 = symmp1.get_matrix()
+    P2 = symmp2.get_matrix()
+    diff = P1*P2
+    diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    print(diffs)
+
+
+def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
+    # tests whether projector commutes with differential
+    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
+    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices-1, n_loops, n_hairs, n_ws, rep_ind)
+    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws)
+    tt.build_matrix(ignore_existing_files=True)
+    D1 = tt.get_matrix()
+    symmp1.build_matrix(ignore_existing_files=False)
+    symmp2.build_matrix(ignore_existing_files=False)
+    P1 = symmp1.get_matrix()
+    P2 = symmp2.get_matrix()
+    diff = P2*D1-D1*P1
+    diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    print(diffs)
+    if diffs > 0 or print_matrices:
+        print(P1)
+        print(P2)
+        print(D1)
+        print(diff)
+
+
+def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
+    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws)
+    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices+1, n_loops, n_hairs, n_ws)
+    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
+    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices-1, n_loops, n_hairs, n_ws, rep_ind)
+    D1 = tt.get_matrix()
+    D2 = tu.get_matrix()
+    # C = D2*D1
+    symmp1.build_matrix(ignore_existing_files=False)
+    P1 = symmp1.get_matrix()
+
+    D1P = D1*P1
+    D2P = P1*D2
+
+    # diff = D1*D2
+    # diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    # print(diffs)
+
+    isocomp_dim = P1.rank()
+    r1 = D1P.rank()
+    r2 = D2P.rank()
+    print(isocomp_dim, r1, r2)
+    return isocomp_dim - r1-r2
+
+# print(diff)
+# print(P)
 
 # v_range = range(1, 8)
 # l_range = range(0, 7)
@@ -97,37 +182,79 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_bas
 # edges_types = [True, False]
 # hairs_types = [True, False]
 
-# tt = WHairyGraphComplex.WHairyGraphVS(4,4,1,2)
+# tt = WRHairyGraphComplex.WRHairyGraphVS(2, 2, 2, 2)
 # tt.build_basis()
-# #tt.plot_all_graphs_to_file()
+# # tt.plot_all_graphs_to_file()
+# tt.display_basis_plots()
+# tt2 = WRHairyGraphComplex.WRHairyGraphVS(1, 2, 2, 2)
+# tt2.build_basis()
+# # tt.plot_all_graphs_to_file()
+# tt2.display_basis_plots()
+
+# tt = WHairyGraphComplex.WHairyGraphVS(4,3,0,1)
+# print(tt.is_valid())
+# tt.build_basis(ignore_existing_files=True)
+
+# tt.plot_all_graphs_to_file()
 # tt.display_basis_plots()
 
-#tt = WHairyGraphComplex.WHairyGraphVS(4,3,0,1)
-#print(tt.is_valid())
-#tt.build_basis(ignore_existing_files=True)
-
-#tt.plot_all_graphs_to_file()
-#tt.display_basis_plots()
 
 # WGC = WHairyGraphComplex.WHairyGC(range(0,11), range(5,7), range(0,4), range(2,3) , ['contract'])
-WGC = WRHairyGraphComplex.WRHairyGC(range(0,14), range(5,6), range(3,4), range(2,3) , ['contract'])
+# WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range( 0, 6), range(2, 3), range(2, 3), ['contract'])
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=True)
-WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=True)
+WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
+    0, 6), range(2, 3), range(2, 3), ['contract'])
+
+# WGC.build_basis(progress_bar=False, info_tracker=False,
+#                 ignore_existing_files=True)
+# WGC.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=True)
 
 # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 
 # WGC.square_zero_test()
 
-WGC.compute_rank(ignore_existing_files=True, sage="mod")
+#WGC.compute_rank(ignore_existing_files=True, sage="mod")
 # WGC.plot_cohomology_dim(to_html=True)
 # Euler char
-WGC.print_dim_and_eulerchar()
+# WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
 
+# PSquareTest(4, 3, 2, 2, 0)
+# PSquareTest(3, 3, 2, 2, 0)
+
+# PPTest(4, 3, 2, 2, 0, 1)
+# PDTest(4, 3, 2, 2, 0)
+
+# PDTest(2, 2, 2, 2, 0, print_matrices=True)
+# PDTest(3, 2, 2, 2, 0)
+# PDTest(4, 2, 2, 2, 0)
+# PDTest(4, 3, 2, 2, 0)
+# PDTest(3, 3, 2, 2, 0)
+
+# print(getCohomDimP(6, 5, 2, 2, 0))
+# print(getCohomDimP(8, 5, 2, 2, 1))
+
+print(getCohomDimP(6, 5, 2, 2, 1))
+print(getCohomDimP(8, 5, 2, 2, 0))
+
+# symmp = WRHairyGraphComplex.SymmProjector.generate_operator(4, 3, 2, 2, 0)
+# symmp.build_matrix(ignore_existing_files=True)
+# P = symmp.get_matrix()
+# # diff = P*P-2*P  # should be zero
+# # print(diff)
+# # print(P)
+# symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(3, 3, 2, 2, 0)
+# symmp2.build_matrix(ignore_existing_files=True)
+# P2 = symmp2.get_matrix()
+
+# tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(4, 3, 2, 2)
+# D1 = tt.get_matrix()
+# diff = P2*D1-D1*P  # should be zero
+# print(diff)
 
 # WGC.plot_info()
 
@@ -158,7 +285,7 @@ WGC.print_cohomology_dim()
 # testg6=HG.graph_to_canon_g6(huntforG)[0]
 # print(testg6, testg6 in genlistg6)
 
-# all_perm = [ list(range(0,HG.n_vertices+2)) + list(p) for p in itertools.permutations(range(HG.n_vertices+2, HG.n_vertices+HG.n_hairs+2)) ]     
+# all_perm = [ list(range(0,HG.n_vertices+2)) + list(p) for p in itertools.permutations(range(HG.n_vertices+2, HG.n_vertices+HG.n_hairs+2)) ]
 # print(all_perm)
 
 # huntforG_h = huntforG.relabel({7:8, 8:7}, inplace=false)
@@ -181,7 +308,6 @@ WGC.print_cohomology_dim()
 # tu.domain.display_basis_plots()
 # tu.target.plot_all_graphs_to_file(skip_existing=False)
 # tu.target.display_basis_plots()
-
 
 
 # g = Graph("EZq?")
