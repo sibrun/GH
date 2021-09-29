@@ -614,7 +614,7 @@ class SymmProjector(GraphOperator.GraphOperator):
 
     """This class encodes the projector to an isotypical component of the symmetric group action
         by permuting numbered hairs.
-        Warning: The matrix stores not the projector, but projector * n_hairs!, to have integral matrices.
+        Warning: The matrix stores not the projector, but projector * n_hairs! / rep_dimension??, to have integral matrices.
 
     Attributes:
         - sub_type(str): Graphs sub type of the domain.
@@ -636,8 +636,8 @@ class SymmProjector(GraphOperator.GraphOperator):
         # fill in representation and character
         nn = domain.n_hairs
         self.rep_partition = Partitions(nn)[rep_index]
-        self.norm_char_perm = [(self.norm_charvalue(
-            p), self.norm_permutation(self.representative_permutation(p))) for p in Partitions(nn)]
+        self.norm_char_perm = [(symmetrica.charvalue(self.rep_partition, p.cycle_type(
+        )), self.norm_permutation(p)) for p in Permutations(nn)]
 
         # print(self.norm_char_perm)
 

@@ -145,6 +145,20 @@ def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
         print(diff)
 
 
+def SumOneTest(n_vertices, n_loops, n_hairs, n_ws):
+    nparts = len(list(Partitions(n_hairs)))
+    Plist = []
+    for j in range(nparts):
+        symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
+            n_vertices, n_loops, n_hairs, n_ws, j)
+        symmp1.build_matrix(ignore_existing_files=True)
+        P1 = symmp1.get_matrix()
+        Plist.append(P1)
+
+    Psum = sum(Plist)
+    print(Psum)
+
+
 def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
     tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
         n_vertices, n_loops, n_hairs, n_ws)
@@ -152,12 +166,11 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
         n_vertices+1, n_loops, n_hairs, n_ws)
     symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
         n_vertices, n_loops, n_hairs, n_ws, rep_ind)
-    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices-1, n_loops, n_hairs, n_ws, rep_ind)
+
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
     # C = D2*D1
-    symmp1.build_matrix(ignore_existing_files=False)
+    symmp1.build_matrix(ignore_existing_files=True)
     P1 = symmp1.get_matrix()
 
     D1P = D1*P1
@@ -205,7 +218,7 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    0, 6), range(2, 3), range(2, 3), ['contract'])
+    2, 3), range(3, 4), range(1, 2), ['contract'])
 
 # WGC.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)
@@ -217,10 +230,11 @@ WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 
 # WGC.square_zero_test()
 
-#WGC.compute_rank(ignore_existing_files=True, sage="mod")
+# WGC.compute_rank(ignore_existing_files=True, sage="mod")
+# WGC.compute_rank(ignore_existing_files=True, sage="integer")
 # WGC.plot_cohomology_dim(to_html=True)
 # Euler char
-# WGC.print_dim_and_eulerchar()
+WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
 
 # PSquareTest(4, 3, 2, 2, 0)
@@ -238,8 +252,18 @@ WGC.print_cohomology_dim()
 # print(getCohomDimP(6, 5, 2, 2, 0))
 # print(getCohomDimP(8, 5, 2, 2, 1))
 
-print(getCohomDimP(6, 5, 2, 2, 1))
-print(getCohomDimP(8, 5, 2, 2, 0))
+# print(getCohomDimP(6, 5, 2, 2, 1))
+
+#SumOneTest(4, 2, 3, 1)
+# PSquareTest(4, 2, 3, 1, 0)
+# PSquareTest(4, 2, 3, 1, 1)
+# PSquareTest(4, 2, 3, 1, 2)
+
+print(getCohomDimP(7, 4, 3, 2, 0))
+print(getCohomDimP(7, 4, 3, 2, 1))
+print(getCohomDimP(7, 4, 3, 2, 2))
+# print(getCohomDimP(4, 3, 2, 1, 2))
+# print(getCohomDimP(3, 1, 3, 1, 2))
 
 # symmp = WRHairyGraphComplex.SymmProjector.generate_operator(4, 3, 2, 2, 0)
 # symmp.build_matrix(ignore_existing_files=True)
