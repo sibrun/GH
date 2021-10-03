@@ -3,10 +3,10 @@ import itertools
 import logging
 import Log
 import TestGraphComplex
-import WRHairyGraphComplex
+import CHairyGraphComplex
 from sage.all import *
 
-log_file = "WRHGC_Unittest.log"
+log_file = "CHGC_Unittest.log"
 
 
 def check_graphs_vs_basis(GVS, w):
@@ -25,11 +25,11 @@ def check_graphs_vs_basis(GVS, w):
                 print(g6, " exists with index ", ba.index(g6))
 
 
-def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_basis=False):
-    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws)
-    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices-1, n_loops, n_hairs, n_ws)
+def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, plot_basis=False):
+    tt = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges)
+    tu = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices-1, n_loops, n_hairs, even_edges)
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
     C = D2*D1
@@ -95,10 +95,10 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_bas
         print("all entries zero, i.e., success.")
 
 
-def PSquareTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
+def PSquareTest(n_vertices, n_loops, n_hairs, even_edges, rep_ind):
     # Tests whether the projector squares to itself
-    symmp = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
+    symmp = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges, rep_ind)
     symmp.build_matrix(ignore_existing_files=False)
     P = symmp.get_matrix()
     diff = P*P - factorial(n_hairs) * P  # should be zero
@@ -106,12 +106,12 @@ def PSquareTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
     print(diffs)
 
 
-def PPTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind1, rep_ind2):
+def PPTest(n_vertices, n_loops, n_hairs, even_edges, rep_ind1, rep_ind2):
     # tests whether two projectors have zero product
-    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws, rep_ind1)
-    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws, rep_ind2)
+    symmp1 = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges, rep_ind1)
+    symmp2 = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges, rep_ind2)
     symmp1.build_matrix(ignore_existing_files=False)
     symmp2.build_matrix(ignore_existing_files=False)
     P1 = symmp1.get_matrix()
@@ -121,14 +121,14 @@ def PPTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind1, rep_ind2):
     print(diffs)
 
 
-def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
+def PDTest(n_vertices, n_loops, n_hairs, even_edges, rep_ind, print_matrices=False):
     # tests whether projector commutes with differential
-    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
-    symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices-1, n_loops, n_hairs, n_ws, rep_ind)
-    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws)
+    symmp1 = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges, rep_ind)
+    symmp2 = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices-1, n_loops, n_hairs, even_edges, rep_ind)
+    tt = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges)
     tt.build_matrix(ignore_existing_files=True)
     D1 = tt.get_matrix()
     symmp1.build_matrix(ignore_existing_files=False)
@@ -145,12 +145,12 @@ def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
         print(diff)
 
 
-def SumOneTest(n_vertices, n_loops, n_hairs, n_ws):
+def SumOneTest(n_vertices, n_loops, n_hairs, even_edges):
     nparts = len(list(Partitions(n_hairs)))
     Plist = []
     for j in range(nparts):
-        symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
-            n_vertices, n_loops, n_hairs, n_ws, j)
+        symmp1 = CHairyGraphComplex.SymmProjector.generate_operator(
+            n_vertices, n_loops, n_hairs, even_edges, j)
         symmp1.build_matrix(ignore_existing_files=True)
         P1 = symmp1.get_matrix()
         Plist.append(P1)
@@ -159,13 +159,13 @@ def SumOneTest(n_vertices, n_loops, n_hairs, n_ws):
     print(Psum)
 
 
-def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
-    tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws)
-    tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices+1, n_loops, n_hairs, n_ws)
-    symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
-        n_vertices, n_loops, n_hairs, n_ws, rep_ind)
+def getCohomDimP(n_vertices, n_loops, n_hairs, even_edges, rep_ind):
+    tt = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges)
+    tu = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices+1, n_loops, n_hairs, even_edges)
+    symmp1 = CHairyGraphComplex.SymmProjector.generate_operator(
+        n_vertices, n_loops, n_hairs, even_edges, rep_ind)
 
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
@@ -219,25 +219,25 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    5, 6), range(3, 4), range(2, 3), ['contract'])
+WGC = CHairyGraphComplex.CHairyGC(range(12, 15), range(
+    7, 8), range(1, 2), False, ['contract'])
 
-# WGC.build_basis(progress_bar=False, info_tracker=False,
-#                 ignore_existing_files=True)
-# WGC.build_matrix(progress_bar=False, info_tracker=False,
-#                  ignore_existing_files=True)
+WGC.build_basis(progress_bar=False, info_tracker=False,
+                ignore_existing_files=True)
+WGC.build_matrix(progress_bar=False, info_tracker=False,
+                 ignore_existing_files=True)
 
-# WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
-# WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
+# # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
+# # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 
-# WGC.square_zero_test()
+# # WGC.square_zero_test()
 
-# WGC.compute_rank(ignore_existing_files=True, sage="mod")
-# WGC.compute_rank(ignore_existing_files=True, sage="integer")
-# WGC.plot_cohomology_dim(to_html=True)
-# Euler char
-# WGC.print_dim_and_eulerchar()
-# WGC.print_cohomology_dim()
+# # WGC.compute_rank(ignore_existing_files=True, sage="mod")
+WGC.compute_rank(ignore_existing_files=True, sage="integer")
+# # WGC.plot_cohomology_dim(to_html=True)
+# # Euler char
+WGC.print_dim_and_eulerchar()
+WGC.print_cohomology_dim()
 
 # PSquareTest(4, 3, 2, 2, 0)
 # PSquareTest(3, 3, 2, 2, 0)
@@ -261,12 +261,12 @@ WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 # PSquareTest(4, 2, 3, 1, 1)
 # PSquareTest(4, 2, 3, 1, 2)
 
-print(getCohomDimP(7, 4, 3, 1, 0))
-print(getCohomDimP(7, 4, 3, 1, 1))
-print(getCohomDimP(7, 4, 3, 1, 2))
-# print(getCohomDimP(7, 4, 3, 2, 0))
-# print(getCohomDimP(7, 4, 3, 2, 1))
-# print(getCohomDimP(7, 4, 3, 2, 2))
+# print(getCohomDimP(10, 5, 3, False, 0))
+# print(getCohomDimP(10, 5, 3, False, 1))
+# print(getCohomDimP(10, 5, 3, False, 2))
+
+# print(getCohomDimP(10, 5, 2, False, 0))
+# print(getCohomDimP(10, 5, 2, False, 1))
 # print(getCohomDimP(8, 5, 2, 2, 1))
 # print(getCohomDimP(4, 3, 2, 1, 2))
 # print(getCohomDimP(3, 1, 3, 1, 2))
