@@ -220,7 +220,7 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    0, 2), range(4, 5), range(2, 3), ['contract'])
+    1, 3), range(1, 2), range(2, 3), ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False,
                 ignore_existing_files=True)
