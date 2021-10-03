@@ -220,12 +220,12 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    5, 6), range(3, 4), range(2, 3), ['contract'])
+    0, 2), range(4, 5), range(2, 3), ['contract'])
 
-# WGC.build_basis(progress_bar=False, info_tracker=False,
-#                 ignore_existing_files=True)
-# WGC.build_matrix(progress_bar=False, info_tracker=False,
-#                  ignore_existing_files=True)
+WGC.build_basis(progress_bar=False, info_tracker=False,
+                ignore_existing_files=True)
+WGC.build_matrix(progress_bar=False, info_tracker=False,
+                 ignore_existing_files=True)
 
 # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
@@ -233,11 +233,11 @@ WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 # WGC.square_zero_test()
 
 # WGC.compute_rank(ignore_existing_files=True, sage="mod")
-# WGC.compute_rank(ignore_existing_files=True, sage="integer")
+WGC.compute_rank(ignore_existing_files=True, sage="integer")
 # WGC.plot_cohomology_dim(to_html=True)
 # Euler char
-# WGC.print_dim_and_eulerchar()
-# WGC.print_cohomology_dim()
+WGC.print_dim_and_eulerchar()
+WGC.print_cohomology_dim()
 
 # PSquareTest(4, 3, 2, 2, 0)
 # PSquareTest(3, 3, 2, 2, 0)
@@ -261,9 +261,9 @@ WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 # PSquareTest(4, 2, 3, 1, 1)
 # PSquareTest(4, 2, 3, 1, 2)
 
-print(getCohomDimP(7, 4, 3, 1, 0))
-print(getCohomDimP(7, 4, 3, 1, 1))
-print(getCohomDimP(7, 4, 3, 1, 2))
+# print(getCohomDimP(7, 4, 3, 1, 0))
+# print(getCohomDimP(7, 4, 3, 1, 1))
+# print(getCohomDimP(7, 4, 3, 1, 2))
 # print(getCohomDimP(7, 4, 3, 2, 0))
 # print(getCohomDimP(7, 4, 3, 2, 1))
 # print(getCohomDimP(7, 4, 3, 2, 2))
