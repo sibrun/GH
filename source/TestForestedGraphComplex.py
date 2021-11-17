@@ -273,8 +273,10 @@ PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
 # PFGC.build_basis(ignore_existing_files=True)
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, 5), range(0, 5), range(0, 5), range(0, 1), False, {'contract'})
-FGC.build_basis(ignore_existing_files=True)
+    range(0, 5), range(0, 5), range(0, 5), range(0, 1), False, {'unmark'})
+# FGC.build_basis(ignore_existing_files=True)
+FGC.build_matrix(progress_bar=False, info_tracker=False,
+                 ignore_existing_files=True)
 
 # WGC = ForestedGraphComplex.ForestedGC(range(0, 14), range(
 #     1, 2), range(4, 6), range(1, 2), ['contract'])

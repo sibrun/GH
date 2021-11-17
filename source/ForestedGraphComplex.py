@@ -286,6 +286,13 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
 
             return [G.relabel(p, inplace=False) for G in preGs for p in all_perm]
 
+    def label_marked_edges(self, G):
+        i = 0
+        for (u, v) in G.edges(labels=False):
+            if (u < self.n_vertices and v < self.n_vertices):
+                G.set_edge_label(u, v, i)
+                i += 1
+
     def perm_sign(self, G, p):
         if self.even_edges:
             # The total sign is:
@@ -320,12 +327,12 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             # For the computation we use that G.edges() returns the edges in lex ordering
             # We first label the edges on a copy of G lexicographically
             G1 = copy(G)
-            Shared.enumerate_edges(G1)
-            print("edges before ", [j for (u, v, j) in G1.edges()])
+            self.label_marked_edges(G1)
+            # print("edges before ", [j for (u, v, j) in G1.edges()])
             # We permute the graph, and read of the new labels, ...
             # but only those between internal vertices of the first color, i.e., the first n_vertices ones
             G1.relabel(p, inplace=True)
-            print("edges after ", [(u, v, j) for (u, v, j) in G1.edges()])
+            # print("edges after ", [(u, v, j) for (u, v, j) in G1.edges()])
 
             return Shared.Perm([j for (u, v, j) in G1.edges() if (u < self.n_vertices and v < self.n_vertices)]).signature()
 
@@ -495,19 +502,19 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "contractD%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "contractD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "contractD%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "contractD%d_%d_%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -527,14 +534,14 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         image = []
         for (u, v) in G.edges(labels=False):
             # only contract marked edges
-            if (u < self.n_vertices and v < self.n_vertices):
+            if (u < self.domain.n_vertices and v < self.domain.n_vertices):
                 # move the two vertices to be merged to the first two positions
                 pp = Shared.permute_to_left(
                     (u, v), range(0, G.order()))
                 sgn = self.domain.perm_sign(G, pp)
                 G1 = copy(G)
                 G1.relabel(pp, inplace=True)
-                Shared.enumerate_edges(G1)
+                self.domain.label_marked_edges(G1)
                 previous_size = G1.size()
                 G1.merge_vertices([0, 1])
                 if (previous_size - G1.size()) != 1:
@@ -543,7 +550,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                 if not self.domain.even_edges:
                     # for odd edges compute the sign of the permutation of internal edges
                     p = [j for (a, b, j) in G1.edges() if (
-                        a < self.n_vertices and b < self.n_vertices)]
+                        a < self.target.n_vertices and b < self.target.n_vertices)]
                     sgn *= Permutation(p).signature()
                 else:
                     # There is no further sign for even edges
@@ -665,19 +672,19 @@ class UnmarkEdgesGO(GraphOperator.GraphOperator):
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = "unmark_edgesD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "unmark_edgesD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "unmark_edgesD%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "unmark_edgesD%d_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ref_matrix_file_path(self):
-        s = "unmark_edgesD%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "unmark_edgesD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_ref_rank_file_path(self):
-        s = "unmark_edgesD%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        s = "unmark_edgesD%d_%d_%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -699,19 +706,20 @@ class UnmarkEdgesGO(GraphOperator.GraphOperator):
         # the new vertex will be the first among the second color vertices (index n_vertices)
         GG = copy(G)
         GG.add_vertex()
-        GG.relabel(list(range(0, self.n_vertices)) + list(range(self.n_vertices +
-                   1, GG.order())) + [self.n_vertices], inplace=True)
-        for (i, e) in enumerate(G.edges(labels=False)):
-            (u, v) = e
+        GG.relabel(list(range(0, self.domain.n_vertices)) + list(range(self.domain.n_vertices +
+                   1, GG.order())) + [self.domain.n_vertices], inplace=True)
+        i = 0  # counts the index of the edge to be unmarked for sign purposes
+        for (u, v) in G.edges(labels=False):
             # only unmark marked edges...
-            if (u < self.n_vertices and v < self.n_vertices):
+            if (u < self.domain.n_vertices and v < self.domain.n_vertices):
                 G1 = copy(GG)
                 G1.delete_edge((u, v))
-                G1.add_edge((u, self.n_vertices))
-                G1.add_edge((v, self.n_vertices))
+                G1.add_edge((u, self.domain.n_vertices))
+                G1.add_edge((v, self.domain.n_vertices))
+                i += 1
                 # For even edges the sign is 1
                 sgn = 1
-                if not self.even_edges:
+                if not self.domain.even_edges:
                     sgn = 1 if (i % 2 == 0) else -1
                 image.append((G1, sgn))
         return image
