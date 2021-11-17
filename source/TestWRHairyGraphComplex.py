@@ -95,15 +95,24 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_bas
         print("all entries zero, i.e., success.")
 
 
+def SymmRepDimension(p):
+    return symmetrica.charvalue(p, [1 for j in range(sum(p))])
+
+
 def PSquareTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
     # Tests whether the projector squares to itself
     symmp = WRHairyGraphComplex.SymmProjector.generate_operator(
         n_vertices, n_loops, n_hairs, n_ws, rep_ind)
     symmp.build_matrix(ignore_existing_files=False)
     P = symmp.get_matrix()
-    diff = P*P - factorial(n_hairs) * P  # should be zero
+    # should be zero
+    diff = P*P - factorial(n_hairs) * P / \
+        SymmRepDimension(Partitions(n_hairs)[rep_ind])
     diffs = sum(abs(c) for cc in diff.columns() for c in cc)
-    print(diffs)
+    print("PSquareTest", n_vertices, n_loops,
+          n_hairs, n_ws, rep_ind, ", result: ", diffs)
+    if diffs > 0:
+        print(P)
 
 
 def PPTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind1, rep_ind2):
@@ -118,7 +127,8 @@ def PPTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind1, rep_ind2):
     P2 = symmp2.get_matrix()
     diff = P1*P2
     diffs = sum(abs(c) for cc in diff.columns() for c in cc)
-    print(diffs)
+    print("PPTest", n_vertices, n_loops,
+          n_hairs, n_ws, rep_ind1, rep_ind2, ", result: ", diffs)
 
 
 def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
@@ -137,7 +147,8 @@ def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
     P2 = symmp2.get_matrix()
     diff = P2*D1-D1*P1
     diffs = sum(abs(c) for cc in diff.columns() for c in cc)
-    print(diffs)
+    print("PDTest", n_vertices, n_loops,
+          n_hairs, n_ws, rep_ind, ", result: ", diffs)
     if diffs > 0 or print_matrices:
         print(P1)
         print(P2)
@@ -151,9 +162,12 @@ def SumOneTest(n_vertices, n_loops, n_hairs, n_ws):
     for j in range(nparts):
         symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
             n_vertices, n_loops, n_hairs, n_ws, j)
-        symmp1.build_matrix(ignore_existing_files=True)
+        symmp1.build_matrix(ignore_existing_files=False)
         P1 = symmp1.get_matrix()
+        P1 = P1.change_ring(
+            QQ) * SymmRepDimension(Partitions(n_hairs)[j]) / factorial(n_hairs)
         Plist.append(P1)
+        # print(P1)
 
     Psum = sum(Plist)
     print(Psum)
@@ -178,15 +192,45 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
     D2P = P1*D2
     print("computing ranks....")
 
-    # diff = D1*D2
-    # diffs = sum(abs(c) for cc in diff.columns() for c in cc)
-    # print(diffs)
+    diff = D1*D2
+    diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    print(diffs)
 
     isocomp_dim = P1.rank()
     r1 = D1P.rank()
     r2 = D2P.rank()
     print(isocomp_dim, r1, r2)
+    cohomdim = isocomp_dim - r1-r2
+    part = Partitions(n_hairs)[rep_ind]
+    rep_dim = symmetrica.charvalue(part, [1 for j in range(n_hairs)])
+    if cohomdim > 0:
+        print("Cohomology found:  w=", n_ws, ", h=", n_hairs, ", l=", n_loops, ", vertices=", n_vertices,
+              " (degree ", n_vertices+n_loops +
+              1, "), partition=", part,  ", invpartition=", part.conjugate(),
+              ", multiplicity=", cohomdim/rep_dim, ", cohomdim=", cohomdim)
     return isocomp_dim - r1-r2
+
+
+def getCohomDimPAll(gvs):
+    for w in gvs.w_range:
+        for h in gvs.h_range:
+            for l in gvs.l_range:
+                for v in gvs.v_range:
+                    D1 = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v, l, h, w)
+                    D2 = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, h, w)
+                    try:
+                        d = WRHairyGraphComplex.WRHairyGraphVS(
+                            v, l, h, w).get_dimension()
+                        r1 = D1.get_matrix_rank()
+                        r2 = D2.get_matrix_rank()
+                        if d-r1-r2 > 0:
+                            for rep_ind in range(len(Partitions(h))):
+                                getCohomDimP(v, l, h, w, rep_ind)
+                    except:
+                        pass
+
 
 # print(diff)
 # print(P)
@@ -220,15 +264,20 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    1, 3), range(1, 2), range(2, 3), ['contract'])
+    1, 2), range(4, 6), range(1, 2), ['contract'])
+
+# WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
+#     0, 1), range(4, 5), range(1, 2), ['contract'])
+
+# WGC.build_basis(progress_bar=False, info_tracker=False,
+#                 ignore_existing_files=True)
+# WGC.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=True)
 
 WGC.build_basis(progress_bar=False, info_tracker=False,
                 ignore_existing_files=True)
 WGC.build_matrix(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
-
-# WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
-# WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 
 # WGC.square_zero_test()
 
@@ -238,6 +287,19 @@ WGC.compute_rank(ignore_existing_files=True, sage="integer")
 # Euler char
 WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
+
+# v = 2
+# l = 0
+# h = 4
+# w = 1
+
+# SumOneTest(v, l, h, w)
+# for j in range(len(Partitions(h))):
+#     PSquareTest(v, l, h, w, j)
+#     PDTest(v, l, h, w, j)
+
+# for j in range(len(Partitions(h))):
+#     print(getCohomDimP(v, l, h, w, j))
 
 # PSquareTest(4, 3, 2, 2, 0)
 # PSquareTest(3, 3, 2, 2, 0)
@@ -260,6 +322,48 @@ WGC.print_cohomology_dim()
 # PSquareTest(4, 2, 3, 1, 0)
 # PSquareTest(4, 2, 3, 1, 1)
 # PSquareTest(4, 2, 3, 1, 2)
+# print(getCohomDimP(2, 1, 5, 2, 1))
+# print(getCohomDimP(4, 1, 5, 2, 2))
+# print(getCohomDimP(4, 1, 5, 2, 3))
+# print(getCohomDimP(4, 1, 5, 2, 4))
+# print(getCohomDimP(4, 1, 5, 2, 5))
+
+getCohomDimPAll(WGC)
+
+# print(getCohomDimP(3, 0, 6, 2, 0))
+# print(getCohomDimP(3, 0, 6, 2, 1))
+# print(getCohomDimP(3, 0, 6, 2, 2))
+# print(getCohomDimP(3, 0, 6, 2, 3))
+# print(getCohomDimP(3, 0, 6, 2, 4))
+# print(getCohomDimP(3, 0, 6, 2, 5))
+# print(getCohomDimP(3, 0, 6, 2, 6))
+# print(getCohomDimP(3, 0, 6, 2, 7))
+# print(getCohomDimP(3, 0, 6, 2, 8))
+# print(getCohomDimP(3, 0, 6, 2, 9))
+# print(getCohomDimP(3, 0, 6, 2, 10))
+
+# print(getCohomDimP(3, 1, 4, 2, 0))
+# print(getCohomDimP(3, 1, 4, 2, 1))
+# print(getCohomDimP(3, 1, 4, 2, 2))
+# print(getCohomDimP(3, 1, 4, 2, 3))
+# print(getCohomDimP(3, 1, 4, 2, 4))
+
+# print(getCohomDimP(2, 0, 5, 2, 0))
+# print(getCohomDimP(2, 0, 5, 2, 1))
+# print(getCohomDimP(2, 0, 5, 2, 2))
+# print(getCohomDimP(2, 0, 5, 2, 3))
+# print(getCohomDimP(2, 0, 5, 2, 4))
+# print(getCohomDimP(2, 0, 5, 2, 5))
+# print(getCohomDimP(2, 0, 5, 2, 6))
+
+# print(getCohomDimP(4, 1, 5, 2, 0))
+# print(getCohomDimP(4, 1, 5, 2, 1))
+# print(getCohomDimP(4, 1, 5, 2, 2))
+# print(getCohomDimP(4, 1, 5, 2, 3))
+# print(getCohomDimP(4, 1, 5, 2, 4))
+# print(getCohomDimP(4, 1, 5, 2, 5))
+# print(getCohomDimP(4, 1, 5, 2, 6))
+
 
 # print(getCohomDimP(7, 4, 3, 1, 0))
 # print(getCohomDimP(7, 4, 3, 1, 1))
