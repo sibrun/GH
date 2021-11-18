@@ -26,6 +26,7 @@ class VectorSpaceProperties(object):
     Attributes:
         - dimension (int): Dimension of the vector space.
     """
+
     def __init__(self):
         """Initialize the vector space properties with None."""
         self.dimension = None
@@ -64,6 +65,7 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
         - valid (bool): Validity of the parameter combination of the graph vector space.
         - dimension (int): Dimension of the graph vector space.
     """
+
     def __init__(self):
         """Initialize the graph vector space properties with None."""
         self.valid = None
@@ -315,8 +317,9 @@ class GraphVectorSpace(VectorSpace):
             corresponding permutation sign.
         :rtype: tuple(str, int)
         """
-        canonG, perm_dict = graph.canonical_label(partition=self.get_partition(), certificate=True)
-        sgn = self.perm_sign(graph, perm_dict.values())
+        canonG, perm_dict = graph.canonical_label(
+            partition=self.get_partition(), certificate=True)
+        sgn = self.perm_sign(graph, list(perm_dict.values()))
         return (canonG.graph6_string(), sgn)
 
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
@@ -345,10 +348,10 @@ class GraphVectorSpace(VectorSpace):
         generating_list = self.get_generating_graphs()
 
         desc = 'Build basis: ' + str(self.get_ordered_param_dict())
-        #if not progress_bar:
+        # if not progress_bar:
         print(desc)
         basis_set = set()
-        #for G in tqdm(generating_list, desc=desc, disable=(not progress_bar)):
+        # for G in tqdm(generating_list, desc=desc, disable=(not progress_bar)):
         for G in generating_list:
             # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set
             # if the graph G doesn't have odd automormphisms.
@@ -357,7 +360,8 @@ class GraphVectorSpace(VectorSpace):
                 canonG = G.canonical_label()
             else:
                 # The canonical labelling respects the partition of the vertices.
-                autom_list = G.automorphism_group(partition=self.get_partition()).gens()
+                autom_list = G.automorphism_group(
+                    partition=self.get_partition()).gens()
                 canonG = G.canonical_label(partition=self.get_partition())
 
             canon6 = canonG.graph6_string()
@@ -382,7 +386,7 @@ class GraphVectorSpace(VectorSpace):
             pd = p.dict()
             pp = [pd[j] for j in range(G.order())]
             if self.perm_sign(G, pp) == -1:
-               return True
+                return True
         return False
 
     def exists_basis_file(self):
@@ -407,7 +411,8 @@ class GraphVectorSpace(VectorSpace):
             header = StoreLoad.load_line(self.get_basis_file_path())
             return int(header)
         except StoreLoad.FileNotFoundError:
-            raise StoreLoad.FileNotFoundError("Dimension unknown for %s: No basis file" % str(self))
+            raise StoreLoad.FileNotFoundError(
+                "Dimension unknown for %s: No basis file" % str(self))
 
     def _store_basis_g6(self, basis_list):
         """Store the basis to the basis file.
@@ -435,11 +440,13 @@ class GraphVectorSpace(VectorSpace):
         :raise ValueError: Raised if dimension in header doesn't correspond to the basis dimension.
         """
         if not self.exists_basis_file():
-            raise StoreLoad.FileNotFoundError("Cannot load basis, No basis file found for %s: " % str(self))
+            raise StoreLoad.FileNotFoundError(
+                "Cannot load basis, No basis file found for %s: " % str(self))
         basis_list = StoreLoad.load_string_list(self.get_basis_file_path())
         dim = int(basis_list.pop(0))
         if len(basis_list) != dim:
-            raise ValueError("Basis read from file %s has wrong dimension" % str(self.get_basis_file_path()))
+            raise ValueError("Basis read from file %s has wrong dimension" % str(
+                self.get_basis_file_path()))
         return basis_list
 
     def get_basis_g6(self):
@@ -499,7 +506,6 @@ class GraphVectorSpace(VectorSpace):
         :rtype: str"""
         return os.path.splitext(self.get_basis_file_path())[0]+'_plots'
 
-
     def plot_graph(self, G):
         """ Plots a graph for use in the visuaization routines.
         This method can be overwritten to provide custom visualization.
@@ -528,32 +534,32 @@ class GraphVectorSpace(VectorSpace):
         The respective filename is the index of the graph in the basis (plus .png).
         """
         ba = self.get_basis()
-        for (j,G) in enumerate(ba):
+        for (j, G) in enumerate(ba):
             path = os.path.join(self.get_plot_path(),  '%d.png' % (j))
             if (not skip_existing) or (not os.path.isfile(path)):
                 StoreLoad.generate_path(path)
                 P = self.plot_graph(G)
                 P.save(path)
-    
+
     def display_basis_plots(self):
         """Displays pictures of the basis elements in a web browser"""
         self.plot_all_graphs_to_file(skip_existing=True)
         ba = self.get_basis_g6()
-        sarr = ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(j, ba[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j))) \
-                for j in range(0,self.get_dimension()) ]
-        s = ' '.join( sarr )
+        sarr = ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(j, ba[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j)))
+                for j in range(0, self.get_dimension())]
+        s = ' '.join(sarr)
         DisplayInfo.display_html_body("<table>"+s+"</table>")
-    
+
     def display_vector(self, v):
         """Displays a table (with pictures) in a html file of the vector v.
         v can be either a dict or a list.
         """
         self.plot_all_graphs_to_file(skip_existing=True)
-        sarr = ["<tr><td>({})</td><td>{}</td><td><img src='{}'></td>".format(j, v[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j))) \
-                for j in range(0,self.get_dimension()) ]
-        s = ' '.join( sarr )
+        sarr = ["<tr><td>({})</td><td>{}</td><td><img src='{}'></td>".format(j, v[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j)))
+                for j in range(0, self.get_dimension())]
+        s = ' '.join(sarr)
         DisplayInfo.display_html_body("<table>"+s+"</table>")
-    
+
     # def display_idict(self, d):
     #     # assumes the graphs have been plotted already?????todo
     #     to_plot = [j for j,nr in d.iteritems()]
@@ -708,7 +714,8 @@ class SumVectorSpace(VectorSpace):
         elif key == 'dim':
             self.vs_list.sort(key=operator.methodcaller('get_sort_dim'))
         else:
-            raise ValueError("Invalid sort key. Options: 'work_estimate', 'dim'")
+            raise ValueError(
+                "Invalid sort key. Options: 'work_estimate', 'dim'")
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the basis of the sub vector spaces.
@@ -731,7 +738,8 @@ class SumVectorSpace(VectorSpace):
         """
         print(' ')
         print('Build basis of %s' % str(self))
-        info_tracker = False if isinstance(self, DegSlice) and not Parameters.second_info else info_tracker
+        info_tracker = False if isinstance(
+            self, DegSlice) and not Parameters.second_info else info_tracker
         if n_jobs > 1:
             # If mor than 1 process progress bar and info tracker are not activated.
             progress_bar = False
@@ -740,12 +748,13 @@ class SumVectorSpace(VectorSpace):
             self.start_tracker()
         self.sort()
         Parallel.parallel(self._build_single_basis, self.vs_list, n_jobs=n_jobs, progress_bar=progress_bar,
-                        ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+                          ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
-        vs.build_basis(progress_bar=progress_bar, ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
+        vs.build_basis(progress_bar=progress_bar,
+                       ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
             self.update_tracker(vs)
 
@@ -765,7 +774,8 @@ class SumVectorSpace(VectorSpace):
         self.set_tracker_parameters()
         vs_info_dict = collections.OrderedDict()
         for vs in self.vs_list:
-            vs_info_dict.update({tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
+            vs_info_dict.update(
+                {tuple(vs.get_ordered_param_dict().values()): vs.get_properties().list()})
         self.info_tracker.update_data(vs_info_dict)
         self.info_tracker.start()
 
@@ -776,7 +786,8 @@ class SumVectorSpace(VectorSpace):
         :type vector_space: VectorSpace
         """
         vector_space.update_properties()
-        message = {tuple(vector_space.get_ordered_param_dict().values()): vector_space.get_properties().list()}
+        message = {tuple(vector_space.get_ordered_param_dict(
+        ).values()): vector_space.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
@@ -792,8 +803,10 @@ class SumVectorSpace(VectorSpace):
         data_list = []
         for vs in self.vs_list:
             vs.update_properties()
-            data_list.append(list(vs.get_ordered_param_dict().values()) + vs.get_properties().list())
-        DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
+            data_list.append(
+                list(vs.get_ordered_param_dict().values()) + vs.get_properties().list())
+        DisplayInfo.plot_info(data_list, header_list,
+                              path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):
         try:
@@ -802,8 +815,6 @@ class SumVectorSpace(VectorSpace):
         except IndexError:
             param_names = property_names = []
         return param_names + property_names
-
-
 
 
 class DegSlice(SumVectorSpace):
@@ -879,7 +890,8 @@ class DegSlice(SumVectorSpace):
         """
         super(DegSlice, self).build_basis(**kwargs)
         if not self.is_complete():
-            raise ValueError('Degree slice %s should be completely built' % str(self))
+            raise ValueError(
+                'Degree slice %s should be completely built' % str(self))
 
     def build_start_idx_dict(self):
         """Build a dictionary of start indices of the sub vector spaces.
@@ -909,7 +921,8 @@ class DegSlice(SumVectorSpace):
             self.build_start_idx_dict()
         start_idx = self.start_idx_dict.get(vector_space)
         if start_idx is None:
-            raise ValueError('vector_space should refer to a sub vector space of the degree slice')
+            raise ValueError(
+                'vector_space should refer to a sub vector space of the degree slice')
         return start_idx
 
     def is_complete(self):
@@ -921,6 +934,7 @@ class DegSlice(SumVectorSpace):
         :rtype: bool
         """
         if len(self.vs_list) != self.deg + 1:
+            print("Incomplete: ", len(self.vs_list), self.deg)
             return False
         for vs in self.vs_list:
             if vs is None or (vs.is_valid() and not vs.exists_basis_file()):

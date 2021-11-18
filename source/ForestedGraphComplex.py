@@ -167,7 +167,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         graphs_oneless = VS.get_basis()
         res = []
         for G in graphs_oneless:
-            for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges):
+            for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges+1):
                 nb = G.neighbors(i)
                 if len(nb) != 2:
                     raise ValueError(
@@ -182,7 +182,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
                 GG.relabel(range(0, GG.order()))
 
                 # check for loop
-                if (G.subgraph(range(self.n_vertices)).is_forest()):
+                if (GG.subgraph(range(self.n_vertices)).is_forest()):
                     res.append(GG)
 
         return res
@@ -193,15 +193,16 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
 
 class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
     """Forested graph vector space.
-    Similar to PreForestedGVS, but does not implement the symmetry handling.
+    Similar to PreForestedGVS, but implements the symmetry handling.
 
     Sub vector space with specified number of vertices, loops, marked edges, hairs
     and and at least trivalent vertices.
 
     Graphs have a forest of marked edges.
-    There may be multiple unmarked edges, but no unmarked tadpoles.
+    There may be multiple unmarked edges, and unmarked tadpoles.
     The marked edges are the ordinary edges between the first n_vertices vertices.
-    The unmarked edges are encoded by the following n_unmarked_edges bivalent vertices.
+    The unmarked edges are encoded by the following n_unmarked_edges vertices.
+    Bivalent such vertices encode edges, and univalent encode tadpoles.
     The following n_hairs vertices correspond to the hairs.
     The edges that form the hairs cannot be marked.
 
@@ -245,6 +246,12 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             and self.n_marked_edges == other.n_marked_edges and self.n_hairs == other.n_hairs \
             and self.even_edges == other.even_edges
 
+    def __str__(self):
+        return ("ForestedGVS_%s_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple()) + self.sub_type
+
+    def __hash__(self):
+        return hash(str(self))
+
     def get_basis_file_path(self):
         s = "gra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -274,17 +281,38 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             return []
 
         # we assume the basis of the intermediate GVS has alread been constructed
-        preGs = self.preVS.get_basis()
+        # We need to add (tp many) tadpoles to graphs and permute hairs
 
-        if self.n_hairs == 0:
-            return preGs
-        else:
-            # Produce all permutations of the hairs
-            all_perm = [list(range(0, self.n_vertices+self.n_marked_edges)) + list(p)
-                        for p in itertools.permutations(range(self.n_vertices+self.n_unmarked_edges,
-                                                              self.n_vertices+self.n_hairs+self.n_unmarked_edges))]
+        res = []
+        # we have no tadpoles if edges are even
+        maxtp = 0 if self.even_edges else self.n_loops
+        for tp in range(0, maxtp+1):
+            newgs = []
+            preVS = PreForestedGVS(
+                self.n_vertices, self.n_loops-tp, self.n_marked_edges, self.n_hairs+tp)
+            preGs = preVS.get_basis()
 
-            return [G.relabel(p, inplace=False) for G in preGs for p in all_perm]
+            if self.n_hairs+tp == 0:
+                newgs = preGS
+            else:
+                # Produce all permutations of the hairs, including those that are encoding tadpoles
+                id = Permutation(range(1, tp+1))
+                p1s = [p for pp in Permutations(self.n_hairs)
+                       for p in id.shifted_shuffle(pp)]
+                idv = list(range(0, self.n_vertices+self.n_unmarked_edges-tp))
+                all_perm = [idv + [j+self.n_vertices +
+                                   self.n_unmarked_edges-tp for j in p] for p in p1s]
+
+                # all_perm = [list(range(0, self.n_vertices+self.n_unmarked_edges))
+                #             + list(p)
+                #             for p in itertools.permutations(range(self.n_vertices+self.n_unmarked_edges,
+                #                                                   self.n_vertices+self.n_hairs+self.n_unmarked_edges))]
+
+                newgs = [G.relabel(p, inplace=False)
+                         for G in preGs for p in all_perm]
+
+            res = res+newgs
+        return res
 
     def label_marked_edges(self, G):
         i = 0
@@ -300,6 +328,7 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             # * (b:induced sign of the unmarked-edge-permutation)
             # * (c:induced sign unmarked-edge orientations)
             # * (d:induced sign marked-edge orientations)
+            # note that we have no tadpoles in case of even edges
 
             # This is a*b
             sign = Shared.Perm(
@@ -498,7 +527,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         domain = ForestedGVS(n_vertices, n_loops,
                              n_marked_edges, n_hairs, even_edges)
         target = ForestedGVS(n_vertices - 1, n_loops,
-                             n_marked_edges, n_hairs, even_edges)
+                             n_marked_edges-1, n_hairs, even_edges)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -542,15 +571,19 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                 G1 = copy(G)
                 G1.relabel(pp, inplace=True)
                 self.domain.label_marked_edges(G1)
-                previous_size = G1.size()
+                # previous_size = G1.size()
                 G1.merge_vertices([0, 1])
-                if (previous_size - G1.size()) != 1:
-                    continue
+                # if (previous_size - G1.size()) != 1:
+                #     continue
                 G1.relabel(list(range(0, G1.order())), inplace=True)
                 if not self.domain.even_edges:
                     # for odd edges compute the sign of the permutation of internal edges
                     p = [j for (a, b, j) in G1.edges() if (
                         a < self.target.n_vertices and b < self.target.n_vertices)]
+                    # If we removed more then one marked edge stop
+                    if len(p) < self.n_marked_edges-1:
+                        print("This should not happen....")
+                        continue
                     sgn *= Permutation(p).signature()
                 else:
                     # There is no further sign for even edges
@@ -798,3 +831,244 @@ class ForestedGC(GraphComplex.GraphComplex):
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
+
+
+# ------------- Bicomplex ------------------------
+
+class ContractUnmarkBiOM(GraphOperator.BiOperatorMatrix):
+    """Bi operator matrix based on the differentials contract edges and unmark edges.
+
+    Attributes:
+            - sub_type (str): Sub type of graphs.
+    """
+
+    def __init__(self, domain, target):
+        self.sub_type = domain.sub_type
+        super(ContractUnmarkBiOM, self).__init__(domain, target, ContractEdgesGO,
+                                                 UnmarkEdgesGO)
+
+    @classmethod
+    def generate_operator(cls, n_loops, n_marked_edges, n_hairs, even_edges):
+        domain = ForestedDegSlice(n_loops,
+                                  n_marked_edges, n_hairs, even_edges)
+        target = ForestedDegSlice(n_loops,
+                                  n_marked_edges-1, n_hairs, even_edges)
+        return cls(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: ForestedDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: ForestedDegSlice
+        :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
+        """
+        return domain.n_marked_edges - 1 == target.n_marked_edges \
+            and domain.n_loops == target.n_loops \
+            and domain.n_hairs == target.n_hairs \
+            and domain.even_edges == target.even_edges
+
+    def get_matrix_file_path(self):
+        s = "bi_D_contract_unmark_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "bi_D_contract_unmark_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+
+class ForestedDegSlice(GraphVectorSpace.DegSlice):
+    """Degree slice of forested graphs
+
+    Total degree = marked edges
+
+    Attributes:
+        - even_edges (bool): True for even edges, False for odd edges.
+
+    """
+
+    def is_complete(self):
+        for vs in self.vs_list:
+            if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
+                return False
+        return True
+
+    def __init__(self, n_loops, n_marked_edges, n_hairs, even_edges):
+        """Initialize the degree slice.
+
+        :param deg: Total degree of the degree slice.
+        :type deg: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        """
+        self.n_loops = n_loops
+        self.n_marked_edges = n_marked_edges
+        self.n_hairs = n_hairs
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(even_edges)
+        max_vertices = 2*n_loops-2 + n_hairs
+        min_vertices = n_marked_edges+1
+        super(ForestedDegSlice, self).__init__(
+            [ForestedGVS(v, n_loops, n_marked_edges, n_hairs, even_edges)
+             for v in range(min_vertices, max_vertices + 1)],
+            n_marked_edges)
+
+    def get_ordered_param_dict(self):
+        return Shared.OrderedDict([('loops', self.n_loops), ('marked_edges', self.n_marked_edges), ('hairs', self.n_hairs)])
+
+    def __eq__(self, other):
+        return self.n_loops == other.n_loops \
+            and self.n_marked_edges == other.n_marked_edges and self.n_hairs == other.n_hairs
+
+    def __str__(self):
+        return ("ForestedDegSlice_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple()) + self.sub_type
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_degree_slice_deg_%d_%d_%d_%s_%s" % (
+            self.n_loops, self.n_marked_edges, self.n_hairs, graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class ForestedBigradedSumVS(GraphVectorSpace.SumVectorSpace):
+    """Bi graded vector space based on ordinary simple graphs.
+
+    Bi grading according to the number of vertices and loops.
+    Direct sum of degree slices.
+
+    Attributes:
+        - deg_range (range): Range for the total degree.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
+    """
+
+    def __init__(self, l_range, m_range, h_range, even_edges):
+        """ Initialize the bi graded vector space.
+
+        :param deg_range: Range for the degree.
+        :type deg_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        """
+        self.l_range = l_range
+        self.m_range = m_range
+        self.h_range = h_range
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(even_edges)
+        super(ForestedBigradedSumVS, self).__init__([ForestedDegSlice(l, m, h, self.even_edges)
+                                                     for l in l_range for m in m_range for h in h_range])
+
+    def get_type(self):
+        return '%s graphs with %s' % (graph_type, self.sub_type)
+
+    def get_ordered_param_range_dict(self):
+        return Shared.OrderedDict([('loops', self.l_range), ('marked_edges', self.m_range), ('hairs', self.h_range)])
+
+    def get_info_plot_path(self):
+        s = "info_bigraded_vector_space_%s_%s" % (
+            graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class ContractUnmarkD(GraphOperator.Differential):
+    """Differential on the bi graded vector space based on the operators contract edges and delete edges.
+
+    Only for graphs with odd edges.
+    """
+
+    def __init__(self, graded_sum_vs):
+        """Initialize the contract and delete edges differential with the underlying bi graded vector space.
+
+        :param graded_sum_vs: Underlying bi graded vector space.
+        :type graded_sum_vs: VertexLoopBigradedSumVS
+        """
+        super(ContractUnmarkD, self).__init__(graded_sum_vs,
+                                              ContractUnmarkBiOM.generate_op_matrix_list(graded_sum_vs))
+
+    def get_type(self):
+        return 'contract edges and delete edges'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_contract_edges_delete_edges_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_delete_edges_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_ordered_cohomology_param_range_dict(self):
+        s = self.sum_vector_space
+        return Shared.OrderedDict([('loops', s.l_range), ('marked_edges', s.m_range), ('hairs', s.h_range)])
+
+
+class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
+    """Bi complex based on ordinary simple graphs and the differentials contract edges and delete edges.
+
+    Attributes:
+        - deg_range (range): Range for the total degree.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
+    """
+
+    def __init__(self, l_range, m_range, h_range, even_edges):
+        """Initialize the bi complex.
+
+        :param deg_range: Range for the degree.
+        :type deg_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        """
+        self.l_range = l_range
+        self.m_range = m_range
+        self.h_range = h_range
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(self.even_edges)
+        graded_sum_vs = ForestedBigradedSumVS(
+            l_range, m_range, h_range, self.even_edges)
+        super(ForestedContractUnmarkBiGC, self).__init__(
+            graded_sum_vs, [ContractUnmarkD(graded_sum_vs)])
+
+    def __str__(self):
+        return '<%s graphs bi-complex with %s>' % (graph_type, str(self.sub_type))
+
+    def print_dim_and_eulerchar(self):
+        for h in self.h_range:
+            for l in self.l_range:
+                ds = [ForestedDegSlice(l, m, h, self.even_edges).get_dimension()
+                      for m in self.m_range]
+                eul = sum([(1 if j % 2 == 0 else -1) *
+                           d for j, d in enumerate(ds)])
+                print("Dimensions (h,l) ",
+                      h, l, self.sub_type, ":", ds, "Euler", eul)
+
+    def print_cohomology_dim(self):
+        for h in self.h_range:
+            for l in self.l_range:
+                cohomdict = {}
+                for m in self.m_range:
+                    D1 = ContractUnmarkBiOM.generate_operator(
+                        l, m, h, self.even_edges)
+                    D2 = ContractUnmarkBiOM.generate_operator(
+                        l, m-1, h, self.even_edges)
+                    try:
+                        d = ForestedDegSlice(
+                            l, m, h, self.even_edges).get_dimension()
+                        r1 = D1.get_matrix_rank()
+                        r2 = D2.get_matrix_rank()
+                        cohomdict[m] = d-r1-r2
+                    except:
+                        pass
+
+                print("Cohomology Dimensions (h,l) ",
+                      h, l, self.sub_type, ":", cohomdict)

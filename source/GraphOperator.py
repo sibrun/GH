@@ -33,6 +33,7 @@ class OperatorMatrixProperties(object):
         - entries (int): Number of nonzero entries of the sparse matrix.
         - rank (int): Rank of the operator matrix.
     """
+
     def __init__(self):
         """Initialize the matrix properties with None."""
         self.valid = None
@@ -286,7 +287,8 @@ class OperatorMatrix(object):
                 Matrix indices outside matrix shape.
         """
         if not self.exists_matrix_file():
-            raise StoreLoad.FileNotFoundError("Cannot load matrix, No matrix file found for %s: " % str(self))
+            raise StoreLoad.FileNotFoundError(
+                "Cannot load matrix, No matrix file found for %s: " % str(self))
         stringList = StoreLoad.load_string_list(self.get_matrix_file_path())
         (d, t, data_type) = stringList.pop(0).split(" ")
         shape = (d, t) = (int(d), int(t))
@@ -301,7 +303,8 @@ class OperatorMatrix(object):
         for line in stringList:
             (i, j, v) = map(int, line.split(" "))
             if i < 1 or j < 1:
-                raise ValueError("%s: Invalid matrix index: %d %d" % (str(self.get_matrix_file_path()), i, j))
+                raise ValueError("%s: Invalid matrix index: %d %d" %
+                                 (str(self.get_matrix_file_path()), i, j))
             if i > d or j > t:
                 raise ValueError("%s: Invalid matrix index outside matrix size:"
                                  " %d %d" % (str(self.get_matrix_file_path()), i, j))
@@ -366,7 +369,7 @@ class OperatorMatrix(object):
                 t = self.target.get_dimension()
             except StoreLoad.FileNotFoundError:
                 raise StoreLoad.FileNotFoundError("Matrix shape of %s unknown: "
-                                           "Build matrix or domain and target basis first" % str(self))
+                                                  "Build matrix or domain and target basis first" % str(self))
         return (t, d)
 
     def get_matrix_shape_entries(self):
@@ -388,7 +391,8 @@ class OperatorMatrix(object):
             (d, t) = shape
             return ((t, d), len(matrixList))
         except StoreLoad.FileNotFoundError:
-            raise StoreLoad.FileNotFoundError("Matrix shape and entries unknown for %s: No matrix file" % str(self))
+            raise StoreLoad.FileNotFoundError(
+                "Matrix shape and entries unknown for %s: No matrix file" % str(self))
 
     def get_matrix_entries(self):
         """Return the number of non-zero matrix entries.
@@ -443,7 +447,7 @@ class OperatorMatrix(object):
         """
         if not self.is_valid():
             logger.warn("Zero matrix: %s is not valid" % str(self))
-            (d ,t) = (self.domain.get_dimension(), self.target.get_dimension())
+            (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
             entries_list = []
         else:
             (entries_list, shape) = self._load_matrix_list()
@@ -468,7 +472,8 @@ class OperatorMatrix(object):
         """
         M = self.get_matrix_transposed().transpose()
         if M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension():
-            raise ValueError("Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
+            raise ValueError(
+                "Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
         return M
 
     def get_matrix_scipy_transposed(self):
@@ -496,7 +501,8 @@ class OperatorMatrix(object):
                 row_ind.append(r)
                 col_ind.append(c)
                 data.append(d)
-        M = sparse.csc_matrix((data, (row_ind, col_ind)), shape=shape, dtype='d')
+        M = sparse.csc_matrix((data, (row_ind, col_ind)),
+                              shape=shape, dtype='d')
         return M
 
     def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
@@ -532,15 +538,18 @@ class OperatorMatrix(object):
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_rank_file():
-                return
+            return
         elif self.exists_rank_file():
             self.delete_rank_file()
-        print('Compute matrix rank: Domain: ' + str(self.domain.get_ordered_param_dict()))
+        print('Compute matrix rank: Domain: ' +
+              str(self.domain.get_ordered_param_dict()))
         try:
-            rank_dict = self._compute_rank(sage=sage, linbox=linbox, rheinfall=rheinfall)
+            rank_dict = self._compute_rank(
+                sage=sage, linbox=linbox, rheinfall=rheinfall)
         except StoreLoad.FileNotFoundError as error:
             if skip_if_no_matrix:
-                logger.info("Skip computing rank of %s, since matrix is not built" % str(self))
+                logger.info(
+                    "Skip computing rank of %s, since matrix is not built" % str(self))
                 return
             else:
                 raise error
@@ -560,7 +569,8 @@ class OperatorMatrix(object):
             try:
                 if sage is not None:
                     if not set(sage) <= Parameters.sage_rank_options:
-                        raise ValueError("Options for rank computations with sage: " + str(Parameters.sage_rank_options))
+                        raise ValueError(
+                            "Options for rank computations with sage: " + str(Parameters.sage_rank_options))
                     for option in sage:
                         if option == 'integer':
                             M = self.get_matrix_transposed()
@@ -577,21 +587,25 @@ class OperatorMatrix(object):
                         raise ValueError("Options for rank computations with linbox: " +
                                          str(LinboxInterface.linbox_options))
                     for option in linbox:
-                        rank_linbox = LinboxInterface.rank(option, self.get_matrix_file_path(), prime=prime)
-                        info = "linbox_%s" % option if option == "rational" else "linbox_%s_%d" % (option, prime)
+                        rank_linbox = LinboxInterface.rank(
+                            option, self.get_matrix_file_path(), prime=prime)
+                        info = "linbox_%s" % option if option == "rational" else "linbox_%s_%d" % (
+                            option, prime)
                         rank_dict.update({info: rank_linbox})
                 if rheinfall is not None:
                     if not set(rheinfall) <= RheinfallInterface.rheinfall_options:
                         raise ValueError("Options for rank computations with rheinfall: " +
                                          str(RheinfallInterface.rheinfall_options))
                     for option in rheinfall:
-                        rank_rheinfall = RheinfallInterface.rank(option, self.get_matrix_file_path())
+                        rank_rheinfall = RheinfallInterface.rank(
+                            option, self.get_matrix_file_path())
                         if rank_rheinfall == 0:
                             return self._compute_rank(sage='integer')
                         info = "rheinfall_" + option
                         rank_dict.update({info: rank_rheinfall})
             except StoreLoad.FileNotFoundError:
-                raise StoreLoad.FileNotFoundError("Cannot compute rank of %s: First build operator matrix" % str(self))
+                raise StoreLoad.FileNotFoundError(
+                    "Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
 
     def _store_rank_dict(self, update_rank_dict):
@@ -600,7 +614,8 @@ class OperatorMatrix(object):
         except StoreLoad.FileNotFoundError:
             rank_dict = dict()
         rank_dict.update(update_rank_dict)
-        rank_list = [str(rank) + ' ' + mode for (mode, rank) in rank_dict.items()]
+        rank_list = [str(rank) + ' ' + mode for (mode, rank)
+                     in rank_dict.items()]
         StoreLoad.store_string_list(rank_list, self.get_rank_file_path())
 
     def _load_rank_dict(self):
@@ -609,7 +624,8 @@ class OperatorMatrix(object):
         try:
             rank_list = StoreLoad.load_string_list(self.get_rank_file_path())
         except StoreLoad.FileNotFoundError:
-            raise StoreLoad.FileNotFoundError("Cannot load matrix rank, No rank file found for %s: " % str(self))
+            raise StoreLoad.FileNotFoundError(
+                "Cannot load matrix rank, No rank file found for %s: " % str(self))
         rank_dict = dict()
         for line in rank_list:
             (rank, mode) = line.split(" ")
@@ -628,9 +644,11 @@ class OperatorMatrix(object):
         rank_dict = self._load_rank_dict()
         ranks = list(rank_dict.values())
         if len(ranks) == 0:
-            raise ValueError("No matrix rank stored in rank file for " + str(self))
+            raise ValueError(
+                "No matrix rank stored in rank file for " + str(self))
         if len(set(ranks)) != 1:
-            raise ValueError("Matrix ranks computed with different methods are not equal for " + str(self))
+            raise ValueError(
+                "Matrix ranks computed with different methods are not equal for " + str(self))
         return ranks[0]
 
     def get_sort_size(self):
@@ -781,36 +799,39 @@ class GraphOperator(Operator, OperatorMatrix):
         except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
                 raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
-                                           "First build basis of the domain %s" % (str(self), str(self.domain)))
+                                                  "First build basis of the domain %s" % (str(self), str(self.domain)))
             else:
                 logger.info("Skip building operator matrix of %s "
-                             "since basis of the domain %s is not built" % (str(self), str(self.domain)))
+                            "since basis of the domain %s is not built" % (str(self), str(self.domain)))
                 return
         try:
             target_basis6 = self.target.get_basis_g6()
         except StoreLoad.FileNotFoundError:
             if not skip_if_no_basis:
                 raise StoreLoad.FileNotFoundError("Cannot build operator matrix of %s: "
-                                           "First build basis of the target %s" % (str(self), str(self.target)))
+                                                  "First build basis of the target %s" % (str(self), str(self.target)))
             else:
                 logger.info("Skip building operator matrix of %s "
-                             "since basis of the target %s is not built" % (str(self), str(self.target)))
+                            "since basis of the target %s is not built" % (str(self), str(self.target)))
                 return
 
-        shape = (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
+        shape = (d, t) = (self.domain.get_dimension(),
+                          self.target.get_dimension())
         if d == 0 or t == 0:
             self._store_matrix_list([], shape)
             return
 
         lookup = {G6: j for (j, G6) in enumerate(target_basis6)}
-        desc = 'Build matrix of %s operator: Domain: %s' % (str(self.get_type()), str(self.domain.get_ordered_param_dict()))
+        desc = 'Build matrix of %s operator: Domain: %s' % (
+            str(self.get_type()), str(self.domain.get_ordered_param_dict()))
 
-        #if not progress_bar:
+        # if not progress_bar:
         print(desc)
         list_of_lists = []
-        #for domain_basis_element in tqdm(list(enumerate(domain_basis)), desc=desc, disable=(not progress_bar)):
+        # for domain_basis_element in tqdm(list(enumerate(domain_basis)), desc=desc, disable=(not progress_bar)):
         for domain_basis_element in list(enumerate(domain_basis)):
-            list_of_lists.append(self._generate_matrix_list(domain_basis_element, lookup))
+            list_of_lists.append(self._generate_matrix_list(
+                domain_basis_element, lookup))
         matrix_list = list(itertools.chain.from_iterable(list_of_lists))
         matrix_list.sort()
         self._store_matrix_list(matrix_list, shape)
@@ -928,7 +949,8 @@ class BiOperatorMatrix(OperatorMatrix):
             target_start_idx = self.target.get_start_idx(op.get_target())
             subMatrixList = op.get_matrix_list()
             for (i, j, v) in subMatrixList:
-                matrixList.append((i + domain_start_idx, j + target_start_idx, v))
+                matrixList.append(
+                    (i + domain_start_idx, j + target_start_idx, v))
         matrixList.sort()
         return matrixList
 
@@ -944,6 +966,7 @@ class OperatorMatrixCollection(object):
         - info_tracker (DisplayInfo.InfoTracker): Tracker for information about the operator matrices in op_matrix_list.
             Tracker is only active if the different operator matrices are not built in parallel.
         """
+
     def __init__(self, sum_vector_space, op_matrix_list):
         """Initialize the underlying sum vector space and the list of operator matrices composing the operator.
 
@@ -1006,13 +1029,17 @@ class OperatorMatrixCollection(object):
         :raise  ValueError: If an unknown sort key is given.
         """
         if key == 'work_estimate':
-            self.op_matrix_list.sort(key=operator.methodcaller('get_work_estimate'))
+            self.op_matrix_list.sort(
+                key=operator.methodcaller('get_work_estimate'))
         elif key == 'size':
-            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_size'))
+            self.op_matrix_list.sort(
+                key=operator.methodcaller('get_sort_size'))
         elif key == 'entries':
-            self.op_matrix_list.sort(key=operator.methodcaller('get_sort_entries'))
+            self.op_matrix_list.sort(
+                key=operator.methodcaller('get_sort_entries'))
         else:
-            raise ValueError("Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
+            raise ValueError(
+                "Invalid sort key. Options: 'work_estimate', 'size', 'entries'")
 
     def build_matrix(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         """Build the operator matrices of the operator.
@@ -1114,7 +1141,8 @@ class OperatorMatrixCollection(object):
         self.set_tracker_parameters()
         op_info_dict = collections.OrderedDict()
         for op in self.op_matrix_list:
-            op_info_dict.update({tuple(op.get_domain().get_ordered_param_dict().values()): op.get_properties().list()})
+            op_info_dict.update({tuple(
+                op.get_domain().get_ordered_param_dict().values()): op.get_properties().list()})
         self.info_tracker.update_data(op_info_dict)
         self.info_tracker.start()
 
@@ -1125,7 +1153,8 @@ class OperatorMatrixCollection(object):
         :type op: OperatorMatrix
         """
         op.update_properties()
-        message = {tuple(op.get_domain().get_ordered_param_dict().values()): op.get_properties().list()}
+        message = {tuple(op.get_domain().get_ordered_param_dict(
+        ).values()): op.get_properties().list()}
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
@@ -1139,12 +1168,15 @@ class OperatorMatrixCollection(object):
         data_list = []
         for op in self.op_matrix_list:
             op.update_properties()
-            data_list.append(list(op.domain.get_ordered_param_dict().values()) + op.get_properties().list())
-        DisplayInfo.plot_info(data_list, header_list, path, to_html=True, to_csv=False)
+            data_list.append(
+                list(op.domain.get_ordered_param_dict().values()) + op.get_properties().list())
+        DisplayInfo.plot_info(data_list, header_list,
+                              path, to_html=True, to_csv=False)
 
     def _get_info_header_list(self):
         try:
-            param_names = list(self.get_vector_space().get_vs_list()[0].get_ordered_param_dict().keys())
+            param_names = list(self.get_vector_space().get_vs_list()[
+                               0].get_ordered_param_dict().keys())
         except IndexError:
             param_names = []
         return param_names + OperatorMatrixProperties.names()
@@ -1212,7 +1244,8 @@ class Differential(OperatorMatrixCollection):
         try:
             dimV = opD.get_domain().get_dimension()
         except StoreLoad.FileNotFoundError:
-            logger.info("Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+            logger.info(
+                "Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
             return None
         if dimV == 0:
             return '*'
@@ -1220,7 +1253,8 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankD = opD.get_matrix_rank()
             except StoreLoad.FileNotFoundError:
-                logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+                logger.info(
+                    "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
                 return None
         else:
             rankD = 0
@@ -1228,13 +1262,15 @@ class Differential(OperatorMatrixCollection):
             try:
                 rankDD = opDD.get_matrix_rank()
             except StoreLoad.FileNotFoundError:
-                logger.info("Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+                logger.info(
+                    "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
                 return None
         else:
             rankDD = 0
         cohomology_dim = dimV - rankD - rankDD
         if cohomology_dim < 0:
-            raise ValueError("Negative cohomology dimension for %s (%d - %d - %d)" % (str(opD.domain), dimV , rankD , rankDD) )
+            raise ValueError("Negative cohomology dimension for %s (%d - %d - %d)" %
+                             (str(opD.domain), dimV, rankD, rankDD))
             #logger.error("Negative cohomology dimension for %s" % str(opD.domain))
         return cohomology_dim
 
@@ -1260,7 +1296,8 @@ class Differential(OperatorMatrixCollection):
         cohomology_dim = self._get_cohomology_dim_dict()
         dim_dict = dict()
         for vs in self.sum_vector_space.get_vs_list():
-            dim_dict.update({vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
+            dim_dict.update(
+                {vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
         return dim_dict
 
     def complex_is_acyclic(self):
@@ -1309,17 +1346,20 @@ class Differential(OperatorMatrixCollection):
                 elif res == 'inc':
                     inc_l += 1
                 elif res == 'fail':
-                    print("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
-                    logger.error("Square zero test for %s: failed for the pair %s, %s" % (str(self), str(op1), str(op2)))
+                    print("Square zero test for %s: failed for the pair %s, %s" % (
+                        str(self), str(op1), str(op2)))
+                    logger.error("Square zero test for %s: failed for the pair %s, %s" % (
+                        str(self), str(op1), str(op2)))
                     fail.append(pair)
                 else:
                     raise ValueError('Undefined commutativity test result')
 
         fail_l = len(fail)
-        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (triv_l, succ_l, inc_l, fail_l))
+        print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (
+            triv_l, succ_l, inc_l, fail_l))
         logger.warning("Square zero test for %s:" % str(self))
         logger.warning("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
-                    (triv_l, succ_l, inc_l, fail_l))
+                       (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 
     def _square_zero_test_for_pair(self, pair, eps=Parameters.square_zero_test_eps):
@@ -1335,6 +1375,7 @@ class Differential(OperatorMatrixCollection):
             logger.info("Cannot test square zero: "
                         "Operator matrix not built for %s or %s" % (str(op1), str(op2)))
             return 'inc'
+
         if Shared.matrix_norm(M2 * M1) < eps:
             return 'succ'
         return 'fail'
@@ -1353,7 +1394,8 @@ class Differential(OperatorMatrixCollection):
         """
         print(' ')
         print('Plot cohomology dimensions of the associated graph complex of ' + str(self))
-        logger.warn('Plot cohomology dimensions of the associated graph complex of ' + str(self))
+        logger.warn(
+            'Plot cohomology dimensions of the associated graph complex of ' + str(self))
         dim_dict = self.get_cohomology_dim_dict()
         plot_path = self.get_cohomology_plot_path()
         parameter_order = self.get_cohomology_plot_parameter_order()

@@ -25,74 +25,74 @@ log_file = "Forested_Unittest.log"
 #                 print(g6, " exists with index ", ba.index(g6))
 
 
-# def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_basis=False):
-#     tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-#         n_vertices, n_loops, n_hairs, n_ws)
-#     tu = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-#         n_vertices-1, n_loops, n_hairs, n_ws)
-#     D1 = tt.get_matrix()
-#     D2 = tu.get_matrix()
-#     C = D2*D1
+def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, j_to_pick=-1, plot_basis=False):
+    tt = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(
+        n_vertices, n_loops, n_marked, n_hairs, even_edges)
+    tu = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(
+        n_vertices, n_loops, n_marked-1, n_hairs, even_edges)
+    D1 = tt.get_matrix()
+    D2 = tu.get_matrix()
+    C = D2*D1
 
-#     print(D1)
-#     print(D2)
-#     print(C)
+    print(D1)
+    print(D2)
+    print(C)
 
-#     ba0 = tt.domain.get_basis_g6()
-#     ba1 = tu.domain.get_basis_g6()
-#     ba2 = tu.target.get_basis_g6()
+    ba0 = tt.domain.get_basis_g6()
+    ba1 = tu.domain.get_basis_g6()
+    ba2 = tu.target.get_basis_g6()
 
-#     if plot_basis:
-#         tt.domain.display_basis_plots()
-#         tu.domain.display_basis_plots()
-#         tu.target.display_basis_plots()
+    if plot_basis:
+        tt.domain.display_basis_plots()
+        tu.domain.display_basis_plots()
+        tu.target.display_basis_plots()
 
-#     if (j_to_pick < 0):
-#         for i in range(0, C.nrows()):
-#             for j in range(0, C.ncols()):
-#                 if C[i, j] != 0:
-#                     print(i, j, C[i, j])
-#                     j_to_pick = j
-#         if j_to_pick < 0:
-#             print("success, squares to zero")
-#             return
-#         else:
-#             print("Does not square to zero, checking index ",
-#                   j_to_pick, " g6code ", ba0[j_to_pick])
+    if (j_to_pick < 0):
+        for i in range(0, C.nrows()):
+            for j in range(0, C.ncols()):
+                if C[i, j] != 0:
+                    print(i, j, C[i, j])
+                    j_to_pick = j
+        if j_to_pick < 0:
+            print("success, squares to zero")
+            return
+        else:
+            print("Does not square to zero, checking index ",
+                  j_to_pick, " g6code ", ba0[j_to_pick])
 
-#     G = Graph(ba0[j_to_pick])
-#     w = tt.operate_on(G)
+    G = Graph(ba0[j_to_pick])
+    w = tt.operate_on(G)
 
-#     # check whether graphs are in basis
-#     for H, x in w:
-#         g6, sgn = tu.domain.graph_to_canon_g6(H)
-#         autom_list = H.automorphism_group(
-#             partition=tu.domain.get_partition()).gens()
-#         if tu.domain._has_odd_automorphisms(H, autom_list):
-#             print(g6, " has odd automorphisms")
-#         else:
-#             if not g6 in ba1:
-#                 print(g6, " not found in basis ", " v=", x)
-#             else:
-#                 print(g6, " exists at index ", ba1.index(g6), " v=", x)
+    # check whether graphs are in basis
+    for H, x in w:
+        g6, sgn = tu.domain.graph_to_canon_g6(H)
+        autom_list = H.automorphism_group(
+            partition=tu.domain.get_partition()).gens()
+        if tu.domain._has_odd_automorphisms(H, autom_list):
+            print(g6, " has odd automorphisms")
+        else:
+            if not g6 in ba1:
+                print(g6, " not found in basis ", " v=", x)
+            else:
+                print(g6, " exists at index ", ba1.index(g6), " v=", x)
 
-#     # compute D^2
-#     ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
-#     wwd = {}
-#     for H, x in ww:
-#         g6, sgn = tu.target.graph_to_canon_g6(H)
-#         if g6 in wwd:
-#             wwd[g6] += x
-#         else:
-#             wwd[g6] = x
-#     print(wwd)
-#     nonzeroflag = false
-#     for g6, x in wwd.items():
-#         if x != 0:
-#             print("Nonzero entry: ", g6, x)
-#             nonzeroflag = true
-#     if not nonzeroflag:
-#         print("all entries zero, i.e., success.")
+    # compute D^2
+    ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
+    wwd = {}
+    for H, x in ww:
+        g6, sgn = tu.target.graph_to_canon_g6(H)
+        if g6 in wwd:
+            wwd[g6] += x
+        else:
+            wwd[g6] = x
+    print(wwd)
+    nonzeroflag = false
+    for g6, x in wwd.items():
+        if x != 0:
+            print("Nonzero entry: ", g6, x)
+            nonzeroflag = true
+    if not nonzeroflag:
+        print("all entries zero, i.e., success.")
 
 
 # def SymmRepDimension(p):
@@ -131,29 +131,37 @@ log_file = "Forested_Unittest.log"
 #           n_hairs, n_ws, rep_ind1, rep_ind2, ", result: ", diffs)
 
 
-# def PDTest(n_vertices, n_loops, n_hairs, n_ws, rep_ind, print_matrices=False):
-#     # tests whether projector commutes with differential
-#     symmp1 = WRHairyGraphComplex.SymmProjector.generate_operator(
-#         n_vertices, n_loops, n_hairs, n_ws, rep_ind)
-#     symmp2 = WRHairyGraphComplex.SymmProjector.generate_operator(
-#         n_vertices-1, n_loops, n_hairs, n_ws, rep_ind)
-#     tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
-#         n_vertices, n_loops, n_hairs, n_ws)
-#     tt.build_matrix(ignore_existing_files=True)
-#     D1 = tt.get_matrix()
-#     symmp1.build_matrix(ignore_existing_files=False)
-#     symmp2.build_matrix(ignore_existing_files=False)
-#     P1 = symmp1.get_matrix()
-#     P2 = symmp2.get_matrix()
-#     diff = P2*D1-D1*P1
-#     diffs = sum(abs(c) for cc in diff.columns() for c in cc)
-#     print("PDTest", n_vertices, n_loops,
-#           n_hairs, n_ws, rep_ind, ", result: ", diffs)
-#     if diffs > 0 or print_matrices:
-#         print(P1)
-#         print(P2)
-#         print(D1)
-#         print(diff)
+def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=False, plot_bases=False):
+    # tests whether differentials anti commute
+    D1o = ForestedGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_marked, n_hairs, even_edges)
+    D2o = ForestedGraphComplex.ContractEdgesGO.generate_operator(
+        n_vertices, n_loops, n_marked-1, n_hairs, even_edges)
+    DD1o = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(
+        n_vertices, n_loops, n_marked, n_hairs, even_edges)
+    DD2o = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(
+        n_vertices-1, n_loops, n_marked-1, n_hairs, even_edges)
+
+    D1 = D1o.get_matrix()
+    D2 = D2o.get_matrix()
+    DD1 = DD1o.get_matrix()
+    DD2 = DD2o.get_matrix()
+
+    diff = DD2*D1+D2*DD1
+    diffs = sum(abs(c) for cc in diff.columns() for c in cc)
+    print("DDTest", n_vertices, n_loops,
+          n_hairs, n_marked, even_edges, ", result: ", diffs)
+    if diffs > 0 or print_matrices:
+        print(D1)
+        print(D2)
+        print(DD1)
+        print(DD2)
+        print(diff)
+    if plot_bases:
+        D1o.domain.display_basis_plots()
+        D1o.target.display_basis_plots()
+        D2o.target.display_basis_plots()
+        DD2o.target.display_basis_plots()
 
 
 # def SumOneTest(n_vertices, n_loops, n_hairs, n_ws):
@@ -231,11 +239,21 @@ log_file = "Forested_Unittest.log"
 #                     except:
 #                         pass
 
-# tt = ForestedGraphComplex.PreForestedGVS(4, 3, 0, 2)
-# tt = ForestedGraphComplex.PreForestedGVS(4, 3, 3, 2)
+# tt = ForestedGraphComplex.PreForestedGVS(4, 4, 1, 0)
+# # tt = ForestedGraphComplex.PreForestedGVS(4, 3, 3, 2)
 # tt.build_basis(ignore_existing_files=True)
 # tt.plot_all_graphs_to_file(skip_existing=False)
 # tt.display_basis_plots()
+
+# ttt = ForestedGraphComplex.ForestedGVS(4, 4, 1, 0, False)
+# tt = ForestedGraphComplex.PreForestedGVS(4, 3, 3, 2)
+# ttt.build_basis(ignore_existing_files=True)
+# ttt.plot_all_graphs_to_file(skip_existing=False)
+# ttt.display_basis_plots()
+
+# GG = Graph("I@XbCaOc?")
+# autom_list = GG.automorphism_group(partition=ttt.get_partition()).gens()
+# print(ttt._has_odd_automorphisms(GG, autom_list))
 
 # print(diff)
 # print(P)
@@ -269,14 +287,40 @@ log_file = "Forested_Unittest.log"
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-    range(0, 5), range(0, 5), range(0, 5), range(0, 1))
+    range(0, 8), range(0, 5), range(0, 7), range(0, 1))
 # PFGC.build_basis(ignore_existing_files=True)
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, 5), range(0, 5), range(0, 5), range(0, 1), False, {'unmark'})
+    range(0, 8), range(0, 5), range(0, 7), range(0, 1), True, {'contract', 'unmark'})
 # FGC.build_basis(ignore_existing_files=True)
-FGC.build_matrix(progress_bar=False, info_tracker=False,
-                 ignore_existing_files=True)
+# FGC.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=True)
+# FGC.square_zero_test()
+
+# DDTest(4, 3, 2, 0, False, plot_bases=False)
+
+# for v in range(2, 8):
+#     for g in range(5):
+#         for m in range(2, 7):
+#             DDTest(v, g, m, 0, False)
+
+FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
+    range(0, 5), range(0, 7), range(0, 1), False)
+# FBGC.build_basis(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=True)
+# FBGC.build_matrix(progress_bar=False, info_tracker=False,
+#                   ignore_existing_files=True)
+# FBGC.square_zero_test()
+
+# FBGC.compute_rank(ignore_existing_files=True, sage="integer")
+
+
+FBGC.print_dim_and_eulerchar()
+FBGC.print_cohomology_dim()
+
+
+# DSquareTestSingleUnmark(4, 4, 2, 0, False, plot_basis=True)
+
 
 # WGC = ForestedGraphComplex.ForestedGC(range(0, 14), range(
 #     1, 2), range(4, 6), range(1, 2), ['contract'])
@@ -300,8 +344,7 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 # WGC.compute_rank(ignore_existing_files=True, sage="integer")
 # # WGC.plot_cohomology_dim(to_html=True)
 # # Euler char
-# WGC.print_dim_and_eulerchar()
-# WGC.print_cohomology_dim()
+
 
 # v = 2
 # l = 0
@@ -312,6 +355,7 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 # for j in range(len(Partitions(h))):
 #     PSquareTest(v, l, h, w, j)
 #     PDTest(v, l, h, w, j)
+
 
 # for j in range(len(Partitions(h))):
 #     print(getCohomDimP(v, l, h, w, j))
