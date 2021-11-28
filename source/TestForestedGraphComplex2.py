@@ -6,6 +6,7 @@ import TestGraphComplex
 import ForestedGraphComplex
 from sage.all import *
 
+
 log_file = "Forested_Unittest.log"
 
 
@@ -181,6 +182,19 @@ def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=Fa
 #     print(Psum)
 
 
+def loopg(nv):
+    g = Graph(4*nv)
+    for i in range(nv):
+        # marked edges
+        g.add_edge(2*i, 2*i+1)
+        # unmarked edges parallel to marked edge
+        g.add_edge(2*nv+i, 2*i)
+        g.add_edge(2*nv+i, 2*i+1)
+        # other unmarked edge
+        g.add_edge(3*nv+i, 2*i+1)
+        g.add_edge(3*nv+i, (2*i+2) % (2*nv))
+    return g
+
 # def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
 #     tt = WRHairyGraphComplex.ContractEdgesGO.generate_operator(
 #         n_vertices, n_loops, n_hairs, n_ws)
@@ -239,6 +253,69 @@ def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=Fa
 #                     except:
 #                         pass
 
+
+looplen = 5
+
+D1o = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+    looplen+1, looplen, 0, True)
+D2o = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+    looplen+1, looplen+1, 0, True)
+vs = ForestedGraphComplex.ForestedGVS(looplen * 2, looplen+1, looplen, 0, True)
+
+# D1o.domain.plot_all_graphs_to_file(skip_existing=False)
+# D1o.domain.display_basis_plots()
+
+D1 = D1o.get_matrix()
+D2 = D2o.get_matrix()
+
+ba1 = D1o.domain.get_basis_g6()
+
+print("D1: ", D1.nrows(), D1.ncols())
+print("D2: ", D2.nrows(), D2.ncols())
+# print(ba1[37])
+
+gg = loopg(looplen)
+ggs = gg.canonical_label(partition=vs.get_partition()).graph6_string()
+# print(ggs)
+ggi = ba1.index(ggs)
+
+print("Index of loop graph in basis: ", ggi)
+# gg.show()
+# gg = loopg(4)
+# gg.show()
+
+ppp = random_prime(2222222222, False, 222222222)
+print("Prime: ", ppp)
+
+vloop = matrix(len(ba1), 1)
+vloop[ggi] = 1
+
+D2f = D2.change_ring(RDF)
+vloopf = vloop.change_ring(RDF)
+print("Done1")
+
+xxx = D2f.solve_right(vloopf)
+print("Done2")
+print((vloopf-D2f*xxx).norm())
+
+# print(D1 * vloop)
+# # print("v:", vloop)
+
+# y = matrix(D2.ncols()+1, 1)
+# y[D2.ncols()] = 1
+# D2tx = D2.transpose().stack(vloop.transpose())
+# print("D2tx: ", D2tx.nrows(), D2tx.ncols())
+# z = D2tx.solve_right(y)
+# print(z)
+
+#sol = D2.solve_right(vloop)
+
+# print(D2*sol)
+
+
+# print(D1)
+# print(D2)
+
 # tt = ForestedGraphComplex.PreForestedGVS(4, 4, 1, 0)
 # # tt = ForestedGraphComplex.PreForestedGVS(4, 3, 3, 2)
 # tt.build_basis(ignore_existing_files=True)
@@ -286,12 +363,11 @@ def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=Fa
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-maxl = 4
-maxh = 3
-for l in range(maxl+1):
-    PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-        range(0, 2*maxl - 1+4), range(l, l+1), range(0, 2*maxl - 2+4), range(0, maxl-l+1+maxh))
-    PFGC.build_basis(ignore_existing_files=False)
+# maxl = 6
+# for l in range(maxl+1):
+#     PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+#         range(0, 2*maxl - 1), range(l, l+1), range(0, 2*maxl - 2), range(0, maxl-l+1))
+#     PFGC.build_basis(ignore_existing_files=False)
 
 # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
 #     range(0, 11), range(0, 7), range(0, 10), range(0, 1))
@@ -306,13 +382,11 @@ for l in range(maxl+1):
 #     range(0, 8), range(0, 1), range(0, 7), range(4, 5))
 # PFGC.build_basis(ignore_existing_files=True)
 
-evenedges = True
-
-FGC = ForestedGraphComplex.ForestedGC(
-    range(0, 9), range(0, 5), range(0, 8), range(0, maxh+1), evenedges, {'contract', 'unmark'})
-FGC.build_basis(ignore_existing_files=False)
-FGC.build_matrix(progress_bar=False, info_tracker=False,
-                 ignore_existing_files=False)
+# FGC = ForestedGraphComplex.ForestedGC(
+#     range(0, 11), range(0, 7), range(0, 10), range(0, 1), True, {'contract', 'unmark'})
+# FGC.build_basis(ignore_existing_files=False)
+# FGC.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=False)
 # FGC.square_zero_test()
 
 # DDTest(4, 3, 2, 0, False, plot_bases=False)
@@ -322,19 +396,19 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 #         for m in range(2, 7):
 #             DDTest(v, g, m, 0, False)
 
-FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
-    range(0, 5), range(0, 8), range(0, maxh+1), evenedges)
-FBGC.build_basis(progress_bar=False, info_tracker=False,
-                 ignore_existing_files=False)
-FBGC.build_matrix(progress_bar=False, info_tracker=False,
-                  ignore_existing_files=False)
-# FBGC.square_zero_test()
+# FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
+#     range(0, 7), range(0, 10), range(0, 1), True)
+# FBGC.build_basis(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=False)
+# FBGC.build_matrix(progress_bar=False, info_tracker=False,
+#                   ignore_existing_files=False)
+# # FBGC.square_zero_test()
 
-FBGC.compute_rank(ignore_existing_files=False, sage="integer")
+# FBGC.compute_rank(ignore_existing_files=False, sage="integer")
 
 
-FBGC.print_dim_and_eulerchar()
-FBGC.print_cohomology_dim()
+# FBGC.print_dim_and_eulerchar()
+# FBGC.print_cohomology_dim()
 
 # l = 3
 # m = 0

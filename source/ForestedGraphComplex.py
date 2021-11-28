@@ -206,6 +206,10 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
     The following n_hairs vertices correspond to the hairs.
     The edges that form the hairs cannot be marked.
 
+    We count a tadpole as valence one.
+    Hence we miss tadpole vertices of valence three and vertices with two tadpoles.
+    This is only problematic if the graph has exactly one vertex, we ignore this case for now.
+
     Attributes:
         - n_vertices (int): Number of vertices.
         - n_loops (int): Number of loops.
@@ -293,14 +297,14 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             preGs = preVS.get_basis()
 
             if self.n_hairs+tp == 0:
-                newgs = preGS
+                newgs = [G for G in preGs]
             else:
                 # Produce all permutations of the hairs, including those that are encoding tadpoles
                 id = Permutation(range(1, tp+1))
                 p1s = [p for pp in Permutations(self.n_hairs)
                        for p in id.shifted_shuffle(pp)]
                 idv = list(range(0, self.n_vertices+self.n_unmarked_edges-tp))
-                all_perm = [idv + [j+self.n_vertices +
+                all_perm = [idv + [j+self.n_vertices - 1 +
                                    self.n_unmarked_edges-tp for j in p] for p in p1s]
 
                 # all_perm = [list(range(0, self.n_vertices+self.n_unmarked_edges))
@@ -312,6 +316,11 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
                          for G in preGs for p in all_perm]
 
             res = res+newgs
+
+        # We count a tadpole as valence one.
+        # Hence we miss tadpole vertices of valence three and vertices with two tadpoles.
+        # This is only problematic in some edge cases, that we ignore for now.
+
         return res
 
     def label_marked_edges(self, G):
@@ -343,8 +352,10 @@ class ForestedGVS(GraphVectorSpace.GraphVectorSpace):
             for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges):
                 nb = G.neighbors(i)
                 if len(nb) != 2:
-                    raise ValueError(
-                        '%s: Vertices of second colour should have 2 neighbours' % str(self))
+                    # This is a graph with a tadpole, and hence zero... we return zero for now, although this is not ideal.
+                    return 0
+                    # raise ValueError(
+                    #    '%s: Vertices of second colour should have 2 neighbours' % str(self))
                 u = nb[0]
                 v = nb[1]
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -581,7 +592,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                     p = [j for (a, b, j) in G1.edges() if (
                         a < self.target.n_vertices and b < self.target.n_vertices)]
                     # If we removed more then one marked edge stop
-                    if len(p) < self.n_marked_edges-1:
+                    if len(p) < self.domain.n_marked_edges-1:
                         print("This should not happen....")
                         continue
                     sgn *= Permutation(p).signature()
@@ -1060,7 +1071,7 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
                     D1 = ContractUnmarkBiOM.generate_operator(
                         l, m, h, self.even_edges)
                     D2 = ContractUnmarkBiOM.generate_operator(
-                        l, m-1, h, self.even_edges)
+                        l, m+1, h, self.even_edges)
                     try:
                         d = ForestedDegSlice(
                             l, m, h, self.even_edges).get_dimension()

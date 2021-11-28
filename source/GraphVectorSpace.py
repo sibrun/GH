@@ -816,6 +816,58 @@ class SumVectorSpace(VectorSpace):
             param_names = property_names = []
         return param_names + property_names
 
+    def plot_all_graphs_to_file(self, skip_existing=False):
+        for vs in self.vs_list:
+            vs.plot_all_graphs_to_file(skip_existing)
+
+    def display_basis_plots(self):
+        """Displays pictures of the basis elements in a web browser"""
+        self.plot_all_graphs_to_file(skip_existing=True)
+        sarr = []
+        i = 0
+        for vs in self.vs_list:
+            ba = vs.get_basis_g6()
+            sarr += ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(i+j, ba[j], os.path.join("..", vs.get_plot_path(), '%d.png' % (j)))
+                     for j in range(0, vs.get_dimension())]
+            i += vs.get_dimension()
+        s = ' '.join(sarr)
+        DisplayInfo.display_html_body("<table>"+s+"</table>")
+
+    def get_basis_g6(self):
+        """Return the basis of the vector space as list of graph6 strings.
+
+        :return: List of graph6 strings representing the basis elements.
+        :rtype: list(str)
+        """
+        # if not self.is_valid():
+        #     # Return empty list if graph vector space is not valid.
+        #     logger.warn("Empty basis: %s is not valid" % str(self))
+        #     return []
+
+        return [s for vs in self.vs_list for s in vs.get_basis_g6()]
+
+    def get_basis(self):
+        """Return the basis of the vector space as list of sage graphs.
+
+        :return: List of sage graphs representing the basis elements.
+        :rtype: list(Graph)
+        """
+        return [G for vs in self.vs_list for G in vs.get_basis()]
+
+    def get_vs_from_basis_index(self, j):
+        """
+        Returns the direct summand (in vslist) corresponding to the basis 
+        element of index j in the basis of the sum vector space.
+        """
+        cur_ind = 0
+        for vs in self.vs_list:
+            d = vs.get_dimension()
+            if j < d+cur_ind:
+                return vs
+            curind += d
+        raise ValueError(
+            'Index %d outside range.' % j)
+
 
 class DegSlice(SumVectorSpace):
     """Special type of a direct sum of vector spaces, to be used as degree slices in bicomplexes, i.e. a bigraded

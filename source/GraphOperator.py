@@ -639,8 +639,9 @@ class OperatorMatrix(object):
         :rtype: int
         :raise StoreLoad.FileNotFoundError: Raised if the rank file is not found.
         """
-        if not self.is_valid():
+        if (not self.is_valid()) or self.domain.get_dimension() == 0 or self.target.get_dimension() == 0:
             return 0
+
         rank_dict = self._load_rank_dict()
         ranks = list(rank_dict.values())
         if len(ranks) == 0:
