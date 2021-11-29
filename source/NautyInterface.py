@@ -9,6 +9,7 @@ import os
 import tempfile
 import Log
 import Parameters
+import StoreLoad
 
 logger = Log.logger.getChild('nauty_interface')
 
@@ -58,6 +59,7 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
+    StoreLoad.makedirs(Parameters.temp_folder)
     with tempfile.NamedTemporaryFile(dir=Parameters.temp_folder) as f:
         nauty_command = 'genbgL -czlq -d%d:%d -D%d:%d %d %d %d:%d %s' % \
             (min_deg_1, min_deg_2, max_deg_1, max_deg_2,
@@ -96,6 +98,7 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
+    StoreLoad.makedirs(Parameters.temp_folder)
     with tempfile.NamedTemporaryFile(dir=Parameters.temp_folder) as f:
         nauty_command = 'genbgL -clq -Z1 -d%d:%d -D%d:%d %d %d %d:%d %s' % \
             (min_deg_1, min_deg_2, max_deg_1, max_deg_2,
@@ -140,6 +143,8 @@ def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
+
+    StoreLoad.makedirs(Parameters.temp_folder)
     with tempfile.NamedTemporaryFile(dir=Parameters.temp_folder) as f:
         nauty_command = 'genbgL -clq -Z%d -d%d:%d -D%d:%d %d %d %d:%d %s' % \
             (n_maxneighbors, min_deg_1, min_deg_2, max_deg_1, max_deg_2,

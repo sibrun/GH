@@ -109,3 +109,6 @@ source/plots
 source/temp
 source/cache
 data
+temp
+plots
+cache
