@@ -123,7 +123,10 @@ class VectorSpace(object):
         """
         pass
 
-    @abstractmethod
+    def __hash__(self):
+        return hash(self.__str__())
+
+    @ abstractmethod
     def get_dimension(self):
         """Return the dimension of the vector space.
 
@@ -132,7 +135,7 @@ class VectorSpace(object):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def get_ordered_param_dict(self):
         """Return an ordered dictionary of parameters, identifying the vector space.
 
@@ -141,12 +144,13 @@ class VectorSpace(object):
 
         :Example:
 
-        Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+        Shared.OrderedDict(
+            [('vertices', self.n_vertices), ('loops', self.n_loops)])
 
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def get_work_estimate(self):
         """Estimate the work needed to build the vector space basis.
 
@@ -157,7 +161,7 @@ class VectorSpace(object):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):
         """Build the vector space basis.
 
@@ -171,7 +175,7 @@ class VectorSpace(object):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def update_properties(self):
         """Update the vector space properties."""
         pass
@@ -214,7 +218,7 @@ class GraphVectorSpace(VectorSpace):
         """Initialize the vector space properties with None."""
         self.properties = GraphVectorSpaceProperties()
 
-    @abstractmethod
+    @ abstractmethod
     def get_type(self):
         """Return a unique description of the graph type.
 
@@ -227,7 +231,7 @@ class GraphVectorSpace(VectorSpace):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def get_basis_file_path(self):
         """Return the path to the basis file.
 
@@ -246,7 +250,7 @@ class GraphVectorSpace(VectorSpace):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def get_partition(self):
         """Return the partition of the vertices in different colours.
 
@@ -254,15 +258,16 @@ class GraphVectorSpace(VectorSpace):
         graphs.
 
         :return: List of lists. Partition of the vertices in different colours.
-        :rtype: list(list(int)) 
+        :rtype: list(list(int))
 
         :Example:
 
-        [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+        [list(range(0, self.n_vertices)), list(
+            range(self.n_vertices, self.n_vertices + self.n_hairs))]
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def is_valid(self):
         """Return the validity of the parameter combination for the graph vector space.
 
@@ -271,7 +276,7 @@ class GraphVectorSpace(VectorSpace):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def get_generating_graphs(self):
         """Return a set of graphs whose isomorphism classes span the graph vector space. (Not necessarily freely!)
 
@@ -280,7 +285,7 @@ class GraphVectorSpace(VectorSpace):
         """
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def perm_sign(self, G, p):
         """Return the sign of the permutation of the edges of the graph G, induced by the relabelling by
         the permutation p.
