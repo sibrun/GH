@@ -23,8 +23,11 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
     ba2 = tu.target.get_basis_g6()
 
     if plot_basis:
+        tt.domain.plot_all_graphs_to_file(skip_existing=False)
         tt.domain.display_basis_plots()
+        tu.domain.plot_all_graphs_to_file(skip_existing=False)
         tu.domain.display_basis_plots()
+        tu.target.plot_all_graphs_to_file(skip_existing=False)
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
@@ -39,7 +42,9 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         else:
             print("Does not square to zero, checking index ",
                   j_to_pick, " g6code ", ba0[j_to_pick])
-
+    else:
+        print("Checking index ",
+              j_to_pick, " g6code ", ba0[j_to_pick])
     G = Graph(ba0[j_to_pick])
     w = tt.operate_on(G)
 
@@ -54,7 +59,8 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
             if not g6 in ba1:
                 print(g6, " not found in basis ", " v=", x)
             else:
-                print(g6, " exists at index ", ba1.index(g6), " v=", x)
+                print(g6, " exists at index ", ba1.index(
+                    g6), " v=", x, "sgn=", sgn)
 
     # compute D^2
     ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
@@ -62,9 +68,9 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
     for H, x in ww:
         g6, sgn = tu.target.graph_to_canon_g6(H)
         if g6 in wwd:
-            wwd[g6] += x
+            wwd[g6] += x * sgn
         else:
-            wwd[g6] = x
+            wwd[g6] = x * sgn
     print(wwd)
     nonzeroflag = false
     for g6, x in wwd.items():
@@ -75,4 +81,10 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         print("all entries zero, i.e., success.")
 
 
-DSquareTestSingle(8, 6, True, plot_basis=True)
+DSquareTestSingle(7, 6, False, 2, plot_basis=True)
+
+# OGC = OrdinaryGraphComplex.OrdinaryGC(range(12), range(8), False, {'contract'})
+
+# OGC.build_basis(ignore_existing_files=True)
+# OGC.build_matrix(ignore_existing_files=True)
+# OGC.square_zero_test()
