@@ -35,6 +35,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         - sub_type (str): Sub type of graphs.
 
     """
+
     def __init__(self, n_vertices, n_loops, even_edges):
         """Initialize the ordinary graph vector space.
 
@@ -58,6 +59,9 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
     def __eq__(self, other):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops
 
+    def __hash__(self):
+        return hash(self.__str__())
+
     def get_basis_file_path(self):
         s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -76,7 +80,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         # Vertices at least trivalent. Positive number of vertices. Non-negative number of loops.
         # At most fully connected graph, no multiple edges.
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
-               and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
+            and self.n_edges <= self.n_vertices * (self.n_vertices - 1) / 2
 
     def get_work_estimate(self):
         # Returns the number of possible graphs as work estimate.
@@ -120,6 +124,7 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
         - even_edges (bool): True for even edges, False for odd edges.
         - sub_type (str): Sub type of graphs.
     """
+
     def __init__(self, v_range, l_range, even_edges, shift_loops_minus_vertices=1):
         """Initialize the sum vector space.
 
@@ -136,7 +141,8 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
 
         if shift_loops_minus_vertices is None:
-            vs_list = [OrdinaryGVS(v, l, self.even_edges) for (v, l) in itertools.product(self.v_range, self.l_range)]
+            vs_list = [OrdinaryGVS(v, l, self.even_edges) for (
+                v, l) in itertools.product(self.v_range, self.l_range)]
         else:
             vs_list = []
             for (v, l) in itertools.product(self.v_range, self.l_range):
@@ -164,6 +170,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
     """
+
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
@@ -173,7 +180,8 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :type target: OrdinaryGVS
         """
         if not ContractEdgesGO.is_match(domain, target):
-            raise ValueError("Domain and target not consistent for contract edges operator")
+            raise ValueError(
+                "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
         super(ContractEdgesGO, self).__init__(domain, target)
 
@@ -191,7 +199,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops \
-                and domain.even_edges == target.even_edges
+            and domain.even_edges == target.even_edges
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
@@ -240,37 +248,40 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
     def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
-        image=[]
+        image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            pp = Shared.permute_to_left((u, v), range(0, self.domain.n_vertices))
+            pp = Shared.permute_to_left(
+                (u, v), range(0, self.domain.n_vertices))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
             Shared.enumerate_edges(G1)
             previous_size = G1.size()
-            G1.merge_vertices([0,1])
+            G1.merge_vertices([0, 1])
             if (previous_size - G1.size()) != 1:
                 continue
-            G1.relabel(list(range(0,G1.order())), inplace=True)
+            G1.relabel(list(range(0, G1.order())), inplace=True)
             if not self.domain.even_edges:
                 p = [j for (a, b, j) in G1.edges()]
                 sgn *= Permutation(p).signature()
             else:
-                sgn *= -1 #TODO overall sign for even edges
+                sgn *= -1  # TODO overall sign for even edges
             image.append((G1, sgn))
         return image
 
 
 class ContractEdgesD(GraphOperator.Differential):
     """Contract edges differential."""
+
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+        super(ContractEdgesD, self).__init__(sum_vector_space,
+                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'
@@ -295,6 +306,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
     """
+
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the delete edges graph operator.
 
@@ -304,7 +316,8 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
         :type target: OrdinaryGVS
         """
         if not DeleteEdgesGO.is_match(domain, target):
-            raise ValueError("Domain and target not consistent for delete edges operator")
+            raise ValueError(
+                "Domain and target not consistent for delete edges operator")
         self.sub_type = domain.sub_type
         super(DeleteEdgesGO, self).__init__(domain, target)
 
@@ -322,7 +335,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
-                and domain.even_edges == target.even_edges
+            and domain.even_edges == target.even_edges
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, even_edges):
@@ -371,7 +384,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
 
     def operate_on(self, G):
         # Operates on the graph G by deleting an edge.
-        image=[]
+        image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             G1 = copy(G)
@@ -386,13 +399,15 @@ class DeleteEdgesD(GraphOperator.Differential):
 
     Only for graphs with odd edges.
     """
+
     def __init__(self, sum_vector_space):
         """Initialize the delete edges differential with the underlying sum vector space.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(DeleteEdgesD, self).__init__(sum_vector_space, DeleteEdgesGO.generate_op_matrix_list(sum_vector_space))
+        super(DeleteEdgesD, self).__init__(sum_vector_space,
+                                           DeleteEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'delete edges'
@@ -418,6 +433,7 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         - even_edges (bool): True for even edges, False for odd edges.
         - sub_type (str): Sub type of graphs.
     """
+
     def __init__(self, v_range, l_range, even_edges, differentials, shift_loops_minus_vertices=1):
         """Initialize the graph complex.
 
@@ -438,8 +454,9 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         sum_vector_space = OrdinaryGraphSumVS(v_range, l_range, even_edges,
                                               shift_loops_minus_vertices=shift_loops_minus_vertices)
         differential_list = []
-        if not differentials <= {'contract', 'delete'}:
-            raise ValueError("Differentials for ordinary graph complex: 'contract', 'delete'")
+        if not set(differentials) <= {'contract', 'delete'}:
+            raise ValueError(
+                "Differentials for ordinary graph complex: 'contract', 'delete'")
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)

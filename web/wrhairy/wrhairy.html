@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>WR Hairy cohomology viewer</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script src="../js/data_viewer.js"></script>
+    <script src="GHdata.js"></script>
+    <script type="text/javascript">
+      data_views.push({
+        name: "Default",
+        description:
+          "The default view, w omegas, h hairs, genus g, v vertices ",
+        A: [
+          [0, 0, 0, 1],
+          [0, 0, 1, 0],
+          [0, 1, 0, 0],
+          [1, 0, 0, 0],
+        ],
+        b: [0, 0, 0, 0],
+      });
+      data_views.push({
+        name: "Hilbert series",
+        description: "Hilbert series (in t) for w omegas, h hairs, genus g",
+        A: [
+          [0, 0, 0, 1],
+          [0, 0, 1, 0],
+          [0, 1, 0, 0],
+          [1, 0, 0, 0],
+        ],
+        b: [0, 0, 0, 0],
+        series: ["t"],
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Reduced cohomology viewer</h1>
+    <p>
+      Displays the cohomology of the graph complex hat X from
+      (PayneWillwacher2021). The complex consists of graphs with hairs labelled
+      epsilon or omega, or numbered. Computes the cohomology of the weight two
+      part of Mg,n.
+    </p>
+    <div id="dataview"></div>
+  </body>
+</html>

@@ -286,11 +286,14 @@ def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=Fa
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-maxl = 4
-maxh = 3
+maxl = 2
+maxh = 4
+maxv = 2*maxl - 2 + maxh
+maxm = maxv+1
+
 for l in range(maxl+1):
     PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-        range(0, 2*maxl - 1+4), range(l, l+1), range(0, 2*maxl - 2+4), range(0, maxl-l+1+maxh))
+        range(0, maxv+1), range(l, l+1), range(0, maxm+1), range(0, maxl-l+1+maxh))
     PFGC.build_basis(ignore_existing_files=False)
 
 # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
@@ -306,10 +309,10 @@ for l in range(maxl+1):
 #     range(0, 8), range(0, 1), range(0, 7), range(4, 5))
 # PFGC.build_basis(ignore_existing_files=True)
 
-evenedges = True
+evenedges = False
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, 9), range(0, 5), range(0, 8), range(0, maxh+1), evenedges, {'contract', 'unmark'})
+    range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
 FGC.build_basis(ignore_existing_files=False)
 FGC.build_matrix(progress_bar=False, info_tracker=False,
                  ignore_existing_files=False)
@@ -323,7 +326,7 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 #             DDTest(v, g, m, 0, False)
 
 FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
-    range(0, 5), range(0, 8), range(0, maxh+1), evenedges)
+    range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges)
 FBGC.build_basis(progress_bar=False, info_tracker=False,
                  ignore_existing_files=False)
 FBGC.build_matrix(progress_bar=False, info_tracker=False,
