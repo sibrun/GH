@@ -248,7 +248,7 @@ def getCohomDimPAll(gvs):
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC = CHairyGraphComplex.CHairyGC(range(0, 14), range(
-    0, 1), range(6, 7), False, ['contract'])
+    0, 7), range(0, 1), False, ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False,
                 ignore_existing_files=True)
@@ -258,7 +258,7 @@ WGC.build_matrix(progress_bar=False, info_tracker=False,
 # # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 # # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 
-# # WGC.square_zero_test()
+WGC.square_zero_test()
 
 # # WGC.compute_rank(ignore_existing_files=True, sage="mod")
 WGC.compute_rank(ignore_existing_files=True, sage="integer")
@@ -272,7 +272,7 @@ WGC.print_cohomology_dim()
 # getCohomDimP(2, 0, 4, False, 3)
 # getCohomDimP(2, 0, 4, False, 4)
 
-getCohomDimPAll(WGC)
+# getCohomDimPAll(WGC)
 
 # PSquareTest(4, 3, 2, 2, 0)
 # PSquareTest(3, 3, 2, 2, 0)

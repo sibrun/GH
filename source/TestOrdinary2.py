@@ -1,4 +1,5 @@
 import OrdinaryGraphComplex
+import CHairyGraphComplex
 from sage.all import *
 
 
@@ -81,10 +82,44 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         print("all entries zero, i.e., success.")
 
 
-DSquareTestSingle(7, 6, False, 2, plot_basis=True)
+# DSquareTestSingle(8, 6, False, plot_basis=True)
 
-# OGC = OrdinaryGraphComplex.OrdinaryGC(range(12), range(8), False, {'contract'})
+OGC = OrdinaryGraphComplex.OrdinaryGC(
+    range(0, 14), range(0, 7), False, {'contract'})
 
-# OGC.build_basis(ignore_existing_files=True)
-# OGC.build_matrix(ignore_existing_files=True)
-# OGC.square_zero_test()
+OGC.build_basis(ignore_existing_files=True)
+OGC.build_matrix(ignore_existing_files=True)
+OGC.square_zero_test()
+
+# DDD = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
+#     8, 6, False)
+
+# w1 = DDD.operate_on(Graph("G@hU^_"))
+
+# DDD2 = CHairyGraphComplex.ContractEdgesGO.generate_operator(
+#     8, 6, 0, False)
+
+# w2 = DDD2.operate_on(Graph("G@hU^_"))
+
+# print([[DDD.target.graph_to_canon_g6(H), x] for H, x in w1])
+# print([[DDD2.target.graph_to_canon_g6(H), x] for H, x in w2])
+# print([[DDD.target.graph_to_canon_g6(H), x] for H, x in w2])
+# print([[DDD2.target.graph_to_canon_g6(H), x] for H, x in w1])
+# print([[H.graph6_string(), x] for H, x in w1])
+# print([[H.graph6_string(), x] for H, x in w2])
+# print(w1)
+# print(w2)
+
+
+# ttt = "FtYUW"
+# # gtt = Graph(ttt)
+# gtt, dummy = w2[1]
+# print(gtt)
+# # gtt = gtt.copy()
+# VS1 = OrdinaryGraphComplex.OrdinaryGVS(7, 6, False)
+# VS2 = CHairyGraphComplex.CHairyGraphVS(7, 6, 0, False)
+# VS3 = DDD.target
+
+# print(VS1.graph_to_canon_g6(gtt))
+# print(VS2.graph_to_canon_g6(gtt))
+# print(VS3.graph_to_canon_g6(gtt))

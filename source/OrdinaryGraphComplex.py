@@ -60,7 +60,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops
 
     def __hash__(self):
-        return hash(self.__str__())
+        return hash("gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple())
 
     def get_basis_file_path(self):
         s = "gra%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
@@ -251,6 +251,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
+            # print("contract", u, v)
             pp = Shared.permute_to_left(
                 (u, v), range(0, self.domain.n_vertices))
             sgn = self.domain.perm_sign(G, pp)
@@ -261,10 +262,12 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             G1.merge_vertices([0, 1])
             if (previous_size - G1.size()) != 1:
                 continue
+            # print(sgn)
             G1.relabel(list(range(0, G1.order())), inplace=True)
             if not self.domain.even_edges:
-                p = [j for (a, b, j) in G1.edges()]
-                sgn *= Permutation(p).signature()
+                # p = [j for (a, b, j) in G1.edges()]
+                # sgn *= Permutation(p).signature()
+                sgn *= Shared.shifted_edge_perm_sign(G1)
             else:
                 sgn *= -1  # TODO overall sign for even edges
             image.append((G1, sgn))

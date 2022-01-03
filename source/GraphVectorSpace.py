@@ -324,7 +324,8 @@ class GraphVectorSpace(VectorSpace):
         """
         canonG, perm_dict = graph.canonical_label(
             partition=self.get_partition(), certificate=True)
-        sgn = self.perm_sign(graph, list(perm_dict.values()))
+        sgn = self.perm_sign(graph, [perm_dict[j]
+                             for j in range(graph.order())])
         return (canonG.graph6_string(), sgn)
 
     def build_basis(self, progress_bar=False, ignore_existing_files=False, **kwargs):

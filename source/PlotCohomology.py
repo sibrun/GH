@@ -12,7 +12,7 @@ import logging
 try:
     import pandas
 except ImportError:
-    pass # todo
+    pass  # todo
 import StoreLoad
 import Parameters
 import Shared
@@ -40,16 +40,20 @@ def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv
     """
     if len(ordered_param_range_dict) == 2:
         if parameter_order is not None:
-            plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=parameter_order)
+            plot_2d_array(value_dict, ordered_param_range_dict,
+                          path, parameter_order=parameter_order)
         else:
             plot_2d_array(value_dict, ordered_param_range_dict, path)
     elif len(ordered_param_range_dict) == 3:
         if parameter_order is not None:
-            plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=x_plots, parameter_order=parameter_order)
+            plot_3d_array(value_dict, ordered_param_range_dict, path,
+                          x_plots=x_plots, parameter_order=parameter_order)
         else:
-            plot_3d_array(value_dict, ordered_param_range_dict, path, x_plots=x_plots)
+            plot_3d_array(value_dict, ordered_param_range_dict,
+                          path, x_plots=x_plots)
     if to_html or to_csv:
-        plot_list(value_dict, ordered_param_range_dict, path, to_html=to_html, to_csv=to_csv)
+        plot_list(value_dict, ordered_param_range_dict,
+                  path, to_html=to_html, to_csv=to_csv)
 
 
 def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=False):
@@ -72,7 +76,7 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
     data_list = []
     for (key, value) in value_dict.items():
         if value is None:
-           value = ' '
+            value = ' '
         elif value == '*':
             value = Parameters.zero_v_symbol
         data_list.append(list(key) + [value])
@@ -108,8 +112,8 @@ def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         raise ValueError('invalid parameter order')
     inverse_order = tuple(Shared.Perm(list(parameter_order)).inverse())
 
-    (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
-    (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
+    (x_label, x_range) = list(ordered_param_range_dict.items())[x_idx]
+    (y_label, y_range) = list(ordered_param_range_dict.items())[y_idx]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -204,7 +208,8 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     else:
         y_plots = z_size / x_plots
 
-    fig, axarr = plt.subplots(y_plots, x_plots, figsize=(x_plots*x_size, y_plots*y_size))
+    fig, axarr = plt.subplots(
+        y_plots, x_plots, figsize=(x_plots*x_size, y_plots*y_size))
 
     for z in z_range:
         ax = _get_ax(axarr, x_plots, y_plots, z, z_min)
@@ -223,7 +228,8 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
             elif v == 0:
                 v = Parameters.zero_symbol
             (x, y, z) = coordinates
-            _get_ax(axarr, x_plots, y_plots, z, z_min).text(x, y, str(v), va='center', ha='center')
+            _get_ax(axarr, x_plots, y_plots, z, z_min).text(
+                x, y, str(v), va='center', ha='center')
 
     x_ticks_grid = np.arange(x_min - 0.5, x_max + 1, 1)
     y_ticks_grid = np.arange(y_min - 0.5, y_max + 1, 1)
