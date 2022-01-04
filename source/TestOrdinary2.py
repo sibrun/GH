@@ -85,11 +85,11 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
 # DSquareTestSingle(8, 6, False, plot_basis=True)
 
 OGC = OrdinaryGraphComplex.OrdinaryGC(
-    range(0, 17), range(0, 10), True, {'contract'})
+    range(0, 17), range(0, 7), True, {'contract'})
 
-# OGC.build_basis(ignore_existing_files=True)
-# OGC.build_matrix(ignore_existing_files=True)
-# OGC.compute_rank(sage='integer', ignore_existing_files=True)
+OGC.build_basis(ignore_existing_files=True)
+OGC.build_matrix(ignore_existing_files=True)
+OGC.compute_rank(sage='integer', ignore_existing_files=True)
 # OGC.square_zero_test()
 # OGC.test_pairwise_anti_commutativity()
 OGC.export_cohomology_dim_for_web()
