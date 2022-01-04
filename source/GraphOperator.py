@@ -1208,6 +1208,17 @@ class Differential(OperatorMatrixCollection):
         """
         pass
 
+    @abstractmethod
+    def get_cohomology_web_path(self):
+        """Return the path to the data file for the web.
+
+        File name without ending.
+
+        :return: Path to the data file.
+        :rtype: path
+        """
+        pass
+
     def get_cohomology_plot_parameter_order(self):
         pass
 
@@ -1403,3 +1414,21 @@ class Differential(OperatorMatrixCollection):
         ordered_param_range_dict = self.get_ordered_cohomology_param_range_dict()
         PlotCohomology.plot_array(dim_dict, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
                                   x_plots=x_plots, parameter_order=parameter_order)
+
+    def export_cohomology_dim_for_web(self):
+        """Writes the cohomology data into a js file for use on the website."""
+        export_path = self.get_cohomology_web_path() + ".js"
+        StoreLoad.generate_path(export_path)
+        print(' ')
+        print(
+            'Exporting cohomology dimensions of the associated graph complex of ' + str(self) + ' to file '+export_path+'.')
+        dim_dict = self.get_cohomology_dim_dict()
+        s = "data_sources.push({ name : 'GH', description : 'GH computation', data: ["
+        for k, v in dim_dict.items():
+            if v is not None:
+                s += str(list(k) + [v]) + ",\n"
+        s += "] });"
+        # s = s.replace('None', 'null')
+
+        with open(export_path, 'w') as outfile:
+            outfile.write(s)

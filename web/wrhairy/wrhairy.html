@@ -3,9 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <title>WR Hairy cohomology viewer</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
     <link rel="stylesheet" href="../style.css" />
     <script src="../js/data_viewer.js"></script>
-    <script src="GHdata.js"></script>
+    <script src="cohomology_dim_contract_D_wrhairy.js"></script>
     <script type="text/javascript">
       data_views.push({
         name: "Default",
@@ -38,8 +44,9 @@
     <p>
       Displays the cohomology of the graph complex hat X from
       (PayneWillwacher2021). The complex consists of graphs with hairs labelled
-      epsilon or omega, or numbered. Computes the cohomology of the weight two
-      part of Mg,n.
+      \(\epsilon\) or \(\omega\), or numbered. Computes the weight two compactly
+      supported cohomology of the moduli spaces of curves \(\mathcal M_{g,n}\)
+      for \((g,n)\neq (1,1)\).
     </p>
     <div id="dataview"></div>
   </body>

@@ -34,24 +34,25 @@ WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 # WGC.print_dim_and_eulerchar()
 # WGC.print_cohomology_dim()
 
+WGC.export_cohomology_dim_for_web()
 
-for dif in WGC.operator_collection_list:
-    dd = dif.get_cohomology_dim_dict()
-    print(dd)
-    s = "data_sources.push({ name : 'GH', description : 'GH computation', data: ["
-    for k, v in dd.items():
-        if v:
-            print(k, v)
-            s += str(list(k) + [v]) + ",\n"
-    s += "] });"
+# for dif in WGC.operator_collection_list:
+#     dd = dif.get_cohomology_dim_dict()
+#     print(dd)
+#     s = "data_sources.push({ name : 'GH', description : 'GH computation', data: ["
+#     for k, v in dd.items():
+#         if v:
+#             print(k, v)
+#             s += str(list(k) + [v]) + ",\n"
+#     s += "] });"
 
-    print(s)
+#     print(s)
 
-    with open('../web/wrhairy/GHdata.js', 'w') as outfile:
-        outfile.write(s)
-    # print(dif)
-    # if isinstance(dif, GraphOperator.Differential):
-    # dif.plot_cohomology_dim()
+#     with open('../web/wrhairy/GHdata.js', 'w') as outfile:
+#         outfile.write(s)
+# print(dif)
+# if isinstance(dif, GraphOperator.Differential):
+# dif.plot_cohomology_dim()
 
 # WGC.plot_cohomology_dim()
 

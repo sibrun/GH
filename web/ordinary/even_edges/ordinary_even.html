@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Commutative graph cohomology viewer</title>
+    <link rel="stylesheet" href="../../style.css" />
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script src="https://unpkg.com/mathjs@10.0.2/lib/browser/math.js"></script>
+    <script src="../../js/data_viewer.js"></script>
+    <script src="cohomology_dim_contract_edges_D_ordinary_even_edges.js"></script>
+    <script type="text/javascript">
+      data_views.push({
+        name: "Default",
+        description: "The default view, l loop order, v vertices ",
+        A: [
+          [0, 1],
+          [1, 0],
+        ],
+        b: [0, 0],
+      });
+      data_views.push({
+        name: "By edges",
+        description: "l loop order, e edges, e=l+vertices-1 ",
+        A: [
+          [0, 1],
+          [1, 1],
+        ],
+        b: [0, -1],
+      });
+      data_views.push({
+        name: "Degree in GC3",
+        description:
+          "l loop order, d is the degree in GC1, that is d=3v-2e-3=v-2l-1",
+        A: [
+          [0, 1],
+          [1, -2],
+        ],
+        b: [0, -1],
+      });
+      degree_bounds.push({
+        name: "Trivalence and positivity bounds",
+        description:
+          "Graphs must be at least trivalent, hence there is a trivial upper bound on the number of vertices. Furthermore, the number of vertices and loops and edges must not be negative.",
+        is_allowed(v, l) {
+          let ret =
+            3 * v <= 2 * (l + v - 1) && v > 3 && l + v - 1 >= 4 && l >= 0;
+          //   console.log({ v, l, ret });
+          return ret;
+        },
+      });
+      degree_bounds.push({
+        name: "Degree bound in GC3",
+        description: "",
+        is_allowed(v, l) {
+          return v - l - 1 >= -1;
+        },
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Commutative Graph cohomology</h1>
+    <p>
+      Displays the cohomology of the Kontsevich commutative graph complex GCn
+      for odd n. Elements of the complex are connected simple graphs wthout
+      multiple edges or loops.
+    </p>
+    <div id="dataview"></div>
+  </body>
+</html>

@@ -5,6 +5,7 @@
 var data_sources = [];
 var data_views = [];
 var data_descriptors = [];
+var degree_bounds = []
 var cur_view = 0;
 var nparams;
 
@@ -66,7 +67,12 @@ function viewselect_change() {
     // the last two params are iterated in every table
     let tableps = ndrange(psrange.slice(0,nparams-2));
     let intable = psrange.slice(nparams-2, nparams+1);
-    console.log(tableps)
+    let Ainv = math.inv(curv.A);
+    Ainv = math.transpose(Ainv);
+    let binv = math.multiply(-1,math.multiply( Ainv, curv.b));
+    console.log({Ainv, binv})
+
+    console.log({tableps, intable})
     for (const ps of tableps) {
         
         s += String(ps);
@@ -78,10 +84,16 @@ function viewselect_change() {
         for (let j=intable[1][0];j<=intable[1][1];j++){
             s += `<tr><td>${j}</td>`;
             for (let i=intable[0][0];i<=intable[0][1];i++){
+                // compute original parameters
+                let newps = ps.concat( [i,j] );
+                let oldps = math.add(math.multiply(Ainv, newps), binv);
+                let isallowed = (degree_bounds.length==0) || degree_bounds.every( b => b.is_allowed(...oldps));
+                let entry = dd[newps];
+                if (entry == null)
+                    entry = "-";
                 // console.log(ps.concat( [i,j] ));
                 // console.log(dd[ ps.concat( [i,j] ) ]);
-                entry = dd[ ps.concat( [i,j] ) ] || "-";
-                s += `<td>${entry}</td>`;
+                s += `<td ${!isallowed?"class='forbiddencell'":""}>${entry}</td>`;
             }
             s += "</tr>";
         }
@@ -102,7 +114,7 @@ window.onload = (e) => {
     {
         s += `<option value=${j}>${data_views[j].name}</option>`;
     }
-    s+="</select><div id='viewdetail'></div><div id='tableview'></div>";
+    s+="</select><div id='viewdetail'></div><p>'-' entries have not been computed, '*' entries represent zero-dimensional vector spaces. </p><div id='tableview'></div>";
     viewdiv.innerHTML = s;
 
     var viewselect = document.getElementById("viewselect");

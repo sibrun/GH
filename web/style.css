@@ -1,6 +1,14 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .datatable {
   font-family: Arial, Helvetica, sans-serif;
   border-collapse: collapse;
+}
+
+.forbiddencell {
+  background-color: darkgray;
 }
 
 .datatable td,
@@ -18,6 +26,46 @@
 }
 
 .datatable th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04aa6d;
+  color: white;
+}
+
+#overviewtable {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#overviewtable td,
+#overviewtable th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#overviewtable tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+#overviewtable td:nth-child(1) {
+  width: 110px;
+}
+
+#overviewtable td:nth-child(1) img {
+  width: 100px;
+}
+
+#overviewtable td:nth-child(3) {
+  width: 300px;
+}
+
+#overviewtable tr:hover {
+  background-color: #ddd;
+}
+
+#overviewtable th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
