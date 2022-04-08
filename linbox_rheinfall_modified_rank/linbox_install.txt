@@ -24,7 +24,6 @@ cd
 wget https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz
 tar -xvzf OpenBLAS-0.3.20.tar.gz 
 cd OpenBLAS-0.3.20
-./configure
 make
 make install
 
