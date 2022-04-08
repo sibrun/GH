@@ -286,36 +286,36 @@ def DDTest(n_vertices, n_loops, n_marked, n_hairs, even_edges, print_matrices=Fa
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-maxl = 2
-maxh = 4
+maxl = 3
+maxh = 2
 maxv = 2*maxl - 2 + maxh
 maxm = maxv+1
 
-for l in range(maxl+1):
-    PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-        range(0, maxv+1), range(l, l+1), range(0, maxm+1), range(0, maxl-l+1+maxh))
-    PFGC.build_basis(ignore_existing_files=False)
+# for l in range(maxl+1):
+#     PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+#         range(0, maxv+1), range(l, l+1), range(0, maxm+1), range(0, maxl-l+1+maxh))
+#     PFGC.build_basis(ignore_existing_files=False)
 
-# PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-#     range(0, 11), range(0, 7), range(0, 10), range(0, 1))
-# PFGC.build_basis(ignore_existing_files=False)
-# PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-#     range(0, 8), range(0, 4), range(0, 7), range(1, 2))
-# PFGC.build_basis(ignore_existing_files=True)
-# PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-#     range(0, 8), range(0, 3), range(0, 7), range(2, 4))
-# PFGC.build_basis(ignore_existing_files=True)
-# PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-#     range(0, 8), range(0, 1), range(0, 7), range(4, 5))
-# PFGC.build_basis(ignore_existing_files=True)
+# # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+# #     range(0, 11), range(0, 7), range(0, 10), range(0, 1))
+# # PFGC.build_basis(ignore_existing_files=False)
+# # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+# #     range(0, 8), range(0, 4), range(0, 7), range(1, 2))
+# # PFGC.build_basis(ignore_existing_files=True)
+# # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+# #     range(0, 8), range(0, 3), range(0, 7), range(2, 4))
+# # PFGC.build_basis(ignore_existing_files=True)
+# # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
+# #     range(0, 8), range(0, 1), range(0, 7), range(4, 5))
+# # PFGC.build_basis(ignore_existing_files=True)
 
 evenedges = False
 
-FGC = ForestedGraphComplex.ForestedGC(
-    range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
-FGC.build_basis(ignore_existing_files=False)
-FGC.build_matrix(progress_bar=False, info_tracker=False,
-                 ignore_existing_files=False)
+# FGC = ForestedGraphComplex.ForestedGC(
+#     range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
+# FGC.build_basis(ignore_existing_files=False)
+# FGC.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=False)
 # FGC.square_zero_test()
 
 # DDTest(4, 3, 2, 0, False, plot_bases=False)
@@ -327,13 +327,13 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 
 FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
     range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges)
-FBGC.build_basis(progress_bar=False, info_tracker=False,
-                 ignore_existing_files=False)
-FBGC.build_matrix(progress_bar=False, info_tracker=False,
-                  ignore_existing_files=False)
-# FBGC.square_zero_test()
+# FBGC.build_basis(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=False)
+# FBGC.build_matrix(progress_bar=False, info_tracker=False,
+#                   ignore_existing_files=False)
+# # FBGC.square_zero_test()
 
-FBGC.compute_rank(ignore_existing_files=False, sage="integer")
+# FBGC.compute_rank(ignore_existing_files=False, sage="integer")
 
 
 FBGC.print_dim_and_eulerchar()
