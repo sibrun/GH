@@ -14,8 +14,8 @@ apt install sagemath
 
 # sage libraries
 sage -sh
-pip -install tqdm
-pip -install pandas
+pip install tqdm
+pip install pandas
 exit 
 
 
@@ -72,7 +72,7 @@ make
 ln -s /root/nauty27r3/genbgL /usr/local/bin
 
 # Git repo
-
+cd
 git clone https://github.com/sibrun/GH.git
 
 # compile and move rank
