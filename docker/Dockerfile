@@ -71,7 +71,5 @@ CMD [ /bin/bash ]
 # docker run -ti ubuntu-gh /bin/bash
 
 ### then, to test:
-# cd
-# cd GH
 # sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b -build_op -rank -linbox rational
  
