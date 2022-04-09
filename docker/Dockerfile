@@ -60,6 +60,8 @@ RUN mv rank.C rank.C.old && \
     cp rank /root/GH/source/ && \
     cp -r .libs /root/GH/source/
 
+WORKDIR /root/GH
+
 CMD [ /bin/bash ]
 
 
