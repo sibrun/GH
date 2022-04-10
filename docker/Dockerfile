@@ -67,7 +67,7 @@ CMD [ /bin/bash ]
 
 
 ### to build and run container (assuming working directory is where this Dockerfile is)
-# docker build -t ubuntu-gh .
+# docker build -t ubuntu-gh ../dockerimge
 # docker run -ti ubuntu-gh /bin/bash
 
 ### then, to test:
