@@ -1,6 +1,6 @@
 """Graph complexes based on simple graphs with numbered (colored) hairs.
 Each hair has its own color.
-These graphs compute H_c(M_g,n), with n the number of hairs.
+These graphs compute W_0 H_c(M_g,n), with n the number of hairs, g the loop order.
 Implemented Differentials: Contract edges.
 The first vertices correspond to internal vertices, and the last to the hairs.
 """
@@ -377,13 +377,6 @@ class ContractEdgesD(GraphOperator.Differential):
 
 
 class SymmProjector(GraphOperator.GraphOperator):
-    def norm_permutation(self, p):
-        """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
-        :param p: a permutation
-        """
-        nn = sum(p)
-        return list(range(0, self.domain.n_vertices)) + [j+self.domain.n_vertices-1 for j in p]
-
     """This class encodes the projector to an isotypical component of the symmetric group action
         by permuting numbered hairs.
         Warning: The matrix stores not the projector, but projector * n_hairs! / rep_dimension??, to have integral matrices.
@@ -391,6 +384,13 @@ class SymmProjector(GraphOperator.GraphOperator):
     Attributes:
         - sub_type(str): Graphs sub type of the domain.
     """
+
+    def norm_permutation(self, p):
+        """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
+        :param p: a permutation
+        """
+        nn = sum(p)
+        return list(range(0, self.domain.n_vertices)) + [j+self.domain.n_vertices-1 for j in p]
 
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
