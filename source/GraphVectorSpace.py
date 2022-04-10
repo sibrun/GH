@@ -376,7 +376,9 @@ class GraphVectorSpace(VectorSpace):
                 if not self._has_odd_automorphisms(G, autom_list):
                     basis_set.add(canon6)
 
-        self._store_basis_g6(list(basis_set))
+        L = list(basis_set)
+        L.sort()
+        self._store_basis_g6(L)
 
     def _has_odd_automorphisms(self, G, autom_list):
         """Return whether the graph G has odd automorphisms.
@@ -849,8 +851,9 @@ class SumVectorSpace(VectorSpace):
         #     # Return empty list if graph vector space is not valid.
         #     logger.warn("Empty basis: %s is not valid" % str(self))
         #     return []
-
-        return [s for vs in self.vs_list for s in vs.get_basis_g6()]
+        L = [s for vs in self.vs_list for s in vs.get_basis_g6()]
+        L.sort()
+        return L
 
     def get_basis(self):
         """Return the basis of the vector space as list of sage graphs.
