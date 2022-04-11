@@ -1,0 +1,31 @@
+#on google cloud:
+#set up google cloud project
+https://console.cloud.google.com/cloud-resource-manager
+#chose unique project name like "sibrun-graph-homology"
+
+
+#on client computer:
+#install gcloud CLI
+https://cloud.google.com/sdk/docs/install
+
+#go to directory where downloaded and extracted folder is
+#in shell:
+./google-cloud-sdk/install.sh
+./google-cloud-sdk/bin/gcloud init
+
+#configure authentication for google cloud
+#in shell:
+gcloud auth login
+#set project:
+gcloud config set project sibrun-graph-homology
+#only first time:
+gcloud auth configure-docker
+
+#enable containerregistry service/API for project
+#in shell:
+gcloud services enable containerregistry.googleapis.com
+
+#tag docker image
+docker tag ubuntu-gh:latest eu.gcr.io/sibrun-graph-homology/ubuntu-gh:latest
+#push docker image to google cloud project "sibrun-graph-homology" with location europe
+docker push eu.gcr.io/sibrun-graph-homology/ubuntu-gh:latest
