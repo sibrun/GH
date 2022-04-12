@@ -3,29 +3,42 @@
 https://console.cloud.google.com/cloud-resource-manager
 #chose unique project name like "sibrun-graph-homology"
 
-
 #on client computer:
 #install gcloud CLI
 https://cloud.google.com/sdk/docs/install
 
 #go to directory where downloaded and extracted folder is
-#in shell:
 ./google-cloud-sdk/install.sh
 ./google-cloud-sdk/bin/gcloud init
 
 #configure authentication for google cloud
-#in shell:
 gcloud auth login
-#set project:
-gcloud config set project sibrun-graph-homology
-#only first time:
+#only first time
 gcloud auth configure-docker
 
-#enable containerregistry service/API for project
-#in shell:
-gcloud services enable containerregistry.googleapis.com
+#list google cloud projects
+gcloud projects list
+#set project:
+gcloud config set project sibrun-graph-homology
 
-#tag docker image
-docker tag ubuntu-gh:latest eu.gcr.io/sibrun-graph-homology/ubuntu-gh:latest
-#push docker image to google cloud project "sibrun-graph-homology" with location europe
-docker push eu.gcr.io/sibrun-graph-homology/ubuntu-gh:latest
+#enable google service/API for project (only first time)
+gcloud services enable containerregistry.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
+
+#create docker artefact repository in google cloud location Zurich (europe-west6) with name "gh-docker"
+gcloud artifacts repositories create gh-docker --repository-format=docker \
+    --location=europe-west6 --description="Graph Homology Docker Repository"
+#list artifacts repositories on google cloud
+gcloud artifacts repositories list
+
+#build docker image with google cloud build in google location europe-west6, in project sibrun-graph-homology and repository gh
+#navigate to directory GH/docker
+#cloud build docker image
+gcloud builds submit --tag europe-west6-docker.pkg.dev/sibrun-graph-homology/gh-docker/ubuntu-gh:latest --timeout 10000
+
+#go to google cloud console
+https://console.cloud.google.com/home/
+#choose project
+#cloud run
+
