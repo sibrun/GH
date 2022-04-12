@@ -68,7 +68,7 @@ CMD [ /bin/bash ]
 
 ### to build and run container (assuming working directory is where this Dockerfile is)
 # docker build -t ubuntu-gh .
-# docker run -ti ubuntu-gh /bin/bash
+# docker run -it ubuntu-gh /bin/bash
 
 ### then, to test:
 # sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b -build_op -rank -linbox rational
