@@ -10,8 +10,8 @@ data_dir = data_home_dir + "data"
 plots_dir = data_home_dir + "plots"
 ref_data_dir = data_home_dir + "data_ref"
 log_dir = data_home_dir + "log"
-temp_folder = data_home_dir + "temp"
-web_dir = data_home_dir + "web"
+temp_folder = "temp"
+web_dir = "web"
 
 # ---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6
