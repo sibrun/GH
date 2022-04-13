@@ -5,12 +5,13 @@ import os
 
 # ---- Genearal Parameters ----
 # ---- Directory Names ----
-data_dir = "data"
-plots_dir = "plots"
-ref_data_dir = "data_ref"
-log_dir = "log"
-temp_folder = "temp"
-web_dir = "web"
+data_home_dir = "gh_data/"
+data_dir = data_home_dir + "data"
+plots_dir = data_home_dir + "plots"
+ref_data_dir = data_home_dir + "data_ref"
+log_dir = data_home_dir + "log"
+temp_folder = data_home_dir + "temp"
+web_dir = data_home_dir + "web"
 
 # ---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6
