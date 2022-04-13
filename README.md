@@ -25,6 +25,28 @@ For rank computations the corresponding example code of [linbox](https://github.
 Replace the rank files by the ones provided in [this](https://github.com/sibrun/GH/tree/master/linbox_rheinfall_modified_rank) folder and compile them.
 Finally move the executables to the folder [GH/source](https://github.com/sibrun/GH/tree/master/source).
 
+### Docker
+The easiest way to install the prerequisists and use the library is to run it in a Docker container.
+
+Change to the folder [GH/docker](https://github.com/sibrun/GH/tree/master/docker) and build the Docker image from the Dockerfile:
+```
+$ docker build -t <name docker image> .
+```
+Alternatively pull an existing docker image with the current state of the GH library from 
+[Docker Hub](https://hub.docker.com/repository/docker/sibrun/ubuntu-gh):
+```
+$ docker pull sibrun/ubuntu-gh:<tagname>
+```
+Mount a persistent storage location to the Docker container and run the docker image. 
+The generated data will be stored in the persistent storage location.
+```
+$ run -ti -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
+```
+Run a command from the GH library (as stated below) inside the Docker container:
+```
+$ sage --python ... 
+```
+
 ## Running the tests
 
 Change to the [GH](https://github.com/sibrun/GH) directuory to run the tests:

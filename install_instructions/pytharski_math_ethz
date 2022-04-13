@@ -1,0 +1,75 @@
+#login to pytharski at eth d-math
+ssh <username>@pytharski.math.ethz.ch
+
+###########################################################################################
+#rund code on d-math servers with docker image from docker hub
+###########################################################################################
+#pull existing docker image from docker hub
+docker pull sibrun/ubuntu-gh:latest
+
+#lsit all docker images
+docker image ls
+#tag docker image
+docker tag docker.io/sibrun/ubuntu-gh:latest /sibrun/ubuntu-gh:latest
+
+#persistant storage on dmath servers for large quantities of data (<username> might ned to be created first)
+/r/scratch/users/<username>/
+#create the directory
+/r/scratch/users/<username>/gh_data
+#or use persistent storage for shared graph cohomology data for working code, with all data we have computed so far
+/r/scratch/users/brunsi/gh_data
+#plots are at gh_data/plots
+
+#rund docker image with mount of gh_directory on persistent storage in the docker container
+podman run -ti -v /r/scratch/users/<username>/gh_data:/root/GH/gh_data <docker image> /bin/bash
+#or with pulled docker image on shared data
+podman run -ti -v /r/scratch/users/brunsi/gh_data:/root/GH/gh_data localhost/sibrun/ubuntu-gh:latest /bin/bash
+
+#run command inside docker to use GH library
+sage <command as stated in GH library>
+#example
+sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b -build_op -rank -linbox rational
+#check whether docker container is running
+docker ps
+#close shell and login again and check whether docker image is still running. check whether data are generated and stored in persistetn storage
+
+###########################################################################################
+#create your own docker image
+###########################################################################################
+#login to d-math server
+#on your cloud storage
+#clone GH library
+mkdir gh
+cd gh
+git clone https://github.com/sibrun/GH.git
+cd GH/docker
+#generate docker image from dockerfile
+docker build -t ubuntu-gh .
+
+###########################################################################################
+#upload docker image to docker hub
+###########################################################################################
+#change to local storage of server (<username>/docker-image might ned to be created first)
+/scratch/userdata/<username>/docker-image
+#save docker image to .tar file
+docker save ubuntu-gh > ubuntu-gh.tar
+#change back to your cloud storage
+cd ~
+#create directory for docker image
+mkdir docker-image
+#copy data from local server to your cloud storage
+cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar .
+#download .tar fiel with docker image with filezille from your cloud storage to your computer
+#on you computer
+#load docker image from .tar file
+docker load <filename>.tar
+#lsit docker images
+docker image ls
+#tag docker image
+docker tag <name of docker image> <docker hub user name>/<docker image name>:<tagname (latest)>
+docker push <name of new tagged docker image>
+
+
+
+
+
