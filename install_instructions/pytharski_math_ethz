@@ -60,7 +60,7 @@ mkdir docker-image
 #copy data from local server to your cloud storage
 cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar .
 #download .tar fiel with docker image with filezille from your cloud storage to your computer
-#on you computer
+#on your computer
 #load docker image from .tar file
 docker load <filename>.tar
 #lsit docker images
