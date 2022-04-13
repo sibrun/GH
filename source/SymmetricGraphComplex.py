@@ -13,12 +13,15 @@ import GraphComplex
 import Shared
 import StoreLoad
 import Parameters
+from abc import ABCMeta, abstractmethod
 
 
 class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
     """ This abstract class encodes GraphVector spaces with an action of Sn.
     
     """
+
+    __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_n(self):
@@ -36,6 +39,13 @@ class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
         : rtype: list(int)
         """
         pass
+    
+    @abstractmethod
+    def get_isotypical_projector(self, rep_index):
+        """Returns the SymmetricProjectionOperator corresponding to the isotypical component corresponding to
+        the rep_index-th irrep (as in Partitions(n))
+        """
+        pass
 
 
 
@@ -44,14 +54,12 @@ class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
 class SymmetricProjectionOperator(GraphOperator.GraphOperator):
     """This abstract class encodes the projection operator to an isotypical component of the symmetric group action
         by permuting numbered hairs.
-        Warning: The matrix stores not the projector, but projector * n! / rep_dimension, to have integral matrices.
-
+        Warning: The matrix stores not the projector, but projector * c, with c = n!, to have integral matrices.
+        The constant c can be obtained by get_normalizing_c().
         The main method to be implemented by the user is 
 
         Deriving 
     """
-
-
 
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
@@ -70,7 +78,11 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
         super(SymmetricProjectionOperator, self).__init__(domain, domain)
 
         # pre-fill in representation and character
+        if len(Partitions(n)) <= rep_index:
+            raise ValueError("Illegal rep_index: It is larger then the number of irreps.")
         self.rep_partition = Partitions(n)[rep_index]
+        self.rep_dim = symmetrica.charvalue(self.rep_partition, [1 for j in range(n)])
+
         self.norm_char_perm = [(symmetrica.charvalue(self.rep_partition, p.cycle_type(
             )), self.domain.vertex_permutation_from_permutation(p)) for p in Permutations(n)]
 
@@ -101,12 +113,45 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
 
         return image
 
+    def get_normalizing_c(self):
+        """ Returns the normalization constant c, that is, the matrix is c*P, with P the projector.
+        """
+        return factorial(self.n)
+
+    def trace_rank(self):
+        """ For projection operators the rank equals the trace. Hence one does not need to compute the rank
+        via the default procedure, but can take this faster method as a shortcut. """
+        A = self.get_matrix()
+        return A.trace() / self.get_normalizing_c()
+
+    def _compute_rank(self, sage=None, linbox=None, rheinfall=None, prime=Parameters.prime):
+        # We override _compute_rank so as to avoid expensive rank computation by other means
+        if self.is_trivial() or self.get_matrix_entries() == 0:
+            return {'exact': 0}
+        else:
+            return  {'exact': self.trace_rank()}
+
+class IsotypicalComponent():
+    """Represents an isotypical component in a graph vector space.
+    """
+    def __init__(self, vs, opP):
+        """ vs is the SymmetricGraphVectorSpace, opP the corresponding projecton operator
+        rep_index the index of the irrep (as in Partitions(n)) for ehich we take the isotypical component."""
+        self.vs = vs 
+        self.opP = opP
+        self.rep_index = opP.rep_index
+
+    def __eq__(self, other):
+        return self.vs == other.vs and self.rep_index == other.rep_index
+    
+    def get_dimension(self):
+        return self.opP.get_matrix_rank()
 
 
 class SymmetricCompositeOperatorMatrix(GraphOperator.OperatorMatrix):
     """Represents the restriction of an operator on a symmetric graph complex to an isotypical component. 
-    More precisely, for P a projection operator and D a differential the matrix stored is 
-    [D; 1-P].
+    For P a projection operator and D a differential the matrix actually stored is 
+    [D; c(1-P)] to avoid having to compute matrix products.
     """
 
     def __init__(self, opD, opP):
@@ -118,7 +163,7 @@ class SymmetricCompositeOperatorMatrix(GraphOperator.OperatorMatrix):
             raise ValueError("Domain %s and target %s don't match to build the symmetric composite operator matrix %s"
                              % (str(opD.domain), str(opP.domain), str(self)))
 
-        super(SymmetricCompositeOperatorMatrix, self).__init__(opD.domain, opD.target)
+        super(SymmetricCompositeOperatorMatrix, self).__init__(IsotypicalComponent(opD.domain, opP), IsotypicalComponent(opD.target, opP))
 
     # @staticmethod
     # def is_match(domain, target):
@@ -142,11 +187,70 @@ class SymmetricCompositeOperatorMatrix(GraphOperator.OperatorMatrix):
             raise ValueError("Something wrong: number of columns should match!")
         newShape = (Drows+Prows, Dcols)
 
-        newList = D_list + [(a+Drows,b,-c) for (a,b,c) in P_list] + [(j+Drows,j,1) for j in range(Prows)]
+        c = self.opP.get_normalizing_c()
+        newList = D_list + [(a+Drows,b,-v) for (a,b,v) in P_list] + [(j+Drows,j,c) for j in range(Prows)]
 
         self._store_matrix_list(newList, newShape)
+
+    def get_matrix_rank(self):
+        # The rank of the restriction of the operator is not the rank of the matrix actually stored, but the coranks agree.
+        # Hence the get_matrix_rank method is overridden.
+        r = super().get_matrix_rank()
+        fulldim = self.opD.domain.get_dimension()
+        isodim = self.domain.get_dimension()
+        return isodim - (fulldim - r)
     
 
+class SymmetricGraphOperator(GraphOperator.GraphOperator):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def restrict_to_isotypical_comp(self, rep_index):
+        """Returns the SymmetricCompositeOperatorMatrix that represents the restriction of the operator
+        to an isotypical component"""
+        pass
+
+class SymmetricDifferential(GraphOperator.Differential):
+    """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
+    """
+
+    def __init__(self, sum_vector_space, op_matrix_list, opP_list):
+        self.opP_list = opP_list
+        super().__init__(sum_vector_space, op_matrix_list)
+
+    @classmethod
+    def fromDifferential(diff):
+        """Creates a symmetric differential from an ordinary one, by restricting to the isotypical components.
+        Only those operators are added that are involved in nonzero cohomology entries, to avoid duplicate computations.
+        Also, if the irrep has too high dimension, the isotypical component is not considered either.
+        """
+        opP_list = []
+        opD_list = []
+        for (opD, opDD) in itertools.permutations(diff.op_matrix_list, 2):
+            if opD.get_domain() == opDD.get_target():
+                dim = GraphOperator.Differential.cohomology_dim(opD, opDD)
+                if dim>0:
+                    ## We have found non-zero cohomology.
+
+                    # gather projectors and differentials
+                    for rep_ind in range(len(Partitions(opD.domain.get_n()))):
+                        opP = opD.domain.get_isotypical_projector(rep_ind)
+                        if not opP_list.contains(opP):
+                            opP_list.add(opP)
+
+                        opA = opD.restrict_to_isotypical_comp(rep_ind)
+                        if not opD_list.contains(opA):
+                            opD_list.add(opA)
+
+                        opP = opDD.domain.get_isotypical_projector(rep_ind)
+                        if not opP_list.contains(opP):
+                            opP_list.add(opP)
+                        
+                        opA = opDD.restrict_to_isotypical_comp(rep_ind)
+                        if not opD_list.contains(opA):
+                            opD_list.add(opA)
+                    
+        return SymmetricDifferential(diff.sum_vector_space, opD_list, opP_list)
 
 
 def getCohomDimP(op1, op2, opP, rep_ind):
@@ -182,7 +286,7 @@ def getCohomDimP(op1, op2, opP, rep_ind):
     # diffs = sum(abs(c) for cc in diff.columns() for c in cc)
     # print(diffs)
     
-    isocomp_dim = P1.rank()
+    isocomp_dim = P1.rank() # todo: take trace here
     r1 = D1P.rank()
     r2 = D2P.rank()
     # print(isocomp_dim, r1, r2)
