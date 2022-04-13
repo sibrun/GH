@@ -19,6 +19,7 @@ import NautyInterface
 import OrdinaryGraphComplex
 import StoreLoad
 import Parameters
+import SymmetricGraphComplex
 
 graph_type = "chairy"
 
@@ -31,7 +32,7 @@ def dict_to_list(d, n):
 
 
 # ------- Graph Vector Space --------
-class CHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
+class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     """Hairy graph vector space.
 
     Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
@@ -188,6 +189,15 @@ class CHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         G.relabel(range(0, G.order()))
         return G
 
+    def get_n(self):
+        return self.n_hairs
+
+    def vertex_permutation_from_permutation(self, p):
+        return list(range(0, self.n_vertices)) + [j+self.n_vertices-1 for j in p]
+
+    def get_isotypical_projector(self, rep_index):
+        return SymmProjector(self, rep_index)
+
 
 class CHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of hairy graph vector spaces with specified number of omega hairs.
@@ -236,7 +246,7 @@ class CHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
 
 # ------- Operators --------
-class ContractEdgesGO(GraphOperator.GraphOperator):
+class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     """Contract edges graph operator.
 
     Operate on a w-hairy graph by contracting an edge not connected to a hair vertex and unifying the two adjacent vertices.
@@ -349,8 +359,32 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             image.append((G1, sgn))
         return image
 
+    def restrict_to_isotypical_component(self, rep_index):
+        #opP = self.domain.get_isotypical_projector(rep_index)
+        return RestrictedContractEdgesGO(self, rep_index)
 
-class ContractEdgesD(GraphOperator.Differential):
+
+class RestrictedContractEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperatorMatrix):
+    # def __init__(opD, opP):
+
+    def get_matrix_file_path(self):
+        s = "contractD%d_%d_%d_r%d.txt" % (
+            self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
+        return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "contractD%d_%d_%d_r%d_rank.txt" % (
+            self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
+        return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
+
+    def get_work_estimate(self):
+        return self.opD.get_work_estimate()
+
+    def is_match(self, domain, target):
+        return ContractEdgesGO.is_match(domain.vs, target.vs) and domain.rep_index == target.rep_index
+
+
+class ContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
     """Contract edges differential."""
 
     def __init__(self, sum_vector_space):
@@ -376,7 +410,7 @@ class ContractEdgesD(GraphOperator.Differential):
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 
-class SymmProjector(GraphOperator.GraphOperator):
+class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
     """This class encodes the projector to an isotypical component of the symmetric group action
         by permuting numbered hairs.
         Warning: The matrix stores not the projector, but projector * n_hairs! / rep_dimension??, to have integral matrices.
@@ -385,12 +419,12 @@ class SymmProjector(GraphOperator.GraphOperator):
         - sub_type(str): Graphs sub type of the domain.
     """
 
-    def norm_permutation(self, p):
-        """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
-        :param p: a permutation
-        """
-        nn = sum(p)
-        return list(range(0, self.domain.n_vertices)) + [j+self.domain.n_vertices-1 for j in p]
+    # def norm_permutation(self, p):
+    #     """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
+    #     :param p: a permutation
+    #     """
+    #     nn = sum(p)
+    #     return list(range(0, self.domain.n_vertices)) + [j+self.domain.n_vertices-1 for j in p]
 
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
@@ -401,32 +435,31 @@ class SymmProjector(GraphOperator.GraphOperator):
         : type rep_index: int
         """
         self.sub_type = domain.sub_type
-        self.rep_index = rep_index
 
-        super(SymmProjector, self).__init__(domain, domain)
+        super(SymmProjector, self).__init__(domain, rep_index)
 
         # fill in representation and character
-        nn = domain.n_hairs
-        self.rep_partition = Partitions(nn)[rep_index]
-        self.norm_char_perm = [(symmetrica.charvalue(self.rep_partition, p.cycle_type(
-        )), self.norm_permutation(p)) for p in Permutations(nn)]
+        # nn = domain.n_hairs
+        # self.rep_partition = Partitions(nn)[rep_index]
+        # self.norm_char_perm = [(symmetrica.charvalue(self.rep_partition, p.cycle_type(
+        # )), self.norm_permutation(p)) for p in Permutations(nn)]
 
         # print(self.norm_char_perm)
 
-    @staticmethod
-    def is_match(domain, target):
-        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+    # @staticmethod
+    # def is_match(domain, target):
+    #     """Check whether domain and target match to generate a corresponding contract edges graph operator.
 
-        The contract edges operator reduces the number of vertices by one.
+    #     The contract edges operator reduces the number of vertices by one.
 
-        : param domain: Potential domain vector space of the operator.
-        : type domain: HairyGraphVS
-        : param target: Potential target vector space of the operator.
-        : type target: HairyGraphVS
-        : return: True if domain and target match to generate a corresponding contract edges graph operator.
-        : rtype: bool
-        """
-        return domain == target
+    #     : param domain: Potential domain vector space of the operator.
+    #     : type domain: HairyGraphVS
+    #     : param target: Potential target vector space of the operator.
+    #     : type target: HairyGraphVS
+    #     : return: True if domain and target match to generate a corresponding contract edges graph operator.
+    #     : rtype: bool
+    #     """
+    #     return domain == target
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, n_ws, rep_index):
@@ -468,24 +501,20 @@ class SymmProjector(GraphOperator.GraphOperator):
         s = "projectionO%d_%d_%d_%d.txt.rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
-    def get_work_estimate(self):
-        # Returns as work estimate: domain.n_edges * log(target dimension, 2)
-        return 0
+    # def get_type(self):
+    #     return 'projection operator'
 
-    def get_type(self):
-        return 'projection operator'
+    # def operate_on(self, G):
+    #     # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
+    #     image = []
+    #     for (c, p) in self.norm_char_perm:
+    #         # c is char value, p is permutation
+    #         G1 = copy(G)
+    #         sgn = self.domain.ogvs.perm_sign(G1, p)
+    #         G1.relabel(p, inplace=True)
+    #         image.append((G1, sgn * c))
 
-    def operate_on(self, G):
-        # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
-        image = []
-        for (c, p) in self.norm_char_perm:
-            # c is char value, p is permutation
-            G1 = copy(G)
-            sgn = self.domain.ogvs.perm_sign(G1, p)
-            G1.relabel(p, inplace=True)
-            image.append((G1, sgn * c))
-
-        return image
+    #     return image
 
 
 # ------- Graph Complex --------
