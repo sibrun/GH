@@ -99,6 +99,8 @@ class OperatorMatrix(object):
         self.domain = domain
         self.target = target
         self.properties = OperatorMatrixProperties()
+        # set is_pseudo_matrix=True if the matrix actually stored is not operating between the vector spaces.
+        self.is_pseudo_matrix = False
 
     def get_domain(self):
         """Return the domain graph vector space of the operator matrix.
@@ -276,7 +278,6 @@ class OperatorMatrix(object):
 
         Return the matrix list, i.e. a list of the non-zero matrix entries, and the matrix shape, i.e. a tuple with
         the number of rows and columns.
-
         :return: : (matrix_list = list((domain index, target index, value), shape = (domain dimension, target dimension))
         :rtype: tuple(list(tuple(int, int, int)), tuple(int, int))
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
@@ -292,7 +293,7 @@ class OperatorMatrix(object):
         stringList = StoreLoad.load_string_list(self.get_matrix_file_path())
         (d, t, data_type) = stringList.pop(0).split(" ")
         shape = (d, t) = (int(d), int(t))
-        if d != self.domain.get_dimension() or t != self.target.get_dimension():
+        if (not self.is_pseudo_matrix) and (d != self.domain.get_dimension() or t != self.target.get_dimension()):
             raise ValueError("%s: Shape of matrix doesn't correspond to the vector space dimensions"
                              % str(self.get_matrix_file_path()))
         tail = map(int, stringList.pop().split(" "))
@@ -471,7 +472,7 @@ class OperatorMatrix(object):
                 Matrix indices outside matrix shape.
         """
         M = self.get_matrix_transposed().transpose()
-        if M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension():
+        if (not self.is_pseudo_matrix) and (M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension() ):
             raise ValueError(
                 "Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
         return M
