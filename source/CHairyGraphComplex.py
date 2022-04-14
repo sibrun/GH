@@ -384,7 +384,7 @@ class RestrictedContractEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperato
         return ContractEdgesGO.is_match(domain.vs, target.vs) and domain.rep_index == target.rep_index
 
 
-class ContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
+class ContractEdgesD(GraphOperator.Differential):
     """Contract edges differential."""
 
     def __init__(self, sum_vector_space):
@@ -407,6 +407,31 @@ class ContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
     def get_info_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
         s = "info_contract_D_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+
+class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
+    def __init__(self, diff):
+        """ Initializes the RestrictedContractEdgesD-differential from a ContractEdgesD object.
+        Before construction, cohomology for ContractEdgesD should be available, since we will add only those
+        operators that are necessary for computing nonzero cohomology."""
+        self.diff = diff
+        opList = SymmetricGraphComplex.SymmetricDifferential.split_isotypical_components(
+            diff)
+        super(RestrictedContractEdgesD, self).__init__(
+            diff.sum_vector_space, opList)
+
+    def get_type(self):
+        return 'isotypical contract edges'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_contract_D_iso_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_D_iso_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 

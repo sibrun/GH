@@ -258,11 +258,14 @@ WGC = CHairyGraphComplex.CHairyGC(range(0, 8), range(
 
 diff = WGC.operator_collection_list[0]
 print(diff)
-diff_split = diff.split_isotypical_components()
+diff_split = CHairyGraphComplex.RestrictedContractEdgesD(diff)
 # diff_split.build_matrix(ignore_existing_files=True)
+diff.plot_cohomology_dim()
 
 diff_split.compute_rank(ignore_existing_files=True, sage="integer")
-diff_split.plot_cohomology_dim()
+# diff_split.plot_cohomology_dim()
+
+
 # # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 # # WGC.build_matrix(progress_bar=False, info_tracker=False, ignore_existing_files=False)
 

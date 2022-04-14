@@ -158,6 +158,9 @@ class IsotypicalComponent():
     def __str__(self):
         return "Iso %d of %s" % (self.rep_index, str(self.vs))
 
+    def __hash__(self):
+        return hash(str(self))
+
     def get_ordered_param_dict(self):
         d = self.vs.get_ordered_param_dict().copy()
         d.update({'rep_index': self.rep_index})
@@ -249,20 +252,25 @@ class SymmetricGraphOperator(GraphOperator.GraphOperator):
 
 class SymmetricDifferential(GraphOperator.Differential):
     """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
+    The typical usage is that an ordinary differential holds the SymmetricGraphOperators.
+    Then a new SymmetricDifferential is constructed using the method split_isotypical_components().
+    (To define path accordingly, there should be two user defined classes, one for the non-symmetric differential,
+    and one being a symmetric differential, that holds the restricted operators.)
     """
 
-    def split_isotypical_components(self):
-        """Creates a new symmetric differential by restricting to the isotypical components.
+    @classmethod
+    def split_isotypical_components(cls, diff):
+        """Creates an operator list from differential diff by restricting to the isotypical components.
         Only those operators are added that are involved in nonzero cohomology entries, with action of Sn with n>=2, to avoid duplicate computations.
         Also, if the irrep has too high dimension, the isotypical component is not considered either.
 
         It is assumed that matrix ranks of the original operators have been computed before calling this method.
 
-        Returns another SymmetricDifferential, with the operator collection build from SymmetricRestrictedOperatorMatrix
+        From the list returned an SymmetricDifferential will usually be constructed, with the operator collection build from SymmetricRestrictedOperatorMatrix
         objects.
         """
         opD_list = []
-        for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
+        for (opD, opDD) in itertools.permutations(diff.op_matrix_list, 2):
             if opD.get_domain() == opDD.get_target():
                 n = opD.get_domain().get_n()
                 if n >= 2:
@@ -285,7 +293,7 @@ class SymmetricDifferential(GraphOperator.Differential):
                                 opD_list.append(opA)
                             # TODO: sumvectorspace should better be replaced by isotypical components, but I think it is not necessary
 
-        return GraphOperator.Differential(self.sum_vector_space, opD_list)
+        return opD_list
 
 
 # def getCohomDimP(op1, op2, opP, rep_ind):
