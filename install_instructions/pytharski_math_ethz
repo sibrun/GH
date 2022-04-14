@@ -43,7 +43,7 @@ tmux ls
 #attach to tmux session
 tmux a -t <session number>
 #detach from session again: press ctntrl+b, release and press d
-#stom tmux session
+#stop tmux session
 tmux kill-session -t <session number>
 
 ###########################################################################################
@@ -76,7 +76,7 @@ cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar ./docker-image
 #on your computer
 #load docker image from .tar file
 docker load <filename>.tar
-#lsit docker images
+#list docker images
 docker image ls
 #tag docker image
 docker tag <name of docker image> <docker hub user name>/<docker image name>:<tagname (latest)>
