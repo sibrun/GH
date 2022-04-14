@@ -10,11 +10,14 @@ from sage.all import *
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
+import Log
 import Shared
 import StoreLoad
 import Parameters
+import PlotCohomology
 from abc import ABCMeta, abstractmethod
 
+logger = Log.logger.getChild('symmetric_graph_complex')
 
 class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
     """ This abstract class encodes GraphVector spaces with an action of Sn.
@@ -154,7 +157,12 @@ class IsotypicalComponent():
         return self.vs == other.vs and self.rep_index == other.rep_index
 
     def get_dimension(self):
+        # for consistency, return dimension of underlying vector space, not of the isotypical component
+        return self.vs.get_dimension()
+    
+    def get_iso_dimension(self):
         return self.opP.get_matrix_rank()
+
 
     def is_valid(self):
         return self.vs.is_valid()
@@ -192,6 +200,7 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         #                      % (str(opD.domain), str(self.opP.domain), str(self)))
         super(SymmetricRestrictedOperatorMatrix, self).__init__(
             IsotypicalComponent(opD.domain, rep_index), IsotypicalComponent(opD.target, rep_index))
+        # self.is_pseudo_matrix = True
 
     # @staticmethod
     # def is_match(domain, target):
@@ -204,48 +213,91 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         return "Restriction to iso %d of %s" % (self.rep_index, self.opD.get_type())
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
-        """ Builds the matrix by stcking [D; 1-P]"""
-        if not self.is_valid():
-            return
-
+        """ Builds the matrix by multiplying D and P"""
         # Build matrix of underlying projection operator
         self.opP.build_matrix(ignore_existing_files=ignore_existing_files,
-                              skip_if_no_basis=skip_if_no_basis, progress_bar=progress_bar, **kwargs)
+                              skip_if_no_basis=skip_if_no_basis, progress_bar=progress_bar, **kwargs)  
+                
+        if not self.is_valid():
+            return          
 
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
 
-        (D_list, Dshape) = self.opD._load_matrix_list()
-        (P_list, Pshape) = self.opP._load_matrix_list()
+        PM = self.opP.get_matrix_transposed()
+        DM = self.opD.get_matrix_transposed()
 
-        (Drows, Dcols) = Dshape
-        (Prows, Pcols) = Pshape
+        myM = PM * DM
+
+        (shapem, shapen) = self.opD.get_matrix_shape()
+
+        myML = [ (i,j,myM[i,j]) for (i,j) in myM.nonzero_positions(copy=False)]
+
+        self._store_matrix_list(myML,(shapen, shapem))
 
         # if (Dcols != Pcols or Prows != Pcols):
         #     raise ValueError(
         #         "Something wrong: number of columns should match (D is %d x %d, P is %d x %d)!" % (Drows, Dcols, Prows, Pcols))
         # newShape = (Drows+Prows, Dcols)
-        if (Drows != Prows or Prows != Pcols):
-            raise ValueError(
-                "Something wrong: number of rows should match (D is %d x %d, P is %d x %d)!" % (Drows, Dcols, Prows, Pcols))
-        newShape = (Drows, Dcols+Pcols)
+        # if (Drows != Prows or Prows != Pcols):
+        #     raise ValueError(
+        #         "Something wrong: number of rows should match (D is %d x %d, P is %d x %d)!" % (Drows, Dcols, Prows, Pcols))
+        # newShape = (Drows, Dcols+Pcols)
 
-        c = self.opP.get_normalizing_c()
-        newList = D_list + [(a, b+Dcols, -v) for (a, b, v)
-                            in P_list] + [(j, j+Dcols, c) for j in range(Prows)]
+        # c = self.opP.get_normalizing_c()
+        # newList = D_list + [(a, b+Dcols, -v) for (a, b, v)
+        #                     in P_list] + [(j, j+Dcols, c) for j in range(Prows)]
 
-        self._store_matrix_list(newList, newShape)
+        # self._store_matrix_list(newList, newShape)
 
-    def get_matrix_rank(self):
-        # The rank of the restriction of the operator is not the rank of the matrix actually stored, but the coranks agree.
-        # Hence the get_matrix_rank method is overridden.
-        r = super().get_matrix_rank()
-        fulldim = self.opD.domain.get_dimension()
-        isodim = self.domain.get_dimension()
-        return isodim - (fulldim - r)
+        #def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
+        # """ Builds the matrix by stcking [D; 1-P]"""
+        # if not self.is_valid():
+        #     return
+
+        # # Build matrix of underlying projection operator
+        # self.opP.build_matrix(ignore_existing_files=ignore_existing_files,
+        #                       skip_if_no_basis=skip_if_no_basis, progress_bar=progress_bar, **kwargs)
+
+        # if (not ignore_existing_files) and self.exists_matrix_file():
+        #     return
+
+        # (D_list, Dshape) = self.opD._load_matrix_list()
+        # (P_list, Pshape) = self.opP._load_matrix_list()
+
+        # (Drows, Dcols) = Dshape
+        # (Prows, Pcols) = Pshape
+
+        # # if (Dcols != Pcols or Prows != Pcols):
+        # #     raise ValueError(
+        # #         "Something wrong: number of columns should match (D is %d x %d, P is %d x %d)!" % (Drows, Dcols, Prows, Pcols))
+        # # newShape = (Drows+Prows, Dcols)
+        # if (Drows != Prows or Prows != Pcols):
+        #     raise ValueError(
+        #         "Something wrong: number of rows should match (D is %d x %d, P is %d x %d)!" % (Drows, Dcols, Prows, Pcols))
+        # newShape = (Drows, Dcols+Pcols)
+
+        # c = self.opP.get_normalizing_c()
+        # newList = D_list + [(a, b+Dcols, -v) for (a, b, v)
+        #                     in P_list] + [(j, j+Dcols, c) for j in range(Prows)]
+
+        # self._store_matrix_list(newList, newShape)
+
+    # def get_matrix_rank(self):
+    #     # The rank of the restriction of the operator is not the rank of the matrix actually stored, but the coranks agree.
+    #     # Hence the get_matrix_rank method is overridden.
+    #     r = super().get_matrix_rank()
+    #     fulldim = self.domain.get_dimension()
+    #     isodim = self.domain.get_iso_dimension()
+    #     print("getrank",r,fulldim,isodim,str(self))
+    #     return isodim - (fulldim - r)
 
     def is_valid(self):
         return self.opD.is_valid()
+
+    def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
+        self.opP.compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
+        return super().compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
 
 
 class SymmetricGraphOperator(GraphOperator.GraphOperator):
@@ -261,10 +313,21 @@ class SymmetricGraphOperator(GraphOperator.GraphOperator):
 class SymmetricDifferential(GraphOperator.Differential):
     """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
     The typical usage is that an ordinary differential holds the SymmetricGraphOperators.
-    Then a new SymmetricDifferential is constructed using the method split_isotypical_components().
-    (To define path accordingly, there should be two user defined classes, one for the non-symmetric differential,
-    and one being a symmetric differential, that holds the restricted operators.)
+    Then a new SymmetricDifferential is constructed, passing the old differential as constructor paramter.
+
+    Attributes: 
+    diff - The (old) differential from which this differential (on isotypical components) is built, 
+           by splitting the relevant operators into their restrictions on istypical components.
     """
+
+    def __init__(self, diff):
+        """ Initializes the RestrictedContractEdgesD-differential from a ContractEdgesD object.
+        Before construction, cohomology for ContractEdgesD should be available, since we will add only those
+        operators that are necessary for computing nonzero cohomology."""
+        self.diff = diff
+        (vsList, opList) = SymmetricDifferential.split_isotypical_components(diff)
+        super(SymmetricDifferential, self).__init__(
+            GraphVectorSpace.SumVectorSpace(vsList), opList)
     
     def refine_cohom_dim_dict(self, dict):
         """Refines the given dictionary of cohomology dimensions (vectorspace->int) by providing info on the splitting into
@@ -284,6 +347,46 @@ class SymmetricDifferential(GraphOperator.Differential):
                 newdim = str(dim) + " (" + ", ".join(refines) +")"
                 newdict[vs] = newdim
         return newdict
+
+    def _get_cohomology_dim_dict(self):
+        # need tooverride this to correct for dimensions
+        d = super()._get_cohomology_dim_dict()
+        for vs, dim in d.items():
+            d[vs] = d[vs] - vs.get_dimension() + vs.get_iso_dimension()
+        return d
+
+    def plot_refined_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
+        """Plot the cohomology dimensions, including data on isotypical decompositions.
+
+        Plot the cohomology dimensions as plot and/or table associated with the differential.
+
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Dafault: False).
+        :type to_html: bool
+        :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (default: False).
+        :type to_csv: bool
+        :param x_plots: Number of plots on the x-axis (Default: 2).
+        :type x_plots: int
+        """
+        print(' ')
+        print('Plot cohomology dimensions of the associated graph complex of ' + str(self.diff))
+        logger.warn(
+            'Plot cohomology dimensions of the associated graph complex of ' + str(self.diff))
+        dim_dict = self.diff._get_cohomology_dim_dict()
+        dim_dict_refined = self.refine_cohom_dim_dict(dim_dict)
+
+        # look up parameter values
+        dim_dict_refined2 = dict()
+        for vs in self.diff.sum_vector_space.get_vs_list():
+            dim_dict_refined2.update(
+                {vs.get_ordered_param_dict().get_value_tuple(): dim_dict_refined.get(vs)})
+
+        plot_path = self.get_cohomology_plot_path()
+        # print(plot_path)
+        parameter_order = self.diff.get_cohomology_plot_parameter_order()
+        ordered_param_range_dict = self.diff.get_ordered_cohomology_param_range_dict()
+        PlotCohomology.plot_array(dim_dict_refined2, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
+                                  x_plots=x_plots, parameter_order=parameter_order)
+
 
 
     @classmethod
