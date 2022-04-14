@@ -37,6 +37,14 @@ sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -o
 docker ps
 #close shell and login again and check whether docker image is still running.
 #check whether data are generated and stored in persistent storage
+#attack again to running tmux session
+#list all tmux sessions
+tmux ls
+#attach to tmux session
+tmux a -t <session number>
+#detach from session again: press ctntrl+b, release and press d
+#stom tmux session
+tmux kill-session -t <session number>
 
 ###########################################################################################
 #create your own docker image
