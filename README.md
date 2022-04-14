@@ -37,6 +37,11 @@ Alternatively pull an existing docker image with the current state of the GH lib
 ```
 $ docker pull sibrun/ubuntu-gh:<tagname>
 ```
+In order to detach the shell later from the process and keep the process running in the background activate a tmux shell:
+```
+$ tmux
+```
+Continue inside the tmux shell.
 Mount a persistent storage location to the Docker container and run the docker image. 
 The generated data will be stored in the persistent storage location.
 ```
@@ -46,6 +51,7 @@ Run a command from the GH library (as stated below) inside the Docker container:
 ```
 $ sage --python ... 
 ```
+In order to detach the process from the tmux shell first press `contrl+b` release and after that press `d`.
 
 ## Running the tests
 
