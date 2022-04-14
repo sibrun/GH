@@ -152,6 +152,9 @@ import BiColoredHairyGraphBiComplex
 import Parameters
 import LinboxInterface
 import RheinfallInterface
+import CHairyGraphComplex
+import ForestedGraphComplex
+import WRHairyGraphComplex
 
 
 logger = Log.logger.getChild('main')
@@ -218,9 +221,9 @@ def sage_rank_options(arg):
     return options
 
 
-graph_types = ['ordinary', 'hairy', 'bi_c_hairy']
-operators = ['contract', 'delete', 'et1h', 'split']
-bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split']
+graph_types = ['ordinary', 'hairy', 'bi_c_hairy', 'forested', 'wrhairy', 'chairy']
+operators = ['contract', 'delete', 'et1h', 'split', 'unmark']
+bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split', 'contract_unmark']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
@@ -238,6 +241,8 @@ parser.add_argument('-even_h_b', action='store_true', help='even hairs_b')
 parser.add_argument('-odd_h_b', action='store_true', help='odd hairs_b')
 parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
 parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
+parser.add_argument('-marked', type=non_negative_range_type, help='range min,max for number of marked edges')
+parser.add_argument('-omega', type=non_negative_range_type, help='range min,max for number of omega vertices')
 parser.add_argument('-shift', type=int_value, default=1, help='maximal shift = loops - vertices')
 parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
 parser.add_argument('-hairs_a', type=non_negative_range_type, help='range min,max for number of hairs_a')
@@ -452,6 +457,62 @@ if __name__ == "__main__":
                                                                         even_edges, even_hairs_a, even_hairs_b, operators)
         else:
             raise ValueError('Differentials for hairy graph complex: contract, split')
+
+    elif args.graph_type == 'chairy':
+        if len(operators) > 0 and set(operators) <= {'contract'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+            if args.hairs is None:
+                raise MissingArgumentError('specify -hairs: range for number of hairs')
+
+            graph_complex = CHairyGraphComplex.CHairyGC(args.v, args.l, args.hairs, even_edges, operators)
+                                                            
+        else:
+            raise ValueError('Differentials for chairy graph complex: contract')
+    elif args.graph_type == 'forested':
+        if args.bicomplex is not None:
+            if args.bicomplex == 'contract_unmark':
+                if args.l is None:
+                    raise MissingArgumentError('specify -l: range for number of loops')
+                if args.marked is None:
+                    raise MissingArgumentError('specify -marked: range for number of marked edges')
+                if args.hairs is None:
+                    raise MissingArgumentError('specify -hairs: range for number of hairs')
+
+                graph_complex = ForestedGraphComplex.ForestedContractUnmarkBiGC(args.l, args.marked, args.hairs, even_edges)
+            else:
+                raise ValueError('forested graphs bicomplex: contract_unmark')
+        elif len(operators) > 0 and set(operators) <= {'contract', 'unmark'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+            if args.marked is None:
+                raise MissingArgumentError('specify -marked: range for number of marked edges')
+            if args.hairs is None:
+                raise MissingArgumentError('specify -hairs: range for number of hairs')
+
+            graph_complex = ForestedGraphComplex.ForestedGC(args.v, args.l, args.marked, args.hairs, even_edges, operators)
+                                                            
+        else:
+            raise ValueError('Differentials for forested graph complex: contract, unmark')
+    elif args.graph_type == 'wrhairy':
+        if len(operators) > 0 and set(operators) <= {'contract'}:
+            if args.v is None:
+                raise MissingArgumentError('specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError('specify -l: range for number of loops')
+            if args.hairs is None:
+                raise MissingArgumentError('specify -hairs: range for number of hairs')
+            if args.omega is None:
+                raise MissingArgumentError('specify -hairs: range for number of omega vertices')
+
+            graph_complex = WRHairyGraphComplex.WRHairyGC(args.v, args.l, args.hairs, args.omega, operators)
+                                                            
+        else:
+            raise ValueError('Differentials for wrhairy graph complex: contract')
 
     if args.plot_info:
         plot_info(graph_complex)
