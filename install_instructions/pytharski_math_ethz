@@ -55,7 +55,7 @@ docker build -t ubuntu-gh .
 #upload docker image to docker hub
 ###########################################################################################
 #change to local storage of server (<username>/docker-image might ned to be created first)
-/scratch/userdata/<username>/docker-image
+cd /scratch/userdata/<username>/docker-image
 #save docker image to .tar file
 docker save ubuntu-gh > ubuntu-gh.tar
 #change back to your cloud storage
@@ -63,7 +63,7 @@ cd ~
 #create directory for docker image
 mkdir docker-image
 #copy data from local server to your cloud storage
-cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar .
+cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar ./docker-image
 #download .tar file with docker image with filezille from your cloud storage to your computer
 #on your computer
 #load docker image from .tar file
