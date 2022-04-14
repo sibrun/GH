@@ -137,6 +137,10 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
 
 class IsotypicalComponent():
     """Represents an isotypical component in a graph vector space.
+    Attributes:
+    vs : The underlying vector space
+    opP: the projection operator
+    rep_index: index of irrep (as in Partitions(n) )
     """
 
     def __init__(self, vs, rep_index):
@@ -165,6 +169,10 @@ class IsotypicalComponent():
         d = self.vs.get_ordered_param_dict().copy()
         d.update({'rep_index': self.rep_index})
         return d
+
+# class SymmetricSumVectorSpace(GraphVectorSpace.SumVectorSpace):
+#     """ Represents the collection of isotypical components."""
+#     pass
 
 
 class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
@@ -257,6 +265,26 @@ class SymmetricDifferential(GraphOperator.Differential):
     (To define path accordingly, there should be two user defined classes, one for the non-symmetric differential,
     and one being a symmetric differential, that holds the restricted operators.)
     """
+    
+    def refine_cohom_dim_dict(self, dict):
+        """Refines the given dictionary of cohomology dimensions (vectorspace->int) by providing info on the splitting into
+        Sn irreducible components. 
+        Returns a new dictionary, the old is unchanged. """
+        newdict = dict.copy()
+        mydict = self._get_cohomology_dim_dict()
+        # print(mydict)
+        for vs, dim in dict.items():
+            # look for available refinements
+            refines = []
+            for iso, val in mydict.items():
+                if iso.vs == vs:
+                    # found match
+                    refines.append( str(iso.opP.rep_partition) +": "+str(val) )
+            if len(refines)>0:
+                newdim = str(dim) + " (" + ", ".join(refines) +")"
+                newdict[vs] = newdim
+        return newdict
+
 
     @classmethod
     def split_isotypical_components(cls, diff):
@@ -266,8 +294,11 @@ class SymmetricDifferential(GraphOperator.Differential):
 
         It is assumed that matrix ranks of the original operators have been computed before calling this method.
 
-        From the list returned an SymmetricDifferential will usually be constructed, with the operator collection build from SymmetricRestrictedOperatorMatrix
+        From the lists returned an SymmetricDifferential will usually be constructed, with the operator collection build from SymmetricRestrictedOperatorMatrix
         objects.
+
+        Returns:
+        A pair (vsList, opList) with vsList the list of isotypical components, opList the list of (restricted) operators
         """
         opD_list = []
         for (opD, opDD) in itertools.permutations(diff.op_matrix_list, 2):
@@ -291,9 +322,9 @@ class SymmetricDifferential(GraphOperator.Differential):
                                 rep_ind)
                             if not (opA in opD_list):
                                 opD_list.append(opA)
-                            # TODO: sumvectorspace should better be replaced by isotypical components, but I think it is not necessary
+        vsList = [op.domain for op in opD_list]
+        return (vsList, opD_list)
 
-        return opD_list
 
 
 # def getCohomDimP(op1, op2, opP, rep_ind):

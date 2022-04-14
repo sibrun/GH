@@ -186,9 +186,9 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
         raise ValueError('invalid parameter order')
     inverse_order = tuple(Shared.Perm(list(parameter_order)).inverse())
 
-    (x_label, x_range) = ordered_param_range_dict.items()[x_idx]
-    (y_label, y_range) = ordered_param_range_dict.items()[y_idx]
-    (z_label, z_range) = ordered_param_range_dict.items()[z_idx]
+    (x_label, x_range) = list(ordered_param_range_dict.items())[x_idx]
+    (y_label, y_range) = list(ordered_param_range_dict.items())[y_idx]
+    (z_label, z_range) = list(ordered_param_range_dict.items())[z_idx]
     if len(list(x_range)) == 0 or len(list(y_range)) == 0 or len(list(z_range)) == 0:
         logging.warn('empty parameter range: nothing to plot')
         return
@@ -206,7 +206,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     if z_size % x_plots:
         y_plots = int(round(float(z_size)/x_plots + 0.5))
     else:
-        y_plots = z_size / x_plots
+        y_plots = int(z_size / x_plots)
 
     fig, axarr = plt.subplots(
         y_plots, x_plots, figsize=(x_plots*x_size, y_plots*y_size))
@@ -259,8 +259,8 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
 def _get_ax(axarr, x_plots, y_plots, z, z_min):
     dz = z - z_min
     if x_plots > 1 and y_plots > 1:
-        i = dz / x_plots
-        j = dz % x_plots
+        i = int(dz / x_plots)
+        j = int(dz % x_plots)
         ax = axarr[i, j]
     else:
         ax = axarr[dz]

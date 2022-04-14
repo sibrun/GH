@@ -245,6 +245,7 @@ class CHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
 
+
 # ------- Operators --------
 class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     """Contract edges graph operator.
@@ -416,10 +417,10 @@ class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
         Before construction, cohomology for ContractEdgesD should be available, since we will add only those
         operators that are necessary for computing nonzero cohomology."""
         self.diff = diff
-        opList = SymmetricGraphComplex.SymmetricDifferential.split_isotypical_components(
+        (vsList, opList) = SymmetricGraphComplex.SymmetricDifferential.split_isotypical_components(
             diff)
         super(RestrictedContractEdgesD, self).__init__(
-            diff.sum_vector_space, opList)
+            GraphVectorSpace.SumVectorSpace(vsList), opList)
 
     def get_type(self):
         return 'isotypical contract edges'
@@ -433,6 +434,7 @@ class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
         sub_type = self.sum_vector_space.sub_type
         s = "info_contract_D_iso_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
 
 
 class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
