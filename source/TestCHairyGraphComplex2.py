@@ -255,14 +255,34 @@ WGC = CHairyGraphComplex.CHairyGC(range(0, 8), range(
 #                 ignore_existing_files=True)
 # WGC.build_matrix(progress_bar=False, info_tracker=False,
 #                  ignore_existing_files=True)
+# WGC.compute_rank(ignore_existing_files=True, sage="integer")
 
 diff = WGC.operator_collection_list[0]
-print(diff)
+# print(diff)
 diff_split = CHairyGraphComplex.RestrictedContractEdgesD(diff)
 # diff_split.build_matrix(ignore_existing_files=True)
-diff.plot_cohomology_dim()
+diff_split.compute_rank(ignore_existing_files=True,sage="integer")
 
-diff_split.compute_rank(ignore_existing_files=True, sage="integer")
+# diff.plot_cohomology_dim()
+# diff_split.plot_cohomology_dim()
+
+# WGC.print_dim_and_eulerchar()
+# WGC.print_cohomology_dim()
+
+d1 = diff._get_cohomology_dim_dict()
+cd = diff_split._get_cohomology_dim_dict()
+for vs, dim in cd.items():
+    print(str(vs) + ","+ str(dim) )
+
+# print(cd)
+# print(d1)
+
+d2 = diff_split.refine_cohom_dim_dict(d1)
+# print(d2)
+
+# print(diff_split)
+
+# diff_split.compute_rank(ignore_existing_files=True, sage="integer")
 # diff_split.plot_cohomology_dim()
 
 

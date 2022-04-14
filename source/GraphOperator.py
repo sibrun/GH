@@ -550,6 +550,7 @@ class OperatorMatrix(object):
             if skip_if_no_matrix:
                 logger.info(
                     "Skip computing rank of %s, since matrix is not built" % str(self))
+                # print("Exception: "+str(error))
                 return
             else:
                 raise error
