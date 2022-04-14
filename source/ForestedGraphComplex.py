@@ -656,10 +656,8 @@ class UnmarkEdgesD(GraphOperator.Differential):
 
 
 class UnmarkEdgesGO(GraphOperator.GraphOperator):
-    """Delete edges graph operator.
-
-    Operates on an ordinary graph by deleting an edge.
-    Only for graphs with odd edges.
+    """Unmark edges graph operator.
+    Makes one marked edge into an unmarked edge.
 
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
@@ -761,8 +759,10 @@ class UnmarkEdgesGO(GraphOperator.GraphOperator):
                 G1.add_edge((u, self.domain.n_vertices))
                 G1.add_edge((v, self.domain.n_vertices))
                 i += 1
-                # For even edges the sign is 1
+                # For even edges the sign is given by nr 0f vertices
                 sgn = 1
+                if self.domain.even_edges:
+                    sgn = 1 if (self.domain.n_vertices % 2 == 0) else -1
                 if not self.domain.even_edges:
                     sgn = 1 if (i % 2 == 0) else -1
                 image.append((G1, sgn))
