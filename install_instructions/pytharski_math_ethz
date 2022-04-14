@@ -20,6 +20,9 @@ docker tag docker.io/sibrun/ubuntu-gh:latest /sibrun/ubuntu-gh:latest
 /r/scratch/users/brunsi/gh_data
 #plots are at gh_data/plots
 
+#in order to detach the process later from the shell and keep it running in the background activate the tmux shell
+tmux
+#continue inside the tmux schell
 #rund docker image with mount of gh_directory on persistent storage in the docker container
 podman run -ti -v /r/scratch/users/<username>/gh_data:/root/GH/gh_data <docker image> /bin/bash
 #or with pulled docker image on shared data
@@ -29,6 +32,7 @@ podman run -ti -v /r/scratch/users/brunsi/gh_data:/root/GH/gh_data localhost/sib
 sage <command as stated in GH library>
 #example
 sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b -build_op -rank -linbox rational
+#detach the process from the tmux shell by first pressing cntrl+b release and after that press d (you should get your normal shell back)
 #check whether docker container is running
 docker ps
 #close shell and login again and check whether docker image is still running.
@@ -51,7 +55,7 @@ docker build -t ubuntu-gh .
 #upload docker image to docker hub
 ###########################################################################################
 #change to local storage of server (<username>/docker-image might ned to be created first)
-/scratch/userdata/<username>/docker-image
+cd /scratch/userdata/<username>/docker-image
 #save docker image to .tar file
 docker save ubuntu-gh > ubuntu-gh.tar
 #change back to your cloud storage
@@ -59,7 +63,7 @@ cd ~
 #create directory for docker image
 mkdir docker-image
 #copy data from local server to your cloud storage
-cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar .
+cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar ./docker-image
 #download .tar file with docker image with filezille from your cloud storage to your computer
 #on your computer
 #load docker image from .tar file
