@@ -6,8 +6,6 @@ import TestGraphComplex
 import ForestedGraphComplex
 from sage.all import *
 
-log_file = "Forested_Unittest.log"
-
 
 maxl = 4
 maxh = 0
