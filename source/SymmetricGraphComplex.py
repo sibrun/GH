@@ -475,7 +475,7 @@ class SymmetricDifferential(GraphOperator.Differential):
         return d
 
     def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
-        self.plot_refined_cohomology_dim(self, to_html, to_csv, x_plots)
+        self.plot_refined_cohomology_dim(to_html, to_csv, x_plots)
 
     def plot_refined_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
         """Plot the cohomology dimensions, including data on isotypical decompositions.
