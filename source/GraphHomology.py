@@ -222,8 +222,8 @@ def sage_rank_options(arg):
 
 
 graph_types = ['ordinary', 'hairy', 'bi_c_hairy', 'forested', 'wrhairy', 'chairy']
-operators = ['contract', 'delete', 'et1h', 'split', 'unmark']
-bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split', 'contract_unmark']
+operators = ['contract', 'delete', 'et1h', 'split', 'unmark', 'contract_iso', 'unmark_iso']
+bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split', 'contract_unmark', 'contract_unmark_iso']
 
 parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
 
@@ -459,7 +459,7 @@ if __name__ == "__main__":
             raise ValueError('Differentials for hairy graph complex: contract, split')
 
     elif args.graph_type == 'chairy':
-        if len(operators) > 0 and set(operators) <= {'contract'}:
+        if len(operators) > 0 and set(operators) <= {'contract', 'contract_iso'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
             if args.l is None:
@@ -473,7 +473,7 @@ if __name__ == "__main__":
             raise ValueError('Differentials for chairy graph complex: contract')
     elif args.graph_type == 'forested':
         if args.bicomplex is not None:
-            if args.bicomplex == 'contract_unmark':
+            if args.bicomplex == 'contract_unmark' or args.bicomplex == 'contract_unmark_iso':
                 if args.l is None:
                     raise MissingArgumentError('specify -l: range for number of loops')
                 if args.marked is None:
@@ -481,9 +481,9 @@ if __name__ == "__main__":
                 if args.hairs is None:
                     raise MissingArgumentError('specify -hairs: range for number of hairs')
 
-                graph_complex = ForestedGraphComplex.ForestedContractUnmarkBiGC(args.l, args.marked, args.hairs, even_edges)
+                graph_complex = ForestedGraphComplex.ForestedContractUnmarkBiGC(args.l, args.marked, args.hairs, even_edges, args.bicomplex == 'contract_unmark_iso')
             else:
-                raise ValueError('forested graphs bicomplex: contract_unmark')
+                raise ValueError('forested graphs bicomplex: contract_unmark or contract_unmark_iso')
         elif len(operators) > 0 and set(operators) <= {'contract', 'unmark'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
@@ -499,7 +499,7 @@ if __name__ == "__main__":
         else:
             raise ValueError('Differentials for forested graph complex: contract, unmark')
     elif args.graph_type == 'wrhairy':
-        if len(operators) > 0 and set(operators) <= {'contract'}:
+        if len(operators) > 0 and set(operators) <= {'contract', 'contract_iso'}:
             if args.v is None:
                 raise MissingArgumentError('specify -v: range for number of vertices')
             if args.l is None:
