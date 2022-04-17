@@ -737,12 +737,16 @@ class WRHairyGC(GraphComplex.GraphComplex):
         sum_vector_space = WRHairyGraphSumVS(
             self.v_range, self.l_range, self.h_range, self.w_range)
         differential_list = []
-        if not set(differentials).issubset(['contract']):
+        if not set(differentials).issubset(['contract', 'contract_iso']):
             raise ValueError(
                 "Differentials for hairy graph complex: 'contract'")
+        contract_edges_dif = ContractEdgesD(sum_vector_space)
         if 'contract' in differentials:
-            contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
+        if 'contract_iso' in differentials:
+            contract_iso_edges_dif = RestrictedContractEdgesD(contract_edges_dif)
+            differential_list.append(contract_iso_edges_dif)
+            print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
         super(WRHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
