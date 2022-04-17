@@ -507,7 +507,7 @@ if __name__ == "__main__":
             if args.hairs is None:
                 raise MissingArgumentError('specify -hairs: range for number of hairs')
             if args.omega is None:
-                raise MissingArgumentError('specify -hairs: range for number of omega vertices')
+                raise MissingArgumentError('specify -omega: range for number of omega vertices')
 
             graph_complex = WRHairyGraphComplex.WRHairyGC(args.v, args.l, args.hairs, args.omega, operators)
                                                             

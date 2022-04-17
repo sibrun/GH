@@ -488,14 +488,14 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
     @classmethod
-    def compute_all_pregraphs(cls, max_vertices, max_loops, max_hairs, even_edges, **kwargs):
+    def compute_all_pregraphs(cls, max_vertices, max_loops, max_marked_edges, max_hairs, even_edges, **kwargs):
         """ Compute the basis for all PreForestedGVS needed to run the computation of basis 
         of ForestedGVS up to the specified maximum parameters. """
         if even_edges:
             max_verts = 2*max_loops-2 + max_hairs
             if max_vertices>0:
                 max_verts = min(max_vertices, max_verts)
-            max_marked = max_verts-1
+            max_marked = min(max_marked_edges, max_verts-1)
             PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1), 
                     range(max_marked+1), range(max_hairs+1))
             PFGC.build_basis(**kwargs)
@@ -504,7 +504,7 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
                 max_verts = max_loops+l-2 + max_hairs
                 if max_vertices>0:
                     max_verts = min(max_vertices, max_verts)
-                max_marked = max_verts-1
+                max_marked = min(max_marked_edges, max_verts-1)
                 PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l,l+1), 
                     range(max_marked+1), range(max_hairs+1+max_loops-l))
                 PFGC.build_basis(**kwargs)
@@ -972,7 +972,7 @@ class ForestedGC(GraphComplex.GraphComplex):
         sum_vector_space = ForestedGraphSumVS(
             v_range, l_range, m_range, h_range, even_edges)
         differential_list = []
-        if not differentials <= {'contract', 'unmark'}:
+        if not set(differentials) <= {'contract', 'unmark'}:
             raise ValueError(
                 "Differentials for forested graph complex: 'contract', 'unmark'")
         if 'contract' in differentials or 'contractiso' in differentials:
@@ -995,7 +995,7 @@ class ForestedGC(GraphComplex.GraphComplex):
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
         PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
-                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files, n_jobs, progress_bar, info_tracker)
+                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
 
@@ -1281,10 +1281,10 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
         self.contract_unmarkD = ContractUnmarkD(graded_sum_vs)
         if isotypical:
             super(ForestedContractUnmarkBiGC, self).__init__(
-                graded_sum_vs, RestrictedContractUnmarkD( self.contract_unmarkD) )
+                graded_sum_vs, [RestrictedContractUnmarkD( self.contract_unmarkD)] )
         else:
             super(ForestedContractUnmarkBiGC, self).__init__(
-                graded_sum_vs, self.contract_unmarkD)
+                graded_sum_vs, [self.contract_unmarkD])
 
     def __str__(self):
         return '<%s graphs bi-complex with %s>' % (graph_type, str(self.sub_type))
@@ -1322,7 +1322,7 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
-        PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
-                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files, n_jobs, progress_bar, info_tracker)
+        PreForestedGraphSumVS.compute_all_pregraphs(-1,
+                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
