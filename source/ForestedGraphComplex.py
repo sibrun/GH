@@ -1125,7 +1125,6 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
     def get_n(self):
         return self.n_hairs
 
-    @abstractmethod
     def get_isotypical_projector(self, rep_index):
         """Returns the SymmetricProjectionOperator corresponding to the isotypical component corresponding to
         the rep_index-th irrep (as in Partitions(n))
