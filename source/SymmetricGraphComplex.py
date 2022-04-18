@@ -156,6 +156,7 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
         self.domain = domain
         self.n = domain.get_n()
         n = self.n
+
         if n <= 0:
             raise ValueError(
                 "Error: SymmetricProjectionOperatorDegSlice should not be constructed on vector space with no Sn action.")
@@ -164,11 +165,17 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
             raise ValueError(
                 "Illegal rep_index: It is larger then the number of irreps.")
 
-        super(SymmetricProjectionOperatorDegSlice, self).__init__(domain, domain)
-
         self.rep_partition = Partitions(n)[rep_index]
         self.rep_dim = symmetrica.charvalue(
             self.rep_partition, [1 for j in range(n)])
+
+        super(SymmetricProjectionOperatorDegSlice, self).__init__(domain, domain)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding graph operator.
+        """
+        return domain == target
 
     @classmethod
     def generate_op_matrix_list(cls, graded_sum_vs):

@@ -1055,12 +1055,12 @@ class ContractUnmarkBiOM(SymmetricGraphComplex.SymmetricBiOperatorMatrix):
 class RestrictedContractUnmarkGO(SymmetricGraphComplex.SymmetricRestrictedOperatorMatrix):
 
     def get_matrix_file_path(self):
-        s = "bi_D_contract_unmark_%d_%d_%d_%d_r%d.txt" % (
+        s = "bi_D_contract_unmark_%d_%d_%d_r%d.txt" % (
             self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
         return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
 
     def get_rank_file_path(self):
-        s = "bi_D_contract_unmark_%d_%d_%d_%d_r%d_rank.txt" % (
+        s = "bi_D_contract_unmark_%d_%d_%d_r%d_rank.txt" % (
             self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
         return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
 
@@ -1142,7 +1142,7 @@ class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDeg
         """
         self.sub_type = domain.sub_type
 
-        super(SymmProjector, self).__init__(domain, rep_index)
+        super(SymmProjectorDegSlice, self).__init__(domain, rep_index)
 
 
     def get_ordered_param_dict2(self):
