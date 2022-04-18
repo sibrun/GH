@@ -83,6 +83,8 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
     data_list.sort()
     columns = list(ordered_param_range_dict.keys())+['dimension']
     data_frame = pandas.DataFrame(data=data_list, columns=columns)
+    # data_frame.style.set_properties( width='300px')
+    # pandas.set_option('max_colwidth', 400)
     if to_html:
         html_path = path + '.html'
         data_frame.to_html(html_path)

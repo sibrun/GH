@@ -407,7 +407,9 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         return self.opD.is_valid()
 
     def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
+        print("Compute projector rank "+str(self.opP))
         self.opP.compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
+        print("Done")
         return super().compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
 
 
@@ -461,9 +463,9 @@ class SymmetricDifferential(GraphOperator.Differential):
             for iso, val in mydict.items():
                 if iso.vs == vs:
                     # found match
-                    refines.append( str(iso.opP.rep_partition) +": "+str(val) )
+                    refines.append( "%d$s_{%s}$"%(val, str(iso.opP.rep_partition)) )
             if len(refines)>0:
-                newdim = str(dim) + " (" + ", ".join(refines) +")"
+                newdim = str(dim) + " (" + "+".join(refines) +")"
                 newdict[vs] = newdim
         return newdict
 
@@ -471,6 +473,8 @@ class SymmetricDifferential(GraphOperator.Differential):
         # need tooverride this to correct for dimensions
         d = super()._get_cohomology_dim_dict()
         for vs, dim in d.items():
+            print(".... "+str(vs))
+            print(vs.get_dimension(), vs.get_iso_dimension())
             d[vs] = d[vs] - vs.get_dimension() + vs.get_iso_dimension()
         return d
 
