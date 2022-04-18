@@ -61,7 +61,7 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
     """
 
     def __init__(self, domain, rep_index):
-        """Initialize the domain and target vector space of the contract edges graph operator.
+        """Initialize the domain and target vector space of the graph operator.
 
         : param domain: Domain vector space of the operator. This is also the target.
         : type domain: GraphVectorSpace
@@ -137,6 +137,114 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
         else:
             return {'exact': self.trace_rank()}
 
+class SymmetricDegSlice(GraphVectorSpace.DegSlice):
+    @abstractmethod
+    def get_n(self):
+        """ Return n as in S_n, the symmetric group acting on the vector space."""
+        pass
+
+    @abstractmethod
+    def get_isotypical_projector(self, rep_index):
+        """Returns the SymmetricProjectionOperator corresponding to the isotypical component corresponding to
+        the rep_index-th irrep (as in Partitions(n))
+        """
+        pass
+
+class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
+    def __init__(self, domain, rep_index):
+        self.rep_index = rep_index
+        self.domain = domain
+        self.n = domain.get_n()
+        n = self.n
+        if n <= 0:
+            raise ValueError(
+                "Error: SymmetricProjectionOperatorDegSlice should not be constructed on vector space with no Sn action.")
+
+        if len(Partitions(n)) <= rep_index:
+            raise ValueError(
+                "Illegal rep_index: It is larger then the number of irreps.")
+
+        super(SymmetricProjectionOperatorDegSlice, self).__init__(domain, domain)
+
+        self.rep_partition = Partitions(n)[rep_index]
+        self.rep_dim = symmetrica.charvalue(
+            self.rep_partition, [1 for j in range(n)])
+
+    @classmethod
+    def generate_op_matrix_list(cls, graded_sum_vs):
+        """Return a list of all possible bi operator matrices of this type with domain and target being degree slices
+        of the graded sum vector space.
+
+        :param graded_sum_vs: Graded sum vector space composed of degree slices.
+        :type graded_sum_vs: GraphVectorSpace.SumVectorSpace
+        :return: List of all possible bi operator matrices with domain and target being degree slices of the
+            graded sum vector space.
+        :rtype: list(BiOperatorMatrix)
+        """
+        graded_sum_vs_list = graded_sum_vs.get_vs_list()
+        bi_op_matrix_list = []
+        for (domain, target) in itertools.permutations(graded_sum_vs_list, 2):
+            if cls.is_match(domain, target):
+                bi_op_matrix_list.append(cls(domain, target))
+        return bi_op_matrix_list
+
+    def __str__(self):
+        """Return a unique description of the bi operator matrix.
+
+        :return: Unique description of the bi operator matrix.
+        :rtype: str
+        """
+        return '<projection operator (%s): %s>' % (str(self.rep_partition), str(self.domain))
+
+    def is_valid(self):
+        return True
+
+    def get_work_estimate(self):
+        """Estimate the work needed to build the bi operator matrix by the product of the dimensions of domain and target.
+
+        Used to schedule the order of building the operator matrices.
+
+        :return int: Estimate the work to build the operator matrix.
+        :rtype: int
+        """
+
+        return self.domain.get_dimension() * self.target.get_dimension()
+
+    def build_matrix(self, ignore_existing_files=False, progress_bar=False, **kwargs):
+        if (not ignore_existing_files) and self.exists_matrix_file():
+            return
+        print(' ')
+        print('Build matrix of %s' % str(self))
+        shape = (self.domain.get_dimension(), self.target.get_dimension())
+        underlying_matrices = self._get_underlying_matrices()
+        self._build_underlying_matrices(underlying_matrices, ignore_existing_files=ignore_existing_files,
+                                        progress_bar=progress_bar)
+        matrix_list = self._get_matrix_list(underlying_matrices)
+        self._store_matrix_list(matrix_list, shape)
+
+    def _get_underlying_matrices(self):
+        return [vs.get_isotypical_projector(self.rep_index) for vs in self.domain.get_vs_list()]
+
+
+    def _build_underlying_matrices(self, op_matrix_list, **kwargs):
+        for op in op_matrix_list:
+            op.build_matrix(**kwargs)
+
+    def _get_matrix_list(self, underlying_matrices):
+        matrixList = []
+        for op in underlying_matrices:
+            if not op.is_valid():
+                continue
+            domain_start_idx = self.domain.get_start_idx(op.get_domain())
+            target_start_idx = self.target.get_start_idx(op.get_target())
+            subMatrixList = op.get_matrix_list()
+            for (i, j, v) in subMatrixList:
+                matrixList.append(
+                    (i + domain_start_idx, j + target_start_idx, v))
+        matrixList.sort()
+        return matrixList
+
+
 
 class IsotypicalComponent():
     """Represents an isotypical component in a graph vector space.
@@ -211,6 +319,9 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
 
     def get_type(self):
         return "Restriction to iso %d of %s" % (self.rep_index, self.opD.get_type())
+
+    def get_work_estimate(self):
+        return self.opD.get_work_estimate()
 
     def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
         """ Builds the matrix by multiplying D and P"""
@@ -296,7 +407,9 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         return self.opD.is_valid()
 
     def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
+        print("Compute projector rank "+str(self.opP))
         self.opP.compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
+        print("Done")
         return super().compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
 
 
@@ -305,10 +418,18 @@ class SymmetricGraphOperator(GraphOperator.GraphOperator):
 
     @abstractmethod
     def restrict_to_isotypical_component(self, rep_index):
-        """Returns the SymmetricCompositeOperatorMatrix that represents the restriction of the operator
+        """Returns the SymmetricRestrictedOperatorMatrix that represents the restriction of the operator
         to an isotypical component"""
         pass
 
+class SymmetricBiOperatorMatrix(GraphOperator.BiOperatorMatrix):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def restrict_to_isotypical_component(self, rep_index):
+        """Returns the SymmetricRestrictedOperatorMatrix that represents the restriction of the operator
+        to an isotypical component"""
+        pass
 
 class SymmetricDifferential(GraphOperator.Differential):
     """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
@@ -342,9 +463,9 @@ class SymmetricDifferential(GraphOperator.Differential):
             for iso, val in mydict.items():
                 if iso.vs == vs:
                     # found match
-                    refines.append( str(iso.opP.rep_partition) +": "+str(val) )
+                    refines.append( "%d$s_{%s}$"%(val, str(iso.opP.rep_partition)) )
             if len(refines)>0:
-                newdim = str(dim) + " (" + ", ".join(refines) +")"
+                newdim = str(dim) + " (" + "+".join(refines) +")"
                 newdict[vs] = newdim
         return newdict
 
@@ -352,8 +473,13 @@ class SymmetricDifferential(GraphOperator.Differential):
         # need tooverride this to correct for dimensions
         d = super()._get_cohomology_dim_dict()
         for vs, dim in d.items():
+            print(".... "+str(vs))
+            print(vs.get_dimension(), vs.get_iso_dimension())
             d[vs] = d[vs] - vs.get_dimension() + vs.get_iso_dimension()
         return d
+
+    def plot_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
+        self.plot_refined_cohomology_dim(to_html, to_csv, x_plots)
 
     def plot_refined_cohomology_dim(self, to_html=False, to_csv=False, x_plots=2):
         """Plot the cohomology dimensions, including data on isotypical decompositions.

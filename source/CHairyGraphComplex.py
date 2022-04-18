@@ -412,16 +412,6 @@ class ContractEdgesD(GraphOperator.Differential):
 
 
 class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
-    # def __init__(self, diff):
-    #     """ Initializes the RestrictedContractEdgesD-differential from a ContractEdgesD object.
-    #     Before construction, cohomology for ContractEdgesD should be available, since we will add only those
-    #     operators that are necessary for computing nonzero cohomology."""
-    #     self.diff = diff
-    #     (vsList, opList) = SymmetricGraphComplex.SymmetricDifferential.split_isotypical_components(
-    #         diff)
-    #     super(RestrictedContractEdgesD, self).__init__(
-    #         GraphVectorSpace.SumVectorSpace(vsList), opList)
-
     def get_type(self):
         return 'isotypical contract edges'
 
@@ -487,26 +477,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
     #     : rtype: bool
     #     """
     #     return domain == target
-
-    @classmethod
-    def generate_operator(cls, n_vertices, n_loops, n_hairs, n_ws, rep_index):
-        """Returns an operator.
-
-        : param n_vertices: Number of vertices of the domain.
-        : type n_vertices: int
-        : param n_loops: Number of loops of the domain.
-        : type n_loops: int
-        : param n_hairs: Number of hairs.
-        : type n_hairs: int
-        : param even_edges: True for even edges, False for odd edges.
-        : type even_edges: bool
-        : param even_hairs: True for even hairs, False for odd hairs.
-        : type even_hairs: bool
-        : return: Contract edges graph operator based on the specified domain vector space.
-        : rtype: ContractEdgesGO
-        """
-        domain = CHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
-        return cls(domain, rep_index)
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -581,12 +551,16 @@ class CHairyGC(GraphComplex.GraphComplex):
         sum_vector_space = CHairyGraphSumVS(
             self.v_range, self.l_range, self.h_range, even_edges)
         differential_list = []
-        if not set(differentials).issubset(['contract']):
+        if not set(differentials).issubset(['contract', 'contract_iso']):
             raise ValueError(
-                "Differentials for hairy graph complex: 'contract'")
-        if 'contract' in differentials:
-            contract_edges_dif = ContractEdgesD(sum_vector_space)
+                "Differentials for hairy graph complex: 'contract', 'contract_iso'")
+        contract_edges_dif = ContractEdgesD(sum_vector_space)
+        if 'contract' in differentials:            
             differential_list.append(contract_edges_dif)
+        if 'contract_iso' in differentials:
+            contract_iso_edges_dif = RestrictedContractEdgesD(contract_edges_dif)
+            differential_list.append(contract_iso_edges_dif)
+            print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
         super(CHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
