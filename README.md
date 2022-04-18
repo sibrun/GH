@@ -51,7 +51,7 @@ Run a command from the GH library (as stated below) inside the Docker container:
 ```
 $ sage --python ... 
 ```
-In order to detach the process from the tmux shell first press `contrl+b` release and after that press `d`.
+In order to detach the process from the tmux shell first press `ctrl+b` release and after that press `d`.
 
 ## Running the tests
 
