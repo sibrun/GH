@@ -60,6 +60,11 @@ mkdir gh
 cd gh
 git clone https://github.com/sibrun/GH.git
 cd GH/docker
+#or pull GH library
+cd ./gh/GH
+git pull
+#delete existing docker images
+docker image rm -f <docker image>
 #generate docker image from dockerfile
 docker build -t ubuntu-gh .
 
@@ -76,15 +81,18 @@ cd ~
 mkdir docker-image
 #copy data from local server to your cloud storage
 cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar ./docker-image
-#download .tar file with docker image with filezille from your cloud storage to your computer
+#download .tar file with filezille from your cloud storage to your computer
 #on your computer
 #start docker desktop app
+#login to docker hub in docker desktop app
+#delete existing docker images
 #load docker image from .tar file
 docker load -i <filename>.tar
 #list docker images
 docker image ls
 #tag docker image
 docker tag <name of docker image> <docker hub user name>/<docker image name>:<tagname (latest)>
+#delete docker image tag on docker hub
 docker push <name of new tagged docker image>
 
 
