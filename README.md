@@ -43,9 +43,18 @@ $ tmux
 ```
 Continue inside the tmux shell.
 Mount a persistent storage location to the Docker container and run the docker image. 
-The generated data will be stored in the persistent storage location.
+The generated data will be stored in the persistent storage location:
 ```
-$ run -ti -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
+$ docker run -it -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
+```
+For developing purposes mount the [GH/source](https://github.com/sibrun/GH/tree/master/source) 
+folder of a copy of the GH library to the Docker container, such that the Docker container keeps track of changes in the source code:
+```
+$ docker run -it -v <path to GH library>/GH/source:/root/GH/source <name docker image:tagname> /bin/bash
+```
+It is possible to mount both the source directory as well as the data directory to the Docker container:
+```
+$ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
 Run a command from the GH library (as stated below) inside the Docker container:
 ```

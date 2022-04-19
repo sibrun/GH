@@ -57,8 +57,8 @@ WORKDIR /root/linbox-1.7.0/examples
 RUN mv rank.C rank.C.old && \
     cp /root/GH/linbox_rheinfall_rank/rank.C . && \
     make rank && \
-    cp rank /root/GH/source/ && \
-    cp -r .libs /root/GH/source/
+    cp rank /root/GH/linbox_rheinfall_rank/ && \
+    cp -r .libs /root/GH/linbox_rheinfall_rank/
 
 WORKDIR /root/GH
 
