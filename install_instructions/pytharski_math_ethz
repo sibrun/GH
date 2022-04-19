@@ -4,6 +4,10 @@ ssh <username>@pytharski.math.ethz.ch
 ###########################################################################################
 #rund code on d-math servers with docker image from docker hub
 ###########################################################################################
+#lsit all docker images
+docker image ls
+#remove existing docker images
+docker image rm (-f)
 #pull existing docker image from docker hub
 docker pull sibrun/ubuntu-gh:latest
 
