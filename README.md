@@ -22,8 +22,8 @@ In order to determine ranks of large matrices [linbox](https://github.com/linbox
 are required. 
 For rank computations the corresponding example code of [linbox](https://github.com/linbox-team/linbox/blob/master/examples/rank.C) or 
 [rheinfall](https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp) is used.
-Replace the rank files by the ones provided in [this](https://github.com/sibrun/GH/tree/master/linbox_rheinfall_modified_rank) folder and compile them.
-Finally move the executables to the folder [GH/source](https://github.com/sibrun/GH/tree/master/source).
+Replace the rank files by the ones provided in [this](https://github.com/sibrun/GH/tree/master/linbox_rheinfall_rank) folder and compile them.
+Finally, move the executables to the folder [GH/linbox_rheinfall_rank](https://github.com/sibrun/GH/tree/master/linbox_rheinfall_rank).
 
 ### Docker
 The easiest way to install the prerequisists and use the library is to run it in a Docker container.

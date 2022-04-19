@@ -24,7 +24,7 @@ def rank(rheinfall_option, matrix_file):
     """
     if not (rheinfall_option in rheinfall_options):
         raise ValueError('Possible options for rheinfall: ' + str(rheinfall_options))
-    rheinfall_path = os.path.join(os.path.curdir, "source", "rank")
+    rheinfall_path = os.path.join(os.path.curdir, "linbox_rheinfall_rank", "rank")
     with tempfile.NamedTemporaryFile() as temp_rank_file:
         rheinfall_command = "%s-%s %s %s" % (rheinfall_path, rheinfall_option, matrix_file, temp_rank_file.name)
         os.system(rheinfall_command)

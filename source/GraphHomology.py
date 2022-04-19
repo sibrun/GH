@@ -60,7 +60,7 @@ Prerequisites:
             https://github.com/riccardomurri/rheinfall
 
     For rank computations the corresponding example code of linbox or rheinfall is used.
-    Replace the rank files by the ones provided in the folder GH/linbox_rheinfall_modified_rank and compile them.
+    Replace the rank files by the ones provided in the folder GH/linbox_rheinfall_rank and compile them.
     Finally move the executables to the folder GH/source.
 
 
