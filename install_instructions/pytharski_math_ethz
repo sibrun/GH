@@ -78,8 +78,9 @@ mkdir docker-image
 cp /scratch/userdata/<username>/docker-image/ubuntu-gh.tar ./docker-image
 #download .tar file with docker image with filezille from your cloud storage to your computer
 #on your computer
+#start docker desktop app
 #load docker image from .tar file
-docker load <filename>.tar
+docker load -i <filename>.tar
 #list docker images
 docker image ls
 #tag docker image
