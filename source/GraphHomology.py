@@ -266,7 +266,7 @@ parser.add_argument('-build_op', action='store_true', help='build operator matri
 parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
 parser.add_argument('-cohomology', action='store_true', help='compute cohomology dimensions')
 parser.add_argument('-csv', action='store_true', help='export cohomolgy dimension to csv file')
-parser.add_argument('-html', action='store_true', help='cexport cohomolgy dimension to html file')
+parser.add_argument('-html', action='store_true', help='export cohomolgy dimension to html file')
 parser.add_argument('-square_zero', action='store_true', help='square zero test')
 parser.add_argument('-anti_commute', action='store_true', help='test anti-commutativity of differentials')
 parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
