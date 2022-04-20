@@ -113,7 +113,7 @@ In order to generate a documentation using [sphinx](http://www.sphinx-doc.org/en
 ```
 (sage-sh)$ make html
 ```
-The html documentation will be found under GH/docs/build/html/idex.html.
+The html documentation will be found under GH/docs/build/html/index.html.
 
 ## Authors
 

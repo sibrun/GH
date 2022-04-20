@@ -29,7 +29,7 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
     """
     if not (linbox_option in linbox_options):
         raise ValueError('Possible options for linbox: ' + str(linbox_options))
-    linbox_path = os.path.join(os.path.curdir, "linbox_rheinfall_rank", "rank")
+    linbox_path = os.path.join(os.path.curdir, "rank_exe", "rank")
     with tempfile.NamedTemporaryFile() as temp_rank_file:
         if linbox_option is "rational":
             linbox_command = "%s %s %s" % (linbox_path, matrix_file, temp_rank_file.name)
