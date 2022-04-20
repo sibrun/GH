@@ -57,8 +57,6 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
     :return: List of generated sage graphs.
     :rtype: list(Graph)
     """
-    print("nauty list_bipartite_graphs")
-
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
@@ -70,12 +68,12 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
         #logger.warn('call nauty to generate bipartite graphs: ' + nauty_command)
         os.system(nauty_command)
         list_g6 = f.read().splitlines()
+        print(list_g6)
         # if len(list_g6) == 0:
         #print('Call nauty to generate bipartite graphs: ' + nauty_command)
         #print('List of bipartite graphs generated using nauty has zero length')
         #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_command)
         #logger.warn('List of bipartite graphs generated using nauty has zero length')
-    print("nauty list_bipartite_graphs: " + nauty_string + " length graph_list: " + str(len(graph_list)))
     return [Graph(g6) for g6 in list_g6]
 
 
