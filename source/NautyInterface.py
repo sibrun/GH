@@ -57,6 +57,8 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
     :return: List of generated sage graphs.
     :rtype: list(Graph)
     """
+    print("nauty list_bipartite_graphs")
+
     (min_deg_1, max_deg_1) = deg_range_1
     (min_deg_2, max_deg_2) = deg_range_2
     # z switch prevents multiple hairs and multiple edges
