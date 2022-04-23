@@ -158,8 +158,8 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         all_perm = [list(range(0, self.n_vertices)) + list(p)
                     for p in itertools.permutations(range(self.n_vertices, self.n_vertices+self.n_hairs))]
 
-        return [G.relabel(p, inplace=False) for G in self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs)
-                for p in all_perm]
+        return (G.relabel(p, inplace=False) for G in self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs)
+                for p in all_perm)
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the

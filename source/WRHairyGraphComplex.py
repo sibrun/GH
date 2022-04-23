@@ -317,8 +317,8 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         all_perm = [list(range(0, self.n_vertices+2)) + list(p)
                     for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2))]
 
-        return [G.relabel(p, inplace=False) for G in self._get_all_wgraphs(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
-                for p in all_perm]
+        return (G.relabel(p, inplace=False) for G in self._get_all_wgraphs(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
+                for p in all_perm)
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the

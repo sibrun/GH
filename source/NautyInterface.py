@@ -79,7 +79,7 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
         #print('List of bipartite graphs generated using nauty has zero length')
         #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_command)
         #logger.warn('List of bipartite graphs generated using nauty has zero length')
-    return [Graph(g6) for g6 in list_g6]
+    return (Graph(g6) for g6 in list_g6)
 
 
 def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
@@ -124,7 +124,7 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         #print('List of bipartite graphs generated using nauty has zero length')
         #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_command)
         #logger.warn('List of bipartite graphs generated using nauty has zero length')
-    return [Graph(g6) for g6 in list_g6]
+    return (Graph(g6) for g6 in list_g6)
 
 
 def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges, n_maxneighbors):
@@ -170,7 +170,7 @@ def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         #print('List of bipartite graphs generated using nauty has zero length')
         #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_command)
         #logger.warn('List of bipartite graphs generated using nauty has zero length')
-    return [Graph(g6) for g6 in list_g6]
+    return (Graph(g6) for g6 in list_g6)
 
 # def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges):
 #     """

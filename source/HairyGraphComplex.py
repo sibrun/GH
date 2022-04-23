@@ -123,7 +123,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         deg_range_1 = (3, n_edges_bip + 1)
         deg_range_2 = (1, 2)
         bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
-        return [self._bip_to_ordinary(G) for G in bipartite_graphs]
+        return (self._bip_to_ordinary(G) for G in bipartite_graphs)
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the

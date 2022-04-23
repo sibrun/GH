@@ -143,30 +143,37 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             # when canonically ordered
             pp = list(range(nvertices)) + list(range(nvertices+nedges, nvertices +
                                                      nedges+nhairs)) + list(range(nvertices, nvertices+nedges))
-            unordered = [G.relabel(pp, inplace=False) for G in bips]
+            # unordered = (G.relabel(pp, inplace=False) for G in bips)
+            for G in bips:
+                yield G.relabel(pp, inplace=False)
+            
+            
+            
             # unordered = [self._bip_to_ordinary(
             #     G, nvertices, nedges, nhairs) for G in bipartite_graphs]
         # Produce all permutations of the hairs
         # all_perm = [ range(0,nvertices) + p for p in Permutations(range(nvertices, nvertices+nhairs)) ]
         # return [G.relabel(p, inplace=False) for p in all_perm ]
         if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
-            unordered.append(Graph([(0, 1)]))
-        return unordered
+            # unordered.append(Graph([(0, 1)]))
+            yield Graph([(0, 1)] )
+        # return unordered
 
     def get_generating_graphs(self):
         # Generates all forested graphs.
         # The algorithm is such that if n_marked_edges = 0 one just created all graphs.
         # Otherwise, load the list of graphs with one less marked edges, and mark one.
         if not self.is_valid():
-            return []
+            return
 
         if self.n_marked_edges == 0:
-            return self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False)
+            yield from self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False)
+            return
 
         VS = PreForestedGVS(self.n_vertices, self.n_loops,
                             self.n_marked_edges-1, self.n_hairs)
         graphs_oneless = VS.get_basis()
-        res = []
+        # res = []
         for G in graphs_oneless:
             for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges+1):
                 nb = G.neighbors(i)
@@ -184,9 +191,10 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
 
                 # check for loop
                 if (GG.subgraph(range(self.n_vertices)).is_forest()):
-                    res.append(GG)
+                    yield GG
+                    # res.append(GG)
 
-        return res
+        # return res
 
     def perm_sign(self, G, p):
         return 1
@@ -283,12 +291,12 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
     def get_generating_graphs(self):
         if not self.is_valid():
-            return []
+            return
 
         # we assume the basis of the intermediate GVS has alread been constructed
         # We need to add (tp many) tadpoles to graphs and permute hairs
 
-        res = []
+        # res = []
         # we have no tadpoles if edges are even
         maxtp = 0 if self.even_edges else self.n_loops
         for tp in range(0, maxtp+1):
@@ -313,16 +321,19 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                 #             for p in itertools.permutations(range(self.n_vertices+self.n_unmarked_edges,
                 #                                                   self.n_vertices+self.n_hairs+self.n_unmarked_edges))]
 
-                newgs = [G.relabel(p, inplace=False)
-                         for G in preGs for p in all_perm]
+                # newgs = [G.relabel(p, inplace=False)
+                #          for G in preGs for p in all_perm]
+                for G in preGs:
+                    for p in all_perm:
+                        yield G.relabel(p, inplace=False)
 
-            res = res+newgs
+            # res = res+newgs
 
         # We count a tadpole as valence one.
         # Hence we miss tadpole vertices of valence three and vertices with two tadpoles.
         # This is only problematic in some edge cases, that we ignore for now.
 
-        return res
+        # return res
 
     def label_marked_edges(self, G):
         i = 0
