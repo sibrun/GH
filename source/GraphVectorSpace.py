@@ -323,7 +323,8 @@ class GraphVectorSpace(VectorSpace):
         :rtype: tuple(str, int)
         """
         canonG, perm_dict = graph.canonical_label(
-            partition=self.get_partition(), certificate=True)
+            partition=self.get_partition(), certificate=True,
+            algorithm=Parameters.canonical_label_algorithm)
         sgn = self.perm_sign(graph, [perm_dict[j]
                              for j in range(graph.order())])
         return (canonG.graph6_string(), sgn)
@@ -363,12 +364,12 @@ class GraphVectorSpace(VectorSpace):
             # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:
                 autom_list = G.automorphism_group().gens()
-                canonG = G.canonical_label()
+                canonG = G.canonical_label(algorithm=Parameters.canonical_label_algorithm)
             else:
                 # The canonical labelling respects the partition of the vertices.
                 autom_list = G.automorphism_group(
                     partition=self.get_partition()).gens()
-                canonG = G.canonical_label(partition=self.get_partition())
+                canonG = G.canonical_label(partition=self.get_partition(), algorithm=Parameters.canonical_label_algorithm)
 
             canon6 = canonG.graph6_string()
 

@@ -200,7 +200,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         if os.path.isfile(fName):
             lst = StoreLoad.load_string_list(fName)
         else:
-            lst = {G.canonical_label(partition=part).graph6_string(
+            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
             ) for G in self._get_connected_wgraphs_w0(nvertices, nloops, nhairs)}
             StoreLoad.store_string_list(lst, fName)
 
@@ -231,7 +231,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         if os.path.isfile(fName):
             lst = StoreLoad.load_string_list(fName)
         else:
-            lst = {G.canonical_label(partition=part).graph6_string(
+            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
             ) for G in self._get_connected_wgraphs_wk(nvertices, nloops, nhairs, nws)}
             StoreLoad.store_string_list(lst, fName)
 
@@ -279,7 +279,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         if os.path.isfile(fName):
             lst = StoreLoad.load_string_list(fName)
         else:
-            lst = {G.canonical_label(partition=part).graph6_string(
+            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
             ) for G in self._get_pre_wgraphs_wk(nvertices, nloops, nhairs, nws)}
             StoreLoad.store_string_list(lst, fName)
 

@@ -9,6 +9,7 @@ __all__ = ['RefGraphVectorSpace', 'RefOperatorMatrix']
 import Log
 from sage.all import *
 import StoreLoad
+import Parameters
 
 
 logger = Log.logger.getChild('ref_graph_complex')
@@ -75,8 +76,8 @@ class RefGraphVectorSpace(object):
     def _g6_to_canon_g6(self, graph6, sgn=False):
         graph = Graph(graph6)
         if not sgn:
-            return graph.canonical_label(partition=self.graph_vs.get_partition()).graph6_string()
-        canonG, perm_dict = graph.canonical_label(partition=self.graph_vs.get_partition(), certificate=True)
+            return graph.canonical_label(partition=self.graph_vs.get_partition(), algorithm=Parameters.canonical_label_algorithm).graph6_string()
+        canonG, perm_dict = graph.canonical_label(partition=self.graph_vs.get_partition(), certificate=True, algorithm=Parameters.canonical_label_algorithm)
         sgn = self.graph_vs.perm_sign(graph, perm_dict.values())
         return (canonG.graph6_string(), sgn)
 

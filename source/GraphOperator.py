@@ -858,7 +858,6 @@ class GraphOperator(Operator, OperatorMatrix):
                     matrix_list.append((domain_index, target_index, factor))
         return matrix_list
 
-
 class BiOperatorMatrix(OperatorMatrix):
     """Bi operator matrix to be used as operator matrix in bicomplexes."""
     __metaclass__ = ABCMeta
