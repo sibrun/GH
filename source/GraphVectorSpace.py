@@ -357,8 +357,8 @@ class GraphVectorSpace(VectorSpace):
         # if not progress_bar:
         print(desc)
         basis_set = set()
-        for G in tqdm(generating_list, desc=desc, disable=(not progress_bar)):
-            # for G in generating_list:
+        # for G in tqdm(generating_list, desc=desc, disable=(not progress_bar)):
+        for G in generating_list:
             # For each graph G in the generating list, add the canonical labeled graph6 representation to the basis set
             # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:

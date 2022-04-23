@@ -831,7 +831,7 @@ class GraphOperator(Operator, OperatorMatrix):
         # if not progress_bar:
         print(desc)
         list_of_lists = []
-        for domain_basis_element in tqdm(list(enumerate(domain_basis)), desc=desc, disable=(not progress_bar)):
+        for domain_basis_element in tqdm(enumerate(domain_basis), total=d, desc=desc, disable=(not progress_bar)):
             # for domain_basis_element in list(enumerate(domain_basis)):
             list_of_lists.append(self._generate_matrix_list(
                 domain_basis_element, lookup))

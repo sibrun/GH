@@ -30,13 +30,15 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
     nauty_string = ("-Cd3" if onlyonevi else "-cd3") + \
         " %d %d:%d" % (n_vertices, n_edges, n_edges)
     #logger.warn('call nauty to generate simple graphs: ' + nauty_string)
-    graph_list = list(graphs.nauty_geng(nauty_string))
+    graph_list = graphs.nauty_geng(nauty_string)
+    # graph_list = list(graphs.nauty_geng(nauty_string))
     # if len(graph_list) == 0:
     #print('Call nauty to generate bipartite graphs: ' + nauty_string)
     #print('List of bipartite graphs generated using nauty has zero length')
     #logger.warn('Call nauty to generate bipartite graphs: ' + nauty_string)
     #logger.warn('List of simple graphs generated using nauty has zero length')
-    print("nauty list_simple_graphs: " + nauty_string + " length graph_list: " + str(len(graph_list)))
+    print("nauty list_simple_graphs: " + nauty_string )
+    # print("nauty list_simple_graphs: " + nauty_string + " length graph_list: " + str(len(graph_list)))
     return graph_list
 
 
