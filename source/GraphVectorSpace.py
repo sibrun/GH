@@ -310,6 +310,14 @@ class GraphVectorSpace(VectorSpace):
         """
         return '<%s vector space with parameters: %s>' % (self.get_type(), str(self.get_ordered_param_dict()))
 
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+
+
     def graph_to_canon_g6(self, graph):
         """Return the graph6 string of the canonically labeled graph and the corresponding permutation sign.
 

@@ -18,7 +18,7 @@ square_zero_test_eps = 1e-6
 commute_test_eps = 1e-6
 
 # ---- Graph canonization algorithm ---- 
-canonical_label_algorithm = 'bliss'  # None, bliss or sage... if changed, all computations have to be repeated
+canonical_label_algorithm = 'sage'  # None, bliss or sage... if changed, all computations have to be repeated
 
 # ---- Rank Computation ----
 prime = 32189   # Prime number to be used in rank computations.
