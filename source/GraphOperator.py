@@ -836,7 +836,7 @@ class GraphOperator(Operator, OperatorMatrix):
             # for domain_basis_element in list(enumerate(domain_basis)):
             # list_of_lists.append(self._generate_matrix_list(
                 # domain_basis_element, lookup))
-            matrix_list.extend( self._generate_matrix_list(domain_basis_element, lookup) )
+            matrix_list.extend(self._generate_matrix_list(domain_basis_element, lookup))
         # matrix_list = list(itertools.chain.from_iterable(list_of_lists))
         matrix_list.sort()
         self._store_matrix_list(matrix_list, shape)
