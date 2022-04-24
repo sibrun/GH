@@ -316,8 +316,6 @@ class GraphVectorSpace(VectorSpace):
     def __eq__(self, other):
         return str(self) == str(other)
 
-
-
     def graph_to_canon_g6(self, graph):
         """Return the graph6 string of the canonically labeled graph and the corresponding permutation sign.
 
@@ -487,7 +485,7 @@ class GraphVectorSpace(VectorSpace):
         return map(Graph, self.get_basis_g6())
 
     def get_g6_coordinates_dict(self):
-        """Return a dictionary to translate from the graph6 string of graphs in the basis to their coordinates.
+        """Return a dictionary to translate from the graph6 string of graphs in the basis to their index in the basis.
 
         :return: Dictionary to translate from graph6 string to the coordinate of a basis element.
         :rtype: dict(str -> int)
