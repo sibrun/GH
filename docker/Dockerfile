@@ -7,7 +7,7 @@ WORKDIR /root
 
 # Base system
 # RUN apt update
-RUN apt update && aptupgrade && apt install -y git wget
+RUN apt update && apt upgrade && apt install -y git wget
 
 # sage
 RUN aptinstall -y sagemath && apt clean
