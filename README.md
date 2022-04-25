@@ -56,6 +56,11 @@ It is possible to mount both the source directory as well as the data directory 
 ```
 $ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
+If the source code is not mounted from outside to the docker container, then update the 
+source code in the Docker container with the command (inside the Docker container):
+```
+$ git pull
+```
 Run a command from the GH library (as stated below) inside the Docker container:
 ```
 $ sage --python ... 

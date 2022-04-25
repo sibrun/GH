@@ -27,11 +27,13 @@ docker tag docker.io/sibrun/ubuntu-gh:latest /sibrun/ubuntu-gh:latest
 #in order to detach the process later from the shell and keep it running in the background activate the tmux shell
 tmux
 #continue inside the tmux schell
-#rund docker image with mount of gh_directory on persistent storage in the docker container
+#rund docker image with mount of gh_data directory on persistent storage to the docker container
 podman run -ti -v /r/scratch/users/<username>/gh_data:/root/GH/gh_data <docker image> /bin/bash
 #or with pulled docker image on shared data
 podman run -ti -v /r/scratch/users/brunsi/gh_data:/root/GH/gh_data localhost/sibrun/ubuntu-gh:latest /bin/bash
 
+#update GH library by running the following command inside the docker container
+git pull
 #run command inside docker to use GH library
 sage <command as stated in GH library>
 #example
