@@ -6,8 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root
 
 # Base system
-#RUN apt update
-RUN apt-get install -y apt-transport-https
+# RUN apt update
 RUN apt-get update && apt-get upgrade && apt-get install -y git wget
 
 # sage
