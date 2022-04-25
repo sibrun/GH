@@ -7,11 +7,11 @@ WORKDIR /root
 
 # Base system
 #RUN apt update
-RUN apt-get --force-yes update && apt-get --force-yes  upgrade
-RUN apt-get --force-yes install git wget
+RUN apt-get upgrade
+RUN apt-get install git wget
 
 # sage
-RUN apt-get --force-yes install sagemath && apt-get --force-yes clean
+RUN apt-get install sagemath && apt-get clean
 
 # Download packages
 RUN wget https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz && \
