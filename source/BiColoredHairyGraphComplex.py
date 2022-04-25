@@ -139,9 +139,13 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         deg_range_2 = (1, 2)
         bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
                                                                 n_edges_bip)
-        hairy_graphs = [self._bip_to_ordinary(G) for G in bipartite_graphs]
-        list_of_lists = [self._hairy_to_bi_colored_hairy(G) for G in hairy_graphs]
-        return list(itertools.chain.from_iterable(list_of_lists))
+
+        return ( GG for G in bipartite_graphs
+                    for GG in self._hairy_to_bi_colored_hairy( self._bip_to_ordinary(G) )
+                    )
+        # hairy_graphs = [self._bip_to_ordinary(G) for G in bipartite_graphs]
+        # list_of_lists = [self._hairy_to_bi_colored_hairy(G) for G in hairy_graphs]
+        # return list(itertools.chain.from_iterable(list_of_lists))
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the

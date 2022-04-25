@@ -1,4 +1,8 @@
-"""Graph complexes based on simple graphs with numbered hairs and hairs of two decorations.
+""" !!!! DEPRECATED !!!!!!
+Rather than this class, always use WRHairyGraphComplex (...it is quasi-isomorphic but smaller.)
+
+
+Graph complexes based on simple graphs with numbered hairs and hairs of two decorations.
 Implemented Differentials: Contract edges.
 
 Graphs are realized as simple graphs with 2 extra vertices for epsilon and omega, (index self.n_vertices and self.n_vertices+1).

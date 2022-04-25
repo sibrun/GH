@@ -1,5 +1,6 @@
-"""Graph complexes based on ordinary (simple, without multi edges) graphs.
-Implemented Differentials: Contract edges, delete edges."""
+"""Graph complexes based on ordinary (simple, without multiple edges) graphs.
+Implemented Differentials: Contract edges, delete edges.
+The generators only produce 1-vertex irreducible graphs."""
 
 
 __all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinaryGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
@@ -25,7 +26,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
     """Ordinary graph vector space.
 
     Sub vector space with specified number of vertices, loops and even or odd edges and at least trivalent vertices.
-    No multiple edges.
+    No multiple edges. Only 1-vi graphs are produced by generators.
 
     Attributes:
         - n_vertices (int): Number of vertices.

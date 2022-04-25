@@ -1,4 +1,6 @@
-"""Graph complexes based on simple graphs with numbered hairs and hairs of two decorations.
+"""Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations 
+as in [Payne-Willwacher, arXiv:2110.05711].
+
 Implemented Differentials: Contract edges.
 
 This is a reduced version of the WHairy graph complex, defined by setting graphs to zero that have connected components
@@ -11,8 +13,9 @@ TODO: Take care that this does not produce problems
 """
 
 
-__all__ = ['graph_type', 'sub_types', 'HairyGraphVS', 'HairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
-           'EdgeToOneHairGO', 'EdgeToOneHairD', 'HairyGC']
+__all__ = ['WRHairyGraphVS', 'WRHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
+           'RestrictedContractEdgesGO', 'RestrictedContractEdgesD',
+           'SymmProjector', 'WRHairyGC']
 
 import itertools
 from sage.all import *
@@ -28,31 +31,20 @@ import SymmetricGraphComplex
 
 graph_type = "wrhairy"
 
-# Option to include zero hairs in the hairy graph complexes.
-zero_hairs = False
-
-
-def dict_to_list(d, n):
-    return [(d[j] if j in d else j) for j in range(n)]
-
 
 # ------- Graph Vector Space --------
 class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
-    """Hairy graph vector space.
+    """WRHairy graph vector space.
 
-    Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
-    and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
-    composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
-    hair vertex alone.
+    Sub vector space with specified number of (internal) vertices, loops, numbered hairs, and omega decorations (ws)
+    and at least trivalent vertices. One hair is composed of a hair vertex and an edge connecting it to a vertex.
 
     Attributes:
         - n_vertices (int): Number of internal vertices.
         - n_loops (int): Number of loops.
         - n_hairs (int): Number of hairs.
-        - even_edges (bool): True for even edges, False for odd edges.
-        - even_hairs (bool): Parity of the hair vertices. True for even hairs, False for odd hairs.
-        - n_edges (int): Number of edges.
-        - sub_type (str): Sub type of graphs.
+        - n_edges (int): Number of edges, not counting edges to numbered hairs.
+        - sub_type (str): Sub type of graphs. This is currently not used, but might be needed for an extension later.
         - ogvs (OrdinaryGraphComplex.OrdinaryGVS): Ordinary graph vector space without hairs.
 
     """
@@ -60,13 +52,13 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def __init__(self, n_vertices, n_loops, n_hairs, n_ws):
         """Initialize the hairy graph vector space.
 
-        :param n_vertices: Number of internal vertices. TODO: sure it is only internal?
+        :param n_vertices: Number of internal vertices.
         :type n_vertices: int
         :param n_loops: the genus of the graph.
         :type n_loops: int
         :param n_hairs: Number of hairs. They are distinguishable, numbered 1,...,n
         :type n_hairs: int
-        :param n_ws: Number of w decorated hairs.
+        :param n_ws: Number of omega decorated hairs.
         :type even_edges: int
         """
         self.n_vertices = n_vertices
@@ -75,7 +67,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         self.n_ws = n_ws
         # we count only the internal edges and omega and eps edges, but not the hair edges
         self.n_edges = self.n_loops + self.n_vertices
-        self.sub_type = "wr"
+        self.sub_type = ""
         super(WRHairyGraphVS, self).__init__()
         self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
             self.n_vertices + self.n_hairs+2, self.n_loops, False)
@@ -132,7 +124,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             return 0
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
+    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
         :param include_novertgraph: Whether to include the graph with one edge and no vertices as a two-hair graph
@@ -148,20 +140,18 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         deg_range_2 = (1, 2)
 
         # check if valid
-        unordered = []
         if (nvertices >= 1 and nloops >= 0 and nhairs >= 0 and n_edges_bip >= n_vertices_2
             and n_edges_bip <= 2*n_vertices_2 and n_edges_bip >= 3 * n_vertices_1
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):
             bipartite_graphs = NautyInterface.list_bipartite_graphs2(
                 n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
-            unordered = [self._bip_to_ordinary(
-                G, nvertices, nedges, nhairs) for G in bipartite_graphs]
-        # Produce all permutations of the hairs
-        # all_perm = [ range(0,nvertices) + p for p in Permutations(range(nvertices, nvertices+nhairs)) ]
-        # return [G.relabel(p, inplace=False) for p in all_perm ]
+            
+            for G in bipartite_graphs:
+                yield self._bip_to_ordinary(G, nvertices, nedges, nhairs)
+
+
         if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
-            unordered.append(Graph([(0, 1)]))
-        return unordered
+            yield Graph([(0, 1)])
 
     def _get_connected_wgraphs_w0(self, nvertices, nloops, nhairs):
         """Produces connected w-graphs with zero omega hairs.
@@ -449,12 +439,10 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         :type n_vertices: int
         :param n_loops: Number of loops of the domain.
         :type n_loops: int
-        :param n_hairs: Number of hairs.
+        :param n_hairs: Number of (numbered) hairs.
         :type n_hairs: int
-        :param even_edges: True for even edges, False for odd edges.
-        :type even_edges: bool
-        :param even_hairs: True for even hairs, False for odd hairs.
-        :type even_hairs: bool
+        :param n_ws: Number of omega hairs.
+        :type n_ws: int
         :return: Contract edges graph operator based on the specified domain vector space.
         :rtype: ContractEdgesGO
         """
@@ -566,7 +554,6 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return image
 
     def restrict_to_isotypical_component(self, rep_index):
-        #opP = self.domain.get_isotypical_projector(rep_index)
         return RestrictedContractEdgesGO(self, rep_index)
 
 
@@ -622,15 +609,6 @@ class ContractEdgesD(GraphOperator.Differential):
 
 
 class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
-    # def __init__(self, diff):
-    #     """ Initializes the RestrictedContractEdgesD-differential from a ContractEdgesD object.
-    #     Before construction, cohomology for ContractEdgesD should be available, since we will add only those
-    #     operators that are necessary for computing nonzero cohomology."""
-    #     self.diff = diff
-    #     (vsList, opList) = SymmetricGraphComplex.SymmetricDifferential.split_isotypical_components(
-    #         diff)
-    #     super(RestrictedContractEdgesD, self).__init__(
-    #         GraphVectorSpace.SumVectorSpace(vsList), opList)
 
     def get_type(self):
         return 'isotypical contract edges'
@@ -654,13 +632,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
     Attributes:
         - sub_type(str): Graphs sub type of the domain.
     """
-
-    # def norm_permutation(self, p):
-    #     """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
-    #     :param p: a permutation
-    #     """
-    #     nn = sum(p)
-    #     return list(range(0, self.domain.n_vertices)) + [j+self.domain.n_vertices-1 for j in p]
 
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
@@ -697,8 +668,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
 
 
 
-# 
-
 
 # ------- Graph Complex --------
 class WRHairyGC(GraphComplex.GraphComplex):
@@ -719,12 +688,10 @@ class WRHairyGC(GraphComplex.GraphComplex):
         : type v_range: range
         : param l_range: Range for the number of loops.
         : type l_range: range
-        : param h_range: Range for the number of hairs.
+        : param h_range: Range for the number of numbered hairs.
         : type  h_range: range
-        : param even_edges: True for even edges, False for odd edges.
-        : type even_edges: bool
-        : param even_hairs: True for even hairs, False for odd hairs.
-        : type even_hairs: bool
+        : param w_range: Range for number of omega hairs.
+        : type w_range: range
         : param differentials: List of differentials. Options: 'contract', 'et1h'.
         : type differentials: list(str)
         """
@@ -783,136 +750,3 @@ class WRHairyGC(GraphComplex.GraphComplex):
                           w, h, l, ":", cohomdict)
 
 
-
-# class SymmProjectorOld(GraphOperator.GraphOperator):
-#     def representative_permutation(self, p):
-#         """Returns one representative permutation of cycle type p.
-#         :param p: a partition
-#         """
-#         nn = sum(p)
-#         return next(pp for pp in Permutations(nn) if pp.cycle_type() == p)
-
-#     def number_permutations(self, p):
-#         """Returns the number of permutations of cycle type p.
-#         :param p: a partition
-#         """
-#         nn = sum(p)
-#         return len([pp for pp in Permutations(nn) if pp.cycle_type() == p])
-
-#     def norm_charvalue(self, p):
-#         """ Get the character value times the number of elements in the conjugacy class corresponding to the partition p.
-#         Note that there is no factor 1/n! in order to have integer valued matrices
-#         :param p: a partition
-#           """
-#         nn = sum(p)
-#         return symmetrica.charvalue(self.rep_partition, p) * self.number_permutations(p)
-
-#     def norm_permutation(self, p):
-#         """Returns the permutation on the vertices of a graph corresponding to a permutation of letters 1,...,n.
-#         :param p: a permutation
-#         """
-#         nn = sum(p)
-#         return list(range(0, self.domain.n_vertices+2)) + [j+self.domain.n_vertices+1 for j in p]
-
-#     """This class encodes the projector to an isotypical component of the symmetric group action
-#         by permuting numbered hairs.
-#         Warning: The matrix stores not the projector, but projector * n_hairs! / rep_dimension??, to have integral matrices.
-
-#     Attributes:
-#         - sub_type(str): Graphs sub type of the domain.
-#     """
-
-#     def __init__(self, domain, rep_index):
-#         """Initialize the domain and target vector space of the contract edges graph operator.
-
-#         : param domain: Domain vector space of the operator.
-#         : type domain: HairyGraphVS
-#         : param rep_index: The index of the representation in the list produced by Partitions(h).
-#         : type rep_index: int
-#         """
-#         self.sub_type = domain.sub_type
-#         self.rep_index = rep_index
-
-#         super(SymmProjector, self).__init__(domain, domain)
-
-#         # fill in representation and character
-#         nn = domain.n_hairs
-#         self.rep_partition = Partitions(nn)[rep_index]
-#         self.norm_char_perm = [(symmetrica.charvalue(self.rep_partition, p.cycle_type(
-#         )), self.norm_permutation(p)) for p in Permutations(nn)]
-
-#         # print(self.norm_char_perm)
-
-#     @staticmethod
-#     def is_match(domain, target):
-#         """Check whether domain and target match to generate a corresponding contract edges graph operator.
-
-#         The contract edges operator reduces the number of vertices by one.
-
-#         : param domain: Potential domain vector space of the operator.
-#         : type domain: HairyGraphVS
-#         : param target: Potential target vector space of the operator.
-#         : type target: HairyGraphVS
-#         : return: True if domain and target match to generate a corresponding contract edges graph operator.
-#         : rtype: bool
-#         """
-#         return domain == target
-
-#     @classmethod
-#     def generate_operator(cls, n_vertices, n_loops, n_hairs, n_ws, rep_index):
-#         """Returns an operator.
-
-#         : param n_vertices: Number of vertices of the domain.
-#         : type n_vertices: int
-#         : param n_loops: Number of loops of the domain.
-#         : type n_loops: int
-#         : param n_hairs: Number of hairs.
-#         : type n_hairs: int
-#         : param even_edges: True for even edges, False for odd edges.
-#         : type even_edges: bool
-#         : param even_hairs: True for even hairs, False for odd hairs.
-#         : type even_hairs: bool
-#         : return: Contract edges graph operator based on the specified domain vector space.
-#         : rtype: ContractEdgesGO
-#         """
-#         domain = WRHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
-#         return cls(domain, rep_index)
-
-#     def get_ordered_param_dict2(self):
-#         do = self.domain
-#         return Shared.OrderedDict([('vertices', do.n_vertices), ('loops', do.n_loops), ('hairs', do.n_hairs), ('ws', do.n_ws), ('rep_index', self.rep_index)])
-
-#     def get_matrix_file_path(self):
-#         s = "projectionO%d_%d_%d_%d_%d.txt" % self.get_ordered_param_dict2().get_value_tuple()
-#         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-#     def get_rank_file_path(self):
-#         s = "projectionO%d_%d_%d_%d_%d_rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
-#         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-#     def get_ref_matrix_file_path(self):
-#         s = "projectionO%d_%d_%d_%d_%d.txt" % self.get_ordered_param_dict2().get_value_tuple()
-#         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-#     def get_ref_rank_file_path(self):
-#         s = "projectionO%d_%d_%d_%d_%d.txt.rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
-#         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-#     def get_work_estimate(self):
-#         # Returns as work estimate: domain.n_edges * log(target dimension, 2)
-#         return 0
-
-#     def get_type(self):
-#         return 'projection operator'
-
-#     def operate_on(self, G):
-#         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
-#         image = []
-#         for (c, p) in self.norm_char_perm:
-#             # c is char value, p is permutation
-#             G1 = copy(G)
-#             sgn = self.domain.ogvs.perm_sign(G1, p)
-#             G1.relabel(p, inplace=True)
-#             image.append((G1, sgn * c))
-
-#         return image
