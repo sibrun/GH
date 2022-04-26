@@ -78,6 +78,10 @@ and attach to the process again with the command
 ```
 tmux attach -t <tmux process number>
 ```
+A tmux process can be quit with the command
+```
+tmux kill-session -t <tmux process number>
+```
 
 ## Running the tests
 

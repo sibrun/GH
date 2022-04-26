@@ -35,7 +35,7 @@ podman run -ti -v /r/scratch/users/brunsi/gh_data:/root/GH/gh_data localhost/sib
 #update GH library by running the following command inside the docker container
 git pull
 #run command inside docker to use GH library
-sage <command as stated in GH library>
+sage --python <command as stated in GH library>
 #example
 sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -odd_e -n_jobs 4 -build_b -build_op -rank -linbox rational
 #detach the process from the tmux shell by first pressing ctrl+b release and after that press d (you should get your normal shell back)
@@ -43,6 +43,10 @@ sage --python ./source/GraphHomology.py ordinary -op1 contract -v 3,12 -l 0,9 -o
 docker ps
 #close shell, login again and check whether docker image is still running.
 #check whether data are generated and stored in persistent storage
+#list all process on a d-math server
+htop
+#list all your processes on all d-math servers
+ps aux | grep brunsi
 #attack again to running tmux session
 #list all tmux sessions
 tmux ls
