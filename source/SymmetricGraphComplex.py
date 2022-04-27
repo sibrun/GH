@@ -502,7 +502,7 @@ class SymmetricDifferential(GraphOperator.Differential):
         """
         print(' ')
         print('Plot cohomology dimensions of the associated graph complex of ' + str(self.diff))
-        logger.warn(
+        logger.warning(
             'Plot cohomology dimensions of the associated graph complex of ' + str(self.diff))
         dim_dict = self.diff._get_cohomology_dim_dict()
         dim_dict_refined = self.refine_cohom_dim_dict(dim_dict)

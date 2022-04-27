@@ -472,7 +472,7 @@ class GraphVectorSpace(VectorSpace):
         """
         if not self.is_valid():
             # Return empty list if graph vector space is not valid.
-            logger.warn("Empty basis: %s is not valid" % str(self))
+            logger.warning("Empty basis: %s is not valid" % str(self))
             return []
         return self._load_basis_g6()
 
@@ -856,7 +856,7 @@ class SumVectorSpace(VectorSpace):
         """
         # if not self.is_valid():
         #     # Return empty list if graph vector space is not valid.
-        #     logger.warn("Empty basis: %s is not valid" % str(self))
+        #     logger.warning("Empty basis: %s is not valid" % str(self))
         #     return []
         L = [s for vs in self.vs_list for s in vs.get_basis_g6()]
         L.sort()

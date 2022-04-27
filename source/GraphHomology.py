@@ -277,52 +277,52 @@ args = parser.parse_args()
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_basis(graph_complex):
-    logger.warn("\n----- Build Basis -----\n")
+    logger.warning("\n----- Build Basis -----\n")
     graph_complex.build_basis(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
                               info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def build_operator(graph_complex):
-    logger.warn("\n----- Build Matrix -----\n")
+    logger.warning("\n----- Build Matrix -----\n")
     graph_complex.build_matrix(ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, progress_bar=args.pbar,
                                info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def square_zero_test(graph_complex):
-    logger.warn("\n----- Square Zero Test -----\n")
+    logger.warning("\n----- Square Zero Test -----\n")
     graph_complex.square_zero_test()
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def test_anti_commutativity(graph_complex):
-    logger.warn("\n----- Anti-commutativity Test -----\n")
+    logger.warning("\n----- Anti-commutativity Test -----\n")
     graph_complex.test_pairwise_anti_commutativity(commute=False)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def test_commutativity(graph_complex):
-    logger.warn("\n----- Commutativity Test -----\n")
+    logger.warning("\n----- Commutativity Test -----\n")
     graph_complex.test_pairwise_anti_commutativity(commute=True)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def rank(graph_complex):
-    logger.warn("\n----- Compute Ranks -----\n")
+    logger.warning("\n----- Compute Ranks -----\n")
     graph_complex.compute_rank(sage=args.sage, linbox=args.linbox, rheinfall=args.rheinfall,
                                ignore_existing_files=args.ignore_ex, n_jobs=args.n_jobs, info_tracker=args.info)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def cohomology(graph_complex):
-    logger.warn("\n----- Compute Cohomology -----\n")
+    logger.warning("\n----- Compute Cohomology -----\n")
     graph_complex.plot_cohomology_dim(to_csv=args.csv, to_html=args.html)
 
 
 @Profiling.cond_decorator(args.profile, Profiling.profile(Parameters.log_dir))
 def plot_info(graph_complex):
-    logger.warn("\n----- Plot Info -----\n")
+    logger.warning("\n----- Plot Info -----\n")
     graph_complex.plot_info()
 
 
@@ -343,7 +343,7 @@ if __name__ == "__main__":
         log_file = complex + '.log'
         Log.set_log_file(log_file)
 
-    logger.warn("\n###########################\n" + "----- Graph Homology -----")
+    logger.warning("\n###########################\n" + "----- Graph Homology -----")
 
     operators = []
     if args.op1 is not None:

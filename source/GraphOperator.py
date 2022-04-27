@@ -447,7 +447,7 @@ class OperatorMatrix(object):
                 Matrix indices outside matrix shape.
         """
         if not self.is_valid():
-            logger.warn("Zero matrix: %s is not valid" % str(self))
+            logger.warning("Zero matrix: %s is not valid" % str(self))
             (d, t) = (self.domain.get_dimension(), self.target.get_dimension())
             entries_list = []
         else:
@@ -494,7 +494,7 @@ class OperatorMatrix(object):
         row_ind = []
         col_ind = []
         if not self.is_valid():
-            logger.warn("Zero matrix: %s is not valid" % str(self))
+            logger.warning("Zero matrix: %s is not valid" % str(self))
             shape = (self.domain.get_dimension(), self.target.get_dimension())
         else:
             (entries_list, shape) = self._load_matrix_list()
@@ -1372,8 +1372,8 @@ class Differential(OperatorMatrixCollection):
         fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (
             triv_l, succ_l, inc_l, fail_l))
-        logger.warning("Square zero test for %s:" % str(self))
-        logger.warning("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
+        logger.warninging("Square zero test for %s:" % str(self))
+        logger.warninging("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
                        (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 
@@ -1409,7 +1409,7 @@ class Differential(OperatorMatrixCollection):
         """
         print(' ')
         print('Plot cohomology dimensions of the associated graph complex of ' + str(self))
-        logger.warn(
+        logger.warning(
             'Plot cohomology dimensions of the associated graph complex of ' + str(self))
         dim_dict = self.get_cohomology_dim_dict()
         plot_path = self.get_cohomology_plot_path()
