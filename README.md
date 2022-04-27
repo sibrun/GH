@@ -32,11 +32,15 @@ Change to the folder [GH/docker](https://github.com/sibrun/GH/tree/master/docker
 ```
 $ docker build -t <name docker image> .
 ```
-Alternatively pull an existing docker image with the current state of the GH library from 
+Alternatively pull an existing docker image with the GH library and all prerequisists from the
 [Docker Hub](https://hub.docker.com/repository/docker/sibrun/ubuntu-gh):
 ```
 $ docker pull sibrun/ubuntu-gh:<tagname>
 ```
+Download the Docker image with tag canonical-sage, which uses sage as algorithm to canonicaly label graphs.
+Note that the python code of the GH library in the Docker image is not up to date. 
+Once you have the docker image running you need to update it first (see below).
+
 In order to detach the shell later from the process and keep the process running in the background activate a tmux shell:
 ```
 $ tmux
@@ -48,7 +52,7 @@ The generated data will be stored in the persistent storage location:
 $ docker run -it -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
 For developing purposes mount the [GH/source](https://github.com/sibrun/GH/tree/master/source) 
-folder of a copy of the GH library to the Docker container, such that the Docker container keeps track of changes in the source code:
+folder of a copy of the GH library to the Docker container such that the Docker container keeps track of changes in the source code:
 ```
 $ docker run -it -v <path to GH library>/GH/source:/root/GH/source <name docker image:tagname> /bin/bash
 ```
@@ -56,11 +60,29 @@ It is possible to mount both the source directory as well as the data directory 
 ```
 $ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
+If the source code is not mounted from outside to the docker container update the 
+source code in the Docker container with the command (inside the Docker container):
+```
+$ git pull
+```
 Run a command from the GH library (as stated below) inside the Docker container:
 ```
 $ sage --python ... 
 ```
 In order to detach the process from the tmux shell first press `ctrl+b` release and after that press `d`.
+You can later list all tmux processes with 
+```
+$ tmux ls
+``` 
+
+and attach to the process again with the command
+```
+tmux attach -t <tmux process number>
+```
+A tmux process can be quit with the command
+```
+tmux kill-session -t <tmux process number>
+```
 
 ## Running the tests
 

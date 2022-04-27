@@ -6,10 +6,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root
 
 # Base system
-RUN apt update && apt -y install git wget
+# RUN apt update
+RUN apt update && apt upgrade && apt install -y git wget
 
 # sage
-RUN apt -y install sagemath && apt clean
+RUN apt install -y sagemath && apt clean
 
 # Download packages
 RUN wget https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz && \

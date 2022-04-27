@@ -5,9 +5,10 @@ import tempfile
 import Parameters
 
 
-linbox_options = {"rational", "mod"}    # Linbox options for rank computation: 'rational' (exact rank over the rational
-                                        # numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
-                                        # prime number).
+# Linbox options for rank computation: 'rational' (exact rank over the rational
+linbox_options = {"rational", "mod"}
+# numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
+# prime number).
 
 
 def rank(linbox_option, matrix_file, prime=Parameters.prime):
@@ -31,10 +32,16 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
         raise ValueError('Possible options for linbox: ' + str(linbox_options))
     linbox_path = os.path.join(os.path.curdir, "rank_exe", "rank")
     with tempfile.NamedTemporaryFile() as temp_rank_file:
-        if linbox_option is "rational":
-            linbox_command = "%s %s %s" % (linbox_path, matrix_file, temp_rank_file.name)
+        if linbox_option == "rational":
+            print("Using Linbox over rationals....")
+            linbox_command = "%s %s %s" % (
+                linbox_path, matrix_file, temp_rank_file.name)
+        elif linbox_option == "mod":
+            print(f"Using Linbox mod prime {prime}....")
+            linbox_command = "%s %s %s %d" % (
+                linbox_path, matrix_file, temp_rank_file.name, prime)
         else:
-            linbox_command = "%s %s %s %d" % (linbox_path, matrix_file, temp_rank_file.name, prime)
+            raise ValueError(f"Unsupported Linbox option {linbox_option}.")
         os.system(linbox_command)
         rank = int(temp_rank_file.read())
     return rank
