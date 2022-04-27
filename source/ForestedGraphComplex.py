@@ -146,9 +146,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             # unordered = (G.relabel(pp, inplace=False) for G in bips)
             for G in bips:
                 yield G.relabel(pp, inplace=False)
-            
-            
-            
+
             # unordered = [self._bip_to_ordinary(
             #     G, nvertices, nedges, nhairs) for G in bipartite_graphs]
         # Produce all permutations of the hairs
@@ -156,7 +154,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         # return [G.relabel(p, inplace=False) for p in all_perm ]
         if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
             # unordered.append(Graph([(0, 1)]))
-            yield Graph([(0, 1)] )
+            yield Graph([(0, 1)])
         # return unordered
 
     def get_generating_graphs(self):
@@ -291,6 +289,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
     def get_generating_graphs(self):
         if not self.is_valid():
+            print("Invalid")
             return
 
         # we assume the basis of the intermediate GVS has alread been constructed
@@ -300,13 +299,14 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # we have no tadpoles if edges are even
         maxtp = 0 if self.even_edges else self.n_loops
         for tp in range(0, maxtp+1):
-            newgs = []
+            # newgs = []
             preVS = PreForestedGVS(
                 self.n_vertices, self.n_loops-tp, self.n_marked_edges, self.n_hairs+tp)
             preGs = preVS.get_basis()
 
             if self.n_hairs+tp == 0:
-                newgs = [G for G in preGs]
+                # newgs = [G for G in preGs]
+                yield from preGs
             else:
                 # Produce all permutations of the hairs, including those that are encoding tadpoles
                 id = Permutation(range(1, tp+1))
@@ -387,6 +387,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             # print("edges after ", [(u, v, j) for (u, v, j) in G1.edges()])
 
             return Shared.Perm([j for (u, v, j) in G1.edges() if (u < self.n_vertices and v < self.n_vertices)]).signature()
+
     def get_n(self):
         return self.n_hairs
 
@@ -395,6 +396,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
+
 
 class ForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of forested graph vector spaces with specified edge parity.
@@ -504,20 +506,20 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         of ForestedGVS up to the specified maximum parameters. """
         if even_edges:
             max_verts = 2*max_loops-2 + max_hairs
-            if max_vertices>0:
+            if max_vertices > 0:
                 max_verts = min(max_vertices, max_verts)
             max_marked = min(max_marked_edges, max_verts-1)
-            PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1), 
-                    range(max_marked+1), range(max_hairs+1))
+            PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1),
+                                         range(max_marked+1), range(max_hairs+1))
             PFGC.build_basis(**kwargs)
         else:
             for l in range(max_loops+1):
                 max_verts = max_loops+l-2 + max_hairs
-                if max_vertices>0:
+                if max_vertices > 0:
                     max_verts = min(max_vertices, max_verts)
                 max_marked = min(max_marked_edges, max_verts-1)
-                PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l,l+1), 
-                    range(max_marked+1), range(max_hairs+1+max_loops-l))
+                PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l, l+1),
+                                             range(max_marked+1), range(max_hairs+1+max_loops-l))
                 PFGC.build_basis(**kwargs)
 
 
@@ -646,6 +648,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     def restrict_to_isotypical_component(self, rep_index):
         return RestrictedContractEdgesGO(self, rep_index)
 
+
 class RestrictedContractEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperatorMatrix):
 
     def get_matrix_file_path(self):
@@ -660,6 +663,7 @@ class RestrictedContractEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperato
 
     def is_match(self, domain, target):
         return ContractEdgesGO.is_match(domain.vs, target.vs) and domain.rep_index == target.rep_index
+
 
 class ContractEdgesD(GraphOperator.Differential):
     """Contract edges differential."""
@@ -685,6 +689,7 @@ class ContractEdgesD(GraphOperator.Differential):
         sub_type = self.sum_vector_space.sub_type
         s = "info_contract_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
 
 class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
     def get_type(self):
@@ -728,7 +733,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
         self.sub_type = domain.sub_type
 
         super(SymmProjector, self).__init__(domain, rep_index)
-
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -893,6 +897,7 @@ class UnmarkEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     def restrict_to_isotypical_component(self, rep_index):
         return RestrictedUnmarkEdgesGO(self, rep_index)
 
+
 class RestrictedUnmarkEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperatorMatrix):
 
     def get_matrix_file_path(self):
@@ -907,6 +912,7 @@ class RestrictedUnmarkEdgesGO(SymmetricGraphComplex.SymmetricRestrictedOperatorM
 
     def is_match(self, domain, target):
         return UnmarkEdgesGO.is_match(domain.vs, target.vs) and domain.rep_index == target.rep_index
+
 
 class UnmarkEdgesD(GraphOperator.Differential):
     """Unmark edges differential.
@@ -934,6 +940,7 @@ class UnmarkEdgesD(GraphOperator.Differential):
         s = "info_unmark_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
+
 class RestrictedUnmarkEdgesD(SymmetricGraphComplex.SymmetricDifferential):
     def get_type(self):
         return 'isotypical unmark edges'
@@ -947,7 +954,6 @@ class RestrictedUnmarkEdgesD(SymmetricGraphComplex.SymmetricDifferential):
         sub_type = self.diff.sum_vector_space.sub_type
         s = "info_unmark_D_iso_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
 
 
 # ------- Graph Complexes --------
@@ -991,13 +997,15 @@ class ForestedGC(GraphComplex.GraphComplex):
             if 'contract' in differentials:
                 differential_list.append(contract_edges_dif)
             if 'contract_iso' in differentials:
-                differential_list.append(RestrictedContractEdgesD(contract_edges_dif))
+                differential_list.append(
+                    RestrictedContractEdgesD(contract_edges_dif))
         if 'unmark' in differentials or 'unmark_iso' in differentials:
             delete_edges_dif = UnmarkEdgesD(sum_vector_space)
             if 'unmark' in differentials:
                 differential_list.append(delete_edges_dif)
             if 'unmark_iso' in differentials:
-                differential_list.append(RestrictedUnmarkEdgesD(delete_edges_dif))                
+                differential_list.append(
+                    RestrictedUnmarkEdgesD(delete_edges_dif))
         super(ForestedGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
@@ -1006,7 +1014,7 @@ class ForestedGC(GraphComplex.GraphComplex):
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
         PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
-                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+                                                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
 
@@ -1142,6 +1150,7 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         """
         return SymmProjectorDegSlice(self, rep_index)
 
+
 class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDegSlice):
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
@@ -1154,7 +1163,6 @@ class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDeg
         self.sub_type = domain.sub_type
 
         super(SymmProjectorDegSlice, self).__init__(domain, rep_index)
-
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -1251,19 +1259,23 @@ class ContractUnmarkD(GraphOperator.Differential):
         s = self.sum_vector_space
         return Shared.OrderedDict([('loops', s.l_range), ('marked_edges', s.m_range), ('hairs', s.h_range)])
 
+
 class RestrictedContractUnmarkD(SymmetricGraphComplex.SymmetricDifferential):
     def get_type(self):
         return 'isotypical contract edges'
 
     def get_cohomology_plot_path(self):
         sub_type = self.diff.sum_vector_space.sub_type
-        s = "cohomology_dim_contract_edges_unmark_edges_D_iso_%s_%s" % (graph_type, sub_type)
+        s = "cohomology_dim_contract_edges_unmark_edges_D_iso_%s_%s" % (
+            graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_info_plot_path(self):
         sub_type = self.diff.sum_vector_space.sub_type
-        s = "info_contract_edges_unmark_edges_D_iso_%s_%s" % (graph_type, sub_type)
+        s = "info_contract_edges_unmark_edges_D_iso_%s_%s" % (
+            graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
 
 class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
     """Bi complex based on ordinary simple graphs and the differentials contract edges and unmark edges.
@@ -1274,7 +1286,7 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
         - sub_type (str): Sub type of graphs.
     """
 
-    def __init__(self, l_range, m_range, h_range, even_edges, isotypical = False):
+    def __init__(self, l_range, m_range, h_range, even_edges, isotypical=False):
         """Initialize the bi complex.
 
         :param deg_range: Range for the degree.
@@ -1292,7 +1304,7 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
         self.contract_unmarkD = ContractUnmarkD(graded_sum_vs)
         if isotypical:
             super(ForestedContractUnmarkBiGC, self).__init__(
-                graded_sum_vs, [RestrictedContractUnmarkD( self.contract_unmarkD)] )
+                graded_sum_vs, [RestrictedContractUnmarkD(self.contract_unmarkD)])
         else:
             super(ForestedContractUnmarkBiGC, self).__init__(
                 graded_sum_vs, [self.contract_unmarkD])
@@ -1334,6 +1346,6 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
         PreForestedGraphSumVS.compute_all_pregraphs(-1,
-                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+                                                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
