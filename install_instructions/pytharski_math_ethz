@@ -9,7 +9,7 @@ docker image ls
 #remove existing docker images
 docker image rm (-f)
 #pull existing docker image from docker hub
-docker pull sibrun/ubuntu-gh:canonical-sage
+docker pull sibrun/ubuntu-gh:latest
 
 #lsit all docker images
 docker image ls
@@ -32,8 +32,6 @@ podman run -ti -v /r/scratch/users/<username>/gh_data:/root/GH/gh_data <docker i
 #or with pulled docker image on shared data
 podman run -ti -v /r/scratch/users/brunsi/gh_data:/root/GH/gh_data localhost/sibrun/ubuntu-gh:latest /bin/bash
 
-#update GH library by running the following command inside the docker container
-git pull
 #run command inside docker to use GH library
 sage --python <command as stated in GH library>
 #example

@@ -35,12 +35,9 @@ $ docker build -t <name docker image> .
 Alternatively pull an existing docker image with the GH library and all prerequisists from the
 [Docker Hub](https://hub.docker.com/repository/docker/sibrun/ubuntu-gh):
 ```
-$ docker pull sibrun/ubuntu-gh:<tagname>
+$ docker pull sibrun/ubuntu-gh:latest
 ```
-Download the Docker image with tag canonical-sage, which uses sage as algorithm to canonicaly label graphs.
-Note that the python code of the GH library in the Docker image is not up to date. 
-Once you have the docker image running you need to update it first (see below).
-
+The Docker container will pull the latest version of the Python code of the GH library at startup.
 In order to detach the shell later from the process and keep the process running in the background activate a tmux shell:
 ```
 $ tmux
@@ -59,11 +56,6 @@ $ docker run -it -v <path to GH library>/GH/source:/root/GH/source <name docker 
 It is possible to mount both the source directory as well as the data directory to the Docker container:
 ```
 $ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
-```
-If the source code is not mounted from outside to the docker container update the 
-source code in the Docker container with the command (inside the Docker container):
-```
-$ git pull
 ```
 Run a command from the GH library (as stated below) inside the Docker container:
 ```
