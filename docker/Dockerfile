@@ -7,7 +7,7 @@ WORKDIR /root
 
 # Base system
 # RUN apt update
-RUN apt update && apt upgrade && apt install -y git wget
+RUN apt update && apt upgrade && apt install -y git wget nano
 
 # sage
 RUN apt install -y sagemath && apt clean
@@ -62,6 +62,8 @@ RUN mv rank.C rank.C.old && \
     cp -r .libs /root/GH/rank_exe/
 
 WORKDIR /root/GH
+
+RUN echo 'git pull' >> ~/.bashrc
 
 CMD [ /bin/bash ]
 
