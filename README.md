@@ -38,6 +38,7 @@ Alternatively pull an existing docker image with the GH library and all prerequi
 $ docker pull sibrun/ubuntu-gh:latest
 ```
 The Docker container will pull the latest version of the Python code of the GH library at startup.
+
 In order to detach the shell later from the process and keep the process running in the background activate a tmux shell:
 ```
 $ tmux
