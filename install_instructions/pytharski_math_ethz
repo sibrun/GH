@@ -46,7 +46,7 @@ docker ps
 #list all process on a d-math server
 htop
 #list all your processes on all d-math servers
-ps aux | grep brunsi
+ps aux | grep <username>
 #attack again to running tmux session
 #list all tmux sessions
 tmux ls
