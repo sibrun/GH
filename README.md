@@ -37,7 +37,8 @@ Alternatively pull an existing docker image with the GH library and all prerequi
 ```
 $ docker pull sibrun/ubuntu-gh:<tagname>
 ```
-Not that the python code of the GH library in the Docker image is not up to date. 
+Download the Docker image with tag canonical-sage, which uses sage as algorithm to canonicaly label graphs.
+Note that the python code of the GH library in the Docker image is not up to date. 
 Once you have the docker image running you need to update it first (see below).
 
 In order to detach the shell later from the process and keep the process running in the background activate a tmux shell:
