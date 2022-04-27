@@ -9,12 +9,12 @@ docker image ls
 #remove existing docker images
 docker image rm (-f)
 #pull existing docker image from docker hub
-docker pull sibrun/ubuntu-gh:latest
+docker pull sibrun/ubuntu-gh:canonical-sage
 
 #lsit all docker images
 docker image ls
 #tag docker image
-docker tag docker.io/sibrun/ubuntu-gh:latest /sibrun/ubuntu-gh:latest
+docker tag docker.io/sibrun/ubuntu-gh:canonical-sage /sibrun/ubuntu-gh:latest
 
 #persistant storage on dmath servers for large quantities of data (<username> might ned to be created first)
 /r/scratch/users/<username>/
