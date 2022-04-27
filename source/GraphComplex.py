@@ -253,9 +253,9 @@ class GraphComplex(object):
         fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
               (triv_l, succ_l, inc_l, fail_l))
-        logger.warn('Test %s for %s and %s' %
+        logger.warning('Test %s for %s and %s' %
                     (case, str(op_collection1), str(op_collection2)))
-        logger.warn("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
+        logger.warning("trivial success: %d, success: %d, inconclusive: %d, failed: %d quadruples" %
                     (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 
