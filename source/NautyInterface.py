@@ -116,6 +116,7 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         if not type(txt) is str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
+        print(f"Call to nauty: {nauty_command} generated {len(list_g6)} graphs.")
         # list_g6 = f.read().decode("utf-8").splitlines()
         # print(list_g6)
         # if len(list_g6) == 0:
@@ -162,6 +163,7 @@ def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         if not type(txt) is str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
+        print(f"Call to nauty: {nauty_command} generated {len(list_g6)} graphs.")
         # list_g6 = f.read().decode("utf-8").splitlines()
         # print(list_g6)
         # if len(list_g6) == 0:
