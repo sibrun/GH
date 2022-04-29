@@ -138,6 +138,11 @@ Examples:
     Bi colored hairy graph bicomplex 'contract_split' with the differentials 'contract edges' and 'split edges':
 
         $ python ./source/GraphHomology.py bi_c_hairy -bicomplex contract_split -d 0,11 -h_a_min ,-9,1 -h_b_min ,-9,1 -odd_e -even_h_a -even_h_b -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology
+
+    Forested Graph complex:
+        Build basis and operators:
+
+        $ sage --python source/GraphHomology.py forested -v 0,7 -l 4,5 -marked 0,6 -hairs 0,1 -even_e -op1 contract -op2 unmark -build_b -build_op
 """
 
 import argparse
