@@ -157,6 +157,12 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             yield Graph([(0, 1)])
         # return unordered
 
+    # def get_required_prevs(self):
+    #     """Returns the list of PreForestedGVS that need to be built before the present one.
+    #     Concretely, these are all the vector spaces with the same parameters but fewer markings. """
+    #     for m in range(self.n_marked_edges):
+    #         yield PreForestedGVS(self.n_vertices, self.n_loops, m, self.n_hairs)
+
     def get_generating_graphs(self):
         # Generates all forested graphs.
         # The algorithm is such that if n_marked_edges = 0 one just created all graphs.
@@ -335,6 +341,21 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
         # return res
 
+    def get_required_prevs(self):
+        """Returns a list of PreForestedGVS that are required to build the basis of this vector space. 
+        Also includes the PreForestedGVS (...with fewer marked edges) that are needed by those PreForestedGVS
+        in turn."""
+        if not self.is_valid():
+            return
+
+        maxtp = 0 if self.even_edges else self.n_loops
+        for tp in range(maxtp+1):
+            for m in range(self.n_marked_edges):
+                yield PreForestedGVS(
+                    self.n_vertices, self.n_loops-tp, m, self.n_hairs+tp)
+            
+
+
     def label_marked_edges(self, G):
         i = 0
         for (u, v) in G.edges(labels=False):
@@ -500,27 +521,27 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         s = "info_pre_vector_space_%s_%s" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
-    @classmethod
-    def compute_all_pregraphs(cls, max_vertices, max_loops, max_marked_edges, max_hairs, even_edges, **kwargs):
-        """ Compute the basis for all PreForestedGVS needed to run the computation of basis 
-        of ForestedGVS up to the specified maximum parameters. """
-        if even_edges:
-            max_verts = 2*max_loops-2 + max_hairs
-            if max_vertices > 0:
-                max_verts = min(max_vertices, max_verts)
-            max_marked = min(max_marked_edges, max_verts-1)
-            PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1),
-                                         range(max_marked+1), range(max_hairs+1))
-            PFGC.build_basis(**kwargs)
-        else:
-            for l in range(max_loops+1):
-                max_verts = max_loops+l-2 + max_hairs
-                if max_vertices > 0:
-                    max_verts = min(max_vertices, max_verts)
-                max_marked = min(max_marked_edges, max_verts-1)
-                PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l, l+1),
-                                             range(max_marked+1), range(max_hairs+1+max_loops-l))
-                PFGC.build_basis(**kwargs)
+    # @classmethod
+    # def compute_all_pregraphs(cls, max_vertices, max_loops, max_marked_edges, max_hairs, even_edges, **kwargs):
+    #     """ Compute the basis for all PreForestedGVS needed to run the computation of basis 
+    #     of ForestedGVS up to the specified maximum parameters. """
+    #     if even_edges:
+    #         max_verts = 2*max_loops-2 + max_hairs
+    #         if max_vertices > 0:
+    #             max_verts = min(max_vertices, max_verts)
+    #         max_marked = min(max_marked_edges, max_verts-1)
+    #         PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1),
+    #                                      range(max_marked+1), range(max_hairs+1))
+    #         PFGC.build_basis(**kwargs)
+    #     else:
+    #         for l in range(max_loops+1):
+    #             max_verts = max_loops+l-2 + max_hairs
+    #             if max_vertices > 0:
+    #                 max_verts = min(max_vertices, max_verts)
+    #             max_marked = min(max_marked_edges, max_verts-1)
+    #             PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l, l+1),
+    #                                          range(max_marked+1), range(max_hairs+1+max_loops-l))
+    #             PFGC.build_basis(**kwargs)
 
 
 # ------- Operators --------
@@ -1011,10 +1032,27 @@ class ForestedGC(GraphComplex.GraphComplex):
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
 
+
+    def compute_all_pregraphs(self, **kwargs):
+        vsset = { prevs for vs in self.sum_vector_space.vs_list for prevs in vs.get_required_prevs() }
+
+        # vslist.sort(key = lambda x : x.get_work_estimate() )
+
+        # for prevs in vslist:
+            # prevs.build_basis()
+        
+        sumvs = GraphVectorSpace.SumVectorSpace(list(vsset))
+        sumvs.build_basis(**kwargs)
+
+
+            
+
+
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
-        PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
-                                                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+        self.compute_all_pregraphs(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+        # PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
+                                                    # max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
 
@@ -1344,8 +1382,8 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
                       h, l, self.sub_type, ":", cohomdict)
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
-        print("Building auxiliary pregraphs...")
-        PreForestedGraphSumVS.compute_all_pregraphs(-1,
-                                                    max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
-        print("Done.")
+        # print("Building auxiliary pregraphs...")
+        # PreForestedGraphSumVS.compute_all_pregraphs(-1,
+        #                                             max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+        # print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
