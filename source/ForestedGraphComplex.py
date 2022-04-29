@@ -72,6 +72,12 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops \
             and self.n_marked_edges == other.n_marked_edges and self.n_hairs == other.n_hairs
 
+    def __str__(self):
+        return ("PreForestedGVS_%s_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple())
+
+    def __hash__(self):
+        return hash(str(self))
+
     def get_basis_file_path(self):
         s = "gra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
@@ -345,12 +351,13 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         """Returns a list of PreForestedGVS that are required to build the basis of this vector space. 
         Also includes the PreForestedGVS (...with fewer marked edges) that are needed by those PreForestedGVS
         in turn."""
+
         if not self.is_valid():
             return
 
         maxtp = 0 if self.even_edges else self.n_loops
         for tp in range(maxtp+1):
-            for m in range(self.n_marked_edges):
+            for m in range(self.n_marked_edges+1):
                 yield PreForestedGVS(
                     self.n_vertices, self.n_loops-tp, m, self.n_hairs+tp)
             
@@ -512,7 +519,7 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         super(PreForestedGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
-        return '%s pre graphs with %s' % (graph_type, self.sub_type)
+        return '%s pre graphs' % (graph_type)
 
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('marked_edges', self.m_range), ('hairs', self.h_range)])
@@ -521,27 +528,22 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         s = "info_pre_vector_space_%s_%s" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
-    # @classmethod
-    # def compute_all_pregraphs(cls, max_vertices, max_loops, max_marked_edges, max_hairs, even_edges, **kwargs):
-    #     """ Compute the basis for all PreForestedGVS needed to run the computation of basis 
-    #     of ForestedGVS up to the specified maximum parameters. """
-    #     if even_edges:
-    #         max_verts = 2*max_loops-2 + max_hairs
-    #         if max_vertices > 0:
-    #             max_verts = min(max_vertices, max_verts)
-    #         max_marked = min(max_marked_edges, max_verts-1)
-    #         PFGC = PreForestedGraphSumVS(range(max_verts+1), range(max_loops+1),
-    #                                      range(max_marked+1), range(max_hairs+1))
-    #         PFGC.build_basis(**kwargs)
-    #     else:
-    #         for l in range(max_loops+1):
-    #             max_verts = max_loops+l-2 + max_hairs
-    #             if max_vertices > 0:
-    #                 max_verts = min(max_vertices, max_verts)
-    #             max_marked = min(max_marked_edges, max_verts-1)
-    #             PFGC = PreForestedGraphSumVS(range(max_verts+1), range(l, l+1),
-    #                                          range(max_marked+1), range(max_hairs+1+max_loops-l))
-    #             PFGC.build_basis(**kwargs)
+class PreForestedGraphSumVS2(GraphVectorSpace.SumVectorSpace):
+    """This is for holding an arbitrary list of PreForestedGVS that are not necessarily in a consecutive range
+     in the parameter table."""
+    def __init__(self, vs_list):
+        self.sub_type = "pre"
+        super(PreForestedGraphSumVS2, self).__init__(vs_list)
+
+    def get_type(self):
+        return f'{graph_type} pre graphs'
+
+    def get_ordered_param_range_dict(self):
+        return { "parameters" : "various" }
+
+    def get_info_plot_path(self):
+        s = "info_pre_vector_space_%s_%s" % (graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
 
 # ------- Operators --------
@@ -1034,18 +1036,17 @@ class ForestedGC(GraphComplex.GraphComplex):
 
 
     def compute_all_pregraphs(self, **kwargs):
+        print("Determining and building required pre-vs:")
         vsset = { prevs for vs in self.sum_vector_space.vs_list for prevs in vs.get_required_prevs() }
-
+        for vs in vsset:
+            print(vs)
         # vslist.sort(key = lambda x : x.get_work_estimate() )
 
         # for prevs in vslist:
             # prevs.build_basis()
         
-        sumvs = GraphVectorSpace.SumVectorSpace(list(vsset))
+        sumvs = PreForestedGraphSumVS2(list(vsset))
         sumvs.build_basis(**kwargs)
-
-
-            
 
 
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
