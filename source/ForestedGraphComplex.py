@@ -1040,11 +1040,7 @@ class ForestedGC(GraphComplex.GraphComplex):
         vsset = { prevs for vs in self.sum_vector_space.vs_list for prevs in vs.get_required_prevs() }
         for vs in vsset:
             print(vs)
-        # vslist.sort(key = lambda x : x.get_work_estimate() )
 
-        # for prevs in vslist:
-            # prevs.build_basis()
-        
         sumvs = PreForestedGraphSumVS2(list(vsset))
         sumvs.build_basis(**kwargs)
 
