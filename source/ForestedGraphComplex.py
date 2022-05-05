@@ -14,7 +14,10 @@ import Shared
 import NautyInterface
 import Parameters
 import SymmetricGraphComplex
+import StoreLoad
+import Log
 
+logger = Log.logger.getChild('forested_graph_complex')
 
 graph_type = "forested"
 
@@ -25,7 +28,7 @@ sub_types = {True: "even_edges", False: "odd_edges"}
 class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
     """Forested graph vector space.
     Does not implement any symmetry handling, i.e., no graph is zero by symmetry.
-    These graph vector spaces are intermediate objects used in the generation algorithm of the 
+    These graph vector spaces are intermediate objects used in the generation algorithm of the
     "actual" forested graph complex ForestedGVS.
 
     Sub vector space with specified number of vertices, loops, marked edges, hairs
@@ -348,7 +351,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # return res
 
     def get_required_prevs(self):
-        """Returns a list of PreForestedGVS that are required to build the basis of this vector space. 
+        """Returns a list of PreForestedGVS that are required to build the basis of this vector space.
         Also includes the PreForestedGVS (...with fewer marked edges) that are needed by those PreForestedGVS
         in turn."""
 
@@ -360,8 +363,6 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             for m in range(self.n_marked_edges+1):
                 yield PreForestedGVS(
                     self.n_vertices, self.n_loops-tp, m, self.n_hairs+tp)
-            
-
 
     def label_marked_edges(self, G):
         i = 0
@@ -528,9 +529,11 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         s = "info_pre_vector_space_%s_%s" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
+
 class PreForestedGraphSumVS2(GraphVectorSpace.SumVectorSpace):
     """This is for holding an arbitrary list of PreForestedGVS that are not necessarily in a consecutive range
      in the parameter table."""
+
     def __init__(self, vs_list):
         self.sub_type = "pre"
         super(PreForestedGraphSumVS2, self).__init__(vs_list)
@@ -539,7 +542,7 @@ class PreForestedGraphSumVS2(GraphVectorSpace.SumVectorSpace):
         return f'{graph_type} pre graphs'
 
     def get_ordered_param_range_dict(self):
-        return { "parameters" : "various" }
+        return {"parameters": "various"}
 
     def get_info_plot_path(self):
         s = "info_pre_vector_space_%s_%s" % (graph_type, self.sub_type)
@@ -705,7 +708,7 @@ class ContractEdgesD(GraphOperator.Differential):
 
     def get_cohomology_plot_path(self):
         sub_type = self.sum_vector_space.sub_type
-        s = "cohomology_dim_contrct_edges_D_%s_%s" % (graph_type, sub_type)
+        s = "cohomology_dim_contract_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
     def get_info_plot_path(self):
@@ -1034,22 +1037,22 @@ class ForestedGC(GraphComplex.GraphComplex):
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
 
-
     def compute_all_pregraphs(self, **kwargs):
         print("Determining and building required pre-vs:")
-        vsset = { prevs for vs in self.sum_vector_space.vs_list for prevs in vs.get_required_prevs() }
+        vsset = {
+            prevs for vs in self.sum_vector_space.vs_list for prevs in vs.get_required_prevs()}
         for vs in vsset:
             print(vs)
 
         sumvs = PreForestedGraphSumVS2(list(vsset))
         sumvs.build_basis(**kwargs)
 
-
     def build_basis(self, ignore_existing_files=False, n_jobs=1, progress_bar=False, info_tracker=False):
         print("Building auxiliary pregraphs...")
-        self.compute_all_pregraphs(ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+        self.compute_all_pregraphs(ignore_existing_files=ignore_existing_files,
+                                   n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         # PreForestedGraphSumVS.compute_all_pregraphs(max(self.v_range),
-                                                    # max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
+        # max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
 
@@ -1384,3 +1387,273 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
         #                                             max(self.l_range), max(self.m_range), max(self.h_range), self.even_edges, ignore_existing_files=ignore_existing_files, n_jobs=n_jobs, progress_bar=progress_bar, info_tracker=info_tracker)
         # print("Done.")
         return super().build_basis(ignore_existing_files, n_jobs, progress_bar, info_tracker)
+
+
+###### Top vertex number parts ###
+
+class ForestedTopDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
+    """Represents the top and top-1-piece of a forested deg slice, i.e.,
+    just the graphs with all trivalent, or with one 4-valent vertex.
+    """
+
+    def is_complete(self):
+        for vs in self.vs_list:
+            if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
+                return False
+        return True
+
+    def __init__(self, n_loops, n_marked_edges, n_hairs, even_edges, top_n):
+        """Initialize the degree slice.
+        There will be top_n gvs in the deg slice. (only 1 and 2 are used)
+
+        :param deg: Total degree of the degree slice.
+        :type deg: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        """
+        self.n_loops = n_loops
+        self.n_marked_edges = n_marked_edges
+        self.n_hairs = n_hairs
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(even_edges)
+        self.top_n = top_n
+        max_vertices = 2*n_loops-2 + n_hairs
+        self.n_vertices = max_vertices
+        min_vertices = max_vertices-top_n+1
+        super(ForestedTopDegSlice, self).__init__(
+            [ForestedGVS(v, n_loops, n_marked_edges, n_hairs, even_edges)
+             for v in range(min_vertices, max_vertices + 1)],
+            n_marked_edges)
+
+    def get_ordered_param_dict(self):
+        return Shared.OrderedDict([('loops', self.n_loops), ('marked_edges', self.n_marked_edges), ('hairs', self.n_hairs), ('topn', self.top_n)])
+
+    def __eq__(self, other):
+        return self.n_loops == other.n_loops \
+            and self.n_marked_edges == other.n_marked_edges and self.n_hairs == other.n_hairs \
+            and self.even_edges == other.even_edges
+
+    def __str__(self):
+        return ("ForestedTopDegSlice_%s_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple()) + self.sub_type
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_top_degree_slice_deg_%d_%d_%d_%d_%s_%s" % (
+            self.n_loops, self.n_marked_edges, self.n_hairs, self.top_n, graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+    def get_n(self):
+        return self.n_hairs
+
+    def get_isotypical_projector(self, rep_index):
+        """Returns the SymmetricProjectionOperator corresponding to the isotypical component corresponding to
+        the rep_index-th irrep (as in Partitions(n))
+        """
+        return SymmProjectorDegSlice(self, rep_index)
+
+
+class ContractUnmarkTopBiOM(SymmetricGraphComplex.SymmetricBiOperatorMatrix):
+    """
+    Represents the stacked matrix
+    M=[ contract; unmark ]
+    that can be used to compute the rank of unmark U, restricted to the kernel of contract C, as
+    rank(U|_{Ker C} ) = rank(M) - rank(C)
+
+    This is used only for the top number of vertices components (trivalent graphs) in each loop order.
+    """
+
+    def __init__(self, domain, target):
+        self.sub_type = domain.sub_type
+        super(ContractUnmarkTopBiOM, self).__init__(domain, target, ContractEdgesGO,
+                                                    UnmarkEdgesGO)
+
+    @classmethod
+    def generate_operator(cls, n_loops, n_marked_edges, n_hairs, even_edges):
+        domain = ForestedTopDegSlice(n_loops,
+                                     n_marked_edges, n_hairs, even_edges, 1)
+        target = ForestedTopDegSlice(n_loops,
+                                     n_marked_edges-1, n_hairs, even_edges, 2)
+        return cls(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: ForestedDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: ForestedDegSlice
+        :return: bool: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
+        """
+        return domain.n_marked_edges - 1 == target.n_marked_edges \
+            and domain.n_loops == target.n_loops \
+            and domain.n_hairs == target.n_hairs \
+            and domain.even_edges == target.even_edges
+
+    def get_matrix_file_path(self):
+        s = "bi_D_contract_unmark_top_%d_%d_%d.txt" % self.domain.get_ordered_param_dict(
+        ).get_value_tuple()[:-1]
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "bi_D_contract_unmark_top_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict(
+        ).get_value_tuple()[:-1]
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_true_rank(self):
+        """ Returns the rank of the restriction of the unmark operator to the kernel of the
+        contraction operator.
+        """
+        Dc = ContractEdgesGO.generate_operator(
+            self.domain.n_vertices, self.domain.n_loops, self.domain.n_marked_edges, self.domain.n_hairs, self.domain.even_edges)
+
+        return self.get_matrix_rank() - Dc.get_matrix_rank()
+
+    def restrict_to_isotypical_component(self, rep_index):
+        pass
+        # return RestrictedContractUnmarkGO(self, rep_index)
+
+
+class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
+    """Direct sum of forested graph vector spaces with specified edge parity.
+
+    Attributes:
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
+    """
+
+    def __init__(self, l_range, m_range, h_range, even_edges):
+        """Initialize the sum vector space.
+
+        :param v_range: Range for the number of vertices.
+        :type v_range: range
+        :param l_range: Range for the number of loops.
+        :type l_range: range
+        :param m_range: Range for the number of marked edges.
+        :type m_range: range
+        :param h_range: Range for the number of hairs.
+        :type h_range: range
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        """
+        self.l_range = l_range
+        self.m_range = m_range
+        self.h_range = h_range
+
+        self.even_edges = even_edges
+        self.sub_type = sub_types.get(self.even_edges)
+
+        vs_list = [ForestedGVS(2*l-2+h, l, m, h, self.even_edges) for (
+            l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
+
+        super(ForestedGraphTopSumVS, self).__init__(vs_list)
+
+    def get_type(self):
+        return '%s graphs with %s' % (graph_type, self.sub_type)
+
+    def get_ordered_param_range_dict(self):
+        return Shared.OrderedDict([('loops', self.l_range), ('marked_edges', self.m_range), ('hairs', self.h_range)])
+
+    def get_info_plot_path(self):
+        s = "info_vector_space_top_%s_%s" % (graph_type, self.sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class ContractUnmarkTopD(GraphOperator.Differential):
+    """ Represents a collection of ContractUnmarkTopBiOM.
+    This class is also used to compute cohomology.
+    """
+
+    def __init__(self, l_range, m_range, h_range, even_edges):
+        self.l_range = l_range
+        self.m_range = m_range
+        self.h_range = h_range
+        self.even_edges = even_edges
+        op_list = [ContractUnmarkTopBiOM.generate_operator(l, m, h, even_edges)
+                   for l in l_range
+                   for m in m_range
+                   for h in h_range]
+        sum_vs = ForestedGraphTopSumVS(l_range, m_range, h_range, even_edges)
+        super(ContractUnmarkTopD, self).__init__(sum_vs, op_list)
+
+    def get_type(self):
+        return 'contract edges and unmark edges top'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_contract_edges_unmark_edges_top_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_unmark_edges_top_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_ordered_cohomology_param_range_dict(self):
+        s = self.sum_vector_space
+        return Shared.OrderedDict([('loops', s.l_range), ('marked_edges', s.m_range), ('hairs', s.h_range)])
+
+    def _get_single_cohomology(self, n_loops, n_marked, n_hairs):
+        """
+        Computes a single cohomology dimension.
+        """
+        opD = ContractUnmarkTopBiOM.generate_operator(
+            n_loops, n_marked, n_hairs, self.even_edges)
+        opDD = ContractUnmarkTopBiOM.generate_operator(
+            n_loops, n_marked+1, n_hairs, self.even_edges)
+        n_vertices = opD.domain.n_vertices
+
+        opC = ContractEdgesGO.generate_operator(
+            n_vertices, n_loops, n_marked, n_hairs, self.even_edges)
+
+        try:
+            # dimension of the kernel of the contraction
+            dimV = opD.get_domain().get_dimension() - opC.get_matrix_rank()
+        except StoreLoad.FileNotFoundError:
+            logger.info(
+                "Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+            return None
+        if dimV == 0:
+            return '*'
+        if opD.is_valid():
+            try:
+                rankD = opD.get_true_rank()
+            except StoreLoad.FileNotFoundError:
+                logger.info(
+                    "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+                return None
+        else:
+            rankD = 0
+        if opDD.is_valid():
+            try:
+                rankDD = opDD.get_true_rank()
+            except StoreLoad.FileNotFoundError:
+                logger.info(
+                    "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+                return None
+        else:
+            rankDD = 0
+        cohomology_dim = dimV - rankD - rankDD
+        if cohomology_dim < 0:
+            raise ValueError("Negative cohomology dimension for %s (%d - %d - %d)" %
+                             (str(opD.domain), dimV, rankD, rankDD))
+            # logger.error("Negative cohomology dimension for %s" % str(opD.domain))
+        return cohomology_dim
+
+    def get_cohomology_dim_dict(self):
+        ms = list(self.m_range)[:-1]
+        return {(l, m, h): self._get_single_cohomology(l, m, h)
+                for l in self.l_range
+                for h in self.h_range
+                for m in ms}
+
+        # return super().get_cohomology_dim_dict()

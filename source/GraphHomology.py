@@ -184,10 +184,12 @@ def int_value(arg):
 def non_negative_range_type(arg):
     temp = arg.split(',')
     if len(temp) != 2:
-        raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
+        raise argparse.ArgumentTypeError(
+            'range min,max with 0 < min < max expected')
     (min, max) = map(int, temp)
     if min >= max:
-        raise argparse.ArgumentTypeError('range min,max with 0 < min < max expected')
+        raise argparse.ArgumentTypeError(
+            'range min,max with 0 < min < max expected')
     return range(min, max)
 
 
@@ -198,44 +200,56 @@ def range_type(arg):
     elif len(temp) == 2:
         (min, max) = temp
     else:
-        raise argparse.ArgumentTypeError('range [,-]min,max with min < max expected')
+        raise argparse.ArgumentTypeError(
+            'range [,-]min,max with min < max expected')
     (min, max) = map(int, (min, max))
     if min >= max:
-        raise argparse.ArgumentTypeError('range [,-]min,max with min < max expected')
+        raise argparse.ArgumentTypeError(
+            'range [,-]min,max with min < max expected')
     return range(min, max)
 
 
 def linbox_options(arg):
     options = [str(item) for item in arg.split(',')]
     if not set(options) <= LinboxInterface.linbox_options:
-        raise argparse.ArgumentTypeError('linbox options: ' + str(LinboxInterface.linbox_options))
+        raise argparse.ArgumentTypeError(
+            'linbox options: ' + str(LinboxInterface.linbox_options))
     return options
 
 
 def rheinfall_options(arg):
     options = [str(item) for item in arg.split(',')]
     if not set(options) <= RheinfallInterface.rheinfall_options:
-        raise argparse.ArgumentTypeError('rheinfall options: ' + str(RheinfallInterface.rheinfall_options))
+        raise argparse.ArgumentTypeError(
+            'rheinfall options: ' + str(RheinfallInterface.rheinfall_options))
     return options
 
 
 def sage_rank_options(arg):
     options = [str(item) for item in arg.split(',')]
     if not set(options) <= Parameters.sage_rank_options:
-        raise argparse.ArgumentTypeError('sage rank options: ' + str(Parameters.sage_rank_options))
+        raise argparse.ArgumentTypeError(
+            'sage rank options: ' + str(Parameters.sage_rank_options))
     return options
 
 
-graph_types = ['ordinary', 'hairy', 'bi_c_hairy', 'forested', 'wrhairy', 'chairy']
-operators = ['contract', 'delete', 'et1h', 'split', 'unmark', 'contract_iso', 'unmark_iso']
-bicomplexes = ['contract_et1h', 'contract_delete', 'contract_split', 'contract_unmark', 'contract_unmark_iso']
+graph_types = ['ordinary', 'hairy', 'bi_c_hairy',
+               'forested', 'wrhairy', 'chairy']
+operators = ['contract', 'delete', 'et1h', 'split',
+             'unmark', 'contract_iso', 'unmark_iso']
+bicomplexes = ['contract_et1h', 'contract_delete',
+               'contract_split', 'contract_unmark', 'contract_unmark_iso', 'contract_unmark_top', ]
 
-parser = argparse.ArgumentParser(description='Compute the homology of a graph complex')
+parser = argparse.ArgumentParser(
+    description='Compute the homology of a graph complex')
 
-parser.add_argument('graph_type', type=str, choices=graph_types, help='type of the graphs')
-parser.add_argument('-bicomplex', type=str, choices=bicomplexes, help='bicomplex')
+parser.add_argument('graph_type', type=str,
+                    choices=graph_types, help='type of the graphs')
+parser.add_argument('-bicomplex', type=str,
+                    choices=bicomplexes, help='bicomplex')
 parser.add_argument('-op1', type=str, choices=operators, help='operator 1')
-parser.add_argument('-op2', type=str, choices=operators, default=None, help='operator 2')
+parser.add_argument('-op2', type=str, choices=operators,
+                    default=None, help='operator 2')
 parser.add_argument('-even_e', action='store_true', help='even edges')
 parser.add_argument('-odd_e', action='store_true', help='odd edges')
 parser.add_argument('-even_h', action='store_true', help='even hairs')
@@ -244,38 +258,67 @@ parser.add_argument('-even_h_a', action='store_true', help='even hairs_a')
 parser.add_argument('-odd_h_a', action='store_true', help='odd hairs_a')
 parser.add_argument('-even_h_b', action='store_true', help='even hairs_b')
 parser.add_argument('-odd_h_b', action='store_true', help='odd hairs_b')
-parser.add_argument('-v', type=non_negative_range_type, help='range min,max for number of vertices')
-parser.add_argument('-l', type=non_negative_range_type, help='range min,max for number of loops')
-parser.add_argument('-marked', type=non_negative_range_type, help='range min,max for number of marked edges')
-parser.add_argument('-omega', type=non_negative_range_type, help='range min,max for number of omega vertices')
-parser.add_argument('-shift', type=int_value, default=1, help='maximal shift = loops - vertices')
-parser.add_argument('-hairs', type=non_negative_range_type, help='range min,max for number of hairs')
-parser.add_argument('-hairs_a', type=non_negative_range_type, help='range min,max for number of hairs_a')
-parser.add_argument('-hairs_b', type=non_negative_range_type, help='range min,max for number of hairs_b')
-parser.add_argument('-d', type=non_negative_range_type, help='range min,max for degree of degree slices in bicomplex')
-parser.add_argument('-h_min', type=range_type, help='range min,max for minimal number of hairs in a degree slice of a bicomplex')
-parser.add_argument('-h_a_min', type=range_type, help='range min,max for minimal number of hairs_a in a degree slice of a bicomplex')
-parser.add_argument('-h_b_min', type=range_type, help='range min,max for minimal number of hairs_b in a degree slice of a bicomplex')
-parser.add_argument('-ignore_ex', action='store_true', help='ignore existing files')
-parser.add_argument('-n_jobs', type=int, default=1, help='number of parallel processes')
+parser.add_argument('-v', type=non_negative_range_type,
+                    help='range min,max for number of vertices')
+parser.add_argument('-l', type=non_negative_range_type,
+                    help='range min,max for number of loops')
+parser.add_argument('-marked', type=non_negative_range_type,
+                    help='range min,max for number of marked edges')
+parser.add_argument('-omega', type=non_negative_range_type,
+                    help='range min,max for number of omega vertices')
+parser.add_argument('-shift', type=int_value, default=1,
+                    help='maximal shift = loops - vertices')
+parser.add_argument('-hairs', type=non_negative_range_type,
+                    help='range min,max for number of hairs')
+parser.add_argument('-hairs_a', type=non_negative_range_type,
+                    help='range min,max for number of hairs_a')
+parser.add_argument('-hairs_b', type=non_negative_range_type,
+                    help='range min,max for number of hairs_b')
+parser.add_argument('-d', type=non_negative_range_type,
+                    help='range min,max for degree of degree slices in bicomplex')
+parser.add_argument('-h_min', type=range_type,
+                    help='range min,max for minimal number of hairs in a degree slice of a bicomplex')
+parser.add_argument('-h_a_min', type=range_type,
+                    help='range min,max for minimal number of hairs_a in a degree slice of a bicomplex')
+parser.add_argument('-h_b_min', type=range_type,
+                    help='range min,max for minimal number of hairs_b in a degree slice of a bicomplex')
+parser.add_argument('-ignore_ex', action='store_true',
+                    help='ignore existing files')
+parser.add_argument('-n_jobs', type=int, default=1,
+                    help='number of parallel processes')
 parser.add_argument('-pbar', action='store_true', help='show progressbar')
 parser.add_argument('-profile', action='store_true', help='profiling')
-parser.add_argument('-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
-parser.add_argument('-info', action='store_true', help='display info during calculations in browser')
-parser.add_argument('-sage', type=sage_rank_options, help='compute matrix ranks using the sage library, options: ' + str(Parameters.sage_rank_options))
-parser.add_argument('-linbox', type=linbox_options, help='compute matrix ranks using the linbox library, options: ' + str(LinboxInterface.linbox_options))
-parser.add_argument('-rheinfall', type=str, choices=RheinfallInterface.rheinfall_options, help="compute matrix ranks using the rheinfall library, options: " + str(RheinfallInterface.rheinfall_options))
-parser.add_argument('-build', action='store_true', help='build vector space basis and operator matrix')
-parser.add_argument('-build_b', action='store_true', help='build vector space basis')
-parser.add_argument('-build_op', action='store_true', help='build operator matrix')
+parser.add_argument(
+    '-log', type=str, choices=Log.log_levels_dict.keys(), help='logging level')
+parser.add_argument('-info', action='store_true',
+                    help='display info during calculations in browser')
+parser.add_argument('-sage', type=sage_rank_options,
+                    help='compute matrix ranks using the sage library, options: ' + str(Parameters.sage_rank_options))
+parser.add_argument('-linbox', type=linbox_options,
+                    help='compute matrix ranks using the linbox library, options: ' + str(LinboxInterface.linbox_options))
+parser.add_argument('-rheinfall', type=str, choices=RheinfallInterface.rheinfall_options,
+                    help="compute matrix ranks using the rheinfall library, options: " + str(RheinfallInterface.rheinfall_options))
+parser.add_argument('-build', action='store_true',
+                    help='build vector space basis and operator matrix')
+parser.add_argument('-build_b', action='store_true',
+                    help='build vector space basis')
+parser.add_argument('-build_op', action='store_true',
+                    help='build operator matrix')
 parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
-parser.add_argument('-cohomology', action='store_true', help='compute cohomology dimensions')
-parser.add_argument('-csv', action='store_true', help='export cohomolgy dimension to csv file')
-parser.add_argument('-html', action='store_true', help='export cohomolgy dimension to html file')
-parser.add_argument('-square_zero', action='store_true', help='square zero test')
-parser.add_argument('-anti_commute', action='store_true', help='test anti-commutativity of differentials')
-parser.add_argument('-commute', action='store_true', help='test commutativity of differentials')
-parser.add_argument('-plot_info', action='store_true', help='plot information about vector spaces and operator matrices')
+parser.add_argument('-cohomology', action='store_true',
+                    help='compute cohomology dimensions')
+parser.add_argument('-csv', action='store_true',
+                    help='export cohomolgy dimension to csv file')
+parser.add_argument('-html', action='store_true',
+                    help='export cohomolgy dimension to html file')
+parser.add_argument('-square_zero', action='store_true',
+                    help='square zero test')
+parser.add_argument('-anti_commute', action='store_true',
+                    help='test anti-commutativity of differentials')
+parser.add_argument('-commute', action='store_true',
+                    help='test commutativity of differentials')
+parser.add_argument('-plot_info', action='store_true',
+                    help='plot information about vector spaces and operator matrices')
 
 args = parser.parse_args()
 
@@ -348,7 +391,8 @@ if __name__ == "__main__":
         log_file = complex + '.log'
         Log.set_log_file(log_file)
 
-    logger.warning("\n###########################\n" + "----- Graph Homology -----")
+    logger.warning("\n###########################\n" +
+                   "----- Graph Homology -----")
 
     operators = []
     if args.op1 is not None:
@@ -357,9 +401,9 @@ if __name__ == "__main__":
         operators.append(args.op2)
 
     if args.even_e:
-            even_edges = True
+        even_edges = True
     elif args.odd_e:
-            even_edges = False
+        even_edges = False
     else:
         raise MissingArgumentError('specify -even_e or -odd_e')
 
@@ -367,54 +411,66 @@ if __name__ == "__main__":
         if args.bicomplex is not None:
             if args.bicomplex == 'contract_delete':
                 if args.d is None:
-                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
+                    raise MissingArgumentError(
+                        'specify -d: range for degree of degree slices in bicomplex')
 
-                graph_complex = OrdinaryGraphBiComplex.OrdinaryContractDeleteBiGC(args.d, even_edges)
+                graph_complex = OrdinaryGraphBiComplex.OrdinaryContractDeleteBiGC(
+                    args.d, even_edges)
             else:
                 raise ValueError('Ordinary graphs bicomplex: contract_delete')
 
         elif len(operators) > 0 and set(operators) <= {'contract', 'delete'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
 
             graph_complex = OrdinaryGraphComplex.OrdinaryGC(args.v, args.l, even_edges, operators,
                                                             shift_loops_minus_vertices=args.shift)
         else:
-            raise ValueError('Differentials for ordinary graph complex: contract, delete')
+            raise ValueError(
+                'Differentials for ordinary graph complex: contract, delete')
 
     elif args.graph_type == 'hairy':
         if args.even_h:
-                even_hairs = True
+            even_hairs = True
         elif args.odd_h:
-                even_hairs = False
+            even_hairs = False
         else:
             raise MissingArgumentError('specify -even_h or -odd_h')
 
         if args.bicomplex is not None:
             if args.bicomplex == 'contract_et1h':
                 if args.d is None:
-                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
+                    raise MissingArgumentError(
+                        'specify -d: range for degree of degree slices in bicomplex')
                 if args.h_min is None:
-                    raise MissingArgumentError('specify -h_min: range for minimal number of hairs of degree slices in bicomplex')
+                    raise MissingArgumentError(
+                        'specify -h_min: range for minimal number of hairs of degree slices in bicomplex')
 
-                graph_complex = HairyGraphBiComplex.HairyCeEt1hBiGC(args.d, args.h_min, even_edges, even_hairs)
+                graph_complex = HairyGraphBiComplex.HairyCeEt1hBiGC(
+                    args.d, args.h_min, even_edges, even_hairs)
             else:
                 raise ValueError('Hairy graphs bicomplexes: ce_et1h')
 
         elif len(operators) > 0 and set(operators) <= {'contract', 'et1h'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
             if args.hairs is None:
-                raise MissingArgumentError('specify -hairs: range for number of hairs')
+                raise MissingArgumentError(
+                    'specify -hairs: range for number of hairs')
 
-            graph_complex = HairyGraphComplex.HairyGC(args.v, args.l, args.hairs, even_edges, even_hairs, operators)
+            graph_complex = HairyGraphComplex.HairyGC(
+                args.v, args.l, args.hairs, even_edges, even_hairs, operators)
         else:
-            raise ValueError('Differentials for hairy graph complex: contract, et1h')
-
+            raise ValueError(
+                'Differentials for hairy graph complex: contract, et1h')
 
     elif args.graph_type == 'bi_c_hairy':
         if args.even_h_a:
@@ -434,7 +490,8 @@ if __name__ == "__main__":
         if args.bicomplex is not None:
             if args.bicomplex == 'contract_split':
                 if args.d is None:
-                    raise MissingArgumentError('specify -d: range for degree of degree slices in bicomplex')
+                    raise MissingArgumentError(
+                        'specify -d: range for degree of degree slices in bicomplex')
                 if args.h_a_min is None:
                     raise MissingArgumentError(
                         'specify -h_a_min: range for minimal number of hairs_a of degree slices in bicomplex')
@@ -450,74 +507,113 @@ if __name__ == "__main__":
 
         elif len(operators) > 0 and set(operators) <= {'contract', 'split'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
             if args.hairs_a is None:
-                raise MissingArgumentError('specify -hairs_a: range for number of hairs_a')
+                raise MissingArgumentError(
+                    'specify -hairs_a: range for number of hairs_a')
             if args.hairs_b is None:
-                raise MissingArgumentError('specify -hairs_b: range for number of hairs_b')
+                raise MissingArgumentError(
+                    'specify -hairs_b: range for number of hairs_b')
 
             graph_complex = BiColoredHairyGraphComplex.BiColoredHairyGC(args.v, args.l, args.hairs_a, args.hairs_b,
                                                                         even_edges, even_hairs_a, even_hairs_b, operators)
         else:
-            raise ValueError('Differentials for hairy graph complex: contract, split')
+            raise ValueError(
+                'Differentials for hairy graph complex: contract, split')
 
     elif args.graph_type == 'chairy':
         if len(operators) > 0 and set(operators) <= {'contract', 'contract_iso'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
             if args.hairs is None:
-                raise MissingArgumentError('specify -hairs: range for number of hairs')
+                raise MissingArgumentError(
+                    'specify -hairs: range for number of hairs')
 
-            graph_complex = CHairyGraphComplex.CHairyGC(args.v, args.l, args.hairs, even_edges, operators)
-                                                            
+            graph_complex = CHairyGraphComplex.CHairyGC(
+                args.v, args.l, args.hairs, even_edges, operators)
+
         else:
-            raise ValueError('Differentials for chairy graph complex: contract')
+            raise ValueError(
+                'Differentials for chairy graph complex: contract')
     elif args.graph_type == 'forested':
         if args.bicomplex is not None:
             if args.bicomplex == 'contract_unmark' or args.bicomplex == 'contract_unmark_iso':
                 if args.l is None:
-                    raise MissingArgumentError('specify -l: range for number of loops')
+                    raise MissingArgumentError(
+                        'specify -l: range for number of loops')
                 if args.marked is None:
-                    raise MissingArgumentError('specify -marked: range for number of marked edges')
+                    raise MissingArgumentError(
+                        'specify -marked: range for number of marked edges')
                 if args.hairs is None:
-                    raise MissingArgumentError('specify -hairs: range for number of hairs')
+                    raise MissingArgumentError(
+                        'specify -hairs: range for number of hairs')
 
-                graph_complex = ForestedGraphComplex.ForestedContractUnmarkBiGC(args.l, args.marked, args.hairs, even_edges, args.bicomplex == 'contract_unmark_iso')
+                graph_complex = ForestedGraphComplex.ForestedContractUnmarkBiGC(
+                    args.l, args.marked, args.hairs, even_edges, args.bicomplex == 'contract_unmark_iso')
+            elif args.bicomplex == 'contract_unmark_top':
+                if args.l is None:
+                    raise MissingArgumentError(
+                        'specify -l: range for number of loops')
+                if args.marked is None:
+                    raise MissingArgumentError(
+                        'specify -marked: range for number of marked edges')
+                if args.hairs is None:
+                    raise MissingArgumentError(
+                        'specify -hairs: range for number of hairs')
+                graph_complex = ForestedGraphComplex.ContractUnmarkTopD(
+                    args.l, args.marked, args.hairs, even_edges)
             else:
-                raise ValueError('forested graphs bicomplex: contract_unmark or contract_unmark_iso')
+                raise ValueError(
+                    'forested graphs bicomplex: contract_unmark or contract_unmark_iso')
         elif len(operators) > 0 and set(operators) <= {'contract', 'unmark'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
             if args.marked is None:
-                raise MissingArgumentError('specify -marked: range for number of marked edges')
+                raise MissingArgumentError(
+                    'specify -marked: range for number of marked edges')
             if args.hairs is None:
-                raise MissingArgumentError('specify -hairs: range for number of hairs')
+                raise MissingArgumentError(
+                    'specify -hairs: range for number of hairs')
 
-            graph_complex = ForestedGraphComplex.ForestedGC(args.v, args.l, args.marked, args.hairs, even_edges, operators)
-                                                            
+            graph_complex = ForestedGraphComplex.ForestedGC(
+                args.v, args.l, args.marked, args.hairs, even_edges, operators)
+
         else:
-            raise ValueError('Differentials for forested graph complex: contract, unmark')
+            raise ValueError(
+                'Differentials for forested graph complex: contract, unmark')
     elif args.graph_type == 'wrhairy':
         if len(operators) > 0 and set(operators) <= {'contract', 'contract_iso'}:
             if args.v is None:
-                raise MissingArgumentError('specify -v: range for number of vertices')
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
             if args.l is None:
-                raise MissingArgumentError('specify -l: range for number of loops')
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
             if args.hairs is None:
-                raise MissingArgumentError('specify -hairs: range for number of hairs')
+                raise MissingArgumentError(
+                    'specify -hairs: range for number of hairs')
             if args.omega is None:
-                raise MissingArgumentError('specify -omega: range for number of omega vertices')
+                raise MissingArgumentError(
+                    'specify -omega: range for number of omega vertices')
 
-            graph_complex = WRHairyGraphComplex.WRHairyGC(args.v, args.l, args.hairs, args.omega, operators)
-                                                            
+            graph_complex = WRHairyGraphComplex.WRHairyGC(
+                args.v, args.l, args.hairs, args.omega, operators)
+
         else:
-            raise ValueError('Differentials for wrhairy graph complex: contract')
+            raise ValueError(
+                'Differentials for wrhairy graph complex: contract')
 
     if args.plot_info:
         plot_info(graph_complex)
