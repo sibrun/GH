@@ -49,7 +49,8 @@ StoreLoad.makedirs(latexdir)
 
 alldata_tex = r"""
 \documentclass{amsart}
-\usepackage{fullpage}
+%\usepackage{fullpage}
+\usepackage[a4paper, landscape, margin=0.5in]{geometry}
 \usepackage{hyperref}
 
 \hypersetup{
@@ -65,7 +66,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{wrhairy_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{wrhairy_ops.tex}
 
 \subsection{Cohomology}
@@ -76,7 +77,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{ordinary_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{ordinary_ops.tex}
 
 \subsection{Cohomology}
@@ -87,7 +88,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{hairy_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{hairy_ops.tex}
 
 \subsection{Cohomology}
@@ -98,7 +99,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{chairy_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{chairy_ops.tex}
 
 \subsection{Cohomology}
@@ -109,7 +110,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{bichairy_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{bichairy_ops.tex}
 
 \subsection{Cohomology}
@@ -120,7 +121,7 @@ alldata_tex = r"""
 \subsection{VS Dimensions}
 \input{forested_vs.tex}
  
-\subsection{Operators}
+\subsection{Operator ranks}
 \input{forested_ops.tex}
 
 \subsection{Cohomology}
@@ -181,7 +182,7 @@ def ops_formatted(op):
     r_str = "p"
     if op.exists_exact_rank():
         r_str = ""
-    return f"R={str(op.get_matrix_rank())} {r_str}"
+    return f"{str(op.get_matrix_rank())} {r_str}"
 
 
 def cohom_formatted(cohom_dict, tuple):
@@ -609,15 +610,15 @@ def write_tables():
         f.write(s)
 
     print("Ordinary....")
-    s = create_ordinary_vs_table(range(25), range(12))
+    s = create_ordinary_vs_table(range(25), range(15))
     with open(latexfile_ordinary_vs, 'w') as f:
         f.write(s)
 
-    s = create_ordinary_ops_table(range(25), range(12))
+    s = create_ordinary_ops_table(range(25), range(15))
     with open(latexfile_ordinary_ops, 'w') as f:
         f.write(s)
 
-    s = create_ordinary_cohom_table(range(25), range(12),)
+    s = create_ordinary_cohom_table(range(25), range(15))
     with open(latexfile_ordinary_cohom, 'w') as f:
         f.write(s)
 
@@ -661,15 +662,15 @@ def write_tables():
         f.write(s)
 
     print("Forested....")
-    s = create_forested_vs_table(range(25), range(12), range(6))
+    s = create_forested_vs_table(range(9), range(20), range(6))
     with open(latexfile_forested_vs, 'w') as f:
         f.write(s)
 
-    s = create_forested_ops_table(range(25), range(12), range(6))
+    s = create_forested_ops_table(range(9), range(20), range(6))
     with open(latexfile_forested_ops, 'w') as f:
         f.write(s)
 
-    s = create_forested_cohom_table(range(25), range(12), range(6))
+    s = create_forested_cohom_table(range(9), range(20), range(6))
     with open(latexfile_forested_cohom, 'w') as f:
         f.write(s)
 
