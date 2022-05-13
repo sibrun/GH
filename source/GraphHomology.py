@@ -308,9 +308,9 @@ parser.add_argument('-rank', action='store_true', help='compute matrix ranks')
 parser.add_argument('-cohomology', action='store_true',
                     help='compute cohomology dimensions')
 parser.add_argument('-csv', action='store_true',
-                    help='export cohomolgy dimension to csv file')
+                    help='export cohomology dimension to csv file')
 parser.add_argument('-html', action='store_true',
-                    help='export cohomolgy dimension to html file')
+                    help='export cohomology dimension to html file')
 parser.add_argument('-square_zero', action='store_true',
                     help='square zero test')
 parser.add_argument('-anti_commute', action='store_true',
