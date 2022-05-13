@@ -51,6 +51,13 @@ alldata_tex = r"""
 \documentclass{amsart}
 \usepackage{fullpage}
 \usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
 \begin{document}
 
 \section{WRHairy}
@@ -588,6 +595,7 @@ def create_forested_cohom_table(l_range, m_range, h_range):
 
 def write_tables():
     # Generate tables
+    print("WRHairy....")
     s = create_wrhairy_vs_table(range(25), range(9), range(6), range(1, 3))
     with open(latexfile_wrhairy_vs, 'w') as f:
         f.write(s)
@@ -600,6 +608,7 @@ def write_tables():
     with open(latexfile_wrhairy_cohom, 'w') as f:
         f.write(s)
 
+    print("Ordinary....")
     s = create_ordinary_vs_table(range(25), range(12))
     with open(latexfile_ordinary_vs, 'w') as f:
         f.write(s)
@@ -612,6 +621,7 @@ def write_tables():
     with open(latexfile_ordinary_cohom, 'w') as f:
         f.write(s)
 
+    print("Hairy....")
     s = create_hairy_vs_table(range(25), range(12), range(6))
     with open(latexfile_hairy_vs, 'w') as f:
         f.write(s)
@@ -624,6 +634,7 @@ def write_tables():
     with open(latexfile_hairy_cohom, 'w') as f:
         f.write(s)
 
+    print("CHairy....")
     s = create_chairy_vs_table(range(20), range(12), range(6))
     with open(latexfile_chairy_vs, 'w') as f:
         f.write(s)
@@ -636,6 +647,7 @@ def write_tables():
     with open(latexfile_chairy_cohom, 'w') as f:
         f.write(s)
 
+    print("BiColoredHairy....")
     s = create_bichairy_vs_table(range(25), range(12), range(6))
     with open(latexfile_bichairy_vs, 'w') as f:
         f.write(s)
@@ -648,6 +660,7 @@ def write_tables():
     with open(latexfile_bichairy_cohom, 'w') as f:
         f.write(s)
 
+    print("Forested....")
     s = create_forested_vs_table(range(25), range(12), range(6))
     with open(latexfile_forested_vs, 'w') as f:
         f.write(s)
