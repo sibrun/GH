@@ -1188,6 +1188,12 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         """
         return SymmProjectorDegSlice(self, rep_index)
 
+    def is_valid(self):
+        return any(vs.is_valid() for vs in self.vs_list)
+
+    def exists_basis_file(self):
+        return all((not vs.is_valid()) or vs.exists_basis_file() for vs in self.vs_list)
+
 
 class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDegSlice):
     def __init__(self, domain, rep_index):

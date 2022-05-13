@@ -472,7 +472,7 @@ class OperatorMatrix(object):
                 Matrix indices outside matrix shape.
         """
         M = self.get_matrix_transposed().transpose()
-        if (not self.is_pseudo_matrix) and (M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension() ):
+        if (not self.is_pseudo_matrix) and (M.ncols() != self.get_domain().get_dimension() or M.nrows() != self.get_target().get_dimension()):
             raise ValueError(
                 "Matrix shape doesn't match the dimension of the domain or the target for " + str(self))
         return M
@@ -609,6 +609,17 @@ class OperatorMatrix(object):
                 raise StoreLoad.FileNotFoundError(
                     "Cannot compute rank of %s: First build operator matrix" % str(self))
         return rank_dict
+
+    def exists_exact_rank(self):
+        """Determines whether there has been a rank computed that is exact, i.e., 
+        over rationals."""
+        if not self.is_valid():
+            return True
+        if not self.exists_rank_file():
+            return False
+
+        rank_dict = self._load_rank_dict()
+        return "sage_integer" in rank_dict or "exact" in rank_dict or "linbox_rational" in rank_dict
 
     def _store_rank_dict(self, update_rank_dict):
         try:
@@ -831,12 +842,13 @@ class GraphOperator(Operator, OperatorMatrix):
         # if not progress_bar:
         print(desc)
         # list_of_lists = []
-        matrix_list=[]
+        matrix_list = []
         for domain_basis_element in tqdm(enumerate(domain_basis), total=d, desc=desc, disable=(not progress_bar)):
             # for domain_basis_element in list(enumerate(domain_basis)):
             # list_of_lists.append(self._generate_matrix_list(
-                # domain_basis_element, lookup))
-            matrix_list.extend(self._generate_matrix_list(domain_basis_element, lookup))
+            # domain_basis_element, lookup))
+            matrix_list.extend(self._generate_matrix_list(
+                domain_basis_element, lookup))
         # matrix_list = list(itertools.chain.from_iterable(list_of_lists))
         matrix_list.sort()
         self._store_matrix_list(matrix_list, shape)
@@ -857,6 +869,7 @@ class GraphOperator(Operator, OperatorMatrix):
                 if target_index is not None:
                     matrix_list.append((domain_index, target_index, factor))
         return matrix_list
+
 
 class BiOperatorMatrix(OperatorMatrix):
     """Bi operator matrix to be used as operator matrix in bicomplexes."""
@@ -1374,7 +1387,7 @@ class Differential(OperatorMatrixCollection):
             triv_l, succ_l, inc_l, fail_l))
         logger.warninging("Square zero test for %s:" % str(self))
         logger.warninging("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
-                       (triv_l, succ_l, inc_l, fail_l))
+                          (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 
     def _square_zero_test_for_pair(self, pair, eps=Parameters.square_zero_test_eps):

@@ -25,6 +25,23 @@ latexfile_ordinary_vs = os.path.join(latexdir, "ordinary_vs.tex")
 latexfile_ordinary_ops = os.path.join(latexdir, "ordinary_ops.tex")
 latexfile_ordinary_cohom = os.path.join(latexdir, "ordinary_cohom.tex")
 
+latexfile_hairy_vs = os.path.join(latexdir, "hairy_vs.tex")
+latexfile_hairy_ops = os.path.join(latexdir, "hairy_ops.tex")
+latexfile_hairy_cohom = os.path.join(latexdir, "hairy_cohom.tex")
+
+latexfile_forested_vs = os.path.join(latexdir, "forested_vs.tex")
+latexfile_forested_ops = os.path.join(latexdir, "forested_ops.tex")
+latexfile_forested_cohom = os.path.join(latexdir, "forested_cohom.tex")
+
+latexfile_chairy_vs = os.path.join(latexdir, "chairy_vs.tex")
+latexfile_chairy_ops = os.path.join(latexdir, "chairy_ops.tex")
+latexfile_chairy_cohom = os.path.join(latexdir, "chairy_cohom.tex")
+
+latexfile_bichairy_vs = os.path.join(latexdir, "bichairy_vs.tex")
+latexfile_bichairy_ops = os.path.join(latexdir, "bichairy_ops.tex")
+latexfile_bichairy_cohom = os.path.join(latexdir, "bichairy_cohom.tex")
+
+
 latexfile_alldata = os.path.join(latexdir, "alldata.tex")
 
 
@@ -56,7 +73,52 @@ alldata_tex = r"""
 \input{ordinary_ops.tex}
 
 \subsection{Cohomology}
-%\input{ordinary_cohom.tex}
+\input{ordinary_cohom.tex}
+
+\section{Hairy}
+
+\subsection{VS Dimensions}
+\input{hairy_vs.tex}
+ 
+\subsection{Operators}
+\input{hairy_ops.tex}
+
+\subsection{Cohomology}
+\input{hairy_cohom.tex}
+
+\section{CHairy}
+
+\subsection{VS Dimensions}
+\input{chairy_vs.tex}
+ 
+\subsection{Operators}
+\input{chairy_ops.tex}
+
+\subsection{Cohomology}
+\input{chairy_cohom.tex}
+
+\section{BiCHairy}
+
+\subsection{VS Dimensions}
+\input{bichairy_vs.tex}
+ 
+\subsection{Operators}
+\input{bichairy_ops.tex}
+
+\subsection{Cohomology}
+\input{bichairy_cohom.tex}
+
+\section{Forested}
+
+\subsection{VS Dimensions}
+\input{forested_vs.tex}
+ 
+\subsection{Operators}
+\input{forested_ops.tex}
+
+\subsection{Cohomology}
+\input{forested_cohom.tex}
+
 
 \end{document}
 """
@@ -108,12 +170,49 @@ def ops_formatted(op):
         return "?"
     if not op.exists_rank_file():
         return "R=?"
-    # check if rank is mod or Q
-    rank_dict = op._load_rank_dict()
-    r_str = "mod p"
-    if "sage_integer" in rank_dict or "exact" in rank_dict or "linbox_rational" in rank_dict:
+    # check if rank is mod p or rational
+    r_str = "p"
+    if op.exists_exact_rank():
         r_str = ""
     return f"R={str(op.get_matrix_rank())} {r_str}"
+
+
+def cohom_formatted(cohom_dict, tuple):
+    if not tuple in cohom_dict:
+        return "?"
+
+    dim = cohom_dict[tuple]
+    if not dim:
+        return "?"
+    else:
+        return str(dim)
+
+
+def cohom_formatted2(D1, D2):
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    d = vs.get_dimension()
+
+    r1 = 0
+    r2 = 0
+    if D1.is_valid():
+        if D1.exists_rank_file():
+            r1 = D1.get_matrix_rank()
+        else:
+            return "?"
+    if D2.is_valid():
+        if D2.exists_rank_file():
+            r2 = D2.get_matrix_rank()
+        else:
+            return "?"
+
+    # exact or not?
+    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
+
+    return str(d-r1-r2) + r_str
 
 
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
@@ -159,7 +258,11 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
             data = []
             for l in l_range:
                 data.append(
-                    [str(l)] + [ops_formatted(WRHairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, w)) for v in v_range])
+                    [str(l)] + [cohom_formatted2(
+                        WRHairyGraphComplex.ContractEdgesGO.generate_operator(
+                            v, l, h, w),
+                        WRHairyGraphComplex.ContractEdgesGO.generate_operator(v+1, l, h, w))
+                        for v in v_range])
             s = s+latex_table(header, data)
     return s
 
@@ -194,6 +297,295 @@ def create_ordinary_ops_table(v_range, l_range):
     return s
 
 
+def create_ordinary_cohom_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted2(
+                    OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
+                        v, l, even_edges),
+                    OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, even_edges)
+                ) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
+def create_hairy_cohom_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs in [True, False]:
+            s = s + "\n\\smallskip\n" + \
+                ("even" if even_edges else "odd") + " edges, " + \
+                ("even" if even_hairs else "odd") + " hairs \n\n"
+            for h in h_range:
+                s = s + f"\n{h} hairs\n\n"
+                data = []
+                for l in l_range:
+                    data.append(
+                        [str(l)] + [cohom_formatted2(
+                            HairyGraphComplex.ContractEdgesGO.generate_operator(
+                                v, l, h, even_edges, even_hairs),
+                            HairyGraphComplex.ContractEdgesGO.generate_operator(
+                                v+1, l, h, even_edges, even_hairs)
+                        ) for v in v_range])
+                s = s+latex_table(header, data)
+    return s
+
+
+def create_hairy_vs_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs in [True, False]:
+            s = s + "\n\\smallskip\n" + \
+                ("even" if even_edges else "odd") + " edges, " + \
+                ("even" if even_hairs else "odd") + " hairs \n\n"
+            for h in h_range:
+                s = s + f"\n{h} hairs\n\n"
+                data = []
+                for l in l_range:
+                    data.append(
+                        [str(l)] + [vs_dim_formatted(
+                            HairyGraphComplex.HairyGraphVS(
+                                v, l, h, even_edges, even_hairs)
+                        ) for v in v_range])
+                s = s+latex_table(header, data)
+    return s
+
+
+def create_hairy_ops_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs in [True, False]:
+            s = s + "\n\\smallskip\n" + \
+                ("even" if even_edges else "odd") + " edges, " + \
+                ("even" if even_hairs else "odd") + " hairs \n\n"
+            for h in h_range:
+                s = s + f"\n{h} hairs\n\n"
+                data = []
+                for l in l_range:
+                    data.append(
+                        [str(l)] + [ops_formatted(
+                            HairyGraphComplex.ContractEdgesGO.generate_operator(
+                                v, l, h, even_edges, even_hairs)
+                        ) for v in v_range])
+                s = s+latex_table(header, data)
+    return s
+
+
+def create_bichairy_vs_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs_a in [True, False]:
+            for even_hairs_b in [True, False]:
+                s = s + "\n\\smallskip\n" + \
+                    ("even" if even_edges else "odd") + " edges, " + \
+                    ("even" if even_hairs_a else "odd") + " hairs a " + \
+                    ("even" if even_hairs_b else "odd") + " hairs b \n\n"
+                for h in h_range:
+                    for ha in range(h):
+                        s = s + f"\n{h} hairs ({ha}+{h-ha})\n\n"
+                        data = []
+                        for l in l_range:
+                            data.append(
+                                [str(l)] + [vs_dim_formatted(
+                                    BiColoredHairyGraphComplex.BiColoredHairyGraphVS(
+                                        v, l, ha, h-ha, even_edges, even_hairs_a, even_hairs_b)
+                                ) for v in v_range])
+                        s = s+latex_table(header, data)
+    return s
+
+
+def create_bichairy_ops_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs_a in [True, False]:
+            for even_hairs_b in [True, False]:
+                s = s + "\n\\smallskip\n" + \
+                    ("even" if even_edges else "odd") + " edges, " + \
+                    ("even" if even_hairs_a else "odd") + " hairs a " + \
+                    ("even" if even_hairs_b else "odd") + " hairs b \n\n"
+                for h in h_range:
+                    for ha in range(h):
+                        s = s + f"\n{h} hairs ({ha}+{h-ha})\n\n"
+                        data = []
+                        for l in l_range:
+                            data.append(
+                                [str(l)] + [ops_formatted(
+                                    BiColoredHairyGraphComplex.ContractEdgesGO.generate_operator(
+                                        v, l, ha, h-ha, even_edges, even_hairs_a, even_hairs_b)
+                                ) for v in v_range])
+                        s = s+latex_table(header, data)
+    return s
+
+
+def create_bichairy_cohom_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        for even_hairs_a in [True, False]:
+            for even_hairs_b in [True, False]:
+                s = s + "\n\\smallskip\n" + \
+                    ("even" if even_edges else "odd") + " edges, " + \
+                    ("even" if even_hairs_a else "odd") + " hairs a " + \
+                    ("even" if even_hairs_b else "odd") + " hairs b \n\n"
+                for h in h_range:
+                    for ha in range(h):
+                        s = s + f"\n{h} hairs ({ha}+{h-ha})\n\n"
+                        data = []
+                        for l in l_range:
+                            data.append(
+                                [str(l)] + [cohom_formatted2(
+                                    BiColoredHairyGraphComplex.ContractEdgesGO.generate_operator(
+                                        v, l, ha, h-ha, even_edges, even_hairs_a, even_hairs_b),
+                                    BiColoredHairyGraphComplex.ContractEdgesGO.generate_operator(
+                                        v+1, l, ha, h-ha, even_edges, even_hairs_a, even_hairs_b)
+                                ) for v in v_range])
+                        s = s+latex_table(header, data)
+    return s
+
+
+def create_chairy_vs_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [vs_dim_formatted(
+                        CHairyGraphComplex.CHairyGraphVS(
+                            v, l, h, even_edges)
+                    ) for v in v_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_chairy_ops_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [ops_formatted(
+                        CHairyGraphComplex.ContractEdgesGO.generate_operator(
+                            v, l, h, even_edges)
+                    ) for v in v_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_chairy_cohom_table(v_range, l_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [cohom_formatted2(
+                        CHairyGraphComplex.ContractEdgesGO.generate_operator(
+                            v, l, h, even_edges),
+                        CHairyGraphComplex.ContractEdgesGO.generate_operator(
+                            v+1, l, h, even_edges)
+                    ) for v in v_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_forested_vs_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [vs_dim_formatted(
+                        ForestedGraphComplex.ForestedDegSlice(
+                            l, m, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_forested_ops_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [ops_formatted(
+                        ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+                            l, m, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_forested_cohom_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [cohom_formatted2(
+                        ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+                            l, m, h, even_edges),
+                        ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+                            l, m+1, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+    return s
+
+
 def write_tables():
     # Generate tables
     s = create_wrhairy_vs_table(range(25), range(9), range(6), range(1, 3))
@@ -214,6 +606,58 @@ def write_tables():
 
     s = create_ordinary_ops_table(range(25), range(12))
     with open(latexfile_ordinary_ops, 'w') as f:
+        f.write(s)
+
+    s = create_ordinary_cohom_table(range(25), range(12),)
+    with open(latexfile_ordinary_cohom, 'w') as f:
+        f.write(s)
+
+    s = create_hairy_vs_table(range(25), range(12), range(6))
+    with open(latexfile_hairy_vs, 'w') as f:
+        f.write(s)
+
+    s = create_hairy_ops_table(range(25), range(12), range(6))
+    with open(latexfile_hairy_ops, 'w') as f:
+        f.write(s)
+
+    s = create_hairy_cohom_table(range(25), range(12), range(6))
+    with open(latexfile_hairy_cohom, 'w') as f:
+        f.write(s)
+
+    s = create_chairy_vs_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_vs, 'w') as f:
+        f.write(s)
+
+    s = create_chairy_ops_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_ops, 'w') as f:
+        f.write(s)
+
+    s = create_chairy_cohom_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_cohom, 'w') as f:
+        f.write(s)
+
+    s = create_bichairy_vs_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_vs, 'w') as f:
+        f.write(s)
+
+    s = create_bichairy_ops_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_ops, 'w') as f:
+        f.write(s)
+
+    s = create_bichairy_cohom_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_cohom, 'w') as f:
+        f.write(s)
+
+    s = create_forested_vs_table(range(25), range(12), range(6))
+    with open(latexfile_forested_vs, 'w') as f:
+        f.write(s)
+
+    s = create_forested_ops_table(range(25), range(12), range(6))
+    with open(latexfile_forested_ops, 'w') as f:
+        f.write(s)
+
+    s = create_forested_cohom_table(range(25), range(12), range(6))
+    with open(latexfile_forested_cohom, 'w') as f:
         f.write(s)
 
 
