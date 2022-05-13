@@ -72,6 +72,8 @@ alldata_tex = r"""
 \subsection{Cohomology}
 \input{ordinary_cohom.tex}
 
+\newpage
+
 \section{Hairy}
 
 \subsection{VS Dimensions}
@@ -82,6 +84,8 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{hairy_cohom.tex}
+
+\newpage
 
 \section{CHairy}
 
@@ -94,6 +98,8 @@ alldata_tex = r"""
 \subsection{Cohomology}
 \input{chairy_cohom.tex}
 
+\newpage
+
 \section{BiCHairy}
 
 \subsection{VS Dimensions}
@@ -105,6 +111,8 @@ alldata_tex = r"""
 \subsection{Cohomology}
 \input{bichairy_cohom.tex}
 
+\newpage
+
 \section{WRHairy}
 
 \subsection{VS Dimensions}
@@ -115,6 +123,8 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{wrhairy_cohom.tex}
+
+\newpage
 
 \section{Forested}
 
