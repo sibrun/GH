@@ -61,17 +61,6 @@ alldata_tex = r"""
 
 \begin{document}
 
-\section{WRHairy}
-
-\subsection{VS Dimensions}
-\input{wrhairy_vs.tex}
- 
-\subsection{Operator ranks}
-\input{wrhairy_ops.tex}
-
-\subsection{Cohomology}
-\input{wrhairy_cohom.tex}
-
 \section{Ordinary}
 
 \subsection{VS Dimensions}
@@ -115,6 +104,17 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{bichairy_cohom.tex}
+
+\section{WRHairy}
+
+\subsection{VS Dimensions}
+\input{wrhairy_vs.tex}
+ 
+\subsection{Operator ranks}
+\input{wrhairy_ops.tex}
+
+\subsection{Cohomology}
+\input{wrhairy_cohom.tex}
 
 \section{Forested}
 
