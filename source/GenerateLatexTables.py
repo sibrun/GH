@@ -16,13 +16,21 @@ import WRHairyGraphComplex
 import os
 
 latexdir = os.path.join(Parameters.plots_dir, "latex")
+
 latexfile_wrhairy_vs = os.path.join(latexdir, "wrhairy_vs.tex")
 latexfile_wrhairy_ops = os.path.join(latexdir, "wrhairy_ops.tex")
 latexfile_wrhairy_cohom = os.path.join(latexdir, "wrhairy_cohom.tex")
 
+latexfile_ordinary_vs = os.path.join(latexdir, "ordinary_vs.tex")
+latexfile_ordinary_ops = os.path.join(latexdir, "ordinary_ops.tex")
+latexfile_ordinary_cohom = os.path.join(latexdir, "ordinary_cohom.tex")
+
+latexfile_alldata = os.path.join(latexdir, "alldata.tex")
+
+
 StoreLoad.makedirs(latexdir)
 
-alldata_tex =r"""
+alldata_tex = r"""
 \documentclass{amsart}
 \usepackage{fullpage}
 \usepackage{hyperref}
@@ -38,6 +46,17 @@ alldata_tex =r"""
 
 \subsection{Cohomology}
 \input{wrhairy_cohom.tex}
+
+\section{Ordinary}
+
+\subsection{VS Dimensions}
+\input{ordinary_vs.tex}
+ 
+\subsection{Operators}
+\input{ordinary_ops.tex}
+
+\subsection{Cohomology}
+%\input{ordinary_cohom.tex}
 
 \end{document}
 """
@@ -73,6 +92,7 @@ def latex_table(header, data):
 def wrhairy_vs_dim_poly(l, h, w):
     max_vertices = 2*l-2+h
 
+
 def vs_dim_formatted(vs):
     if not vs.is_valid():
         return "-"
@@ -80,65 +100,130 @@ def vs_dim_formatted(vs):
         return "?"
     return str(vs.get_dimension())
 
+
 def ops_formatted(op):
     if not op.is_valid():
         return "-"
     if not op.exists_matrix_file():
         return "?"
     if not op.exists_rank_file():
-        return "ok R?"
+        return "R=?"
     # check if rank is mod or Q
-    rank_dict = op._load_rank_dict
-    if "sage_integer" in rank_dict
-    return "ok R {str(op.get_matrix_rank())}"
+    rank_dict = op._load_rank_dict()
+    r_str = "mod p"
+    if "sage_integer" in rank_dict or "exact" in rank_dict or "linbox_rational" in rank_dict:
+        r_str = ""
+    return f"R={str(op.get_matrix_rank())} {r_str}"
 
 
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
     s = ""
 
-    header = ["l,v"] + [ str(v) for v in v_range ]
-    
+    header = ["l,v"] + [str(v) for v in v_range]
+
     for w in w_range:
         for h in h_range:
             s = s + f"\n\\smallskip\n{w} omegas, {h} hairs \n\n"
             data = []
             for l in l_range:
-                data.append( [ str(l) ] + [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v,l,h,w)) for v in v_range] ) 
+                data.append(
+                    [str(l)] + [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v, l, h, w)) for v in v_range])
             s = s+latex_table(header, data)
     return s
-
 
 
 def create_wrhairy_ops_table(v_range, l_range, h_range, w_range):
     s = ""
 
-    header = ["l,v"] + [ str(v) for v in v_range ]
-    
+    header = ["l,v"] + [str(v) for v in v_range]
+
     for w in w_range:
         for h in h_range:
             s = s + f"\n\\smallskip\n{w} omegas, {h} hairs \n\n"
             data = []
             for l in l_range:
-                data.append( [ str(l) ] + [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v,l,h,w)) for v in v_range] ) 
+                data.append(
+                    [str(l)] + [ops_formatted(WRHairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, w)) for v in v_range])
             s = s+latex_table(header, data)
     return s
 
+
+def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+
+    for w in w_range:
+        for h in h_range:
+            s = s + f"\n\\smallskip\n{w} omegas, {h} hairs \n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [ops_formatted(WRHairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, w)) for v in v_range])
+            s = s+latex_table(header, data)
+    return s
+
+
+def create_ordinary_vs_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
+def create_ordinary_ops_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [ops_formatted(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(v, l, even_edges)) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
 def write_tables():
     # Generate tables
-    s = create_wrhairy_vs_table(range(25),range(9), range(6), range(1,3))
+    s = create_wrhairy_vs_table(range(25), range(9), range(6), range(1, 3))
     with open(latexfile_wrhairy_vs, 'w') as f:
-        f.write( s )
+        f.write(s)
 
-    s = create_wrhairy_ops_table(range(25),range(9), range(6), range(1,3))
+    s = create_wrhairy_ops_table(range(25), range(9), range(6), range(1, 3))
     with open(latexfile_wrhairy_ops, 'w') as f:
-        f.write( s )
+        f.write(s)
 
-    s = create_wrhairy_cohom_table(range(25),range(9), range(6), range(1,3))
+    s = create_wrhairy_cohom_table(range(25), range(9), range(6), range(1, 3))
     with open(latexfile_wrhairy_cohom, 'w') as f:
-        f.write( s )
+        f.write(s)
+
+    s = create_ordinary_vs_table(range(25), range(12))
+    with open(latexfile_ordinary_vs, 'w') as f:
+        f.write(s)
+
+    s = create_ordinary_ops_table(range(25), range(12))
+    with open(latexfile_ordinary_ops, 'w') as f:
+        f.write(s)
+
+
+def write_alldata():
+    with open(latexfile_alldata, 'w') as f:
+        f.write(alldata_tex)
 
 
 write_tables()
+write_alldata()
 
 #  def print_dim_and_eulerchar(self):
 #         for w in self.w_range:
