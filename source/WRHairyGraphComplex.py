@@ -122,7 +122,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) * (self.n_vertices ** self.n_hairs) / factorial(self.n_vertices)
 
     def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
@@ -145,10 +145,9 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):
             bipartite_graphs = NautyInterface.list_bipartite_graphs2(
                 n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
-            
+
             for G in bipartite_graphs:
                 yield self._bip_to_ordinary(G, nvertices, nedges, nhairs)
-
 
         if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
             yield Graph([(0, 1)])
@@ -337,7 +336,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                     '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
         G.relabel(range(0, G.order()))
         return G
-    
+
     def get_n(self):
         return self.n_hairs
 
@@ -467,7 +466,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
-        # Returns as work estimate: domain.n_edges * log(target dimension, 2)
+        # Returns as work estimate: domain.n_edges * domain_dim * log(target dimension, 2)
         if not self.is_valid():
             return 0
         try:
@@ -477,7 +476,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             return 0
         if domain_dim == 0 or dimtarget_dim == 0:
             return 0
-        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
+        return self.domain.n_edges * domain_dim * math.log(dimtarget_dim, 2)
 
     def get_type(self):
         return 'contract edges'
@@ -645,7 +644,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
 
         super(SymmProjector, self).__init__(domain, rep_index)
 
-
     def get_ordered_param_dict2(self):
         do = self.domain
         return Shared.OrderedDict([('vertices', do.n_vertices), ('loops', do.n_loops), ('hairs', do.n_hairs), ('ws', do.n_ws), ('rep_index', self.rep_index)])
@@ -665,8 +663,6 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
     def get_ref_rank_file_path(self):
         s = "projectionO%d_%d_%d_%d_%d.txt.rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
         return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-
 
 
 # ------- Graph Complex --------
@@ -711,7 +707,8 @@ class WRHairyGC(GraphComplex.GraphComplex):
         if 'contract' in differentials:
             differential_list.append(contract_edges_dif)
         if 'contract_iso' in differentials:
-            contract_iso_edges_dif = RestrictedContractEdgesD(contract_edges_dif)
+            contract_iso_edges_dif = RestrictedContractEdgesD(
+                contract_edges_dif)
             differential_list.append(contract_iso_edges_dif)
             print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
         super(WRHairyGC, self).__init__(sum_vector_space, differential_list)
@@ -748,5 +745,3 @@ class WRHairyGC(GraphComplex.GraphComplex):
 
                     print("Cohomology Dimensions (w,h,l) ",
                           w, h, l, ":", cohomdict)
-
-
