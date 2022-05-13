@@ -23,7 +23,8 @@ graph_type = "hairy"
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
 
-zero_hairs = False      # Option to include zero hairs in the hairy graph complexes.
+# Option to include zero hairs in the hairy graph complexes.
+zero_hairs = False
 
 
 # ------- Graph Vector Space --------
@@ -69,14 +70,15 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
         super(HairyGraphVS, self).__init__()
-        self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
+        self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
+            self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
     # def __eq__(self, other):
     #     return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.n_hairs == other.n_hairs
-    
+
     # def __hash__(self):
     #     return hash(str(self))
 
@@ -112,7 +114,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / (factorial(self.n_vertices) * factorial(self.n_hairs))
 
     def get_generating_graphs(self):
         # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2.
@@ -125,7 +127,8 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         n_edges_bip = self.n_hairs + 2 * self.n_edges
         deg_range_1 = (3, n_edges_bip + 1)
         deg_range_2 = (1, 2)
-        bipartite_graphs = NautyInterface.list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
+        bipartite_graphs = NautyInterface.list_bipartite_graphs(
+            n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
         return (self._bip_to_ordinary(G) for G in bipartite_graphs)
 
     def perm_sign(self, G, p):
@@ -144,13 +147,14 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         for v in range(self.n_vertices, self.n_vertices + self.n_hairs + self.n_edges):
             neighbors = G.neighbors(v)
             n_l = len(neighbors)
-            if n_l == 1: #hair
+            if n_l == 1:  # hair
                 continue
-            elif n_l == 2: #edge
+            elif n_l == 2:  # edge
                 G.add_edge(neighbors)
                 G.delete_vertex(v)
             else:
-                raise ValueError('%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
+                raise ValueError(
+                    '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
         return G
 
 
@@ -165,6 +169,7 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         - even_hairs (bool): True for even hairs, False for odd hairs.
         - sub_type (str): Sub type of graphs.
     """
+
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs):
         """Initialize the sum vector space.
 
@@ -210,6 +215,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
     """
+
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
@@ -235,7 +241,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices == target.n_vertices + 1 and domain.n_loops == target.n_loops \
-               and domain.n_hairs == target.n_hairs and domain.sub_type == target.sub_type
+            and domain.n_hairs == target.n_hairs and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -254,8 +260,10 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :return: Contract edges graph operator based on the specified domain vector space.
         :rtype: ContractEdgesGO
         """
-        domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairyGraphVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs)
+        domain = HairyGraphVS(n_vertices, n_loops,
+                              n_hairs, even_edges, even_hairs)
+        target = HairyGraphVS(n_vertices - 1, n_loops,
+                              n_hairs, even_edges, even_hairs)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -279,25 +287,27 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         if not self.is_valid():
             return 0
         try:
-            (domain_dim, dimtarget_dim) = (self.domain.get_dimension(), self.target.get_dimension())
+            (domain_dim, dimtarget_dim) = (
+                self.domain.get_dimension(), self.target.get_dimension())
         except StoreLoad.FileNotFoundError:
             return 0
         if domain_dim == 0 or dimtarget_dim == 0:
             return 0
-        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
+        return self.domain.n_edges * domain_dim * math.log(self.target.get_dimension(), 2)
 
     def get_type(self):
         return 'contract edges'
 
-    def operate_on(self,G):
+    def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
-        image=[]
+        image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             # only edges not connected to a hair-vertex can be contracted
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
-            pp = Shared.permute_to_left((u, v), range(0, self.domain.n_vertices + self.domain.n_hairs))
+            pp = Shared.permute_to_left((u, v), range(
+                0, self.domain.n_vertices + self.domain.n_hairs))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -315,13 +325,15 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
 class ContractEdgesD(GraphOperator.Differential):
     """Contract edges differential."""
+
     def __init__(self, sum_vector_space):
         """Initialize the contract edges differential with the underlying sum vector space.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space, ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+        super(ContractEdgesD, self).__init__(sum_vector_space,
+                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'
@@ -347,6 +359,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
     Attributes:
         - sub_type (str): Graphs sub type of the domain.
     """
+
     def __init__(self, domain, target):
         """Initialize the domain and target vector space of the edge to one hair graph operator.
 
@@ -372,7 +385,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices == target.n_vertices and domain.n_loops - 1 == target.n_loops \
-               and domain.n_hairs + 1 == target.n_hairs and domain.sub_type == target.sub_type
+            and domain.n_hairs + 1 == target.n_hairs and domain.sub_type == target.sub_type
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs):
@@ -391,8 +404,10 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         :return: Edge to one hair graph operator based on the specified domain vector space.
         :rtype: EdgeToOneHairGO
         """
-        domain = HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
-        target = HairyGraphVS(n_vertices, n_loops - 1, n_hairs + 1, even_edges, even_hairs)
+        domain = HairyGraphVS(n_vertices, n_loops,
+                              n_hairs, even_edges, even_hairs)
+        target = HairyGraphVS(n_vertices, n_loops - 1,
+                              n_hairs + 1, even_edges, even_hairs)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -417,11 +432,11 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
     def get_type(self):
         return 'edge to one hair'
 
-    def operate_on(self,G):
+    def operate_on(self, G):
         # Operate on a hairy graph by deleting an edge and adding a hair to one of the vertices adjacent to the
         # deleted edge.
         sgn0 = -1 if G.order() % 2 else 1
-        image=[]
+        image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             # Only edges not connected to a hair-vertex can be cut
@@ -455,13 +470,15 @@ class EdgeToOneHairD(GraphOperator.Differential):
 
     Only for graphs with odd hairs.
     """
+
     def __init__(self, sum_vector_space):
         """Initialize the edge to one hair differential with the underlying sum vector space.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(EdgeToOneHairD, self).__init__(sum_vector_space, EdgeToOneHairGO.generate_op_matrix_list(sum_vector_space))
+        super(EdgeToOneHairD, self).__init__(sum_vector_space,
+                                             EdgeToOneHairGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'edge to one hair'
@@ -492,6 +509,7 @@ class HairyGC(GraphComplex.GraphComplex):
         - even_hairs (bool): True for even hairs, False for odd hairs.
         - sub_type (str): Sub type of graphs.
     """
+
     def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, differentials):
         """Initialize the graph complex.
 
@@ -515,10 +533,12 @@ class HairyGC(GraphComplex.GraphComplex):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
 
-        sum_vector_space = HairyGraphSumVS(self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
+        sum_vector_space = HairyGraphSumVS(
+            self.v_range, self.l_range, self.h_range, self.even_edges, self.even_hairs)
         differential_list = []
         if not set(differentials) <= {'contract', 'et1h'}:
-            raise ValueError("Differentials for hairy graph complex: 'contract', 'et1h'")
+            raise ValueError(
+                "Differentials for hairy graph complex: 'contract', 'et1h'")
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)

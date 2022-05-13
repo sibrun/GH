@@ -133,7 +133,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Return the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return (self.n_vertices ** self.n_hairs_a) * (self.n_vertices ** self.n_hairs_b) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / (factorial(self.n_vertices) * factorial(self.n_hairs_a) * factorial(self.n_hairs_b))
 
     def get_generating_graphs(self):
         # First produce all hairy graphs in the same way as for hairy graph vector spaces.

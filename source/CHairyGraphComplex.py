@@ -118,7 +118,7 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
@@ -245,7 +245,6 @@ class CHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
 
 
-
 # ------- Operators --------
 class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     """Contract edges graph operator.
@@ -331,7 +330,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             return 0
         if domain_dim == 0 or dimtarget_dim == 0:
             return 0
-        return self.domain.n_edges * math.log(self.target.get_dimension(), 2)
+        return self.domain.n_edges * domain_dim * math.log(self.target.get_dimension(), 2)
 
     def get_type(self):
         return 'contract edges'
@@ -424,7 +423,6 @@ class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
         sub_type = self.diff.sum_vector_space.sub_type
         s = "info_contract_D_iso_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-
 
 
 class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
@@ -555,10 +553,11 @@ class CHairyGC(GraphComplex.GraphComplex):
             raise ValueError(
                 "Differentials for hairy graph complex: 'contract', 'contract_iso'")
         contract_edges_dif = ContractEdgesD(sum_vector_space)
-        if 'contract' in differentials:            
+        if 'contract' in differentials:
             differential_list.append(contract_edges_dif)
         if 'contract_iso' in differentials:
-            contract_iso_edges_dif = RestrictedContractEdgesD(contract_edges_dif)
+            contract_iso_edges_dif = RestrictedContractEdgesD(
+                contract_edges_dif)
             differential_list.append(contract_iso_edges_dif)
             print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
         super(CHairyGC, self).__init__(sum_vector_space, differential_list)
