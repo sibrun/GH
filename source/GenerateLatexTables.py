@@ -611,21 +611,18 @@ def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
     s = ""
 
     header = ["l,v"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
-            ("even" if even_edges else "odd") + " edges\n\n "
-        for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
-            data = []
-            for l in l_range:
-                data.append(
-                    [str(l)] + [vs_dim_polynomial(
-                        [
-                        (m, ForestedGraphComplex.ForestedGVS(
-                            v, l, m, h, even_edges))
-                        for m in m_range ]
-                    ) for v in v_range])
-            s = s+latex_table(header, data)
+    for h in h_range:
+        s = s + f"\n{h} hairs\n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [vs_dim_polynomial(
+                    [
+                    (m, ForestedGraphComplex.PreForestedGVS(
+                        v, l, m, h))
+                    for m in m_range ]
+                ) for v in v_range])
+        s = s+latex_table(header, data)
     return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
