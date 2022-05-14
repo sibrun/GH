@@ -1563,6 +1563,16 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('loops', self.l_range), ('marked_edges', self.m_range), ('hairs', self.h_range)])
 
+    def compute_all_pregraphs(self, **kwargs):
+        print("Determining and building required pre-vs:")
+        vsset = {
+            prevs for vs in self.vs_list for prevs in vs.get_required_prevs()}
+        for vs in vsset:
+            print(vs)
+
+        sumvs = PreForestedGraphSumVS2(list(vsset))
+        sumvs.build_basis(**kwargs)
+
     def get_info_plot_path(self):
         s = "info_vector_space_top_%s_%s" % (graph_type, self.sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
@@ -1661,4 +1671,5 @@ class ContractUnmarkTopD(GraphOperator.Differential):
         # return super().get_cohomology_dim_dict()
 
     def build_basis(self, **kwargs):
+        self.sum_vector_space.compute_all_pregraphs(**kwargs)
         self.sum_vector_space.build_basis(**kwargs)
