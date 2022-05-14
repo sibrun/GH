@@ -65,6 +65,16 @@ alldata_tex = r"""
     linkcolor=blue,  %choose some color if you want links to stand out
 }
 
+\usepackage{color, colortbl}
+\usepackage{array}
+\usepackage{varwidth} %for the varwidth minipage environment
+
+\definecolor{Gray}{gray}{0.9}
+
+\newcolumntype{g}{>{\columncolor{Gray}}c}
+%\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
+\newcolumntype{M}{V{3cm}}
+
 \begin{document}
 
 \section{Ordinary}
@@ -174,10 +184,10 @@ def latex_table(header, data):
     :rtype: string
     """
     colcount = len(header)
-    s = "\\begin{tabular}{"
-    for i in range(colcount):
-        s = s + "|c"
-    s = s + "|}\n"
+    s = "\\begin{tabular}{|g"
+    for i in range(colcount-1):
+        s = s + "|M"
+    s = s + "|}\n \\rowcolor{Gray}\n"
 
     # header
     s = s + "\\hline\n" + " & ".join(header) + "\\\\ \n" + "\\hline\n"
@@ -207,11 +217,13 @@ def vs_dim_polynomial(vslist):
     for (exp, vs) in vslist:
         if not vs.is_valid():
             continue
+        if len(s) >1:
+            s=s+"+"
         if not vs.exists_basis_file():
             s = s+f"?t^{exp}"
         else:
             s = s + f"{vs.get_dimension()}t^{exp}"
-    return s + "$"
+    return s + " $"
 
 
 def ops_formatted(op):
