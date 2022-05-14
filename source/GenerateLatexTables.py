@@ -610,7 +610,7 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
 def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
     s = ""
 
-    header = ["l,v"] + [str(m) for v in v_range]
+    header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
         s = s + "\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
