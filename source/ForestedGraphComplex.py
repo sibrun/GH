@@ -1656,3 +1656,6 @@ class ContractUnmarkTopD(GraphOperator.Differential):
                 for m in ms}
 
         # return super().get_cohomology_dim_dict()
+
+    def build_basis(self, **kwargs):
+        self.sum_vector_space.build_basis(**kwargs)

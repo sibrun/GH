@@ -45,6 +45,8 @@ latexfile_forested_top_vs = os.path.join(latexdir, "forested_top_vs.tex")
 latexfile_forested_top_ops = os.path.join(latexdir, "forested_top_ops.tex")
 latexfile_forested_top_cohom = os.path.join(latexdir, "forested_top_cohom.tex")
 
+latexfile_forested_pre_vs = os.path.join(latexdir, "forested_pre_vs.tex")
+
 
 latexfile_alldata = os.path.join(latexdir, "alldata.tex")
 
@@ -131,6 +133,9 @@ alldata_tex = r"""
 \newpage
 
 \section{Forested}
+
+\subsection{PreVS Dimensions}
+\input{forested_pre_vs.tex}
 
 \subsection{VS Dimensions}
 \input{forested_vs.tex}
@@ -590,6 +595,24 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
             s = s+latex_table(header, data)
     return s
 
+def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
+    s = ""
+
+#     header = ["l,m"] + [str(m) for m in m_range]
+#     for even_edges in [True, False]:
+#         s = s + "\n\\smallskip\n" + \
+#             ("even" if even_edges else "odd") + " edges\n\n "
+#         for h in h_range:
+#             s = s + f"\n{h} hairs\n\n"
+#             data = []
+#             for l in l_range:
+#                 data.append(
+#                     [str(l)] + [vs_dim_formatted(
+#                         ForestedGraphComplex.ForestedDegSlice(
+#                             l, m, h, even_edges)
+#                     ) for m in m_range])
+#             s = s+latex_table(header, data)
+    return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
     s = ""
@@ -795,6 +818,10 @@ def write_tables():
 
     print("Forested....")
     s = create_forested_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_vs, 'w') as f:
+        f.write(s)
+        
+    s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
     with open(latexfile_forested_vs, 'w') as f:
         f.write(s)
 
