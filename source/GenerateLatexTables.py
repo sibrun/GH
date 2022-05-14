@@ -836,7 +836,7 @@ def write_tables():
         f.write(s)
         
     s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
-    with open(latexfile_forested_vs, 'w') as f:
+    with open(latexfile_forested_pre_vs, 'w') as f:
         f.write(s)
 
     s = create_forested_ops_table(range(9), range(20), range(6))
