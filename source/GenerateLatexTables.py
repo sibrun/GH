@@ -201,6 +201,18 @@ def vs_dim_formatted(vs):
         return "?"
     return str(vs.get_dimension())
 
+def vs_dim_polynomial(vslist):
+    """ Takes list of pairs (exponent, vs) """
+    s = "$"
+    for (exp, vs) in vslist:
+        if not vs.is_valid():
+            continue
+        if not vs.exists_basis_file():
+            s = s+f"?t^{exp}"
+        else:
+            s = s + f"{vs.get_dimension()}t^{exp}"
+    return s + "$"
+
 
 def ops_formatted(op):
     if not op.is_valid():
@@ -598,20 +610,22 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
 def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
     s = ""
 
-#     header = ["l,m"] + [str(m) for m in m_range]
-#     for even_edges in [True, False]:
-#         s = s + "\n\\smallskip\n" + \
-#             ("even" if even_edges else "odd") + " edges\n\n "
-#         for h in h_range:
-#             s = s + f"\n{h} hairs\n\n"
-#             data = []
-#             for l in l_range:
-#                 data.append(
-#                     [str(l)] + [vs_dim_formatted(
-#                         ForestedGraphComplex.ForestedDegSlice(
-#                             l, m, h, even_edges)
-#                     ) for m in m_range])
-#             s = s+latex_table(header, data)
+    header = ["l,v"] + [str(m) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs\n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [vs_dim_polynomial(
+                        [
+                        (m, ForestedGraphComplex.ForestedGVS(
+                            v, l, m, h, even_edges))
+                        for m in m_range ]
+                    ) for v in v_range])
+            s = s+latex_table(header, data)
     return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
