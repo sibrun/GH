@@ -1550,6 +1550,9 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [ForestedGVS(2*l-2+h, l, m, h, self.even_edges) for (
+            l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)] \
+            + \
+            [ForestedGVS(2*l-2+h-1, l, m, h, self.even_edges) for (
             l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
 
         super(ForestedGraphTopSumVS, self).__init__(vs_list)
