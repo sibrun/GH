@@ -11,7 +11,7 @@ for m in range(5,12):
     print(m)
     print(vs.get_dimension())
 
-    print( sum(1 for G in vs.get_basis() if G.is_biconnected() ) )
+    # print( sum(1 for G in vs.get_basis() if G.is_biconnected() ) )
     print( sum(1 for G in vs.get_basis() if len(list(G.bridges()))==0 ) )
     # b2 = [G for G in b1 if G.is_biconnected() ]
 
