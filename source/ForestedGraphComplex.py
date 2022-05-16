@@ -461,11 +461,7 @@ class ForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
         vs_list = [ForestedGVS(v, l, m, h, self.even_edges) for (
             v, l, m, h) in itertools.product(self.v_range, self.l_range, self.m_range, self.h_range)]
-        # else:
-        #     vs_list = []
-        #     for (v, l) in itertools.product(self.v_range, self.l_range):
-        #         if l - v <= shift_loops_minus_vertices:
-        #             vs_list.append(ForestedGVS(v, l, self.even_edges))
+
         super(ForestedGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
@@ -512,11 +508,7 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
         vs_list = [PreForestedGVS(v, l, m, h) for (
             v, l, m, h) in itertools.product(self.v_range, self.l_range, self.m_range, self.h_range)]
-        # else:
-        #     vs_list = []
-        #     for (v, l) in itertools.product(self.v_range, self.l_range):
-        #         if l - v <= shift_loops_minus_vertices:
-        #             vs_list.append(ForestedGVS(v, l, self.even_edges))
+
         super(PreForestedGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
