@@ -4,7 +4,7 @@ from sage.all import *
 
 # vs = ForestedGraphComplex.PreForestedGVS(12,7,1,0)
 for m in range(12):
-    vs = ForestedGraphComplex.ForestedGVS(12,7,m,0, False)
+    vs = ForestedGraphComplex.ForestedGVS(12,7,m,0, True)
     # for pvs in vs.get_required_prevs():
     #     pvs.build_basis()
     # vs.build_basis()
