@@ -351,6 +351,7 @@ class GraphVectorSpace(VectorSpace):
         :type ignore_existing_files: bool
         :param kwargs: Accepting further keyword arguments, which have no influence.
         """
+        print("build basis ", str(self))
         if not self.is_valid():
             # Skip building a basis file if the vector space is not valid.
             return
@@ -370,12 +371,14 @@ class GraphVectorSpace(VectorSpace):
             # if the graph G doesn't have odd automormphisms.
             if self.get_partition() is None:
                 autom_list = G.automorphism_group().gens()
-                canonG = G.canonical_label(algorithm=Parameters.canonical_label_algorithm)
+                canonG = G.canonical_label(
+                    algorithm=Parameters.canonical_label_algorithm)
             else:
                 # The canonical labelling respects the partition of the vertices.
                 autom_list = G.automorphism_group(
                     partition=self.get_partition()).gens()
-                canonG = G.canonical_label(partition=self.get_partition(), algorithm=Parameters.canonical_label_algorithm)
+                canonG = G.canonical_label(partition=self.get_partition(
+                ), algorithm=Parameters.canonical_label_algorithm)
 
             canon6 = canonG.graph6_string()
 
@@ -768,6 +771,7 @@ class SumVectorSpace(VectorSpace):
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
+        print("build single basis ", str(self))
         vs.build_basis(progress_bar=progress_bar,
                        ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
