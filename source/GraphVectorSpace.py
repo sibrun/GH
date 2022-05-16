@@ -1012,3 +1012,10 @@ class DegSlice(SumVectorSpace):
             if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
                 return False
         return True
+
+    def is_valid(self):
+        return any(vs.is_valid() for vs in self.vs_list)
+
+    def exists_basis_file(self):
+        return all((not vs.is_valid()) or vs.exists_basis_file() for vs in self.vs_list)
+

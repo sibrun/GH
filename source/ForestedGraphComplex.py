@@ -1180,13 +1180,6 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         """
         return SymmProjectorDegSlice(self, rep_index)
 
-    def is_valid(self):
-        return any(vs.is_valid() for vs in self.vs_list)
-
-    def exists_basis_file(self):
-        return all((not vs.is_valid()) or vs.exists_basis_file() for vs in self.vs_list)
-
-
 class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDegSlice):
     def __init__(self, domain, rep_index):
         """Initialize the domain and target vector space of the contract edges graph operator.
@@ -1549,6 +1542,9 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
         self.sub_type = sub_types.get(self.even_edges)
 
         vs_list = [ForestedGVS(2*l-2+h, l, m, h, self.even_edges) for (
+            l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)] \
+            + \
+            [ForestedGVS(2*l-2+h-1, l, m, h, self.even_edges) for (
             l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
 
         super(ForestedGraphTopSumVS, self).__init__(vs_list)
@@ -1558,6 +1554,16 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
 
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('loops', self.l_range), ('marked_edges', self.m_range), ('hairs', self.h_range)])
+
+    def compute_all_pregraphs(self, **kwargs):
+        print("Determining and building required pre-vs:")
+        vsset = {
+            prevs for vs in self.vs_list for prevs in vs.get_required_prevs()}
+        for vs in vsset:
+            print(vs)
+
+        sumvs = PreForestedGraphSumVS2(list(vsset))
+        sumvs.build_basis(**kwargs)
 
     def get_info_plot_path(self):
         s = "info_vector_space_top_%s_%s" % (graph_type, self.sub_type)
@@ -1655,3 +1661,7 @@ class ContractUnmarkTopD(GraphOperator.Differential):
                 for m in ms}
 
         # return super().get_cohomology_dim_dict()
+
+    def build_basis(self, **kwargs):
+        self.sum_vector_space.compute_all_pregraphs(**kwargs)
+        self.sum_vector_space.build_basis(**kwargs)

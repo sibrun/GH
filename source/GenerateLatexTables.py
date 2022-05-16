@@ -41,6 +41,12 @@ latexfile_bichairy_vs = os.path.join(latexdir, "bichairy_vs.tex")
 latexfile_bichairy_ops = os.path.join(latexdir, "bichairy_ops.tex")
 latexfile_bichairy_cohom = os.path.join(latexdir, "bichairy_cohom.tex")
 
+latexfile_forested_top_vs = os.path.join(latexdir, "forested_top_vs.tex")
+latexfile_forested_top_ops = os.path.join(latexdir, "forested_top_ops.tex")
+latexfile_forested_top_cohom = os.path.join(latexdir, "forested_top_cohom.tex")
+
+latexfile_forested_pre_vs = os.path.join(latexdir, "forested_pre_vs.tex")
+
 
 latexfile_alldata = os.path.join(latexdir, "alldata.tex")
 
@@ -58,6 +64,16 @@ alldata_tex = r"""
     linktoc=all,     %set to all if you want both sections and subsections linked
     linkcolor=blue,  %choose some color if you want links to stand out
 }
+
+\usepackage{color, colortbl}
+\usepackage{array}
+\usepackage{varwidth} %for the varwidth minipage environment
+
+\definecolor{Gray}{gray}{0.9}
+
+\newcolumntype{g}{>{\columncolor{Gray}}c}
+%\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
+\newcolumntype{M}{V{3cm}}
 
 \begin{document}
 
@@ -128,6 +144,9 @@ alldata_tex = r"""
 
 \section{Forested}
 
+\subsection{PreVS Dimensions}
+\input{forested_pre_vs.tex}
+
 \subsection{VS Dimensions}
 \input{forested_vs.tex}
  
@@ -137,6 +156,18 @@ alldata_tex = r"""
 \subsection{Cohomology}
 \input{forested_cohom.tex}
 
+\newpage
+
+\section{Forested Top}
+
+\subsection{VS Dimensions}
+\input{forested_top_vs.tex}
+ 
+\subsection{Operator ranks}
+\input{forested_top_ops.tex}
+
+\subsection{Cohomology}
+\input{forested_top_cohom.tex}
 
 \end{document}
 """
@@ -153,10 +184,10 @@ def latex_table(header, data):
     :rtype: string
     """
     colcount = len(header)
-    s = "\\begin{tabular}{"
-    for i in range(colcount):
-        s = s + "|c"
-    s = s + "|}\n"
+    s = "\\begin{tabular}{|g"
+    for i in range(colcount-1):
+        s = s + "|M"
+    s = s + "|}\n \\rowcolor{Gray}\n"
 
     # header
     s = s + "\\hline\n" + " & ".join(header) + "\\\\ \n" + "\\hline\n"
@@ -179,6 +210,20 @@ def vs_dim_formatted(vs):
     if not vs.exists_basis_file():
         return "?"
     return str(vs.get_dimension())
+
+def vs_dim_polynomial(vslist):
+    """ Takes list of pairs (exponent, vs) """
+    s = "$"
+    for (exp, vs) in vslist:
+        if not vs.is_valid():
+            continue
+        if len(s) >1:
+            s=s+"+"
+        if not vs.exists_basis_file():
+            s = s+f"?t^{exp}"
+        else:
+            s = s + f"{vs.get_dimension()}t^{exp}"
+    return s + " $"
 
 
 def ops_formatted(op):
@@ -231,6 +276,39 @@ def cohom_formatted2(D1, D2):
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
 
     return str(d-r1-r2) + r_str
+
+def cohom_formatted_forested_top(D1, D2, Dc2):
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    d = vs.get_dimension()
+
+    r1 = 0
+    r2 = 0
+    rc2 = 0
+    if D1.is_valid():
+        if D1.exists_rank_file():
+            r1 = D1.get_matrix_rank()
+        else:
+            return "?"
+    if D2.is_valid():
+        if D2.exists_rank_file():
+            r2 = D2.get_matrix_rank()
+        else:
+            return "?"
+
+    if Dc2.is_valid():
+        if Dc2.exists_rank_file():
+            rc2 = Dc2.get_matrix_rank()
+        else:
+            return "?"
+
+    # exact or not?
+    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() and Dc2.exists_exact_rank() else " p"
+
+    return str(d+rc2-r1-r2) + r_str
 
 
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
@@ -541,6 +619,23 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
             s = s+latex_table(header, data)
     return s
 
+def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for h in h_range:
+        s = s + f"\n{h} hairs\n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [vs_dim_polynomial(
+                    [
+                    (m, ForestedGraphComplex.PreForestedGVS(
+                        v, l, m, h))
+                    for m in m_range ]
+                ) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
     s = ""
@@ -603,6 +698,79 @@ def create_forested_cohom_table(l_range, m_range, h_range):
             s = s+latex_table(header, data)
     return s
 
+def create_forested_top_vs_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            for topn in [1,2]:
+                s = s + f"\n{h} hairs, {topn} topn\n\n"
+                data = []
+                for l in l_range:
+                    data.append(
+                        [str(l)] + [vs_dim_formatted(
+                            ForestedGraphComplex.ForestedTopDegSlice(
+                                l, m, h, even_edges, topn)
+                        ) for m in m_range])
+                s = s+latex_table(header, data)
+    return s
+
+def create_forested_top_ops_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs, contractunmarktop \n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [ops_formatted(
+                        ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                            l, m, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+
+            s = s + f"\n{h} hairs, contract \n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [ops_formatted(
+                        ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                            2*l-2+h, l, m, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+
+    return s
+
+def create_forested_top_cohom_table(l_range, m_range, h_range):
+    s = ""
+
+    header = ["l,m"] + [str(m) for m in m_range]
+    for even_edges in [True, False]:
+        s = s + "\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges\n\n "
+        for h in h_range:
+            s = s + f"\n{h} hairs, contractunmarktop \n\n"
+            data = []
+            for l in l_range:
+                data.append(
+                    [str(l)] + [cohom_formatted_forested_top(
+                        ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                            l, m, h, even_edges),
+                        ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                            l, m+1, h, even_edges),
+                        ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                            2*l-2+h, l, m+1, h, even_edges)
+                    ) for m in m_range])
+            s = s+latex_table(header, data)
+
+    return s
 
 def write_tables():
     # Generate tables
@@ -675,6 +843,10 @@ def write_tables():
     s = create_forested_vs_table(range(9), range(20), range(6))
     with open(latexfile_forested_vs, 'w') as f:
         f.write(s)
+        
+    s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
+    with open(latexfile_forested_pre_vs, 'w') as f:
+        f.write(s)
 
     s = create_forested_ops_table(range(9), range(20), range(6))
     with open(latexfile_forested_ops, 'w') as f:
@@ -682,6 +854,19 @@ def write_tables():
 
     s = create_forested_cohom_table(range(9), range(20), range(6))
     with open(latexfile_forested_cohom, 'w') as f:
+        f.write(s)
+
+    print("Forested Top....")
+    s = create_forested_top_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_vs, 'w') as f:
+        f.write(s)
+
+    s = create_forested_top_ops_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_ops, 'w') as f:
+        f.write(s)
+
+    s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_cohom, 'w') as f:
         f.write(s)
 
 
