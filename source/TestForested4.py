@@ -3,7 +3,7 @@ import CHairyGraphComplex
 from sage.all import *
 
 # vs = ForestedGraphComplex.PreForestedGVS(12,7,1,0)
-for m in range(5):
+for m in range(5,12):
     vs = ForestedGraphComplex.ForestedGVS(12,7,m,0, True)
     # for pvs in vs.get_required_prevs():
     #     pvs.build_basis()
