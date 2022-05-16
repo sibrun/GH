@@ -351,7 +351,7 @@ class GraphVectorSpace(VectorSpace):
         :type ignore_existing_files: bool
         :param kwargs: Accepting further keyword arguments, which have no influence.
         """
-        print("build basis ", str(self))
+        # print("build basis ", str(self))
         if not self.is_valid():
             # Skip building a basis file if the vector space is not valid.
             return
@@ -771,7 +771,7 @@ class SumVectorSpace(VectorSpace):
             self.stop_tracker()
 
     def _build_single_basis(self, vs, progress_bar=False, ignore_existing_files=True, info_tracker=False):
-        print("build single basis ", str(self))
+        # print("build single basis ", str(self))
         vs.build_basis(progress_bar=progress_bar,
                        ignore_existing_files=ignore_existing_files, info_tracker=info_tracker)
         if info_tracker:
@@ -1018,4 +1018,3 @@ class DegSlice(SumVectorSpace):
 
     def exists_basis_file(self):
         return all((not vs.is_valid()) or vs.exists_basis_file() for vs in self.vs_list)
-
