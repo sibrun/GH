@@ -13,4 +13,4 @@ b2 = [G for G in b1 if G.is_biconnected() ]
 
 b3 = [G for G in b1 if len(list(G.bridges()))>0]
 
-print(len(b1), len(b2), len(b3))
+print(len(list(b1)), len(b2), len(b3))
