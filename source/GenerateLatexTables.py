@@ -319,6 +319,20 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
+def eulerize(data):
+    """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
+    and appends an euler characteristic. """
+    euler=0
+    for (i,s) in enumerate(data):
+        if s == "?":
+            return data + ["?"]
+        elif s != "-":
+            euler = euler + ((-1) ** i) * int(s)
+    
+    return data + [str(euler)]
+
+
+
 
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
     s = ""
@@ -375,14 +389,16 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
 def create_ordinary_vs_table(v_range, l_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range]
+    header = ["l,v"] + [str(v) for v in v_range] + ["EC"]
     for even_edges in [True, False]:
         s = s + "\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
             data.append(
-                [str(l)] + [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range])
+                [str(l)] + eulerize(
+                    [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range]
+            ))
         s = s+latex_table(header, data)
     return s
 

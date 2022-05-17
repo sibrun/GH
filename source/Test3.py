@@ -24,7 +24,7 @@ def runme(cmd):
 
 runme("genbgL 3 3")
 
-runme("genbgL 30 30")
+runme("genbgL 30 30 'tempwert.txt'")
 
 
 print("Blabla alive....")
