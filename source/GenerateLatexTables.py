@@ -176,7 +176,7 @@ alldata_tex = r"""
 """
 
 
-def latex_table(header, data, scale=1, coltype="M"):
+def latex_table(header, data, scale=1, coltype="M", hlines=False):
     """Generates the latex Code for one table.
 
     :param header: list of header cells
@@ -195,7 +195,9 @@ def latex_table(header, data, scale=1, coltype="M"):
     # header
     s = s + "\\hline\n" + " & ".join(header) + "\\\\ \n" + "\\hline\n"
 
-    for row in data:
+    for (i, row) in enumerate(data):
+        if i > 0 and hlines:
+            s = s+"\n \\hline \n"
         s = s + " & ".join(row) + "\\\\ \n"
         # s = s + "$" + "$ & $".join(row) + "$\\\\ \n"
 
@@ -641,7 +643,7 @@ def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
                         v, l, m, h))
                     for m in m_range ]
                 ) for l in l_range])
-        s = s+latex_table(header, data, scale=.5, coltype="D")
+        s = s+latex_table(header, data, scale=.5, coltype="D", hlines=True)
     return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
