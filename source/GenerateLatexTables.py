@@ -227,9 +227,9 @@ def vs_dim_polynomial(vslist):
         if len(s) >1:
             s=s+"+"
         if not vs.exists_basis_file():
-            s = s + r"\text{?}" + f"t^{exp} "
+            s = s + f"\\text{{?}} t^{{ {exp} }} "
         else:
-            s = s + f"{vs.get_dimension()}t^{exp}"
+            s = s + f"{vs.get_dimension()}t^{{ {exp} }}"
     return s + " $"
 
 
