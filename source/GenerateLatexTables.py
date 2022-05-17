@@ -74,6 +74,7 @@ alldata_tex = r"""
 \newcolumntype{g}{>{\columncolor{Gray}}c}
 %\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
 \newcolumntype{M}{V{3cm}}
+\newcolumntype{D}{V{6cm}}
 
 \begin{document}
 
@@ -173,7 +174,7 @@ alldata_tex = r"""
 """
 
 
-def latex_table(header, data):
+def latex_table(header, data, scale=1, coltype="M"):
     """Generates the latex Code for one table.
 
     :param header: list of header cells
@@ -186,7 +187,7 @@ def latex_table(header, data):
     colcount = len(header)
     s = "\\begin{tabular}{|g"
     for i in range(colcount-1):
-        s = s + "|M"
+        s = s + f"|{coltype}"
     s = s + "|}\n \\rowcolor{Gray}\n"
 
     # header
@@ -197,6 +198,10 @@ def latex_table(header, data):
         # s = s + "$" + "$ & $".join(row) + "$\\\\ \n"
 
     s = s + "\\hline\n\\end{tabular}\n\n"
+
+    if scale != 1:
+        s = f"\\scalebox{{ {scale} }}{{\n {s} \n }}"
+
     return s
 
 
@@ -220,7 +225,7 @@ def vs_dim_polynomial(vslist):
         if len(s) >1:
             s=s+"+"
         if not vs.exists_basis_file():
-            s = s+f"?t^{exp} "
+            s = s + r"\text{?}" + f"t^{exp} "
         else:
             s = s + f"{vs.get_dimension()}t^{exp}"
     return s + " $"
@@ -634,7 +639,7 @@ def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
                         v, l, m, h))
                     for m in m_range ]
                 ) for l in l_range])
-        s = s+latex_table(header, data)
+        s = s+latex_table(header, data, scale=.5, coltype="D")
     return s
 
 def create_forested_vs_table(l_range, m_range, h_range):
