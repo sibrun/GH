@@ -180,6 +180,18 @@ ordinary_ec_evenedges = [0,0,0,1,1,2,1,2,2,2,1,3,1,3,4,2,2]
 ordinary_ec_oddedges = [0,0,0,1,0,1,-1,1,0,0,-2,0,-4,-3,-1,8,12,27]
 ordinary_ec = {True : ordinary_ec_evenedges, False:ordinary_ec_oddedges}
 
+# param order: hairs, loops
+r="?"
+wrhairy_ec_w2 = [[0,0,0,0,0,0,0,0,-1,4,-4],
+                [0,1,0,1,0,1,-3,1,-4,9,-9],
+                [0,0,0,2,0,4,-5,2,-17,9,-16],
+                [0,0,-3,-2,2,12,6,4,-38],
+                [1,-3,1,-1,r,r,r,r,r],
+                [-5,16,r,r,r,r,r,r,r,r]]
+
+wrhairy_ec_w1 = [[r for j in range(10)] for i in range(10)]
+
+wrhairy_ec = {1 : wrhairy_ec_w1, 2:wrhairy_ec_w2}
 
 
 def latex_table(header, data, scale=1, coltype="M", hlines=False):
@@ -341,7 +353,7 @@ def eulerize(data, sign_shift=0):
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range]
+    header = ["l,v"] + [str(v) for v in v_range] + [r"$\chi$", r"$\chi_{ref}$"]
 
     for w in w_range:
         for h in h_range:
@@ -349,7 +361,9 @@ def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
             data = []
             for l in l_range:
                 data.append(
-                    [str(l)] + [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v, l, h, w)) for v in v_range])
+                    [str(l)] + eulerize(
+                        [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v, l, h, w)) for v in v_range])
+                        +[str(wrhairy_ec[w][h][l] )])
             s = s+latex_table(header, data)
     return s
 
