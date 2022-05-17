@@ -404,7 +404,7 @@ def create_ordinary_vs_table(v_range, l_range):
                     [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range]
             )+ [str(ordinary_ec[even_edges][l])]
             )
-        s = s+latex_table(header, data)
+        s = s+latex_table(header, data, scale=0.75)
     return s
 
 
