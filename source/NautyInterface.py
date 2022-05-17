@@ -13,6 +13,11 @@ import StoreLoad
 
 logger = Log.logger.getChild('nauty_interface')
 
+def run_sys_cmd(cmd):
+    """Run system command, raising an error if an error exit code is detected."""
+    ret = os.system(cmd)
+    if ret != 0:
+        raise RuntimeError(f"Nonzero exit code from: {cmd}")
 
 def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
     """Create a list of simple 1vi graphs with at least trivalent vertices.
@@ -66,7 +71,7 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
             (min_deg_1, min_deg_2, max_deg_1, max_deg_2,
              n_vertices_1, n_vertices_2, n_edges, n_edges, f.name)
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
-        os.system(nauty_command)
+        run_sys_cmd(nauty_command)
         txt = f.read()
         if not type(txt) is str:
             txt = txt.decode("ascii")
@@ -111,7 +116,7 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
              n_vertices_1, n_vertices_2, n_edges, n_edges, f.name)
         # print(nauty_command)
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
-        os.system(nauty_command)
+        run_sys_cmd(nauty_command)
         txt = f.read()
         if not type(txt) is str:
             txt = txt.decode("ascii")
@@ -158,7 +163,7 @@ def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
              n_vertices_1, n_vertices_2, n_edges, n_edges, f.name)
         # print(nauty_command)
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
-        os.system(nauty_command)
+        run_sys_cmd(nauty_command)
         txt = f.read()
         if not type(txt) is str:
             txt = txt.decode("ascii")

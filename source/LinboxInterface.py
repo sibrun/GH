@@ -10,7 +10,6 @@ linbox_options = {"rational", "mod"}
 # numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
 # prime number).
 
-
 def rank(linbox_option, matrix_file, prime=Parameters.prime):
     """Call the linbox library to compute the rank of a matrix.
 
