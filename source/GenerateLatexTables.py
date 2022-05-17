@@ -220,7 +220,7 @@ def vs_dim_polynomial(vslist):
         if len(s) >1:
             s=s+"+"
         if not vs.exists_basis_file():
-            s = s+f"?t^{exp}"
+            s = s+f"?t^{exp} "
         else:
             s = s + f"{vs.get_dimension()}t^{exp}"
     return s + " $"
@@ -622,18 +622,18 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
 def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range]
+    header = ["v,l"] + [str(l) for l in l_range]
     for h in h_range:
         s = s + f"\n{h} hairs\n\n"
         data = []
-        for l in l_range:
+        for v in v_range:
             data.append(
-                [str(l)] + [vs_dim_polynomial(
+                [str(v)] + [vs_dim_polynomial(
                     [
                     (m, ForestedGraphComplex.PreForestedGVS(
                         v, l, m, h))
                     for m in m_range ]
-                ) for v in v_range])
+                ) for l in l_range])
         s = s+latex_table(header, data)
     return s
 
