@@ -58,6 +58,8 @@ alldata_tex = r"""
 %\usepackage{fullpage}
 \usepackage[a4paper, landscape, margin=0.5in]{geometry}
 \usepackage{hyperref}
+\usepackage{graphicx}
+
 
 \hypersetup{
     colorlinks=true, %set true if you want colored links
