@@ -175,6 +175,12 @@ alldata_tex = r"""
 \end{document}
 """
 
+# Refrence Euler characteristics
+ordinary_ec_evenedges = [0,0,0,1,1,2,1,2,2,2,1,3,1,3,4,2,2]
+ordinary_ec_oddedges = [0,0,0,1,0,1,-1,1,0,0,-2,0,-4,-3,-1,8,12,27]
+ordinary_ec = {True : ordinary_ec_evenedges, False:ordinary_ec_oddedges}
+
+
 
 def latex_table(header, data, scale=1, coltype="M", hlines=False):
     """Generates the latex Code for one table.
@@ -209,8 +215,6 @@ def latex_table(header, data, scale=1, coltype="M", hlines=False):
     return s
 
 
-def wrhairy_vs_dim_poly(l, h, w):
-    max_vertices = 2*l-2+h
 
 
 def vs_dim_formatted(vs):
@@ -319,7 +323,7 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
-def eulerize(data):
+def eulerize(data, sign_shift=0):
     """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
     and appends an euler characteristic. """
     euler=0
@@ -327,7 +331,7 @@ def eulerize(data):
         if s == "?":
             return data + ["?"]
         elif s != "-":
-            euler = euler + ((-1) ** i) * int(s)
+            euler = euler + ((-1) ** (i+sign_shift)) * int(s)
     
     return data + [str(euler)]
 
@@ -389,7 +393,7 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
 def create_ordinary_vs_table(v_range, l_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range] + ["EC"]
+    header = ["l,v"] + [str(v) for v in v_range] + [r"$\chi$", r"$\chi_{ref}$"]
     for even_edges in [True, False]:
         s = s + "\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
@@ -398,7 +402,8 @@ def create_ordinary_vs_table(v_range, l_range):
             data.append(
                 [str(l)] + eulerize(
                     [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range]
-            ))
+            )+ [str(ordinary_ec[even_edges][l])]
+            )
         s = s+latex_table(header, data)
     return s
 
