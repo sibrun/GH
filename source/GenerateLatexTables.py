@@ -176,22 +176,23 @@ alldata_tex = r"""
 """
 
 # Refrence Euler characteristics
-ordinary_ec_evenedges = [0,0,0,1,1,2,1,2,2,2,1,3,1,3,4,2,2]
-ordinary_ec_oddedges = [0,0,0,1,0,1,-1,1,0,0,-2,0,-4,-3,-1,8,12,27]
-ordinary_ec = {True : ordinary_ec_evenedges, False:ordinary_ec_oddedges}
+ordinary_ec_evenedges = [0, 0, 0, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 3, 4, 2, 2]
+ordinary_ec_oddedges = [0, 0, 0, 1, 0, 1, -1, 1, 0,
+                        0, -2, 1, 0, 0, -2, 0, -4, -3, -1, 8, 12, 27]
+ordinary_ec = {True: ordinary_ec_evenedges, False: ordinary_ec_oddedges}
 
 # param order: hairs, loops
-r="?"
-wrhairy_ec_w2 = [[0,0,0,0,0,0,0,0,-1,4,-4],
-                [0,1,0,1,0,1,-3,1,-4,9,-9],
-                [0,0,0,2,0,4,-5,2,-17,9,-16],
-                [0,0,-3,-2,2,12,6,4,-38],
-                [1,-3,1,-1,r,r,r,r,r],
-                [-5,16,r,r,r,r,r,r,r,r]]
+r = "?"
+wrhairy_ec_w2 = [[0, 0, 0, 0, 0, 0, 0, 0, -1, 4, -4],
+                 [0, 1, 0, 1, 0, 1, -3, 1, -4, 9, -9],
+                 [0, 0, 0, 2, 0, 4, -5, 2, -17, 9, -16],
+                 [0, 0, -3, -2, 2, 12, 6, 4, -38],
+                 [1, -3, 1, -1, r, r, r, r, r],
+                 [-5, 16, r, r, r, r, r, r, r, r]]
 
 wrhairy_ec_w1 = [[r for j in range(10)] for i in range(10)]
 
-wrhairy_ec = {1 : wrhairy_ec_w1, 2:wrhairy_ec_w2}
+wrhairy_ec = {1: wrhairy_ec_w1, 2: wrhairy_ec_w2}
 
 
 def latex_table(header, data, scale=1, coltype="M", hlines=False):
@@ -227,8 +228,6 @@ def latex_table(header, data, scale=1, coltype="M", hlines=False):
     return s
 
 
-
-
 def vs_dim_formatted(vs):
     if not vs.is_valid():
         return "-"
@@ -236,14 +235,15 @@ def vs_dim_formatted(vs):
         return "?"
     return str(vs.get_dimension())
 
+
 def vs_dim_polynomial(vslist):
     """ Takes list of pairs (exponent, vs) """
     s = "$"
     for (exp, vs) in vslist:
         if not vs.is_valid():
             continue
-        if len(s) >1:
-            s=s+"+"
+        if len(s) > 1:
+            s = s+"+"
         if not vs.exists_basis_file():
             s = s + f"\\text{{?}} t^{{ {exp} }} "
         else:
@@ -302,6 +302,7 @@ def cohom_formatted2(D1, D2):
 
     return str(d-r1-r2) + r_str
 
+
 def cohom_formatted_forested_top(D1, D2, Dc2):
     vs = D1.get_domain()
     if not vs.is_valid():
@@ -331,23 +332,23 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
             return "?"
 
     # exact or not?
-    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() and Dc2.exists_exact_rank() else " p"
+    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank(
+    ) and Dc2.exists_exact_rank() else " p"
 
     return str(d+rc2-r1-r2) + r_str
+
 
 def eulerize(data, sign_shift=0):
     """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
     and appends an euler characteristic. """
-    euler=0
-    for (i,s) in enumerate(data):
+    euler = 0
+    for (i, s) in enumerate(data):
         if s == "?":
             return data + ["?"]
         elif s != "-":
             euler = euler + ((-1) ** (i+sign_shift)) * int(s)
-    
+
     return data + [str(euler)]
-
-
 
 
 def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
@@ -363,7 +364,7 @@ def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
                 data.append(
                     [str(l)] + eulerize(
                         [vs_dim_formatted(WRHairyGraphComplex.WRHairyGraphVS(v, l, h, w)) for v in v_range])
-                        +[str(wrhairy_ec[w][h][l] )])
+                    + [str(wrhairy_ec[w][h][l])])
             s = s+latex_table(header, data)
     return s
 
@@ -413,10 +414,14 @@ def create_ordinary_vs_table(v_range, l_range):
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
+            ref_ec = ordinary_ec[even_edges][l]
+            if not even_edges:
+                ref_ec = ((-1)**(l+1)) * ref_ec
             data.append(
                 [str(l)] + eulerize(
-                    [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges)) for v in v_range]
-            )+ [str(ordinary_ec[even_edges][l])]
+                    [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(
+                        v, l, even_edges)) for v in v_range]
+                ) + [str(ref_ec)]
             )
         s = s+latex_table(header, data, scale=0.75)
     return s
@@ -663,6 +668,7 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
             s = s+latex_table(header, data)
     return s
 
+
 def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
     s = ""
 
@@ -674,12 +680,13 @@ def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
             data.append(
                 [str(v)] + [vs_dim_polynomial(
                     [
-                    (m, ForestedGraphComplex.PreForestedGVS(
-                        v, l, m, h))
-                    for m in m_range ]
+                        (m, ForestedGraphComplex.PreForestedGVS(
+                            v, l, m, h))
+                        for m in m_range]
                 ) for l in l_range])
         s = s+latex_table(header, data, scale=.5, coltype="D", hlines=True)
     return s
+
 
 def create_forested_vs_table(l_range, m_range, h_range):
     s = ""
@@ -742,6 +749,7 @@ def create_forested_cohom_table(l_range, m_range, h_range):
             s = s+latex_table(header, data)
     return s
 
+
 def create_forested_top_vs_table(l_range, m_range, h_range):
     s = ""
 
@@ -750,7 +758,7 @@ def create_forested_top_vs_table(l_range, m_range, h_range):
         s = s + "\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            for topn in [1,2]:
+            for topn in [1, 2]:
                 s = s + f"\n{h} hairs, {topn} topn\n\n"
                 data = []
                 for l in l_range:
@@ -761,6 +769,7 @@ def create_forested_top_vs_table(l_range, m_range, h_range):
                         ) for m in m_range])
                 s = s+latex_table(header, data)
     return s
+
 
 def create_forested_top_ops_table(l_range, m_range, h_range):
     s = ""
@@ -792,6 +801,7 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
 
     return s
 
+
 def create_forested_top_cohom_table(l_range, m_range, h_range):
     s = ""
 
@@ -815,6 +825,7 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
             s = s+latex_table(header, data)
 
     return s
+
 
 def write_tables():
     # Generate tables
@@ -887,7 +898,7 @@ def write_tables():
     s = create_forested_vs_table(range(9), range(20), range(6))
     with open(latexfile_forested_vs, 'w') as f:
         f.write(s)
-        
+
     s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
     with open(latexfile_forested_pre_vs, 'w') as f:
         f.write(s)
