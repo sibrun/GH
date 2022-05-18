@@ -358,7 +358,7 @@ def create_wrhairy_vs_table(v_range, l_range, h_range, w_range):
 
     for w in w_range:
         for h in h_range:
-            s = s + f"\n\\smallskip\n{w} omegas, {h} hairs \n\n"
+            s = s + f"\n\n\\smallskip\n{w} omegas, {h} hairs \n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -376,7 +376,7 @@ def create_wrhairy_ops_table(v_range, l_range, h_range, w_range):
 
     for w in w_range:
         for h in h_range:
-            s = s + f"\n\\smallskip\n{w} omegas, {h} hairs \n\n"
+            s = s + f"\n\n\\smallskip\n{w} omegas, {h} hairs \n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -410,7 +410,7 @@ def create_ordinary_vs_table(v_range, l_range):
 
     header = ["l,v"] + [str(v) for v in v_range] + [r"$\chi$", r"$\chi_{ref}$"]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
@@ -432,7 +432,7 @@ def create_ordinary_ops_table(v_range, l_range):
 
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
@@ -447,7 +447,7 @@ def create_ordinary_cohom_table(v_range, l_range):
 
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
@@ -468,7 +468,7 @@ def create_hairy_cohom_table(v_range, l_range, h_range):
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
         for even_hairs in [True, False]:
-            s = s + "\n\\smallskip\n" + \
+            s = s + "\n\n\\smallskip\n" + \
                 ("even" if even_edges else "odd") + " edges, " + \
                 ("even" if even_hairs else "odd") + " hairs \n\n"
             for h in h_range:
@@ -492,7 +492,7 @@ def create_hairy_vs_table(v_range, l_range, h_range):
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
         for even_hairs in [True, False]:
-            s = s + "\n\\smallskip\n" + \
+            s = s + "\n\n\\smallskip\n" + \
                 ("even" if even_edges else "odd") + " edges, " + \
                 ("even" if even_hairs else "odd") + " hairs \n\n"
             for h in h_range:
@@ -514,7 +514,7 @@ def create_hairy_ops_table(v_range, l_range, h_range):
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
         for even_hairs in [True, False]:
-            s = s + "\n\\smallskip\n" + \
+            s = s + "\n\n\\smallskip\n" + \
                 ("even" if even_edges else "odd") + " edges, " + \
                 ("even" if even_hairs else "odd") + " hairs \n\n"
             for h in h_range:
@@ -537,7 +537,7 @@ def create_bichairy_vs_table(v_range, l_range, h_range):
     for even_edges in [True, False]:
         for even_hairs_a in [True, False]:
             for even_hairs_b in [True, False]:
-                s = s + "\n\\smallskip\n" + \
+                s = s + "\n\n\\smallskip\n" + \
                     ("even" if even_edges else "odd") + " edges, " + \
                     ("even" if even_hairs_a else "odd") + " hairs a " + \
                     ("even" if even_hairs_b else "odd") + " hairs b \n\n"
@@ -562,13 +562,13 @@ def create_bichairy_ops_table(v_range, l_range, h_range):
     for even_edges in [True, False]:
         for even_hairs_a in [True, False]:
             for even_hairs_b in [True, False]:
-                s = s + "\n\\smallskip\n" + \
+                s = s + "\n\n\\smallskip\n" + \
                     ("even" if even_edges else "odd") + " edges, " + \
                     ("even" if even_hairs_a else "odd") + " hairs a " + \
                     ("even" if even_hairs_b else "odd") + " hairs b \n\n"
                 for h in h_range:
                     for ha in range(h):
-                        s = s + f"\n{h} hairs ({ha}+{h-ha})\n\n"
+                        s = s + f"\n\n{h} hairs ({ha}+{h-ha})\n\n"
                         data = []
                         for l in l_range:
                             data.append(
@@ -587,13 +587,13 @@ def create_bichairy_cohom_table(v_range, l_range, h_range):
     for even_edges in [True, False]:
         for even_hairs_a in [True, False]:
             for even_hairs_b in [True, False]:
-                s = s + "\n\\smallskip\n" + \
+                s = s + "\n\n\\smallskip\n" + \
                     ("even" if even_edges else "odd") + " edges, " + \
                     ("even" if even_hairs_a else "odd") + " hairs a " + \
                     ("even" if even_hairs_b else "odd") + " hairs b \n\n"
                 for h in h_range:
                     for ha in range(h):
-                        s = s + f"\n{h} hairs ({ha}+{h-ha})\n\n"
+                        s = s + f"\n\n{h} hairs ({ha}+{h-ha})\n\n"
                         data = []
                         for l in l_range:
                             data.append(
@@ -612,7 +612,7 @@ def create_chairy_vs_table(v_range, l_range, h_range):
 
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
             s = s + f"\n{h} hairs\n\n"
@@ -632,10 +632,10 @@ def create_chairy_ops_table(v_range, l_range, h_range):
 
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
+            s = s + f"\n\n{h} hairs\n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -652,10 +652,10 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
 
     header = ["l,v"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
+            s = s + f"\n\n{h} hairs\n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -674,7 +674,7 @@ def create_forested_pre_vs_table(v_range, l_range, m_range, h_range):
 
     header = ["v,l"] + [str(l) for l in l_range]
     for h in h_range:
-        s = s + f"\n{h} hairs\n\n"
+        s = s + f"\n\n{h} hairs\n\n"
         data = []
         for v in v_range:
             data.append(
@@ -693,10 +693,10 @@ def create_forested_vs_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
+            s = s + f"\n\n{h} hairs\n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -713,10 +713,10 @@ def create_forested_ops_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
+            s = s + f"\n\n{h} hairs\n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -733,10 +733,10 @@ def create_forested_cohom_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs\n\n"
+            s = s + f"\n\n{h} hairs\n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -755,11 +755,11 @@ def create_forested_top_vs_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
             for topn in [1, 2]:
-                s = s + f"\n{h} hairs, {topn} topn\n\n"
+                s = s + f"\n\n{h} hairs, {topn} topn\n\n"
                 data = []
                 for l in l_range:
                     data.append(
@@ -776,10 +776,10 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs, contractunmarktop \n\n"
+            s = s + f"\n\n{h} hairs, contractunmarktop \n\n"
             data = []
             for l in l_range:
                 data.append(
@@ -807,10 +807,10 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 
     header = ["l,m"] + [str(m) for m in m_range]
     for even_edges in [True, False]:
-        s = s + "\n\\smallskip\n" + \
+        s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges\n\n "
         for h in h_range:
-            s = s + f"\n{h} hairs, contractunmarktop \n\n"
+            s = s + f"\n\n{h} hairs, contractunmarktop \n\n"
             data = []
             for l in l_range:
                 data.append(
