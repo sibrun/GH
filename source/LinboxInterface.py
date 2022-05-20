@@ -10,6 +10,7 @@ linbox_options = {"rational", "mod"}
 # numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
 # prime number).
 
+
 def rank(linbox_option, matrix_file, prime=Parameters.prime):
     """Call the linbox library to compute the rank of a matrix.
 
@@ -41,6 +42,8 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
                 linbox_path, matrix_file, temp_rank_file.name, prime)
         else:
             raise ValueError(f"Unsupported Linbox option {linbox_option}.")
-        os.system(linbox_command)
+        ret = os.system(linbox_command)
+        if ret != 0:
+            raise RuntimeError("Linbox rank returned a nonzero exit code.")
         rank = int(temp_rank_file.read())
     return rank

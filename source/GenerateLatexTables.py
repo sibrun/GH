@@ -176,6 +176,7 @@ alldata_tex = r"""
 """
 
 # Refrence Euler characteristics
+# from zivkovic-willwacher
 ordinary_ec_evenedges = [0, 0, 0, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 3, 4, 2, 2]
 ordinary_ec_oddedges = [0, 0, 0, 1, 0, 1, -1, 1, 0,
                         0, -2, 1, 0, 0, -2, 0, -4, -3, -1, 8, 12, 27]
@@ -183,6 +184,7 @@ ordinary_ec = {True: ordinary_ec_evenedges, False: ordinary_ec_oddedges}
 
 # param order: hairs, loops
 r = "?"
+# from payne-willwacher
 wrhairy_ec_w2 = [[0, 0, 0, 0, 0, 0, 0, 0, -1, 4, -4],
                  [0, 1, 0, 1, 0, 1, -3, 1, -4, 9, -9],
                  [0, 0, 0, 2, 0, 4, -5, 2, -17, 9, -16],
@@ -193,6 +195,15 @@ wrhairy_ec_w2 = [[0, 0, 0, 0, 0, 0, 0, 0, -1, 4, -4],
 wrhairy_ec_w1 = [[r for j in range(10)] for i in range(10)]
 
 wrhairy_ec = {1: wrhairy_ec_w1, 2: wrhairy_ec_w2}
+
+# from arone-turchin, hairs, loops
+hairy_ec_odde_evenh = []
+
+
+hairy_ec_evene_oddh = [[0, -1, -1, -1, -2, -1, -2, -2, -2, -1, -2, 0],
+                       [1, 1, 1, 1, 2, 2, 3, 4, 5, 5, 7, 5],
+                       [0, 0, -1, -1, -3, -4, -6, -10, -14, -17, -22, -25, -22],
+                       [0, 1, 1, 2, 4, 7, 12, 20, 30, 45, 60, 79, 81, 83]]
 
 
 def latex_table(header, data, scale=1, coltype="M", hlines=False):
