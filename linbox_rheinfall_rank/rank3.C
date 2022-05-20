@@ -91,10 +91,12 @@ int main (int argc, char **argv)
 				return -1;
 		}
 		// typedef Givaro::Modular< Givaro::Log16> Field;
-		typedef Givaro::GFqDom<int64_t> Field;
+		// typedef Givaro::GFqDom<int64_t> Field;
+		typedef Givaro::Extension<Givaro::GFqDom<int64_t>> Field;
 
 		std::cout << "Rank 3: Givaro::Modular< Givaro::Log16>" << std::endl;
 
+		// Field F(q);
 		Field F(q,1);
 		if (q > F.maxCardinality()) {
 			std::cerr << "your number is too big for this field" << std::endl;
