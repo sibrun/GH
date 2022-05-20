@@ -919,7 +919,8 @@ class BiOperatorMatrix(OperatorMatrix):
         return '<Bi operator matrix on domain: %s>' % str(self.domain)
 
     def is_valid(self):
-        return True
+        # return True
+        return self.domain.is_valid() and self.target.is_valid()
 
     def get_work_estimate(self):
         """Estimate the work needed to build the bi operator matrix by the product of the dimensions of domain and target.

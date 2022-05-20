@@ -1,5 +1,6 @@
 import OrdinaryGraphComplex
 import CHairyGraphComplex
+import ForestedGraphComplex
 from sage.all import *
 import os
 # vs = OrdinaryGraphComplex.OrdinaryGVS(6, 8, True)
@@ -17,14 +18,22 @@ import os
 # print(vs.exists_basis_file())
 # # print(vs.get_dimension())
 
-def runme(cmd):
-    ret = os.system(cmd)
-    if ret != 0:
-        raise RuntimeError("Error return value")
+# def runme(cmd):
+#     ret = os.system(cmd)
+#     if ret != 0:
+#         raise RuntimeError("Error return value")
 
-runme("genbgL 3 3")
+# runme("genbgL 3 3")
 
-runme("genbgL 30 30 'tempwert.txt'")
+# runme("genbgL 30 30 'tempwert.txt'")
 
 
-print("Blabla alive....")
+# print("Blabla alive....")
+
+
+op = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 0, 0, True)
+
+print(op.is_valid())
+
+print(op.domain.is_valid())
+print(op.target.is_valid())
