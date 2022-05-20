@@ -1,6 +1,8 @@
 {
   "files.associations": {
     "*.sage": "python",
-    "rank.C": "cpp"
+    "rank.C": "cpp",
+    "rank2.C": "cpp",
+    "rank3.C": "cpp"
   }
 }
