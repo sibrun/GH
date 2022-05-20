@@ -91,7 +91,7 @@ int main (int argc, char **argv)
 		}
 		typedef Givaro::Modular< Givaro::Log16> Field;
 
-		std::cout << "Rank 3: Givaro::Modular< Givaro::Log16>" std::endl;
+		std::cout << "Rank 3: Givaro::Modular< Givaro::Log16>" << std::endl;
 
 		Field F(q);
 		if (q > F.maxCardinality()) {
