@@ -1180,10 +1180,10 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         """
         return SymmProjectorDegSlice(self, rep_index)
 
+
 class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDegSlice):
     def __init__(self, domain, rep_index):
-        """Initialize the domain and target vector space of the contract edges graph operator.
-
+        """
         : param domain: Domain vector space of the operator.
         : type domain: HairyGraphVS
         : param rep_index: The index of the representation in the list produced by Partitions(h).
@@ -1545,7 +1545,7 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
             l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)] \
             + \
             [ForestedGVS(2*l-2+h-1, l, m, h, self.even_edges) for (
-            l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
+                l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
 
         super(ForestedGraphTopSumVS, self).__init__(vs_list)
 

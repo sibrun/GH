@@ -19,6 +19,7 @@ from abc import ABCMeta, abstractmethod
 
 logger = Log.logger.getChild('symmetric_graph_complex')
 
+
 class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
     """ This abstract class encodes GraphVector spaces with an action of Sn.
 
@@ -137,6 +138,7 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
         else:
             return {'exact': self.trace_rank()}
 
+
 class SymmetricDegSlice(GraphVectorSpace.DegSlice):
     @abstractmethod
     def get_n(self):
@@ -150,7 +152,11 @@ class SymmetricDegSlice(GraphVectorSpace.DegSlice):
         """
         pass
 
+
 class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
+    """ Represents the projection operator on a degree slice. 
+    """
+
     def __init__(self, domain, rep_index):
         self.rep_index = rep_index
         self.domain = domain
@@ -169,7 +175,8 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
         self.rep_dim = symmetrica.charvalue(
             self.rep_partition, [1 for j in range(n)])
 
-        super(SymmetricProjectionOperatorDegSlice, self).__init__(domain, domain)
+        super(SymmetricProjectionOperatorDegSlice,
+              self).__init__(domain, domain)
 
     @staticmethod
     def is_match(domain, target):
@@ -232,7 +239,6 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
     def _get_underlying_matrices(self):
         return [vs.get_isotypical_projector(self.rep_index) for vs in self.domain.get_vs_list()]
 
-
     def _build_underlying_matrices(self, op_matrix_list, **kwargs):
         for op in op_matrix_list:
             op.build_matrix(**kwargs)
@@ -250,7 +256,6 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
                     (i + domain_start_idx, j + target_start_idx, v))
         matrixList.sort()
         return matrixList
-
 
 
 class IsotypicalComponent():
@@ -274,10 +279,9 @@ class IsotypicalComponent():
     def get_dimension(self):
         # for consistency, return dimension of underlying vector space, not of the isotypical component
         return self.vs.get_dimension()
-    
+
     def get_iso_dimension(self):
         return self.opP.get_matrix_rank()
-
 
     def is_valid(self):
         return self.vs.is_valid()
@@ -334,10 +338,10 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         """ Builds the matrix by multiplying D and P"""
         # Build matrix of underlying projection operator
         self.opP.build_matrix(ignore_existing_files=ignore_existing_files,
-                              skip_if_no_basis=skip_if_no_basis, progress_bar=progress_bar, **kwargs)  
-                
+                              skip_if_no_basis=skip_if_no_basis, progress_bar=progress_bar, **kwargs)
+
         if not self.is_valid():
-            return          
+            return
 
         if (not ignore_existing_files) and self.exists_matrix_file():
             return
@@ -349,9 +353,10 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
 
         (shapem, shapen) = self.opD.get_matrix_shape()
 
-        myML = [ (i,j,myM[i,j]) for (i,j) in myM.nonzero_positions(copy=False)]
+        myML = [(i, j, myM[i, j])
+                for (i, j) in myM.nonzero_positions(copy=False)]
 
-        self._store_matrix_list(myML,(shapen, shapem))
+        self._store_matrix_list(myML, (shapen, shapem))
 
         # if (Dcols != Pcols or Prows != Pcols):
         #     raise ValueError(
@@ -368,7 +373,7 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
 
         # self._store_matrix_list(newList, newShape)
 
-        #def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
+        # def build_matrix(self, ignore_existing_files=False, skip_if_no_basis=True, progress_bar=True, **kwargs):
         # """ Builds the matrix by stcking [D; 1-P]"""
         # if not self.is_valid():
         #     return
@@ -415,7 +420,8 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
 
     def compute_rank(self, sage=None, linbox=None, rheinfall=None, ignore_existing_files=False, skip_if_no_matrix=True):
         print("Compute projector rank "+str(self.opP))
-        self.opP.compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
+        self.opP.compute_rank(sage, linbox, rheinfall,
+                              ignore_existing_files, skip_if_no_matrix)
         print("Done")
         return super().compute_rank(sage, linbox, rheinfall, ignore_existing_files, skip_if_no_matrix)
 
@@ -429,6 +435,7 @@ class SymmetricGraphOperator(GraphOperator.GraphOperator):
         to an isotypical component"""
         pass
 
+
 class SymmetricBiOperatorMatrix(GraphOperator.BiOperatorMatrix):
     __metaclass__ = ABCMeta
 
@@ -437,6 +444,7 @@ class SymmetricBiOperatorMatrix(GraphOperator.BiOperatorMatrix):
         """Returns the SymmetricRestrictedOperatorMatrix that represents the restriction of the operator
         to an isotypical component"""
         pass
+
 
 class SymmetricDifferential(GraphOperator.Differential):
     """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
@@ -456,7 +464,7 @@ class SymmetricDifferential(GraphOperator.Differential):
         (vsList, opList) = SymmetricDifferential.split_isotypical_components(diff)
         super(SymmetricDifferential, self).__init__(
             GraphVectorSpace.SumVectorSpace(vsList), opList)
-    
+
     def refine_cohom_dim_dict(self, dict):
         """Refines the given dictionary of cohomology dimensions (vectorspace->int) by providing info on the splitting into
         Sn irreducible components. 
@@ -470,9 +478,10 @@ class SymmetricDifferential(GraphOperator.Differential):
             for iso, val in mydict.items():
                 if iso.vs == vs:
                     # found match
-                    refines.append( "%d$s_{%s}$"%(val, str(iso.opP.rep_partition)) )
-            if len(refines)>0:
-                newdim = str(dim) + " (" + "+".join(refines) +")"
+                    refines.append("%d$s_{%s}$" %
+                                   (val, str(iso.opP.rep_partition)))
+            if len(refines) > 0:
+                newdim = str(dim) + " (" + "+".join(refines) + ")"
                 newdict[vs] = newdim
         return newdict
 
@@ -520,8 +529,6 @@ class SymmetricDifferential(GraphOperator.Differential):
         PlotCohomology.plot_array(dim_dict_refined2, ordered_param_range_dict, plot_path, to_html=to_html, to_csv=to_csv,
                                   x_plots=x_plots, parameter_order=parameter_order)
 
-
-
     @classmethod
     def split_isotypical_components(cls, diff):
         """Creates an operator list from differential diff by restricting to the isotypical components.
@@ -560,7 +567,6 @@ class SymmetricDifferential(GraphOperator.Differential):
                                 opD_list.append(opA)
         vsList = [op.domain for op in opD_list]
         return (vsList, opD_list)
-
 
 
 # def getCohomDimP(op1, op2, opP, rep_ind):
