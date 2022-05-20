@@ -89,7 +89,7 @@ int main (int argc, char **argv)
 				std::cerr << "second argument should be a non-zero integer or missing\n";
 				return -1;
 		}
-		typedef Givaro::Modular<int32_t> Field;
+		typedef Givaro::Modular<int64_t> Field;
 
 		std::cout << "Rank 2: Givaro::Modular<int32_t>" << std::endl;
 
