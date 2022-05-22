@@ -113,7 +113,7 @@ int main (int argc, char **argv)
 			SE.pivotStrategy = PivotStrategy::Linear;
 			// using Sparse Elimination
 			// Givaro::Timer chrono; chrono.start();
-			LinBox::rankInPlace (r, B, SE);
+			LinBox::rankInPlace (r, A, SE);
 		}
 		else {
 		
