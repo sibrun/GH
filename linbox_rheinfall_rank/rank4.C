@@ -114,7 +114,7 @@ int main (int argc, char **argv)
 			// using Sparse Elimination
 			// Givaro::Timer chrono; chrono.start();
 			tim.start();
-			LinBox::rank (r, A, Method::Wiedemann());
+			// LinBox::rank (r, A, Method::Wiedemann());
 		} else
 		if (argv[2][0] == 'e')
 		{
