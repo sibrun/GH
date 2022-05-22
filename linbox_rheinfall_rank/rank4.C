@@ -118,7 +118,7 @@ int main (int argc, char **argv)
 			// typedef Givaro::Extension<Givaro::GFqDom<int64_t>> Field;
 
 
-		if (argv[2] == a)
+		if (argv[2] == "a")
 		{
 			std::cout << "using Givaro::Modular< int64_t>" << std::endl;
 
@@ -138,7 +138,7 @@ int main (int argc, char **argv)
 			tim.start();
 			LinBox::rank(r,B);
 
-		} else if (argv[2] == b)
+		} else if (argv[2] == "b")
 		{
 			std::cout << "using Givaro::Modular< Givaro::Log16>" << std::endl;
 
@@ -158,7 +158,7 @@ int main (int argc, char **argv)
 			tim.start();
 			LinBox::rank(r,B);
 
-		}else if (argv[2] == c)
+		}else if (argv[2] == "c")
 		{
 			std::cout << "using Givaro::Modular< double>" << std::endl;
 
@@ -178,7 +178,7 @@ int main (int argc, char **argv)
 			tim.start();
 			LinBox::rank(r,B);
 
-		}else if (argv[2] == c)
+		}else if (argv[2] == "d")
 		{
 			std::cout << "using Givaro::Modular< int>, sparseelim" << std::endl;
 
