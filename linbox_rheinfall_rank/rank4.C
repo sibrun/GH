@@ -101,7 +101,24 @@ int main (int argc, char **argv)
 		 */
 		std::cout << "rank over Q..." << std::endl;
 		tim.start();
-		LinBox::rank (r, A);
+		if (argv[2][0] == 'e')
+		{
+					Method::SparseElimination SE;
+	// 		SE.pivotStrategy = PivotStrategy::None;
+	// 		// using Sparse Elimination
+	// 		LinBox::rank (r, B, SE);
+	// 		if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(cout) << endl;
+	// 		cout << "Rank is " << r << endl;
+
+			SE.pivotStrategy = PivotStrategy::Linear;
+			// using Sparse Elimination
+			// Givaro::Timer chrono; chrono.start();
+			LinBox::rankInPlace (r, B, SE);
+		}
+		else {
+		
+			LinBox::rank (r, A);
+		}
 	}
 	
 	if (argc == 4) { // rank mod a prime
