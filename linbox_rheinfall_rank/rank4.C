@@ -99,6 +99,7 @@ int main (int argc, char **argv)
 		 * rational matrix and our concept is that we are getting the
 		 * rank of that matrix by some blackbox magic inside linbox.
 		 */
+		std::cout << "rank over Q..." << std::endl;
 		tim.start();
 		LinBox::rank (r, A);
 	}
