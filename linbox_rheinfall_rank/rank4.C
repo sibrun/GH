@@ -100,23 +100,23 @@ int main (int argc, char **argv)
 		 * rank of that matrix by some blackbox magic inside linbox.
 		 */
 		std::cout << "rank over Q..." << std::endl;
-		tim.start();
 		if (argv[2][0] == 'e')
 		{
-					Method::SparseElimination SE;
+			// Method::SparseElimination SE;
 	// 		SE.pivotStrategy = PivotStrategy::None;
 	// 		// using Sparse Elimination
 	// 		LinBox::rank (r, B, SE);
 	// 		if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(cout) << endl;
 	// 		cout << "Rank is " << r << endl;
 
-			SE.pivotStrategy = PivotStrategy::Linear;
+			// SE.pivotStrategy = PivotStrategy::Linear;
 			// using Sparse Elimination
 			// Givaro::Timer chrono; chrono.start();
-			LinBox::rankInPlace (r, A, SE);
+			tim.start();
+			LinBox::rank (r, A, Method::SparseElimination());
 		}
 		else {
-		
+			tim.start();
 			LinBox::rank (r, A);
 		}
 	}
