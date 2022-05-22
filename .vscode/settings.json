@@ -3,6 +3,7 @@
     "*.sage": "python",
     "rank.C": "cpp",
     "rank2.C": "cpp",
-    "rank3.C": "cpp"
+    "rank3.C": "cpp",
+    "rank4.C": "cpp"
   }
 }
