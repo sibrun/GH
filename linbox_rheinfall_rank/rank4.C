@@ -183,14 +183,46 @@ int main (int argc, char **argv)
 		{
 			std::cout << "using Givaro::Modular< int>, sparseelim" << std::endl;
 
-			Field2 F(q);
+			Field F(q);
 			// Field F(q,1);
 			if (q > F.maxCardinality()) {
 				std::cerr << "your number is too big for this field" << std::endl;
 				return -1 ;
 			}
 
-			SparseMatrix<Field2, SP_STOR > B (F, A.rowdim(), A.coldim());// modular image of A
+			SparseMatrix<Field, SP_STOR > B (F, A.rowdim(), A.coldim());// modular image of A
+			MatrixHom::map(B, A);
+			std::cout << "matrix is " << B.rowdim() << " by " << B.coldim() << std::endl;
+			//if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(std::cout) << std::endl;
+
+			// Using the adaptive LinBox Solution
+			tim.start();
+
+			// LinBox::rank(r,B);
+			Method::SparseElimination SE;
+	// 		SE.pivotStrategy = PivotStrategy::None;
+	// 		// using Sparse Elimination
+	// 		LinBox::rank (r, B, SE);
+	// 		if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(cout) << endl;
+	// 		cout << "Rank is " << r << endl;
+
+			SE.pivotStrategy = PivotStrategy::Linear;
+			// using Sparse Elimination
+			// Givaro::Timer chrono; chrono.start();
+			LinBox::rankInPlace (r, B, SE);
+
+		} else if (argv[2][0] == 'e')
+		{
+			std::cout << "using Givaro::Modular< Log16>, sparseelim" << std::endl;
+
+			Field3 F(q);
+			// Field F(q,1);
+			if (q > F.maxCardinality()) {
+				std::cerr << "your number is too big for this field" << std::endl;
+				return -1 ;
+			}
+
+			SparseMatrix<Field3, SP_STOR > B (F, A.rowdim(), A.coldim());// modular image of A
 			MatrixHom::map(B, A);
 			std::cout << "matrix is " << B.rowdim() << " by " << B.coldim() << std::endl;
 			//if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(std::cout) << std::endl;
