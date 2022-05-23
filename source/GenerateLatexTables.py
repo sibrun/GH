@@ -841,15 +841,15 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 def write_tables():
     # Generate tables
     print("WRHairy....")
-    s = create_wrhairy_vs_table(range(25), range(9), range(6), range(1, 3))
+    s = create_wrhairy_vs_table(range(25), range(11), range(6), range(1, 3))
     with open(latexfile_wrhairy_vs, 'w') as f:
         f.write(s)
 
-    s = create_wrhairy_ops_table(range(25), range(9), range(6), range(1, 3))
+    s = create_wrhairy_ops_table(range(25), range(11), range(6), range(1, 3))
     with open(latexfile_wrhairy_ops, 'w') as f:
         f.write(s)
 
-    s = create_wrhairy_cohom_table(range(25), range(9), range(6), range(1, 3))
+    s = create_wrhairy_cohom_table(range(25), range(11), range(6), range(1, 3))
     with open(latexfile_wrhairy_cohom, 'w') as f:
         f.write(s)
 
