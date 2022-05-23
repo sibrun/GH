@@ -191,6 +191,8 @@ wrhairy_ec_w2 = [[0, 0, 0, 0, 0, 0, 0, 0, -1, 4, -4],
                  [0, 0, -3, -2, 2, 12, 6, 4, -38, r, r, r],
                  [1, -3, 1, -1, r, r, r, r, r, r, r, r, r],
                  [-5, 16, r, r, r, r, r, r, r, r, r, r, r, r],
+                 [r, r, r, r, r, r, r, r, r, r, r, r],
+                 [r, r, r, r, r, r, r, r, r, r, r, r],
                  [r, r, r, r, r, r, r, r, r, r, r, r]]
 
 wrhairy_ec_w1 = [[r for j in range(12)] for i in range(12)]
