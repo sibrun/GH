@@ -188,11 +188,12 @@ r = "?"
 wrhairy_ec_w2 = [[0, 0, 0, 0, 0, 0, 0, 0, -1, 4, -4],
                  [0, 1, 0, 1, 0, 1, -3, 1, -4, 9, -9],
                  [0, 0, 0, 2, 0, 4, -5, 2, -17, 9, -16],
-                 [0, 0, -3, -2, 2, 12, 6, 4, -38],
-                 [1, -3, 1, -1, r, r, r, r, r],
-                 [-5, 16, r, r, r, r, r, r, r, r]]
+                 [0, 0, -3, -2, 2, 12, 6, 4, -38, r, r, r],
+                 [1, -3, 1, -1, r, r, r, r, r, r, r, r, r],
+                 [-5, 16, r, r, r, r, r, r, r, r, r, r, r, r],
+                 [r, r, r, r, r, r, r, r, r, r, r, r]]
 
-wrhairy_ec_w1 = [[r for j in range(10)] for i in range(10)]
+wrhairy_ec_w1 = [[r for j in range(12)] for i in range(12)]
 
 wrhairy_ec = {1: wrhairy_ec_w1, 2: wrhairy_ec_w2}
 
@@ -841,15 +842,15 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 def write_tables():
     # Generate tables
     print("WRHairy....")
-    s = create_wrhairy_vs_table(range(25), range(11), range(6), range(1, 3))
+    s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
     with open(latexfile_wrhairy_vs, 'w') as f:
         f.write(s)
 
-    s = create_wrhairy_ops_table(range(25), range(11), range(6), range(1, 3))
+    s = create_wrhairy_ops_table(range(25), range(11), range(8), range(1, 3))
     with open(latexfile_wrhairy_ops, 'w') as f:
         f.write(s)
 
-    s = create_wrhairy_cohom_table(range(25), range(11), range(6), range(1, 3))
+    s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
     with open(latexfile_wrhairy_cohom, 'w') as f:
         f.write(s)
 
