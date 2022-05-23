@@ -16,6 +16,7 @@ import Parameters
 import SymmetricGraphComplex
 import StoreLoad
 import Log
+from source.GraphOperator import OperatorMatrixCollection
 
 logger = Log.logger.getChild('forested_graph_complex')
 
@@ -1665,3 +1666,17 @@ class ContractUnmarkTopD(GraphOperator.Differential):
     def build_basis(self, **kwargs):
         self.sum_vector_space.compute_all_pregraphs(**kwargs)
         self.sum_vector_space.build_basis(**kwargs)
+
+    def compute_rank(self, sage=None, linbox=None, rheinfall=None, sort_key='size', ignore_existing_files=False, n_jobs=1, info_tracker=False):
+        # compute ranks of contractto operators
+        super().compute_rank(sage, linbox, rheinfall, sort_key,
+                             ignore_existing_files, n_jobs, info_tracker)
+        # compute ranks of contract operators that are also necessary to have
+        print("Computing contract operator ranks...")
+        coplist = [ContractEdgesGO.generate_operator(2*l-2+h, l, m, h, self.even_edges)
+                   for l in self.l_range
+                   for m in self.m_range
+                   for h in self.h_range]
+        oc = OperatorMatrixCollection(self.sum_vector_space, coplist)
+        oc.compute_rank(sage, linbox, rheinfall, sort_key,
+                        ignore_existing_files, n_jobs, info_tracker)
