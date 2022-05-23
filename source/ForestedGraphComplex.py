@@ -16,7 +16,7 @@ import Parameters
 import SymmetricGraphComplex
 import StoreLoad
 import Log
-from source.GraphOperator import OperatorMatrixCollection
+
 
 logger = Log.logger.getChild('forested_graph_complex')
 
@@ -1677,6 +1677,7 @@ class ContractUnmarkTopD(GraphOperator.Differential):
                    for l in self.l_range
                    for m in self.m_range
                    for h in self.h_range]
-        oc = OperatorMatrixCollection(self.sum_vector_space, coplist)
+        oc = GraphOperator.OperatorMatrixCollection(
+            self.sum_vector_space, coplist)
         oc.compute_rank(sage, linbox, rheinfall, sort_key,
                         ignore_existing_files, n_jobs, info_tracker)
