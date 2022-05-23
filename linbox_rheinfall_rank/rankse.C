@@ -80,7 +80,7 @@ int main (int argc, char **argv)
 		 * rational matrix and our concept is that we are getting the
 		 * rank of that matrix by some blackbox magic inside linbox.
 		 */
-		LinBox::rank (r, A);
+		LinBox::rank (r, A, Method::SparseElimination());
 	}
 	
 	if (argc == 4) { // rank mod a prime
@@ -103,7 +103,11 @@ int main (int argc, char **argv)
 		//if (B.rowdim() <= 20 && B.coldim() <= 20) B.write(std::cout) << std::endl;
 
 		// Using the adaptive LinBox Solution
-		LinBox::rank(r,B);
+		//LinBox::rank(r,B);
+        Method::SparseElimination SE;
+        SE.pivotStrategy = PivotStrategy::Linear;
+		// using Sparse Elimination
+		LinBox::rankInPlace (r, B, SE);
 	}
 	tim.stop();
 

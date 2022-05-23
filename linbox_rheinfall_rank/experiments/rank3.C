@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <givaro/givrational.h>
+#include <givaro/gfq.h>
 
 #include <linbox/ring/modular.h>
 #include <linbox/field/gf2.h>
@@ -89,9 +90,14 @@ int main (int argc, char **argv)
 				std::cerr << "second argument should be a non-zero integer or missing\n";
 				return -1;
 		}
-		typedef Givaro::Modular<int64_t> Field;
+		typedef Givaro::Modular< Givaro::Log16> Field;
+		// typedef Givaro::GFqDom<int64_t> Field;
+		// typedef Givaro::Extension<Givaro::GFqDom<int64_t>> Field;
+
+		std::cout << "Rank 3: Givaro::Modular< Givaro::Log16>" << std::endl;
 
 		Field F(q);
+		// Field F(q,1);
 		if (q > F.maxCardinality()) {
 			std::cerr << "your number is too big for this field" << std::endl;
 			return -1 ;
