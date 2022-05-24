@@ -182,7 +182,12 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             return
 
         if self.n_marked_edges == 0:
-            yield from self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False)
+            if use_bridgeless:
+                for G in self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False):
+                    if self.is_bridgeless(G):
+                        yield G
+            else:
+                yield from self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False)
             return
 
         VS = PreForestedGVS(self.n_vertices, self.n_loops,
@@ -216,7 +221,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         GG = copy(G)
         # Delte the hairs before checking
         GG.delete_vertices(range(self.n_vertices+self.n_unmarked_edges, self.n_vertices+self.n_unmarked_edges+self.n_hairs))
-        return 
+        return len(list(GG.bridges()))==0
 
     def perm_sign(self, G, p):
         return 1
