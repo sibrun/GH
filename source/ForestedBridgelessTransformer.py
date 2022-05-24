@@ -2,6 +2,8 @@ import ForestedGraphComplex
 import StoreLoad
 import os
 import GraphOperator
+import GraphVectorSpace
+from tqdm import tqdm
 
 maskfile_ending = ".blmsk"  # the masks are stored in files with this ending
 
@@ -22,7 +24,7 @@ class BridgelessMask():
     def __init__(self, vs) -> None:
         """ vs must be a ForestedGraphComplex or PreForestedGVS.
         WITH BRIDGES (...that is use_bridgeless must be off)"""
-        self.vs = vs
+        self.vs : GraphVectorSpace.GraphVectorSpace = vs
         if isinstance(vs, ForestedGraphComplex.PreForestedGVS):
             self.prevs = vs
         else:
@@ -39,12 +41,14 @@ class BridgelessMask():
         return [int(s) for s in strmask]
 
     def _compute_mask(self):
-        return [(1 if self.prevs.is_bridgeless(G) else 0) for G in self.vs.get_basis()]
+        vsdim = self.vs.get_dimension()
+        return [(1 if self.prevs.is_bridgeless(G) else 0) 
+            for G in tqdm(self.vs.get_basis(), total=vsdim, desc="Computing mask...")]
 
     def compute_mask(self):
         if self.vs.is_valid() and self.vs.exists_basis_file() and not self.exists_maskfile():
-            msk = self._compute_mask()
             print("Generating mask: ", str(self.vs))
+            msk = self._compute_mask()
             strmask = [str(m) for m in msk]
             StoreLoad.store_string_list(strmask, self.maskfile())
 
