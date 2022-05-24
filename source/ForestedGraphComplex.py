@@ -20,7 +20,8 @@ import Log
 
 logger = Log.logger.getChild('forested_graph_complex')
 
-graph_type = "forested"
+use_bridgeless = False  # set to true to restrict to bridgeless graphs
+graph_type = "forestedbl" if use_bridgeless else "forested"
 
 sub_types = {True: "even_edges", False: "odd_edges"}
 
@@ -209,6 +210,13 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
                     # res.append(GG)
 
         # return res
+
+    def is_bridgeless(self, G):
+        """Checks whether the graph G is bridgeless."""
+        GG = copy(G)
+        # Delte the hairs before checking
+        GG.delete_vertices(range(self.n_vertices+self.n_unmarked_edges, self.n_vertices+self.n_unmarked_edges+self.n_hairs))
+        return 
 
     def perm_sign(self, G, p):
         return 1
