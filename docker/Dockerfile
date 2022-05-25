@@ -56,8 +56,8 @@ RUN git clone https://github.com/sibrun/GH.git
 # compile special rank program
 WORKDIR /root/linbox-1.7.0/examples
 RUN mv rank.C rank.C.old && \
-    cp /root/GH/linbox_rheinfall_rank/rankse.C . && \
-    make rankse && \
+    cp /root/GH/linbox_rheinfall_rank/rankse.C ./rank.C && \
+    make rank && \
     cp rank /root/GH/rank_exe/ && \
     cp -r .libs /root/GH/rank_exe/
 
