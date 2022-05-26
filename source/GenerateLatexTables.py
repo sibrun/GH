@@ -870,15 +870,15 @@ def write_tables():
         f.write(s)
 
     print("Hairy....")
-    s = create_hairy_vs_table(range(25), range(12), range(6))
+    s = create_hairy_vs_table(range(25), range(14), range(1, 6))
     with open(latexfile_hairy_vs, 'w') as f:
         f.write(s)
 
-    s = create_hairy_ops_table(range(25), range(12), range(6))
+    s = create_hairy_ops_table(range(25), range(14), range(1, 6))
     with open(latexfile_hairy_ops, 'w') as f:
         f.write(s)
 
-    s = create_hairy_cohom_table(range(25), range(12), range(6))
+    s = create_hairy_cohom_table(range(25), range(14), range(1, 6))
     with open(latexfile_hairy_cohom, 'w') as f:
         f.write(s)
 
