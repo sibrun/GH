@@ -71,6 +71,11 @@ def get_hairy_dim_estimate(n_vertices, n_loops, n_hairs):
                     * (n_reduced_edges ** n_hairs_on_e)
     return sum
 
+def get_wrhairy_dim_estimate(n_vertices, n_loops, n_hairs, n_ws):
+    # very crude
+    return get_hairy_dim_estimate(n_vertices+1, n_loops, n_hairs+n_ws)
+
+
 ## Test
 # print([len(s) for s in GCdims])
 # print( get_ordinary_dim_estimate(24, 13) )

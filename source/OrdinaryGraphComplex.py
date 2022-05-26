@@ -14,6 +14,7 @@ import GraphComplex
 import Shared
 import NautyInterface
 import Parameters
+import GCDimensions
 
 
 graph_type = "ordinary"
@@ -87,7 +88,8 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return GCDimensions.get_ordinary_dim_estimate(self.n_vertices, self.n_loops)
+        #return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.

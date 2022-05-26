@@ -17,6 +17,7 @@ import NautyInterface
 import OrdinaryGraphComplex
 import StoreLoad
 import Parameters
+import GCDimensions
 
 graph_type = "hairy"
 
@@ -114,7 +115,8 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / (factorial(self.n_vertices) * factorial(self.n_hairs))
+        return GCDimensions.get_hairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs)
+        # return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / (factorial(self.n_vertices) * factorial(self.n_hairs))
 
     def get_generating_graphs(self):
         # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2.
