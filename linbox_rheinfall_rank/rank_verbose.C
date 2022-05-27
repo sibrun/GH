@@ -47,8 +47,8 @@ using namespace LinBox;
 /// rank or rank mod p
 int main(int argc, char **argv)
 {
-	commentator().setMaxDetailLevel(8);
-	commentator().setMaxDepth(4);
+	commentator().setMaxDetailLevel(100);
+	commentator().setMaxDepth(100);
 	commentator().setReportStream(std::cout);
 
 	if (argc < 3 || argc > 4)
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	LinBox::Timer tim;
 	tim.clear();
 	tim.start();
-	MatrixStream<Givaro::QField<Givaro::Rational>> ms(ZZ, input);
+	MatrixStream<Givaro::QField<Givaro::Rational> > ms(ZZ, input);
 	SparseMatrix<Givaro::QField<Givaro::Rational>, SP_STOR> A(ms);
 
 	tim.stop();
