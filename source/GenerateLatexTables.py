@@ -362,7 +362,8 @@ def eulerize(data, sign_shift=0):
     """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
     and appends an euler characteristic. """
     euler = 0
-    for (i, s) in enumerate(data):
+    for (i, s1) in enumerate(data):
+        s = s1.split(" ")[0]
         if s == "?":
             return data + ["?"]
         elif s != "-":
@@ -425,6 +426,10 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
     return s
 
 
+def is_ordinary_zero(v, l):
+    return (v < l+1) or (v > 2*l-2)
+
+
 def create_ordinary_vs_table(v_range, l_range):
     s = ""
 
@@ -440,7 +445,8 @@ def create_ordinary_vs_table(v_range, l_range):
             data.append(
                 [str(l)] + eulerize(
                     [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(
-                        v, l, even_edges)) for v in v_range]
+                        v, l, even_edges)) + cell_color[is_hairy_zero(v, l, h)]
+                        for v in v_range]
                 ) + [str(ref_ec)]
             )
         s = s+latex_table(header, data, scale=0.75)
