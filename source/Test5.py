@@ -19,7 +19,7 @@ log_file = "Forested_Unittest.log"
 
 # transpose for testing
 go = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(11, 9, False)
-shape, lst = go._load_matrix_list()
+lst, shape = go._load_matrix_list()
 
 a, b = shape
 newshape = (b, a)
