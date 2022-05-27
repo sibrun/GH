@@ -72,11 +72,14 @@ alldata_tex = r"""
 \usepackage{varwidth} %for the varwidth minipage environment
 
 \definecolor{Gray}{gray}{0.9}
+\definecolor{LightGray}{gray}{0.95}
 
 \newcolumntype{g}{>{\columncolor{Gray}}c}
 %\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
 \newcolumntype{M}{V{3cm}}
 \newcolumntype{D}{V{6cm}}
+
+\usepackage[table]{xcolor}
 
 \begin{document}
 
@@ -207,6 +210,9 @@ hairy_ec_evene_oddh = [[0, -1, -1, -1, -2, -1, -2, -2, -2, -1, -2, 0],
                        [1, 1, 1, 1, 2, 2, 3, 4, 5, 5, 7, 5],
                        [0, 0, -1, -1, -3, -4, -6, -10, -14, -17, -22, -25, -22],
                        [0, 1, 1, 2, 4, 7, 12, 20, 30, 45, 60, 79, 81, 83]]
+
+# Color of cells depending on whether ccohomology must be zero
+cell_color = {True: r" \cellcolor{LightGray}", False: ""}
 
 
 def latex_table(header, data, scale=1, coltype="M", hlines=False):
@@ -500,6 +506,11 @@ def create_hairy_cohom_table(v_range, l_range, h_range):
     return s
 
 
+def is_hairy_zero(v, l, h):
+    """Determines whether the cohomology in the given degree is zero by abstract reasons."""
+    return (v < l+h-2) or (v > 2*l-2+h)
+
+
 def create_hairy_vs_table(v_range, l_range, h_range):
     s = ""
 
@@ -517,7 +528,7 @@ def create_hairy_vs_table(v_range, l_range, h_range):
                         [str(l)] + [vs_dim_formatted(
                             HairyGraphComplex.HairyGraphVS(
                                 v, l, h, even_edges, even_hairs)
-                        ) for v in v_range])
+                        ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
                 s = s+latex_table(header, data)
     return s
 
