@@ -445,7 +445,7 @@ def create_ordinary_vs_table(v_range, l_range):
             data.append(
                 [str(l)] + eulerize(
                     [vs_dim_formatted(OrdinaryGraphComplex.OrdinaryGVS(
-                        v, l, even_edges)) + cell_color[is_hairy_zero(v, l, h)]
+                        v, l, even_edges)) + cell_color[is_ordinary_zero(v, l)]
                         for v in v_range]
                 ) + [str(ref_ec)]
             )
@@ -860,19 +860,6 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 
 def write_tables():
     # Generate tables
-    print("WRHairy....")
-    s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
-    with open(latexfile_wrhairy_vs, 'w') as f:
-        f.write(s)
-
-    s = create_wrhairy_ops_table(range(25), range(11), range(8), range(1, 3))
-    with open(latexfile_wrhairy_ops, 'w') as f:
-        f.write(s)
-
-    s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
-    with open(latexfile_wrhairy_cohom, 'w') as f:
-        f.write(s)
-
     print("Ordinary....")
     s = create_ordinary_vs_table(range(25), range(15))
     with open(latexfile_ordinary_vs, 'w') as f:
@@ -923,6 +910,19 @@ def write_tables():
 
     s = create_bichairy_cohom_table(range(25), range(12), range(6))
     with open(latexfile_bichairy_cohom, 'w') as f:
+        f.write(s)
+
+    print("WRHairy....")
+    s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_vs, 'w') as f:
+        f.write(s)
+
+    s = create_wrhairy_ops_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_ops, 'w') as f:
+        f.write(s)
+
+    s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_cohom, 'w') as f:
         f.write(s)
 
     print("Forested....")
