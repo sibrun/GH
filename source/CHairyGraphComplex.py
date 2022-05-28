@@ -20,6 +20,7 @@ import OrdinaryGraphComplex
 import StoreLoad
 import Parameters
 import SymmetricGraphComplex
+import GCDimensions
 
 graph_type = "chairy"
 
@@ -118,7 +119,8 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+        return GCDimensions.get_chairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs)
+        # return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
