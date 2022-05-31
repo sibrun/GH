@@ -1,6 +1,7 @@
 """This script generates the latex tables for the paper."""
 
 import OrdinaryGraphComplex
+import OrdinaryMerkulovComplex
 import OrdinaryGraphBiComplex
 import HairyGraphComplex
 import HairyGraphBiComplex
@@ -24,6 +25,10 @@ latexfile_wrhairy_cohom = os.path.join(latexdir, "wrhairy_cohom.tex")
 latexfile_ordinary_vs = os.path.join(latexdir, "ordinary_vs.tex")
 latexfile_ordinary_ops = os.path.join(latexdir, "ordinary_ops.tex")
 latexfile_ordinary_cohom = os.path.join(latexdir, "ordinary_cohom.tex")
+
+latexfile_ordinaryme_vs = os.path.join(latexdir, "ordinaryme_vs.tex")
+latexfile_ordinaryme_ops = os.path.join(latexdir, "ordinaryme_ops.tex")
+latexfile_ordinaryme_cohom = os.path.join(latexdir, "ordinaryme_cohom.tex")
 
 latexfile_hairy_vs = os.path.join(latexdir, "hairy_vs.tex")
 latexfile_hairy_ops = os.path.join(latexdir, "hairy_ops.tex")
@@ -93,6 +98,19 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{ordinary_cohom.tex}
+
+\newpage
+
+\section{Ordinary Merkulov}
+
+\subsection{VS Dimensions}
+\input{ordinaryme_vs.tex}
+ 
+\subsection{Operator ranks}
+\input{ordinaryme_ops.tex}
+
+\subsection{Cohomology}
+\input{ordinaryme_cohom.tex}
 
 \newpage
 
@@ -357,6 +375,10 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
+def cohom_formatted_merkulov(D1, D2, Dc2):
+    """The formula is the same as for the forested top complex, so we just reuse the other function."""
+    return cohom_formatted_forested_top(D1,D2,Dc2)
+
 
 def eulerize(data, sign_shift=0):
     """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
@@ -483,6 +505,61 @@ def create_ordinary_cohom_table(v_range, l_range):
                         v, l, even_edges),
                     OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
                         v+1, l, even_edges)
+                ) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+def create_ordinaryme_vs_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + 
+                    [vs_dim_formatted(OrdinaryMerkulovComplex.OrdinaryMerkulovGVS(
+                        v, l, even_edges, 3456)) + cell_color[is_ordinary_zero(v, l)]
+                        for v in v_range]
+            )
+        s = s+latex_table(header, data, scale=0.75)
+    return s
+
+
+def create_ordinaryme_ops_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [ops_formatted(OrdinaryMerkulovComplex.ContractEdgesGO.generate_operator(v, l, even_edges)) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
+def create_ordinaryme_cohom_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted_merkulov(
+                    OrdinaryMerkulovComplex.ContractEdgesGO.generate_operator(
+                        v, l, even_edges),
+                    OrdinaryMerkulovComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, even_edges),
+                    OrdinaryMerkulovComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, even_edges, False)
                 ) for v in v_range])
         s = s+latex_table(header, data)
     return s
@@ -871,6 +948,19 @@ def write_tables():
 
     s = create_ordinary_cohom_table(range(25), range(15))
     with open(latexfile_ordinary_cohom, 'w') as f:
+        f.write(s)
+
+    print("Ordinary Merkulov....")
+    s = create_ordinaryme_vs_table(range(25), range(15))
+    with open(latexfile_ordinaryme_vs, 'w') as f:
+        f.write(s)
+
+    s = create_ordinaryme_ops_table(range(25), range(15))
+    with open(latexfile_ordinaryme_ops, 'w') as f:
+        f.write(s)
+
+    s = create_ordinaryme_cohom_table(range(25), range(15))
+    with open(latexfile_ordinaryme_cohom, 'w') as f:
         f.write(s)
 
     print("Hairy....")

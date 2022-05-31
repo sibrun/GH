@@ -160,6 +160,7 @@ import RheinfallInterface
 import CHairyGraphComplex
 import ForestedGraphComplex
 import WRHairyGraphComplex
+import OrdinaryMerkulovComplex
 
 
 logger = Log.logger.getChild('main')
@@ -234,7 +235,7 @@ def sage_rank_options(arg):
 
 
 graph_types = ['ordinary', 'hairy', 'bi_c_hairy',
-               'forested', 'wrhairy', 'chairy']
+               'forested', 'wrhairy', 'chairy', 'ordinaryme']
 operators = ['contract', 'delete', 'et1h', 'split',
              'unmark', 'contract_iso', 'unmark_iso']
 bicomplexes = ['contract_et1h', 'contract_delete',
@@ -432,6 +433,20 @@ if __name__ == "__main__":
         else:
             raise ValueError(
                 'Differentials for ordinary graph complex: contract, delete')
+
+    elif args.graph_type == 'ordinaryme':
+        if len(operators) > 0 and set(operators) <= {'contract'}:
+            if args.v is None:
+                raise MissingArgumentError(
+                    'specify -v: range for number of vertices')
+            if args.l is None:
+                raise MissingArgumentError(
+                    'specify -l: range for number of loops')
+
+            graph_complex = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(args.v, args.l, even_edges, operators)
+        else:
+            raise ValueError(
+                'Differentials for ordinary Merkulov graph complex: contract')
 
     elif args.graph_type == 'hairy':
         if args.even_h:
