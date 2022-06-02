@@ -32,4 +32,4 @@ if __name__ == "__main__":
 
     sumvs.build_basis(n_jobs = nr_jobs)
 
-    print("Finished computing hairy bases.")
+    print("Finished computing wrhairy bases.")
