@@ -20,7 +20,7 @@ import Log
 
 logger = Log.logger.getChild('forested_graph_complex')
 
-use_bridgeless = False  # set to true to restrict to bridgeless graphs
+use_bridgeless = True  # set to true to restrict to bridgeless graphs
 graph_type = "forestedbl" if use_bridgeless else "forested"
 
 sub_types = {True: "even_edges", False: "odd_edges"}
