@@ -128,7 +128,7 @@ for h in h_range:
                 bm = BridgelessMask(
                     ForestedGraphComplex.PreForestedGVS(v, l, m, h))
                 bm.create_filtered_basisfile()
-                for even_edges in [True, False]:
+                for even_edges in [True]: # [True, False]: # odd not supported due to tadpoles
                     bm = BridgelessMask(
                         ForestedGraphComplex.ForestedGVS(v, l, m, h, even_edges))
                     bm.create_filtered_basisfile()
@@ -138,7 +138,7 @@ for h in h_range:
     for l in l_range:
         for v in v_range:
             for m in m_range:
-                for even_edges in [True, False]:
+                for even_edges in [True]: # [True, False]: # odd not supported due to tadpoles
                     bo = BridgeLessMaskOM(
                         ForestedGraphComplex.ContractEdgesGO.generate_operator(v, l, m, h, even_edges))
                     bo.create_filtered_matrixfile()

@@ -1,36 +1,37 @@
 import ForestedGraphComplex
 import GraphVectorSpace
 
-"""Builds bases of all hairy vector spaces in the "computable" range.
+"""Builds bases of all forested vector spaces in the "computable" range.
 """
 
 
 if __name__ == "__main__":
     nr_jobs = 10
+    nr_jobs_basis = 10 # set to 1 if pregraphs not yet generated
     print(f"Building all computable forested bases and operators using {nr_jobs} jobs ...")
     for even_e in [False, True]:
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(8), range(16), range(1), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
         
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(7), range(16), range(1,2), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(6), range(16), range(2,3), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(5), range(16), range(3,4), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(4), range(16), range(4,5), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(3), range(16), range(5,6), even_e)
-        FGC.build_basis()
+        FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
     # for even_e in [True, False]:
