@@ -81,9 +81,13 @@ class RepresentativeCheck(GraphOperator.OperatorMatrix):
         if not self.op1.is_valid():
             print(self.name, ": is a cocycle (trivially).")
             return True
+        print("Producing vector...")
         v = vector(self.get_vector1())
+        print("Loading matrix...")
         A = self.op1.get_matrix()
+        print("Computing product...")
         w = A*v 
+        print("Computing norm...")
         norm = w.norm(p=1)
         if norm == 0:
             print(self.name, ": is a cocycle.")
