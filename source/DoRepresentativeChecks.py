@@ -74,6 +74,34 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
                     for p in itertools.permutations(range(self.k))]
 
 
+class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
+    def __init__(self, even_edges):
+        self.even_edges = even_edges
+        self.sub_type = ForestedGraphComplex.sub_types[even_edges]
+        op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
+        op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
+        name = f"Forested Morita tetrahedron class "+self.sub_type
+        super(ForestedMoritaTetrahedronCheck, self).__init__(op1, op2, name)
+
+    def get_matrix_file_path(self):
+        s = f"contract_unmarkD_morita_tetrahedron_check.txt"
+        return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = f"contract_unmarkD_morita_tetrahedron_check_rank.txt"
+        return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
+
+    def generate_vector(self):
+        return [ (SpecialGraphs.forested_morita_tetrahedron([p1,p2,p3,p4]),
+                     Shared.Perm(p1).signature() * Shared.Perm(p2).signature() 
+                     * Shared.Perm(p3).signature() * Shared.Perm(p4).signature()) 
+                    for p1 in itertools.permutations(range(3))
+                    for p2 in itertools.permutations(range(3))
+                    for p3 in itertools.permutations(range(3))
+                    for p4 in itertools.permutations(range(3))
+                    ]
+
+
 
 ##### run tests #####
 # OrdinaryWheelCheck(3, False).checkit(sage="integer")
@@ -85,10 +113,19 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
 # OrdinaryWheelCheck(5, True).checkit(sage="integer")
 
 
-ForestedRingCheck(3, True).checkit(linbox="mod")
-ForestedRingCheck(4, True).checkit(linbox="mod")
-ForestedRingCheck(5, True).checkit(linbox="mod")
+# ForestedRingCheck(3, True).checkit(linbox="mod")
+# ForestedRingCheck(4, True).checkit(linbox="mod")
+# ForestedRingCheck(5, True).checkit(linbox="mod")
 
-ForestedMoritaCheck(3, False).checkit(linbox="mod")
-ForestedMoritaCheck(4, False).checkit(linbox="mod")
-ForestedMoritaCheck(5, False).checkit(linbox="mod")
+# ForestedMoritaCheck(3, False).checkit(linbox="mod")
+# ForestedMoritaCheck(4, False).checkit(linbox="mod")
+# ForestedMoritaCheck(5, False).checkit(linbox="mod")
+
+
+vvv=ForestedMoritaTetrahedronCheck(False).generate_vector()
+(G,a) = vvv[0]
+G.show()
+print(G.graph6_string())
+(G,a) = vvv[3]
+print(G.graph6_string())
+G.show()

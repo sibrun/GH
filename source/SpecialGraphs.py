@@ -3,6 +3,7 @@
 
 import OrdinaryGraphComplex
 import CHairyGraphComplex
+import itertools
 from sage.all import *
 
 
@@ -85,3 +86,47 @@ def forested_morita_graph(k: int, p):
         G.add_edge(k+j, n_vertices + 2 + j)
 
     return G
+
+def forested_morita_tetrahedron(ps):
+    """Generates the graphs whose linear combinations conjecturally spans
+    the degree 8 cohomology of the 7-loop odd_e forested graph complex.
+    They have 12 vertices and 10 unmarked edges and 8 marked edges.
+    ps are 4 zero-based permutations of (0,1,2) stating how the edges should be connected.
+    Mind that unmarked edges are represented by bivalent vertices in the forested 
+    graph complex.
+    """
+    n_unmarked = 10
+    n_vertices = 12
+    # n_marked = 8
+    G = Graph(n_vertices + n_unmarked)
+
+    for j in range(4):
+        for jj in range(2):
+            # add marked edges
+            G.add_edge(3*j+jj, 3*j+jj+1)
+
+    # unmarked edges in the four Lie-vertices of the tetrahedron
+    G.add_edge(0, n_vertices)
+    G.add_edge(2, n_vertices)
+    G.add_edge(3, n_vertices+1)
+    G.add_edge(5, n_vertices+1)
+    G.add_edge(6, n_vertices+2)
+    G.add_edge(8, n_vertices+2)
+    G.add_edge(9, n_vertices+3)
+    G.add_edge(11, n_vertices+3)
+
+    # unmarked edges between Lie vertices
+    unmarked_ind = n_vertices + 4
+    lie_inds=[0,0,0,0]
+    for i in range(4):
+        for j in range(i+1,4):
+            G.add_edge(ps[i][lie_inds[i]] + i*3, unmarked_ind)
+            G.add_edge(ps[j][lie_inds[j]] + j*3, unmarked_ind)
+            unmarked_ind += 1
+            lie_inds[i] = lie_inds[i]+1
+            lie_inds[j] = lie_inds[j]+1
+
+    return G
+
+
+
