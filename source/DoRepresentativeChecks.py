@@ -85,9 +85,10 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
 # OrdinaryWheelCheck(5, True).checkit(sage="integer")
 
 
-# ForestedRingCheck(3, True).checkit(sage="integer")
-# ForestedRingCheck(4, True).checkit(sage="integer")
+ForestedRingCheck(3, True).checkit(linbox="mod")
+ForestedRingCheck(4, True).checkit(linbox="mod")
+ForestedRingCheck(5, True).checkit(linbox="mod")
 
 ForestedMoritaCheck(3, False).checkit(linbox="mod")
-ForestedMoritaCheck(4, True).checkit(linbox="mod")
-ForestedMoritaCheck(5, True).checkit(linbox="mod")
+ForestedMoritaCheck(4, False).checkit(linbox="mod")
+ForestedMoritaCheck(5, False).checkit(linbox="mod")
