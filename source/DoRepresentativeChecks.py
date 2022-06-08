@@ -123,7 +123,7 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
 
 
 FC = ForestedMoritaTetrahedronCheck(False)
-vvv=FC.generate_vector()
+# vvv=FC.generate_vector()
 # (G,a) = vvv[0]
 # G.show()
 # print(G.graph6_string())
@@ -131,4 +131,9 @@ vvv=FC.generate_vector()
 # print(G.graph6_string())
 # G.show()
 
-print(FC.is_cocycle())
+# print(FC.is_cocycle())
+print("matrix...")
+FC.build_matrix()
+print("built.. starting rank")
+FC.compute_rank(linbox="mod")
+print("Done.")
