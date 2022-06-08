@@ -863,8 +863,16 @@ class SumVectorSpace(VectorSpace):
         #     logger.warning("Empty basis: %s is not valid" % str(self))
         #     return []
         L = [s for vs in self.vs_list for s in vs.get_basis_g6()]
-        L.sort()
+        # L.sort() # no sorting here
         return L
+
+    def get_g6_coordinates_dict(self):
+        """Return a dictionary to translate from the graph6 string of graphs in the basis to their index in the basis.
+
+        :return: Dictionary to translate from graph6 string to the coordinate of a basis element.
+        :rtype: dict(str -> int)
+        """
+        return {G6: i for (i, G6) in enumerate(self.get_basis_g6())}
 
     def get_basis(self):
         """Return the basis of the vector space as list of sage graphs.
