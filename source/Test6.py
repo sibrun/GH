@@ -94,12 +94,15 @@ def graphcheck(lst, m, n):
     print("Graph generated, finding ccs")
 
     # ccgs = G.connected_components_subgraphs()
-    # # ccsizes = [len(a) for a in ccs]
+    # ccs = G.connected_components()
+    # ccsizes = [len(a) for a in ccs]
+    print(f"#connected comp{len(ccs)}")
     # ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
     # print(ccinfo[0:100])
 
     ccgs = G.connected_components_subgraphs()
     print("ccs done...")
+    print(f"#connected comp{len(ccgs)}")
     for cc in ccgs:
         # get submatrix
         verts = cc.vertices()
