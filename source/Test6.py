@@ -49,4 +49,4 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
 
 
 # precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
-precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False))
+precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
