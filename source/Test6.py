@@ -213,8 +213,9 @@ def precondition(op:GraphOperator.OperatorMatrix):
 # precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
 # precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
 
+print("Loading file")
 fff = "gh_data/data/forestedbl/odd_edges/bi_D_contract_unmark_top_7_9_0.txt.preconditioned_978418.txt"
 
 lst, (m,n) = load_sms_file(fff)
-
+print("graphckeck...")
 graphcheck(lst, m, n)
