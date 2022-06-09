@@ -93,9 +93,11 @@ def graphcheck(lst, m, n):
     G.add_edges(edges)
     print("Graph generated, finding ccs")
 
-    ccs = G.connected_components()
-    ccsizes = [len(a) for a in ccs]
-    print(ccsizes[0:100])
+    ccgs = G.connected_components_subgraphs()
+    # ccsizes = [len(a) for a in ccs]
+    ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
+    print(ccinfo[0:100])
+
 
 
 
