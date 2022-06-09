@@ -87,16 +87,35 @@ def graphcheck(lst, m, n):
     es = [-1 for _ in range(n2)] 
     for (i,j,v) in lst2:
         if es[j] >0:
-            edges.append( (i, es[j]) )
+            edges.append( (i, es[j],j) )
         else:
             es[j] = i
     G.add_edges(edges)
     print("Graph generated, finding ccs")
 
-    ccgs = G.connected_components_subgraphs()
-    # ccsizes = [len(a) for a in ccs]
-    ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
-    print(ccinfo[0:100])
+    # ccgs = G.connected_components_subgraphs()
+    # # ccsizes = [len(a) for a in ccs]
+    # ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
+    # print(ccinfo[0:100])
+
+    ccgs = G.connected_components()
+    print("ccs done...")
+    for cc in ccgs:
+        # get submatrix
+        verts = cc.vertices()
+        if len(verts) < 100:
+            break
+        iset = set(verts)
+        jset = set(cc.edge_labels())
+        lst3, m3, n3 = get_submatrix(lst2, [(i in iset) for i in range(m2)], 
+                [(j in jset) for j in range(n2)] )
+        print(f"Submatrix {m3}x{n3}")
+        M = matrix(QQ,m3,n3, {(i,j) : v for (i,j,v) in lst3 } )
+        r = M.rank()
+        if r == min(m3,n3):
+            print( f"OK, full rank {r}")
+        else:
+            print( f"NO, rank deficient {r}")
 
 
 
