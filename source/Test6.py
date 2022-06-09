@@ -48,5 +48,10 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
     print(f"multis:    {multis}")
 
 
-# precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
-precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
+precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
+precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(13,10, True))
+precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(11,10, False))
+# precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
+precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, True))
+precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,8,0, True))
+precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
