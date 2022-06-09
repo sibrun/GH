@@ -75,7 +75,7 @@ def removerstep(lst, m,n, rankbias):
     for (i,j, v) in lst:
         if ccount[j] == 1 and v != 0:
             if not delrow[i] and not delcol[j]:
-                rankbias += 1
+                newrankbias += 1
             delrow[i] = True
             delcol[j] = True
     # remove zero cols
@@ -107,7 +107,7 @@ def precondition(op:GraphOperator.OperatorMatrix):
     print("Loading...: ", str(op))
     (lst,(m,n)) = op._load_matrix_list()
     rankbias = 0
-    for i in range(5):
+    for i in range(50):
         print(f"remover step {i}, rankbias {rankbias}...")
         lst, m, n, rankbias = removerstep(lst, m, n, rankbias)
 
