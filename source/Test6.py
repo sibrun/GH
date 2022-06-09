@@ -107,9 +107,21 @@ def precondition(op:GraphOperator.OperatorMatrix):
     print("Loading...: ", str(op))
     (lst,(m,n)) = op._load_matrix_list()
     rankbias = 0
-    for i in range(50):
+    for i in range(10):
         print(f"remover step {i}, rankbias {rankbias}...")
         lst, m, n, rankbias = removerstep(lst, m, n, rankbias)
+
+    (d, t) = m,n
+    stringList = []
+    stringList.append("%d %d %s" % (d, t, GraphOperator.data_type))
+    for (i, j, v) in lst:
+        stringList.append("%d %d %d" % (i + 1, j + 1, v))
+    stringList.append("0 0 0")
+    StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned{rankbias}.txt")
+
+
+    # save matrix
+
 
 # precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
 # precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(13,10, True))
