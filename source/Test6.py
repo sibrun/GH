@@ -47,4 +47,4 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
     print(f"multis:    {multis}")
 
 
-precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10))
+precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
