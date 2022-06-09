@@ -96,7 +96,7 @@ def graphcheck(lst, m, n):
     # ccgs = G.connected_components_subgraphs()
     # ccs = G.connected_components()
     # ccsizes = [len(a) for a in ccs]
-    print(f"#connected comp{len(ccs)}")
+    # print(f"#connected comp{len(ccs)}")
     # ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
     # print(ccinfo[0:100])
 
