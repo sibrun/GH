@@ -113,7 +113,7 @@ def precondition(op:GraphOperator.OperatorMatrix):
 
     (d, t) = m,n
     stringList = []
-    stringList.append("%d %d %s" % (d, t, GraphOperator.data_type))
+    stringList.append("%d %d %s" % (d, t, "M"))
     for (i, j, v) in lst:
         stringList.append("%d %d %d" % (i + 1, j + 1, v))
     stringList.append("0 0 0")
