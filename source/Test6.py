@@ -161,8 +161,8 @@ def removerstep(lst, m,n, rankbias):
 def load_sms_file(fname):
     if not os.path.isfile(fname):
             raise StoreLoad.FileNotFoundError(
-                "Cannot load matrix, No matrix file found for %s: " % str(self))
-    stringList = StoreLoad.load_string_list(self.get_matrix_file_path())
+                "Cannot load matrix, No matrix file found for %s: " % fname)
+    stringList = StoreLoad.load_string_list(fname)
     (d, t, data_type) = stringList.pop(0).split(" ")
     shape = (d, t) = (int(d), int(t))
     
