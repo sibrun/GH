@@ -98,7 +98,7 @@ def graphcheck(lst, m, n):
     # ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
     # print(ccinfo[0:100])
 
-    ccgs = G.connected_components()
+    ccgs = G.connected_components_subgraphs()
     print("ccs done...")
     for cc in ccgs:
         # get submatrix
