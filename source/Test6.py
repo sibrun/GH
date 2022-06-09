@@ -133,7 +133,7 @@ precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True
 precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, True))
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,8,0, True))
-# precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
+precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
 
 # precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
 # precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
