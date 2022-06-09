@@ -82,6 +82,9 @@ def removerstep(lst, m,n, rankbias):
     for (j,v) in enumerate(ccount):
         if v ==0:
             delcol[j] = True
+    for (i,v) in enumerate(rcount):
+        if v ==0:
+            delrow[i] = True
 
 
     newm = m - sum(1 for b in delrow if b)
@@ -116,4 +119,5 @@ def precondition(op:GraphOperator.OperatorMatrix):
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,8,0, True))
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
 
-precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
+precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
+# precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
