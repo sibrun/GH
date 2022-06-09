@@ -80,7 +80,7 @@ def graphcheck(lst, m, n):
         colsupports[j].add(i)
     
     # consider only columns with 2 nonzero entries
-    cols = [c == 2 for c in ccount]
+    cols = [c == 2 or c==3 for c in ccount]
     lst2, m2, n2 =  get_submatrix(lst, [True for _ in range(m)], cols)
     print("Generating graph")
     # make graph
@@ -90,8 +90,8 @@ def graphcheck(lst, m, n):
     for (i,j,v) in lst2:
         if es[j] >0:
             edges.append( (i, es[j],j) )
-        else:
-            es[j] = i
+        
+        es[j] = i
     G.add_edges(edges)
     print("Graph generated, finding ccs")
 
