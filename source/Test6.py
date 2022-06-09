@@ -8,6 +8,7 @@ from sage.all import *
 import StoreLoad
 import OrdinaryMerkulovComplex
 import GraphOperator
+import ForestedGraphComplex
 
 # even_e = True
 # OGC = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(range(20), range(9), even_e, ['contract'])
@@ -47,4 +48,5 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
     print(f"multis:    {multis}")
 
 
-precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
+# precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
+precond_stats(ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(7,9,0, False))
