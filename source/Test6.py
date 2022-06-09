@@ -111,7 +111,7 @@ def graphcheck(lst, m, n):
         if len(verts) < 100:
             break
         iset = set(verts)
-        jset = set(cc.edge_labels())
+        # jset = set(cc.edge_labels())
         lst3, m3, n3 = get_submatrix(lst, [(i in iset) for i in range(m)], 
                 [colsupports[j] <= iset for j in range(n)] )
         print(f"Submatrix {m3}x{n3}")
