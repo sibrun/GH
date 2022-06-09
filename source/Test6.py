@@ -87,7 +87,7 @@ def graphcheck(lst, m, n):
     es = [-1 for _ in range(n2)] 
     for (i,j,v) in lst2:
         if es[j] >0:
-            edges.append[(i, es[j])]
+            edges.append( (i, es[j]) )
         else:
             es[j] = i
     G.add_edges(edges)
