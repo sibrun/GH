@@ -73,9 +73,11 @@ def get_submatrix(lst, keeprow, keepcol):
 def graphcheck(lst, m, n):
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
+    colsupports = [set() for _ in range(n) ]
     for (i,j, v) in lst:
         rcount[i] += 1
         ccount[j] += 1
+        colsupports[j].add(i)
     
     # consider only columns with 2 nonzero entries
     cols = [c == 2 for c in ccount]
@@ -110,8 +112,8 @@ def graphcheck(lst, m, n):
             break
         iset = set(verts)
         jset = set(cc.edge_labels())
-        lst3, m3, n3 = get_submatrix(lst2, [(i in iset) for i in range(m2)], 
-                [(j in jset) for j in range(n2)] )
+        lst3, m3, n3 = get_submatrix(lst, [(i in iset) for i in range(m)], 
+                [colsupports[j] <= iset for j in range(n)] )
         print(f"Submatrix {m3}x{n3}")
         M = matrix(QQ,m3,n3, {(i,j) : v for (i,j,v) in lst3 } )
         r = M.rank()
