@@ -65,12 +65,16 @@ def removerstep(lst, m,n, rankbias):
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
     onerows = sum( 1 if j==1 else 0 for j in rcount)
     onecols = sum( 1 if j==1 else 0 for j in ccount)
+    tworows = sum( 1 if j==2 else 0 for j in rcount)
+    twocols = sum( 1 if j==2 else 0 for j in ccount)
     
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
     print(f"One rows:  {onerows}")
     print(f"One cols:  {onecols}")
+    print(f"Two rows:  {tworows}")
+    print(f"Two cols:  {twocols}")
 
     print("Simplifying matrix, deleting one cols")
     delrow = [False for _ in range(m)]
@@ -121,19 +125,19 @@ def precondition(op:GraphOperator.OperatorMatrix):
     for (i, j, v) in lst:
         stringList.append("%d %d %d" % (i + 1, j + 1, v))
     stringList.append("0 0 0")
-    StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned_{rankbias}.txt")
+    # StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned_{rankbias}.txt")
 
 
     # save matrix
 
 
-precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
+# precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True))
 # precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(13,10, True))
 # precond_stats(OrdinaryGraphComplex.ContractEdgesGO.generate_operator(11,10, False))
-precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
+# precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, True))
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, True))
 # precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,8,0, True))
-precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
+# precond_stats(ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,10,0, False))
 
-# precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
+precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
 # precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
