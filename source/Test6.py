@@ -119,6 +119,7 @@ def graphcheck(lst, m, n):
             print( f"OK, full rank {r}")
         else:
             print( f"NO, rank deficient {r}")
+            print( M.left_kernel().basis() ) 
 
 
 
