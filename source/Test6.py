@@ -117,7 +117,7 @@ def precondition(op:GraphOperator.OperatorMatrix):
     for (i, j, v) in lst:
         stringList.append("%d %d %d" % (i + 1, j + 1, v))
     stringList.append("0 0 0")
-    StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned{rankbias}.txt")
+    StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned_{rankbias}.txt")
 
 
     # save matrix
