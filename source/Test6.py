@@ -70,6 +70,11 @@ def get_submatrix(lst, keeprow, keepcol):
 
     return (newlst, newm, newn)
 
+def transpose_lst(lst):
+    matrix_list = [(j, i, v) for (i, j, v) in lst]
+    matrix_list.sort()
+    return matrix_list
+
 def graphcheck(lst, m, n):
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
@@ -104,7 +109,7 @@ def graphcheck(lst, m, n):
     ccgs = G.connected_components_subgraphs()
     ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
     print(ccinfo[0:100])
-    
+
     print("ccs done...")
     print(f"#connected comp{len(ccgs)}")
     for cc in ccgs:
@@ -211,6 +216,16 @@ def load_sms_file(fname):
         matrix_list.append((i - 1, j - 1, v))
     return (matrix_list, shape)
 
+def save_sms_file(lst, m, n, fname):
+    (d, t) = m,n
+    stringList = []
+    stringList.append("%d %d %s" % (d, t, "M"))
+    for (i, j, v) in lst:
+        stringList.append("%d %d %d" % (i + 1, j + 1, v))
+    stringList.append("0 0 0")
+    StoreLoad.store_string_list(stringList,fname)
+
+
 def precondition(op:GraphOperator.OperatorMatrix):
     print("Loading...: ", str(op))
     (lst,(m,n)) = op._load_matrix_list()
@@ -219,13 +234,7 @@ def precondition(op:GraphOperator.OperatorMatrix):
         print(f"remover step {i}, rankbias {rankbias}...")
         lst, m, n, rankbias = removerstep(lst, m, n, rankbias)
 
-    (d, t) = m,n
-    stringList = []
-    stringList.append("%d %d %s" % (d, t, "M"))
-    for (i, j, v) in lst:
-        stringList.append("%d %d %d" % (i + 1, j + 1, v))
-    stringList.append("0 0 0")
-    # StoreLoad.store_string_list(stringList, op.get_matrix_file_path()+f".preconditioned_{rankbias}.txt")
+    save_sms_file(lst, m, n, op.get_matrix_file_path()+f".preconditioned_{rankbias}.txt")
 
 
     # save matrix
@@ -246,5 +255,10 @@ print("Loading file")
 fff = "gh_data/data/forestedbl/odd_edges/bi_D_contract_unmark_top_7_9_0.txt.preconditioned_978418.txt"
 
 lst, (m,n) = load_sms_file(fff)
-print("graphckeck...")
-graphcheck(lst, m, n)
+
+lstt = transpose_lst(lst)
+
+save_sms_file(lstt, n,m, fff+".transp.txt")
+
+# print("graphckeck...")
+# graphcheck(lst, m, n)
