@@ -379,6 +379,22 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
     """The formula is the same as for the forested top complex, so we just reuse the other function."""
     return cohom_formatted_forested_top(D1,D2,Dc2)
 
+def forested_contract_euler_rank(l,m,h,even_edges):
+    """Since the contract cohomology is concentrated in top degree
+    (...all vertices trivalent) the cohomology of the top
+    piece of the contract operator can be found using dim counting."""
+    top_v = 2*l-2+h
+    ec = 0
+    # contract k of the marked edges
+    for k in range(1,m+1):
+        vs = ForestedGraphComplex.ForestedGVS(top_v - k, l, m-k, h, even_edges)
+        if vs.is_valid():
+            if not vs.exists_basis_file():
+                return "?"
+            dim = vs.get_dimension()
+            ec = ec - dim * ( (-1)**k ) 
+    return str(ec)
+
 
 def eulerize(data, sign_shift=0):
     """Takes a vector of formatted dimensions (as produced by vs_dim_formatted)
@@ -904,7 +920,9 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
                     [str(l)] + [ops_formatted(
                         ForestedGraphComplex.ContractEdgesGO.generate_operator(
                             2*l-2+h, l, m, h, even_edges)
-                    ) for m in m_range])
+                    ) + " (" + 
+                    forested_contract_euler_rank(l, m, h, even_edges)
+                    +")" for m in m_range])
             s = s+latex_table(header, data)
 
     return s
