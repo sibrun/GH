@@ -361,7 +361,7 @@ def get_34cohom_dim(v,l, h, even_e, even_h):
 
 
 # ------- Graph Complexes --------
-class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
+class HairyMerkulovGC(GraphComplex.GraphComplex):
     """Graph complex for ordinary graphs.
 
     Attributes:
@@ -399,7 +399,7 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
 
-        super(OrdinaryMerkulovGC, self).__init__(sum_vector_space, differential_list)
+        super(HairyMerkulovGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
