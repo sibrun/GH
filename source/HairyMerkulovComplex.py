@@ -1,4 +1,4 @@
-"""Ordinary graph complex, with vertices of valence 3 and 4.
+"""Hairy graph complex, with vertices of valence 3 and 4.
 Merkulov complex. """
 
 
@@ -14,18 +14,22 @@ import Shared
 import NautyInterface
 import Parameters
 import GCDimensions
-import OrdinaryGraphComplex
+import HairyGraphComplex
 import os
 
 
-graph_type = "ordinaryme"
+graph_type = "hairyme"
 
-sub_types = {True: "even_edges", False: "odd_edges"}
+sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
+             (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
+
+# Option to include zero hairs in the hairy graph complexes.
+zero_hairs = False
 
 
 # ------- Graph Vector Space --------
-class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
-    """Ordinary graph vector space.
+class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
+    """Hairy graph vector space.
     Vertices have valence 3-6, with at most one vertex of valence 5 or 6
 
     Attributes:
@@ -37,7 +41,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
 
     """
 
-    def __init__(self, n_vertices, n_loops, even_edges, valence_type):
+    def __init__(self, n_vertices, n_loops, n_hairs, even_edges, even_hairs, valence_type):
         """Initialize the ordinary graph vector space with (almost) all vertices of valence 3 and 4.
 
         :param n_vertices: int: Number of vertices.
@@ -50,17 +54,19 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
             3456 (at most one vertex of valence 5 or 6), 56 (exactly one vertex of valence 5 or 6).
         """
         self.n_vertices = n_vertices
+        self.n_hairs = n_hairs
         self.n_loops = n_loops
         self.even_edges = even_edges
+        self.even_hairs = even_hairs
         self.n_edges = self.n_loops + self.n_vertices - 1
-        self.sub_type = sub_types.get(self.even_edges)
+        self.sub_type = sub_types.get( (self.even_edges, self.even_hairs) )
         self.valence_type = valence_type
         if valence_type not in { 34, 3456, 56 }:
             raise ValueError(f"OrdinaryMerkulovGVS: valence type must be in 34, 3456, 56")
-        self.ogvs : OrdinaryGraphComplex.OrdinaryGVS = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, even_edges)
+        self.ogvs : HairyGraphComplex.HairyGraphVS = HairyGraphComplex.HairyGraphVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs)
         if valence_type != 3456:
-            self.gvs3456 = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 3456)
-        super(OrdinaryMerkulovGVS, self).__init__()
+            self.gvs3456 = HairyMerkulovGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs, 3456)
+        super(HairyMerkulovGVS, self).__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -69,14 +75,14 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops and self.even_edges == other.even_edges and self.valence_type == other.valence_type
 
     def __hash__(self):
-        return hash("megra%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple())
+        return hash("megra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple())
 
     def get_basis_file_path(self):
-        s = "megra%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
+        s = "megra%d_%d_%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_ordered_param_dict(self):
-        return Shared.OrderedDict([('valence_type', self.valence_type), ('vertices', self.n_vertices), ('loops', self.n_loops)])
+        return Shared.OrderedDict([('valence_type', self.valence_type), ('vertices', self.n_vertices), ('loops', self.n_loops), ('hairs', self.n_hairs)])
 
     def get_partition(self):
         return None
@@ -84,54 +90,66 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
     def is_valid(self):
         # Vertices at least trivalent. Positive number of vertices. Non-negative number of loops.
         # At most fully connected graph, no multiple edges.
-        if self.valence_type == 34 and self.n_edges > 2*self.n_vertices:
+        if self.valence_type == 34 and self.n_edges > 2*self.n_vertices - self.n_hairs/2:
             return False
-        if self.valence_type == 56 and 2*self.n_edges < 3*self.n_vertices + 2:
+        if self.valence_type == 56 and 2*self.n_edges < 3*self.n_vertices + 2 - self.n_hairs:
             return False
-        return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
-            and self.n_edges <= 2*self.n_vertices+1 
+        return (3 * self.n_vertices <= 2 * self.n_edges + self.n_hairs) \
+            and self.n_vertices > 0 \
+            and self.n_loops >= 0 \
+            and ((self.n_hairs >= 0) if zero_hairs else (self.n_hairs > 0)) \
+            and self.n_edges <= 2*self.n_vertices+1 - self.n_hairs \
+            and self.n_vertices >= self.n_hairs
 
     def get_work_estimate(self):
         # Returns the number of possible graphs as work estimate.
         if not self.is_valid():
             return 0
-        return GCDimensions.get_ordinary_dim_estimate(self.n_vertices, self.n_loops)
+        return GCDimensions.get_hairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs)
         #return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return
+
+        n_vertices_1 = self.n_vertices
+        n_vertices_2 = self.n_hairs + self.n_edges
+        n_edges_bip = self.n_hairs + 2 * self.n_edges
+        deg_range_2 = (1, 2)
+        
         if self.valence_type == 3456:
-            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
+            deg_range_1 = (3, 6)
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+                    for G in NautyInterface.list_bipartite_graphs(
+                    n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
+            for G in bipartite_graphs:
                 # check there is at most one vertex of valence >4
-                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) <= 1:
+                if sum( (1 if len(G[v])>4 else 0) for v in range(self.n_vertices) ) <= 1:
                     yield G
         elif self.valence_type == 34:
-            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,4):
+            deg_range_1 = (3, 4)
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+                    for G in NautyInterface.list_bipartite_graphs(
+                    n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
+            for G in bipartite_graphs:
                 yield G
         elif self.valence_type == 56:
-            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
+            deg_range_1 = (3, 6)
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+                    for G in NautyInterface.list_bipartite_graphs(
+                    n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
+            for G in bipartite_graphs:
                 # check there is exactly one vertex of valence >4
                 if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) == 1:
                     yield G
-        # else:
-        #     fullbasis = self.gvs3456.get_basis()
-        #     if self.valence_type == 34:
-        #         for G in fullbasis:
-        #             if all( (len(G[v]) <= 4)  for v in G.vertices() ):
-        #                 yield G
-        #     if self.valence_type == 56:
-        #         for G in fullbasis:
-        #             if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) == 1:
-        #                 yield G
 
 
     def perm_sign(self, G, p):
         return self.ogvs.perm_sign(G,p)
 
 
-class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
+class HairyMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of ordinary graph vector spaces with specified edge parity.
 
     Attributes:
@@ -141,7 +159,7 @@ class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
         - sub_type (str): Sub type of graphs.
     """
 
-    def __init__(self, v_range, l_range, even_edges, valence_types):
+    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, valence_types):
         """Initialize the sum vector space.
 
         :param v_range: Range for the number of vertices.
@@ -153,20 +171,23 @@ class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
         """
         self.v_range = v_range
         self.l_range = l_range
+        self.h_range = h_range
         self.even_edges = even_edges
+        self.even_hairs = even_hairs
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinaryMerkulovGVS(v, l, self.even_edges, vt) 
+        vs_list = [HairyMerkulovGVS(v, l, h, self.even_edges, self.even_hairs, vt) 
                 for v in self.v_range
                 for l in self.l_range 
+                for h in self.h_range
                 for vt in valence_types ]
-        super(OrdinaryMerkulovGraphSumVS, self).__init__(vs_list)
+        super(HairyMerkulovGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
 
     def get_ordered_param_range_dict(self):
-        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range)])
 
     def get_info_plot_path(self):
         s = "info_vector_space_%s_%s" % (graph_type, self.sub_type)
@@ -195,7 +216,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
-        self.oop = OrdinaryGraphComplex.ContractEdgesGO(domain.ogvs, target.ogvs)
+        self.oop = HairyGraphComplex.ContractEdgesGO(domain.ogvs, target.ogvs)
         super(ContractEdgesGO, self).__init__(domain, target)
 
     @staticmethod
@@ -211,12 +232,15 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :return: True if domain and target match to generate a corresponding contract edges graph operator.
         :rtype: bool
         """
-        return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops \
+        return domain.n_vertices - 1 == target.n_vertices \
+            and domain.n_loops == target.n_loops \
+            and domain.n_hairs == target.n_hairs \
             and domain.even_edges == target.even_edges \
+            and domain.even_hairs == target.even_hairs \
             and domain.valence_type == 34 and target.valence_type in { 3456, 56 }
 
     @classmethod
-    def generate_operator(cls, n_vertices, n_loops, even_edges, to3456 = True):
+    def generate_operator(cls, n_vertices, n_loops, n_hairs, even_edges, even_hairs, to3456 = True):
         """Return a contract edge graph operator.
 
         :param n_vertices: Number of vertices of the domain.
@@ -228,17 +252,17 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :return: Contract edges graph operator based on the specified domain vector space.
         :rtype:ContractEdgesGO
         """
-        domain = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 34)
-        target = OrdinaryMerkulovGVS(n_vertices - 1, n_loops, even_edges, 3456 if to3456 else 56)
+        domain = HairyMerkulovGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs, 34)
+        target = HairyMerkulovGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs, 3456 if to3456 else 56)
         
         return cls(domain, target)
 
     def get_matrix_file_path(self):
-        s = f"contractD{self.target.valence_type}_{self.domain.n_vertices}_{self.domain.n_loops}.txt"
+        s = f"contractD{self.target.valence_type}_{self.domain.n_vertices}_{self.domain.n_loops}_{self.domain.n_hairs}.txt"
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = f"contractD{self.target.valence_type}_{self.domain.n_vertices}_{self.domain.n_loops}_rank.txt"
+        s = f"contractD{self.target.valence_type}_{self.domain.n_vertices}_{self.domain.n_loops}_{self.domain.n_hairs}_rank.txt"
         return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
 
     def get_work_estimate(self):
@@ -324,11 +348,11 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
-def get_34cohom_dim(v,l, even_e):
+def get_34cohom_dim(v,l, h, even_e, even_h):
         """ Compute cohomology dimension ..."""
-        op1 = ContractEdgesGO.generate_operator(v,l, even_e)
-        op2 = ContractEdgesGO.generate_operator(v+1,l, even_e)
-        opc = ContractEdgesGO.generate_operator(v+1,l, even_e, False)
+        op1 = ContractEdgesGO.generate_operator(v,l, h,  even_e, even_h)
+        op2 = ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h)
+        opc = ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h, False)
 
         return cohom_formatted_merkulov(op1, op2, opc)
 
@@ -347,7 +371,7 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
         - sub_type (str): Sub type of graphs.
     """
 
-    def __init__(self, v_range, l_range, even_edges, differentials):
+    def __init__(self, v_range, l_range, h_range, even_edges, even_hairs, differentials):
         """Initialize the graph complex.
 
         :param v_range: Range for the number of vertices.
@@ -361,10 +385,12 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
         """
         self.v_range = v_range
         self.l_range = l_range
+        self.h_range = h_range
         self.even_edges = even_edges
+        self.even_hairs = even_hairs
         self.sub_type = sub_types.get(self.even_edges)
 
-        sum_vector_space = OrdinaryMerkulovGraphSumVS(v_range, l_range, even_edges, [34, 3456, 56] )
+        sum_vector_space = HairyMerkulovGraphSumVS(v_range, l_range, h_range, even_edges, even_hairs, [34, 3456, 56] )
         differential_list = []
         if not set(differentials) <= {'contract'}:
             raise ValueError(
@@ -379,7 +405,9 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
 
     def print_cohom(self):
-        for l in self.l_range:
-            print(f"{l}: {list( get_34cohom_dim(v,l,self.even_edges) for v in self.v_range)}")
+        for h in self.h_range:
+            for l in self.l_range:
+                print(f"l={l}, h={h}: {list( get_34cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range)}")
             
+
 
