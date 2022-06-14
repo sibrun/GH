@@ -99,7 +99,8 @@ class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
             and self.n_loops >= 0 \
             and ((self.n_hairs >= 0) if zero_hairs else (self.n_hairs > 0)) \
             and self.n_edges <= 2*self.n_vertices+1 - self.n_hairs \
-            and self.n_vertices >= self.n_hairs
+            and self.n_vertices >= self.n_hairs \
+            and self.n_edges <= self.n_vertices * (self.n_vertices-1) /2
 
     def get_work_estimate(self):
         # Returns the number of possible graphs as work estimate.
@@ -141,9 +142,11 @@ class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
                     n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
             for G in bipartite_graphs:
                 # check there is exactly one vertex of valence >4
-                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) == 1:
+                if sum( (1 if len(G[v])>4 else 0) for v in range(self.n_vertices) ) == 1:
                     yield G
 
+    def get_partition(self):
+        return self.ogvs.get_partition()
 
     def perm_sign(self, G, p):
         return self.ogvs.perm_sign(G,p)
@@ -204,7 +207,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         - sub_type (str): Graphs sub type of the domain.
     """
 
-    def __init__(self, domain, target):
+    def __init__(self, domain:HairyMerkulovGVS, target:HairyMerkulovGVS):
         """Initialize the domain and target vector space of the contract edges graph operator.
 
         :param domain: Domain vector space of the operator.
@@ -279,7 +282,12 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
 
     def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
-        return self.oop.operate_on(G)
+        lst = self.oop.operate_on(G)
+        # g6, _ = self.domain.ogvs.graph_to_canon_g6(G)
+        # print(g6," ->")
+        # for (GG,v) in lst:
+        #     print(GG.graph6_string())
+        return lst
 
 
 class ContractEdgesD(GraphOperator.Differential):
@@ -358,7 +366,38 @@ def get_34cohom_dim(v,l, h, even_e, even_h):
 
         # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
 
+def cohom_formatted2(D1, D2):
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    d = vs.get_dimension()
 
+    r1 = 0
+    r2 = 0
+    if D1.is_valid():
+        if D1.exists_rank_file():
+            r1 = D1.get_matrix_rank()
+        else:
+            return "?"
+    if D2.is_valid():
+        if D2.exists_rank_file():
+            r2 = D2.get_matrix_rank()
+        else:
+            return "?"
+
+    # exact or not?
+    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
+
+    return str(d-r1-r2) + r_str
+
+def get_ref_cohom_dim(v,l, h, even_e, even_h):
+        """ Compute cohomology dimension ..."""
+        op1 = HairyGraphComplex.ContractEdgesGO.generate_operator(v,l, h,  even_e, even_h)
+        op2 = HairyGraphComplex.ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h)
+       
+        return cohom_formatted2(op1, op2)
 
 # ------- Graph Complexes --------
 class HairyMerkulovGC(GraphComplex.GraphComplex):
@@ -410,4 +449,10 @@ class HairyMerkulovGC(GraphComplex.GraphComplex):
                 print(f"l={l}, h={h}: {list( get_34cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range)}")
             
 
+    def print_cohom_reference(self):
+        """Print cohomology of analogous ordinary hairy gvs for reference."""
+        for h in self.h_range:
+            for l in self.l_range:
+                print(f"l={l}, h={h}: {list( get_ref_cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range)}")
+  
 
