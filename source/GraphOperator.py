@@ -536,6 +536,9 @@ class OperatorMatrix(object):
                     - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
                     - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
+        if sage is None and linbox is None and rheinfall is None:
+            raise ValueError("compute_rank: At least one rank computation method needs to be specified.")
+
         if not self.is_valid():
             return
         if not ignore_existing_files and self.exists_rank_file():
@@ -1126,6 +1129,9 @@ class OperatorMatrixCollection(object):
                     - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
                     - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
+        if sage is None and linbox is None and rheinfall is None:
+            raise ValueError("compute_rank: At least one rank computation method needs to be specified.")
+
         print(' ')
         print('Compute ranks of %s' % str(self))
         if n_jobs > 1:
