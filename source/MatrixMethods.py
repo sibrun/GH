@@ -66,7 +66,7 @@ def transpose_lst(lst: List[Tuple[int,int,int]] ):
     matrix_list.sort()
     return matrix_list
 
-def _removerstep(lst: List(tuple(int,int,int)), m,n, rankbias):
+def _removerstep(lst: List[tuple[int,int,int]], m,n, rankbias):
     print("gathering stats...")
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
@@ -125,7 +125,7 @@ def _removerstep(lst: List(tuple(int,int,int)), m,n, rankbias):
 
     return (newlst, newm, newn, newrankbias)
 
-def load_sms_file(fname: str) -> tuple[list[tuple[int,int,int]] , tuple[int, int]]:
+def load_sms_file(fname: str) -> Tuple[List[Tuple[int,int,int]] , Tuple[int, int]]:
     """Loads a matric from an sms file.
     Returns a pair of a matrix (list) and the matrix dimensions.
     """
