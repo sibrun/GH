@@ -39,7 +39,7 @@ def matrix_stats(matrix_file):
     print(f"multis:    {multis}")
 
 
-def get_submatrix(lst : list(tuple(int,int,int)), keeprow : list(bool), keepcol : list(bool)):
+def get_submatrix(lst : list[tuple[int,int,int]], keeprow : list[bool], keepcol : list[bool]):
     """Submatrix of a matrix.
     keeprow and keepcol are boolean masks of length m and n with the matrix of size (m,n)
     indicating which rows and columns the submatrix should contain. """
