@@ -66,7 +66,7 @@ def transpose_lst(lst: List[Tuple[int,int,int]] ):
     matrix_list.sort()
     return matrix_list
 
-def _removerstep(lst: List[tuple[int,int,int]], m,n, rankbias):
+def _removerstep(lst: List[Tuple[int,int,int]], m,n, rankbias):
     print("gathering stats...")
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
