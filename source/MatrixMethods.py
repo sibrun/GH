@@ -39,7 +39,7 @@ def matrix_stats(matrix_file):
     print(f"multis:    {multis}")
 
 
-def get_submatrix(lst : list[tuple[int,int,int]], keeprow : list[bool], keepcol : list[bool]):
+def get_submatrix(lst: list[tuple[int,int,int]], keeprow: list[bool], keepcol: list[bool]):
     """Submatrix of a matrix.
     keeprow and keepcol are boolean masks of length m and n with the matrix of size (m,n)
     indicating which rows and columns the submatrix should contain. """
@@ -59,13 +59,13 @@ def get_submatrix(lst : list[tuple[int,int,int]], keeprow : list[bool], keepcol 
 
     return (newlst, newm, newn)
 
-def transpose_lst(lst : list(tuple(int,int,int))):
+def transpose_lst(lst: list(tuple(int,int,int))):
     """Transpose of a matrix."""
     matrix_list = [(j, i, v) for (i, j, v) in lst]
     matrix_list.sort()
     return matrix_list
 
-def _removerstep(lst : list(tuple(int,int,int)), m,n, rankbias):
+def _removerstep(lst: list(tuple(int,int,int)), m,n, rankbias):
     print("gathering stats...")
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
@@ -124,7 +124,7 @@ def _removerstep(lst : list(tuple(int,int,int)), m,n, rankbias):
 
     return (newlst, newm, newn, newrankbias)
 
-def load_sms_file(fname : str) -> tuple[list[tuple[int,int,int]] , tuple[int, int]]:
+def load_sms_file(fname: str) -> tuple[list[tuple[int,int,int]] , tuple[int, int]]:
     """Loads a matric from an sms file.
     Returns a pair of a matrix (list) and the matrix dimensions.
     """
