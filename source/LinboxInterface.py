@@ -3,13 +3,13 @@
 import os
 import tempfile
 import Parameters
+import MatrixMethods
 
 
 # Linbox options for rank computation: 'rational' (exact rank over the rational
-linbox_options = {"rational", "mod"}
+linbox_options = {"rational", "mod", "modpre"}
 # numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
-# prime number).
-
+# prime number), 'modpre' (same as mod, but with preconditioning the matrix).
 
 def rank(linbox_option, matrix_file, prime=Parameters.prime):
     """Call the linbox library to compute the rank of a matrix.
@@ -31,6 +31,8 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
     if not (linbox_option in linbox_options):
         raise ValueError('Possible options for linbox: ' + str(linbox_options))
     linbox_path = os.path.join(os.path.curdir, "rank_exe", "rank")
+
+    rankbias = 0
     with tempfile.NamedTemporaryFile() as temp_rank_file:
         if linbox_option == "rational":
             print("Using Linbox over rationals....")
@@ -40,10 +42,15 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
             print(f"Using Linbox mod prime {prime}....")
             linbox_command = "%s %s %s %d" % (
                 linbox_path, matrix_file, temp_rank_file.name, prime)
+        elif linbox_option == "modpre":
+            print(f"Using Linbox mod prime {prime} with preconditioning....")
+            matrix_file_precond, rankbias = MatrixMethods.precondition_file(matrix_file, ensure_m_greater_n=True)
+            linbox_command = "%s %s %s %d" % (
+                linbox_path, matrix_file_precond, temp_rank_file.name, prime)
         else:
             raise ValueError(f"Unsupported Linbox option {linbox_option}.")
         ret = os.system(linbox_command)
         if ret != 0:
             raise RuntimeError("Linbox rank returned a nonzero exit code.")
-        rank = int(temp_rank_file.read())
+        rank = int(temp_rank_file.read()) + rankbias
     return rank
