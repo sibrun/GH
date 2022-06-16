@@ -7,7 +7,7 @@ import MatrixMethods
 
 
 # Linbox options for rank computation: 'rational' (exact rank over the rational
-linbox_options = {"rational", "mod", "modpre"}
+linbox_options = {"rational", "mod", "modprecond"}
 # numbers), 'mod' (rank over a finite field, i.e. all calculations modulo a
 # prime number), 'modpre' (same as mod, but with preconditioning the matrix).
 
@@ -42,7 +42,7 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
             print(f"Using Linbox mod prime {prime}....")
             linbox_command = "%s %s %s %d" % (
                 linbox_path, matrix_file, temp_rank_file.name, prime)
-        elif linbox_option == "modpre":
+        elif linbox_option == "modprecond":
             print(f"Using Linbox mod prime {prime} with preconditioning....")
             matrix_file_precond, rankbias = MatrixMethods.precondition_file(matrix_file, ensure_m_greater_n=True)
             linbox_command = "%s %s %s %d" % (

@@ -1,15 +1,14 @@
 """ Contains auxiliary methods for handling sparse matrices.
 """
-import GraphOperator
 import StoreLoad
 import os
 
-def matrix_stats(op:GraphOperator.OperatorMatrix):
+def matrix_stats(matrix_file):
     """Gathers and prints general information on the operatormatrix.
     Currently only used for testing.
     """
-    print("Loading...: ", str(op))
-    (lst,(m,n)) = op._load_matrix_list()
+    print("Loading...: ", matrix_file)
+    (lst,(m,n)) = load_sms_file(matrix_file)
     print("gathering stats...")
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
