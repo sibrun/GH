@@ -1,5 +1,6 @@
 """ Contains auxiliary methods for handling sparse matrices.
 """
+from typing import List, Tuple
 import StoreLoad
 import os
 
@@ -39,7 +40,7 @@ def matrix_stats(matrix_file):
     print(f"multis:    {multis}")
 
 
-def get_submatrix(lst: list[tuple[int,int,int]], keeprow: list[bool], keepcol: list[bool]):
+def get_submatrix(lst: List[Tuple[int,int,int]], keeprow: List[bool], keepcol: List[bool]):
     """Submatrix of a matrix.
     keeprow and keepcol are boolean masks of length m and n with the matrix of size (m,n)
     indicating which rows and columns the submatrix should contain. """
@@ -59,13 +60,13 @@ def get_submatrix(lst: list[tuple[int,int,int]], keeprow: list[bool], keepcol: l
 
     return (newlst, newm, newn)
 
-def transpose_lst(lst: list(tuple(int,int,int))):
+def transpose_lst(lst: List[Tuple[int,int,int]] ):
     """Transpose of a matrix."""
     matrix_list = [(j, i, v) for (i, j, v) in lst]
     matrix_list.sort()
     return matrix_list
 
-def _removerstep(lst: list(tuple(int,int,int)), m,n, rankbias):
+def _removerstep(lst: List(tuple(int,int,int)), m,n, rankbias):
     print("gathering stats...")
     rcount = [0 for _ in range(m)]
     ccount = [0 for _ in range(n)]
