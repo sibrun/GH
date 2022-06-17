@@ -79,16 +79,12 @@ def _removerstep(lst: List[Tuple[int,int,int]], m,n, rankbias):
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
     onerows = sum( 1 if j==1 else 0 for j in rcount)
     onecols = sum( 1 if j==1 else 0 for j in ccount)
-    tworows = sum( 1 if j==2 else 0 for j in rcount)
-    twocols = sum( 1 if j==2 else 0 for j in ccount)
     
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
     print(f"One rows:  {onerows}")
     print(f"One cols:  {onecols}")
-    print(f"Two rows:  {tworows}")
-    print(f"Two cols:  {twocols}")
 
     print("Simplifying matrix, deleting one cols")
     delrow = [False for _ in range(m)]
