@@ -358,7 +358,7 @@ def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None):
             if use_Dc2_rank == "?":
                 return "?"
             else:
-                rc2 = int(Dc2)
+                rc2 = int(use_Dc2_rank)
         elif Dc2.exists_rank_file():
             rc2 = Dc2.get_matrix_rank()
         else:
