@@ -341,7 +341,7 @@ def cohom_formatted2(D1, D2):
     return str(d-r1-r2) + r_str
 
 
-def cohom_formatted_forested_top(D1, D2, Dc2):
+def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None):
     vs = D1.get_domain()
     if not vs.is_valid():
         return "-"
@@ -352,6 +352,18 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
     r1 = 0
     r2 = 0
     rc2 = 0
+
+    if Dc2.is_valid():
+        if use_Dc2_rank is not None:
+            if use_Dc2_rank == "?":
+                return "?"
+            else:
+                rc2 = int(Dc2)
+        elif Dc2.exists_rank_file():
+            rc2 = Dc2.get_matrix_rank()
+        else:
+            return "?"
+
     if D1.is_valid():
         if D1.exists_rank_file():
             r1 = D1.get_matrix_rank()
@@ -363,36 +375,32 @@ def cohom_formatted_forested_top(D1, D2, Dc2):
         else:
             return "?"
 
-    if Dc2.is_valid():
-        if Dc2.exists_rank_file():
-            rc2 = Dc2.get_matrix_rank()
-        else:
-            return "?"
-
     # exact or not?
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank(
     ) and Dc2.exists_exact_rank() else " p"
 
     return str(d+rc2-r1-r2) + r_str
 
+
 def cohom_formatted_merkulov(D1, D2, Dc2):
     """The formula is the same as for the forested top complex, so we just reuse the other function."""
-    return cohom_formatted_forested_top(D1,D2,Dc2)
+    return cohom_formatted_forested_top(D1, D2, Dc2)
 
-def forested_contract_euler_rank(l,m,h,even_edges):
+
+def forested_contract_euler_rank(l, m, h, even_edges):
     """Since the contract cohomology is concentrated in top degree
     (...all vertices trivalent) the cohomology of the top
     piece of the contract operator can be found using dim counting."""
     top_v = 2*l-2+h
     ec = 0
     # contract k of the marked edges
-    for k in range(1,m+1):
+    for k in range(1, m+1):
         vs = ForestedGraphComplex.ForestedGVS(top_v - k, l, m-k, h, even_edges)
         if vs.is_valid():
             if not vs.exists_basis_file():
                 return "?"
             dim = vs.get_dimension()
-            ec = ec - dim * ( (-1)**k ) 
+            ec = ec - dim * ((-1)**k)
     return str(ec)
 
 
@@ -525,6 +533,7 @@ def create_ordinary_cohom_table(v_range, l_range):
         s = s+latex_table(header, data)
     return s
 
+
 def create_ordinaryme_vs_table(v_range, l_range):
     s = ""
 
@@ -535,10 +544,10 @@ def create_ordinaryme_vs_table(v_range, l_range):
         data = []
         for l in l_range:
             data.append(
-                [str(l)] + 
-                    [vs_dim_formatted(OrdinaryMerkulovComplex.OrdinaryMerkulovGVS(
-                        v, l, even_edges, 3456)) + cell_color[is_ordinary_zero(v, l)]
-                        for v in v_range]
+                [str(l)] +
+                [vs_dim_formatted(OrdinaryMerkulovComplex.OrdinaryMerkulovGVS(
+                    v, l, even_edges, 3456)) + cell_color[is_ordinary_zero(v, l)]
+                 for v in v_range]
             )
         s = s+latex_table(header, data, scale=0.75)
     return s
@@ -920,10 +929,10 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
                     [str(l)] + [ops_formatted(
                         ForestedGraphComplex.ContractEdgesGO.generate_operator(
                             2*l-2+h, l, m, h, even_edges)
-                    ) + " (" + 
-                    forested_contract_euler_rank(l, m, h, even_edges)
-                    +")" for m in m_range])
-            s = s+latex_table(header, data)
+                    ) + " (" +
+                        forested_contract_euler_rank(l, m, h, even_edges)
+                        + ")" for m in m_range])
+            s = s+latex_table(header, data, scale=0.75)
 
     return s
 
@@ -946,7 +955,9 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
                         ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
                             l, m+1, h, even_edges),
                         ForestedGraphComplex.ContractEdgesGO.generate_operator(
-                            2*l-2+h, l, m+1, h, even_edges)
+                            2*l-2+h, l, m+1, h, even_edges),
+                        use_Dc2_rank=forested_contract_euler_rank(
+                            l, m+1, h, even_edges)
                     ) for m in m_range])
             s = s+latex_table(header, data)
 
