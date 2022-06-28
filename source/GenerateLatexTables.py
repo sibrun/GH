@@ -50,6 +50,11 @@ latexfile_forested_top_vs = os.path.join(latexdir, "forested_top_vs.tex")
 latexfile_forested_top_ops = os.path.join(latexdir, "forested_top_ops.tex")
 latexfile_forested_top_cohom = os.path.join(latexdir, "forested_top_cohom.tex")
 
+latexfile_forested_nobl_top_vs = os.path.join(latexdir, "forested_top_vs_nobl.tex")
+latexfile_forested_nobl_top_ops = os.path.join(latexdir, "forested_top_ops_nobl.tex")
+latexfile_forested_nobl_top_cohom = os.path.join(latexdir, "forested_top_cohom_nobl.tex")
+
+
 latexfile_forested_pre_vs = os.path.join(latexdir, "forested_pre_vs.tex")
 
 
@@ -192,6 +197,19 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{forested_top_cohom.tex}
+
+\newpage
+
+\section{Forested Top nobl}
+
+\subsection{VS Dimensions}
+\input{forested_top_nobl_vs.tex}
+ 
+\subsection{Operator ranks}
+\input{forested_top_nobl_ops.tex}
+
+\subsection{Cohomology}
+\input{forested_top_nobl_cohom.tex}
 
 \end{document}
 """
@@ -1050,7 +1068,9 @@ def write_tables():
     with open(latexfile_forested_cohom, 'w') as f:
         f.write(s)
 
-    print("Forested Top....")
+    print("Forested Top BL....")
+    ForestedGraphComplex.use_bridgeless = True
+    ForestedGraphComplex.graph_type = "forestedbl"
     s = create_forested_top_vs_table(range(9), range(20), range(6))
     with open(latexfile_forested_top_vs, 'w') as f:
         f.write(s)
@@ -1061,6 +1081,21 @@ def write_tables():
 
     s = create_forested_top_cohom_table(range(9), range(20), range(6))
     with open(latexfile_forested_top_cohom, 'w') as f:
+        f.write(s)
+
+    print("Forested Top noBL....")
+    ForestedGraphComplex.use_bridgeless = False
+    ForestedGraphComplex.graph_type = "forested"
+    s = create_forested_top_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_vs, 'w') as f:
+        f.write(s)
+
+    s = create_forested_top_ops_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_ops, 'w') as f:
+        f.write(s)
+
+    s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_cohom, 'w') as f:
         f.write(s)
 
 
