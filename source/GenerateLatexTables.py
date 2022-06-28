@@ -203,13 +203,13 @@ alldata_tex = r"""
 \section{Forested Top nobl}
 
 \subsection{VS Dimensions}
-\input{forested_top_nobl_vs.tex}
+\input{forested_top_vs_nobl.tex}
  
 \subsection{Operator ranks}
-\input{forested_top_nobl_ops.tex}
+\input{forested_top_ops_nobl.tex}
 
 \subsection{Cohomology}
-\input{forested_top_nobl_cohom.tex}
+\input{forested_top_cohom_nobl.tex}
 
 \end{document}
 """
