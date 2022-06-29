@@ -389,7 +389,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
         ret.append(cohom_formatted2(D1iso, D2iso, dim_bias=bias)
                    + part_str)
-    return ",".join(ret)
+    return "$" + ",".join(ret) + "$"
 
 
 def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None):
