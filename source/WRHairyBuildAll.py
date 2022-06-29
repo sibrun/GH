@@ -17,8 +17,8 @@ if __name__ == "__main__":
         # #                     for v in range(18) for l in range(9)]
         # # vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,2,w)
         # #                     for v in range(18) for l in range(8)]
-        # vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,3,w)
-        #                     for v in range(18) for l in range(7)]
+        vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,3,w)
+                            for v in range(18) for l in range(7)]
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,4,w)
                             for v in range(18) for l in range(5)]
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,5,w)
