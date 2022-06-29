@@ -1113,35 +1113,35 @@ def write_tables():
     with open(latexfile_forested_cohom, 'w') as f:
         f.write(s)
 
-    print("Forested Top BL....")
-    ForestedGraphComplex.use_bridgeless = True
-    ForestedGraphComplex.graph_type = "forestedbl"
-    s = create_forested_top_vs_table(range(9), range(20), range(6))
-    with open(latexfile_forested_top_vs, 'w') as f:
-        f.write(s)
+    # print("Forested Top BL....")
+    # ForestedGraphComplex.use_bridgeless = True
+    # ForestedGraphComplex.graph_type = "forestedbl"
+    # s = create_forested_top_vs_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_top_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_forested_top_ops_table(range(9), range(20), range(6))
-    with open(latexfile_forested_top_ops, 'w') as f:
-        f.write(s)
+    # s = create_forested_top_ops_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_top_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    with open(latexfile_forested_top_cohom, 'w') as f:
-        f.write(s)
+    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_top_cohom, 'w') as f:
+    #     f.write(s)
 
-    print("Forested Top noBL....")
-    ForestedGraphComplex.use_bridgeless = False
-    ForestedGraphComplex.graph_type = "forested"
-    s = create_forested_top_vs_table(range(9), range(20), range(6))
-    with open(latexfile_forested_nobl_top_vs, 'w') as f:
-        f.write(s)
+    # print("Forested Top noBL....")
+    # ForestedGraphComplex.use_bridgeless = False
+    # ForestedGraphComplex.graph_type = "forested"
+    # s = create_forested_top_vs_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_nobl_top_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_forested_top_ops_table(range(9), range(20), range(6))
-    with open(latexfile_forested_nobl_top_ops, 'w') as f:
-        f.write(s)
+    # s = create_forested_top_ops_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_nobl_top_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    with open(latexfile_forested_nobl_top_cohom, 'w') as f:
-        f.write(s)
+    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_nobl_top_cohom, 'w') as f:
+    #     f.write(s)
 
 
 def write_alldata():
