@@ -266,10 +266,10 @@ class IsotypicalComponent():
     rep_index: index of irrep (as in Partitions(n) )
     """
 
-    def __init__(self, vs, rep_index):
+    def __init__(self, vs : SymmetricGraphVectorSpace, rep_index):
         """ vs is the SymmetricGraphVectorSpace, opP the corresponding projecton operator
         rep_index the index of the irrep (as in Partitions(n)) for ehich we take the isotypical component."""
-        self.vs = vs
+        self.vs : SymmetricGraphVectorSpace = vs
         self.opP = vs.get_isotypical_projector(rep_index)
         self.rep_index = rep_index
 
@@ -296,6 +296,9 @@ class IsotypicalComponent():
         d = self.vs.get_ordered_param_dict().copy()
         d.update({'rep_index': self.rep_index})
         return d
+    
+    def exists_basis_file(self):
+        return self.vs.exists_basis_file()
 
 # class SymmetricSumVectorSpace(GraphVectorSpace.SumVectorSpace):
 #     """ Represents the collection of isotypical components."""
