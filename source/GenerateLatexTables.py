@@ -1,6 +1,6 @@
 """This script generates the latex tables for the paper."""
 
-from unittest import IsolatedAsyncioTestCase
+from sage.all import *
 import OrdinaryGraphComplex
 import OrdinaryMerkulovComplex
 import OrdinaryGraphBiComplex
