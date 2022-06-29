@@ -382,9 +382,13 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         D1iso = D1.restrict_to_isotypical_component(i)
         D2iso = D2.restrict_to_isotypical_component(i)
         isovs = D1iso.domain
+        part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
+        if not isovs.opP.exists_rank_file():
+            ret.append("?" + part_str)
+            continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
         ret.append(cohom_formatted2(D1iso, D2iso, dim_bias=bias)
-                   + "\. s_{" + str(isovs.opP.rep_partition) + "}")
+                   + part_str)
     return ",".join(ret)
 
 
