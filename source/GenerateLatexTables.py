@@ -1018,130 +1018,130 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 
 def write_tables():
     # Generate tables
-    # print("Ordinary....")
-    # s = create_ordinary_vs_table(range(25), range(15))
-    # with open(latexfile_ordinary_vs, 'w') as f:
-    #     f.write(s)
+    print("Ordinary....")
+    s = create_ordinary_vs_table(range(25), range(15))
+    with open(latexfile_ordinary_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_ordinary_ops_table(range(25), range(15))
-    # with open(latexfile_ordinary_ops, 'w') as f:
-    #     f.write(s)
+    s = create_ordinary_ops_table(range(25), range(15))
+    with open(latexfile_ordinary_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_ordinary_cohom_table(range(25), range(15))
-    # with open(latexfile_ordinary_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinary_cohom_table(range(25), range(15))
+    with open(latexfile_ordinary_cohom, 'w') as f:
+        f.write(s)
 
-    # print("Ordinary Merkulov....")
-    # s = create_ordinaryme_vs_table(range(25), range(15))
-    # with open(latexfile_ordinaryme_vs, 'w') as f:
-    #     f.write(s)
+    print("Ordinary Merkulov....")
+    s = create_ordinaryme_vs_table(range(25), range(15))
+    with open(latexfile_ordinaryme_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_ordinaryme_ops_table(range(25), range(15))
-    # with open(latexfile_ordinaryme_ops, 'w') as f:
-    #     f.write(s)
+    s = create_ordinaryme_ops_table(range(25), range(15))
+    with open(latexfile_ordinaryme_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_ordinaryme_cohom_table(range(25), range(15))
-    # with open(latexfile_ordinaryme_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinaryme_cohom_table(range(25), range(15))
+    with open(latexfile_ordinaryme_cohom, 'w') as f:
+        f.write(s)
 
-    # print("Hairy....")
-    # s = create_hairy_vs_table(range(25), range(14), range(1, 6))
-    # with open(latexfile_hairy_vs, 'w') as f:
-    #     f.write(s)
+    print("Hairy....")
+    s = create_hairy_vs_table(range(25), range(14), range(1, 6))
+    with open(latexfile_hairy_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_hairy_ops_table(range(25), range(14), range(1, 6))
-    # with open(latexfile_hairy_ops, 'w') as f:
-    #     f.write(s)
+    s = create_hairy_ops_table(range(25), range(14), range(1, 6))
+    with open(latexfile_hairy_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_hairy_cohom_table(range(25), range(14), range(1, 6))
-    # with open(latexfile_hairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_hairy_cohom_table(range(25), range(14), range(1, 6))
+    with open(latexfile_hairy_cohom, 'w') as f:
+        f.write(s)
 
-    # print("CHairy....")
-    # s = create_chairy_vs_table(range(20), range(12), range(6))
-    # with open(latexfile_chairy_vs, 'w') as f:
-    #     f.write(s)
+    print("CHairy....")
+    s = create_chairy_vs_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_chairy_ops_table(range(20), range(12), range(6))
-    # with open(latexfile_chairy_ops, 'w') as f:
-    #     f.write(s)
+    s = create_chairy_ops_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_chairy_cohom_table(range(20), range(12), range(6))
-    # with open(latexfile_chairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_chairy_cohom_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_cohom, 'w') as f:
+        f.write(s)
 
-    # print("BiColoredHairy....")
-    # s = create_bichairy_vs_table(range(25), range(12), range(6))
-    # with open(latexfile_bichairy_vs, 'w') as f:
-    #     f.write(s)
+    print("BiColoredHairy....")
+    s = create_bichairy_vs_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_bichairy_ops_table(range(25), range(12), range(6))
-    # with open(latexfile_bichairy_ops, 'w') as f:
-    #     f.write(s)
+    s = create_bichairy_ops_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_bichairy_cohom_table(range(25), range(12), range(6))
-    # with open(latexfile_bichairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_bichairy_cohom_table(range(25), range(12), range(6))
+    with open(latexfile_bichairy_cohom, 'w') as f:
+        f.write(s)
 
-    # print("WRHairy....")
-    # s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
-    # with open(latexfile_wrhairy_vs, 'w') as f:
-    #     f.write(s)
+    print("WRHairy....")
+    s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_wrhairy_ops_table(range(25), range(11), range(8), range(1, 3))
-    # with open(latexfile_wrhairy_ops, 'w') as f:
-    #     f.write(s)
+    s = create_wrhairy_ops_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
-    # with open(latexfile_wrhairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_cohom, 'w') as f:
+        f.write(s)
 
     print("Forested....")
-    # s = create_forested_vs_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_vs, 'w') as f:
-    #     f.write(s)
+    s = create_forested_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
-    # with open(latexfile_forested_pre_vs, 'w') as f:
-    #     f.write(s)
+    s = create_forested_pre_vs_table(range(20), range(9), range(20), range(6))
+    with open(latexfile_forested_pre_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_ops_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_ops, 'w') as f:
-    #     f.write(s)
+    s = create_forested_ops_table(range(9), range(20), range(6))
+    with open(latexfile_forested_ops, 'w') as f:
+        f.write(s)
 
     s = create_forested_cohom_table(range(9), range(20), range(6))
     with open(latexfile_forested_cohom, 'w') as f:
         f.write(s)
 
-    # print("Forested Top BL....")
-    # ForestedGraphComplex.use_bridgeless = True
-    # ForestedGraphComplex.graph_type = "forestedbl"
-    # s = create_forested_top_vs_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_top_vs, 'w') as f:
-    #     f.write(s)
+    print("Forested Top BL....")
+    ForestedGraphComplex.use_bridgeless = True
+    ForestedGraphComplex.graph_type = "forestedbl"
+    s = create_forested_top_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_top_ops_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_top_ops, 'w') as f:
-    #     f.write(s)
+    s = create_forested_top_ops_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_top_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_cohom, 'w') as f:
+        f.write(s)
 
-    # print("Forested Top noBL....")
-    # ForestedGraphComplex.use_bridgeless = False
-    # ForestedGraphComplex.graph_type = "forested"
-    # s = create_forested_top_vs_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_nobl_top_vs, 'w') as f:
-    #     f.write(s)
+    print("Forested Top noBL....")
+    ForestedGraphComplex.use_bridgeless = False
+    ForestedGraphComplex.graph_type = "forested"
+    s = create_forested_top_vs_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_top_ops_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_nobl_top_ops, 'w') as f:
-    #     f.write(s)
+    s = create_forested_top_ops_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_nobl_top_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    with open(latexfile_forested_nobl_top_cohom, 'w') as f:
+        f.write(s)
 
 
 def write_alldata():
