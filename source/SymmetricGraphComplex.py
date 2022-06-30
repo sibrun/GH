@@ -109,10 +109,12 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
         return 'projection (irrep=%s)' % str(self.rep_partition)
 
     def operate_on(self, G):
+        # print("operate_on", self)
         # Operates on the graph G with the projection operator
         image = []
         for (c, p) in self.norm_char_perm:
             # c is char value, p is permutation
+            # print(p)
             G1 = copy(G)
             sgn = self.domain.perm_sign(G1, p)
             G1.relabel(p, inplace=True)

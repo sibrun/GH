@@ -436,7 +436,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return self.n_hairs
 
     def vertex_permutation_from_permutation(self, p):
-        return list(range(0, self.n_vertices)) + [j+self.n_vertices-1 for j in p]
+        return list(range(0, self.n_vertices+self.n_unmarked_edges)) + [j+self.n_vertices+self.n_unmarked_edges-1 for j in p]
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
