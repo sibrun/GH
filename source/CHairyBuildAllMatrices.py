@@ -45,5 +45,5 @@ if __name__ == "__main__":
     print("Finished computing chairy matrices.")
 
     print("computing ranks")
-    allop.compute_rank(linbox="mod")
+    allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
     print("Finished")
