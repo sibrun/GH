@@ -42,5 +42,6 @@ if __name__ == "__main__":
 
     # sumvs.build_basis(n_jobs=nr_jobs)
     allop.build_matrix(n_jobs=nr_jobs)
+    allop.compute_rank(linbox="mod")
 
     print("Finished computing chairy matrices.")
