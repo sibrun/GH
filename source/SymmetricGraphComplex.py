@@ -109,10 +109,12 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
         return 'projection (irrep=%s)' % str(self.rep_partition)
 
     def operate_on(self, G):
+        # print("operate_on", self)
         # Operates on the graph G with the projection operator
         image = []
         for (c, p) in self.norm_char_perm:
             # c is char value, p is permutation
+            # print(p)
             G1 = copy(G)
             sgn = self.domain.perm_sign(G1, p)
             G1.relabel(p, inplace=True)
@@ -266,10 +268,10 @@ class IsotypicalComponent():
     rep_index: index of irrep (as in Partitions(n) )
     """
 
-    def __init__(self, vs, rep_index):
+    def __init__(self, vs : SymmetricGraphVectorSpace, rep_index):
         """ vs is the SymmetricGraphVectorSpace, opP the corresponding projecton operator
         rep_index the index of the irrep (as in Partitions(n)) for ehich we take the isotypical component."""
-        self.vs = vs
+        self.vs : SymmetricGraphVectorSpace = vs
         self.opP = vs.get_isotypical_projector(rep_index)
         self.rep_index = rep_index
 
@@ -296,6 +298,9 @@ class IsotypicalComponent():
         d = self.vs.get_ordered_param_dict().copy()
         d.update({'rep_index': self.rep_index})
         return d
+    
+    def exists_basis_file(self):
+        return self.vs.exists_basis_file()
 
 # class SymmetricSumVectorSpace(GraphVectorSpace.SumVectorSpace):
 #     """ Represents the collection of isotypical components."""
