@@ -18,6 +18,7 @@ import OrdinaryGraphComplex
 import StoreLoad
 import Parameters
 import GCDimensions
+import time
 
 graph_type = "hairy"
 
@@ -132,6 +133,87 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         bipartite_graphs = NautyInterface.list_bipartite_graphs(
             n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
         return (self._bip_to_ordinary(G) for G in bipartite_graphs)
+
+    def get_generating_graphs2(self):
+        # produce
+        if not self.is_valid():
+            return []
+
+        verts_total = self.n_vertices + self.n_hairs
+        edges_total = self.n_edges + self.n_hairs
+        
+        nauty_string = "-cd1 %d %d:%d" % (verts_total, edges_total, edges_total)
+        # print(nauty_string)
+        for G in graphs.nauty_geng(nauty_string):
+            # throw out graphs that have vertices of valence 2 and find hairs
+            # print(G.graph6_string())
+            if self._normalizeG(G):
+                yield G
+
+    def _normalizeG(self, G) -> bool:
+        # takes a graph with possibly bivalent vertices, 
+        # and moves all univalent vertices to the end (in place!)
+        # return true if graph is valid (correct number of hairs, no bivalent verts)
+        verts_total = self.n_vertices + self.n_hairs
+        hairs_found = 0
+        hair_perm = [0 for v in range(verts_total)]
+        for v in range(verts_total):
+            deg = len(G[v])
+            if deg == 2:
+                # print("deg 2 failed")
+                return False
+            elif deg == 1:
+                hair_perm[v] = verts_total-hairs_found-1
+                hairs_found += 1
+            elif deg >= 3:
+                hair_perm[v] = v-hairs_found
+
+        # ensure we have correct number of hairs
+        if hairs_found != self.n_hairs:
+            # print("hairnumber failed")
+            return False
+
+        
+        # permute hairs to end
+        G.relabel(hair_perm, inplace=True)
+        # print(self.graph_to_canon_g6(G)[0])
+
+        # .. and ensure no double hairs
+        # G2 = G.copy()
+        # G2.merge_vertices(list(range(self.n_vertices, verts_total)))
+
+        # print(G.graph6_string())
+        # print(G2.graph6_string())
+        # if G2.size() != G.size():
+        for h1 in range(self.n_vertices, verts_total):
+            for h2 in range(h1+1, verts_total):
+                if G[h1] == G[h2]:
+                    # print("double hair failed")
+                    return False
+
+        return True 
+    
+    def test_graph_generation(self):
+        # compares the two graph generation methods in speed in result
+        def canonlist(Gs):
+            return sorted( [ self.graph_to_canon_g6(G)[0] for G in Gs ] )
+
+        t1 = time.time()
+        lst1 = canonlist( self.get_generating_graphs() )
+        t1 = time.time() - t1
+        t2 = time.time()
+        lst2 = canonlist( self.get_generating_graphs2() )
+        t2 = time.time() - t2
+
+        print(f"List 1 ({t1} s)")
+        # print(lst1)
+        
+        print(f"List 2 ({t2} s)")
+        # print(lst2)
+
+        print("Is same: ", lst1 == lst2)
+        
+
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the
