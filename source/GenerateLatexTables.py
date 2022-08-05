@@ -18,6 +18,15 @@ import WRHairyGraphComplex
 import os
 import SymmetricGraphComplex
 
+
+# ***** only use if external hd
+# Parameters.data_home_dir = "/Volumes/backup2/gh_data/"
+# Parameters.data_dir = Parameters.data_home_dir + "data"
+# Parameters.plots_dir = Parameters.data_home_dir + "plots"
+# Parameters.ref_data_dir = Parameters.data_home_dir + "data_ref"
+# Parameters.log_dir = Parameters.data_home_dir + "log"
+##########
+
 latexdir = os.path.join(Parameters.plots_dir, "latex")
 
 latexfile_wrhairy_vs = os.path.join(latexdir, "wrhairy_vs.tex")
@@ -74,6 +83,7 @@ alldata_tex = r"""
 \usepackage[a4paper, landscape, margin=0.5in]{geometry}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{diagbox}
 
 
 \hypersetup{
@@ -374,6 +384,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False):
 #     for i, p in enumerate(Partitions(h)):
 #         P = vs.get_isotypical_projector()
 
+
 iso_strings = {}
 
 
@@ -439,7 +450,8 @@ def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None, iso_dict=None):
     cohomdim = d+rc2-r1-r2
     iso_str = ""
     if cohomdim > 0 and iso_dict is not None:
-        fullvs = ForestedGraphComplex.ForestedDegSlice(vs.n_loops, vs.n_marked_edges, vs.n_hairs, vs.even_edges)
+        fullvs = ForestedGraphComplex.ForestedDegSlice(
+            vs.n_loops, vs.n_marked_edges, vs.n_hairs, vs.even_edges)
         if fullvs in iso_dict:
             iso_str = " ("+iso_dict[fullvs]+")"
 
@@ -581,19 +593,26 @@ def create_ordinary_ops_table(v_range, l_range):
 def create_ordinary_cohom_table(v_range, l_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range]
+    header = ["\\diagbox{l}{v}"] + \
+        [str(v) for v in v_range] + [r"$\chi$", r"$\chi_{ref}$"]
     for even_edges in [True, False]:
         s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
         for l in l_range:
+            ref_ec = ordinary_ec[even_edges][l]
+            if not even_edges:
+                ref_ec = ((-1)**(l+1)) * ref_ec
             data.append(
-                [str(l)] + [cohom_formatted2(
-                    OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
-                        v, l, even_edges),
-                    OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
-                        v+1, l, even_edges)
-                ) for v in v_range])
+                [str(l)] + eulerize(
+                    [cohom_formatted2(
+                        OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
+                            v, l, even_edges),
+                        OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
+                            v+1, l, even_edges)
+                    ) + cell_color[is_ordinary_zero(v, l)] for v in v_range])
+                + [str(ref_ec)]
+            )
         s = s+latex_table(header, data)
     return s
 
@@ -635,7 +654,7 @@ def create_ordinaryme_ops_table(v_range, l_range):
 def create_ordinaryme_cohom_table(v_range, l_range):
     s = ""
 
-    header = ["l,v"] + [str(v) for v in v_range]
+    header = ["\\diagbox{l}{v}"] + [str(v) for v in v_range]
     for even_edges in [True, False]:
         s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
@@ -649,7 +668,7 @@ def create_ordinaryme_cohom_table(v_range, l_range):
                         v+1, l, even_edges),
                     OrdinaryMerkulovComplex.ContractEdgesGO.generate_operator(
                         v+1, l, even_edges, False)
-                ) for v in v_range])
+                ) + cell_color[is_ordinary_zero(v, l)] for v in v_range])
         s = s+latex_table(header, data)
     return s
 
@@ -1033,28 +1052,28 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 def write_tables():
     # Generate tables
     print("Ordinary....")
-    s = create_ordinary_vs_table(range(25), range(15))
+    s = create_ordinary_vs_table(range(4, 24), range(3, 13))
     with open(latexfile_ordinary_vs, 'w') as f:
         f.write(s)
 
-    s = create_ordinary_ops_table(range(25), range(15))
+    s = create_ordinary_ops_table(range(4, 24), range(3, 13))
     with open(latexfile_ordinary_ops, 'w') as f:
         f.write(s)
 
-    s = create_ordinary_cohom_table(range(25), range(15))
+    s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
     with open(latexfile_ordinary_cohom, 'w') as f:
         f.write(s)
 
     print("Ordinary Merkulov....")
-    s = create_ordinaryme_vs_table(range(25), range(15))
+    s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
     with open(latexfile_ordinaryme_vs, 'w') as f:
         f.write(s)
 
-    s = create_ordinaryme_ops_table(range(25), range(15))
+    s = create_ordinaryme_ops_table(range(4, 25), range(3, 13))
     with open(latexfile_ordinaryme_ops, 'w') as f:
         f.write(s)
 
-    s = create_ordinaryme_cohom_table(range(25), range(15))
+    s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
     with open(latexfile_ordinaryme_cohom, 'w') as f:
         f.write(s)
 
@@ -1163,8 +1182,13 @@ def write_alldata():
         f.write(alldata_tex)
 
 
-write_tables()
-write_alldata()
+def all_export():
+    write_tables()
+    write_alldata()
+
+
+all_export()
+
 
 #  def print_dim_and_eulerchar(self):
 #         for w in self.w_range:
