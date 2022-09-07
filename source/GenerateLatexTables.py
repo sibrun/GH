@@ -672,9 +672,11 @@ def create_ordinaryme_cohom_table(v_range, l_range):
         s = s+latex_table(header, data)
     return s
 
+
 def is_hairy_zero(v, l, h):
     """Determines whether the cohomology in the given degree is zero by abstract reasons."""
     return (v < l+h-2) or (v > 2*l-2+h)
+
 
 def create_hairy_cohom_table(v_range, l_range, h_range):
     s = ""
