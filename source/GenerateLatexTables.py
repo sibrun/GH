@@ -527,6 +527,20 @@ def create_wrhairy_ops_table(v_range, l_range, h_range, w_range):
             s = s+latex_table(header, data)
     return s
 
+def is_wrhairy_zero(v,l,h,w):
+    if w!=2:
+         return False
+    deg = l+v +1
+    dim = 6*l - 6 + 2*h
+    if l == 0:
+        vcd = h-3 
+        return h < 2 or deg < dim - vcd or deg > dim
+    elif h == 0:
+        vcd = 4*l-5
+        return deg < dim - vcd - 1 or deg > dim
+    else:
+        vcd = 4*l-4+h
+        return deg < dim - vcd or deg > dim 
 
 def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
     s = ""
@@ -543,7 +557,7 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
                         WRHairyGraphComplex.ContractEdgesGO.generate_operator(
                             v, l, h, w),
                         WRHairyGraphComplex.ContractEdgesGO.generate_operator(v+1, l, h, w))
-                        for v in v_range])
+                        + cell_color[is_hairy_zero(v, l, h, w)] for v in v_range])
             s = s+latex_table(header, data)
     return s
 
@@ -1116,7 +1130,7 @@ def write_tables():
     # with open(latexfile_bichairy_cohom, 'w') as f:
     #     f.write(s)
 
-    # print("WRHairy....")
+    print("WRHairy....")
     # s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
     # with open(latexfile_wrhairy_vs, 'w') as f:
     #     f.write(s)
@@ -1125,9 +1139,9 @@ def write_tables():
     # with open(latexfile_wrhairy_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_wrhairy_cohom_table(range(25), range(11), range(8), range(1, 3))
-    # with open(latexfile_wrhairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_wrhairy_cohom_table(range(21), range(11), range(8), range(1, 3))
+    with open(latexfile_wrhairy_cohom, 'w') as f:
+        f.write(s)
 
     # print("Forested....")
     # s = create_forested_vs_table(range(9), range(20), range(6))
