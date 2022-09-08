@@ -557,7 +557,7 @@ def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
                         WRHairyGraphComplex.ContractEdgesGO.generate_operator(
                             v, l, h, w),
                         WRHairyGraphComplex.ContractEdgesGO.generate_operator(v+1, l, h, w))
-                        + cell_color[is_hairy_zero(v, l, h, w)] for v in v_range])
+                        + cell_color[is_wrhairy_zero(v, l, h, w)] for v in v_range])
             s = s+latex_table(header, data)
     return s
 
@@ -1065,44 +1065,44 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 
 def write_tables():
     # Generate tables
-    print("Ordinary....")
-    s = create_ordinary_vs_table(range(4, 24), range(3, 13))
-    with open(latexfile_ordinary_vs, 'w') as f:
-        f.write(s)
+    # print("Ordinary....")
+    # s = create_ordinary_vs_table(range(4, 24), range(3, 13))
+    # with open(latexfile_ordinary_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_ordinary_ops_table(range(4, 24), range(3, 13))
-    with open(latexfile_ordinary_ops, 'w') as f:
-        f.write(s)
+    # s = create_ordinary_ops_table(range(4, 24), range(3, 13))
+    # with open(latexfile_ordinary_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
-    with open(latexfile_ordinary_cohom, 'w') as f:
-        f.write(s)
+    # s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
+    # with open(latexfile_ordinary_cohom, 'w') as f:
+    #     f.write(s)
 
-    print("Ordinary Merkulov....")
-    s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
-    with open(latexfile_ordinaryme_vs, 'w') as f:
-        f.write(s)
+    # print("Ordinary Merkulov....")
+    # s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
+    # with open(latexfile_ordinaryme_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_ordinaryme_ops_table(range(4, 25), range(3, 13))
-    with open(latexfile_ordinaryme_ops, 'w') as f:
-        f.write(s)
+    # s = create_ordinaryme_ops_table(range(4, 25), range(3, 13))
+    # with open(latexfile_ordinaryme_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
-    with open(latexfile_ordinaryme_cohom, 'w') as f:
-        f.write(s)
+    # s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
+    # with open(latexfile_ordinaryme_cohom, 'w') as f:
+    #     f.write(s)
 
-    print("Hairy....")
-    s = create_hairy_vs_table(range(22), range(12), range(1, 9))
-    with open(latexfile_hairy_vs, 'w') as f:
-        f.write(s)
+    # print("Hairy....")
+    # s = create_hairy_vs_table(range(22), range(12), range(1, 9))
+    # with open(latexfile_hairy_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_hairy_ops_table(range(20), range(12), range(1, 9))
-    with open(latexfile_hairy_ops, 'w') as f:
-        f.write(s)
+    # s = create_hairy_ops_table(range(20), range(12), range(1, 9))
+    # with open(latexfile_hairy_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_hairy_cohom_table(range(20), range(10), range(1, 9))
-    with open(latexfile_hairy_cohom, 'w') as f:
-        f.write(s)
+    # s = create_hairy_cohom_table(range(20), range(10), range(1, 9))
+    # with open(latexfile_hairy_cohom, 'w') as f:
+    #     f.write(s)
 
     # print("CHairy....")
     # s = create_chairy_vs_table(range(20), range(12), range(6))
