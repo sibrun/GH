@@ -23,7 +23,8 @@ import GraphVectorSpace
 
 logger = Log.logger.getChild('graph_operator')
 
-
+# defines all rank methods that are considered exact
+exact_rank_methods = ["sage_integer", "exact", "linbox_rational"]
 class OperatorMatrixProperties(object):
     """Properties of an operator matrix.
 
@@ -541,9 +542,15 @@ class OperatorMatrix(object):
 
         if not self.is_valid():
             return
+        # 
+        # if not ignore_existing_files and self.exists_rank_file():
+        is_exact_method = (not (sage is None) and  "integer" in sage) \
+                     or (not (linbox is None) and "rational" in linbox)
+        # compute the rank even if rank file is present, if we improve regarding exactness
         if not ignore_existing_files and self.exists_rank_file():
-            return
-        elif self.exists_rank_file():
+            if self.exists_exact_rank() or (not is_exact_method):
+                return
+        if ignore_existing_files and self.exists_rank_file():
             self.delete_rank_file()
         print('Compute matrix rank: Domain: ' +
               str(self.domain.get_ordered_param_dict()))
@@ -622,7 +629,8 @@ class OperatorMatrix(object):
             return False
 
         rank_dict = self._load_rank_dict()
-        return "sage_integer" in rank_dict or "exact" in rank_dict or "linbox_rational" in rank_dict
+        return any( s in rank_dict for s in exact_rank_methods )
+        # return "sage_integer" in rank_dict or "exact" in rank_dict or "linbox_rational" in rank_dict
 
     def _store_rank_dict(self, update_rank_dict):
         try:
