@@ -44,6 +44,10 @@ latexfile_ordinaryme_cohom = os.path.join(latexdir, "ordinaryme_cohom.tex")
 latexfile_hairy_vs = os.path.join(latexdir, "hairy_vs.tex")
 latexfile_hairy_ops = os.path.join(latexdir, "hairy_ops.tex")
 latexfile_hairy_cohom = os.path.join(latexdir, "hairy_cohom.tex")
+latexfile_hairy_cohom_ee = os.path.join(latexdir, "hairy_cohom_ee.tex")
+latexfile_hairy_cohom_eo = os.path.join(latexdir, "hairy_cohom_eo.tex")
+latexfile_hairy_cohom_oe = os.path.join(latexdir, "hairy_cohom_oe.tex")
+latexfile_hairy_cohom_oo = os.path.join(latexdir, "hairy_cohom_oo.tex")
 
 latexfile_forested_vs = os.path.join(latexdir, "forested_vs.tex")
 latexfile_forested_ops = os.path.join(latexdir, "forested_ops.tex")
@@ -52,6 +56,8 @@ latexfile_forested_cohom = os.path.join(latexdir, "forested_cohom.tex")
 latexfile_chairy_vs = os.path.join(latexdir, "chairy_vs.tex")
 latexfile_chairy_ops = os.path.join(latexdir, "chairy_ops.tex")
 latexfile_chairy_cohom = os.path.join(latexdir, "chairy_cohom.tex")
+latexfile_chairy_cohom_e = os.path.join(latexdir, "chairy_cohom_e.tex")
+latexfile_chairy_cohom_o = os.path.join(latexdir, "chairy_cohom_o.tex")
 
 latexfile_bichairy_vs = os.path.join(latexdir, "bichairy_vs.tex")
 latexfile_bichairy_ops = os.path.join(latexdir, "bichairy_ops.tex")
@@ -537,10 +543,10 @@ def is_wrhairy_zero(v,l,h,w):
         return h < 2 or deg < dim - vcd or deg > dim
     elif h == 0:
         vcd = 4*l-5
-        return deg < dim - vcd - 1 or deg > dim
+        return deg < dim - vcd + 1 or deg > dim
     else:
         vcd = 4*l-4+h
-        return deg < dim - vcd or deg > dim 
+        return deg < dim - vcd +(1 if l==1 else 0)  or deg > dim 
 
 def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
     s = ""
