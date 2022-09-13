@@ -10,7 +10,7 @@ data_dir = data_home_dir + "data"
 plots_dir = data_home_dir + "plots"
 ref_data_dir = data_home_dir + "data_ref"
 log_dir = data_home_dir + "log"
-geng_cachedir = data_home_dir + "geng_cache"
+geng_cachedir = data_dir + "/geng_cache"
 temp_folder = "temp"
 web_dir = "web"
 
