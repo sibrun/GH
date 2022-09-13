@@ -21,7 +21,11 @@ import GCDimensions
 import time
 import BufferedGeng
 
-graph_type = "hairy"
+# set to "" (std) "3" (faster version). New algorithm stored in separate folder until sure to have no errors
+# graphgeneration_algorithm = ""
+graphgeneration_algorithm = "3"
+
+graph_type = "hairy" + graphgeneration_algorithm
 
 sub_types = {(True, True): "even_edges_even_hairs", (True, False): "even_edges_odd_hairs",
              (False, True): "odd_edges_even_hairs", (False, False): "odd_edges_odd_hairs"}
@@ -126,6 +130,11 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # No multiple hairs and edges.
         if not self.is_valid():
             return []
+
+        # switch generating algo if necessary
+        if graphgeneration_algorithm == "3":
+            return self.get_generating_graphs3()
+
         n_vertices_1 = self.n_vertices
         n_vertices_2 = self.n_hairs + self.n_edges
         n_edges_bip = self.n_hairs + 2 * self.n_edges
