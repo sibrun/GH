@@ -10,15 +10,18 @@ data_dir = data_home_dir + "data"
 plots_dir = data_home_dir + "plots"
 ref_data_dir = data_home_dir + "data_ref"
 log_dir = data_home_dir + "log"
+geng_cachedir = data_home_dir + "geng_cache"
 temp_folder = "temp"
 web_dir = "web"
+
 
 # ---- Epsilon Parameters ----
 square_zero_test_eps = 1e-6
 commute_test_eps = 1e-6
 
-# ---- Graph canonization algorithm ---- 
-canonical_label_algorithm = 'sage'  # None, bliss or sage... if changed, all computations have to be repeated
+# ---- Graph canonization algorithm ----
+# None, bliss or sage... if changed, all computations have to be repeated
+canonical_label_algorithm = 'sage'
 
 # ---- Rank Computation ----
 prime = 32189   # Prime number to be used in rank computations.
