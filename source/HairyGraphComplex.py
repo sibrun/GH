@@ -310,6 +310,8 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # print(lst2)
 
         print("Is same: ", lst1 == lst2)
+        print(lst1)
+        print(lst2)
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the
