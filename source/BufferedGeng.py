@@ -19,7 +19,7 @@ def _get_geng_args_and_file(n_vertices, n_edges, onlyonevi=True):
 
 
 def fill_cache(n_vertices, n_edges, onlyonevi=True):
-    # WARNING: Ctrl+C this computation results in an incomplete, i.e., corrupt, cache file!!!!!
+    # WARNING: Ctrl+C-ing this computation results in an incomplete, i.e., corrupt, cache file!!!!!
     # Could be improved by using temp file then copying...
     if n_vertices <= 0 or n_edges <= 0 or 3 * n_vertices > 2 * n_edges or n_edges > n_vertices * (n_vertices - 1) / 2:
         return
