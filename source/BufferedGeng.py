@@ -46,6 +46,8 @@ def fill_cache(n_vertices, n_edges, onlyonevi=True):
 
 
 def list_simple_graphs_buffered(n_vertices, n_edges, onlyonevi=True):
+    if n_vertices <= 0 or n_edges <= 0 or 3 * n_vertices > 2 * n_edges or n_edges > n_vertices * (n_vertices - 1) / 2:
+        return []
     _, filename = _get_geng_args_and_file(n_vertices, n_edges, onlyonevi)
 
     if os.path.exists(filename):

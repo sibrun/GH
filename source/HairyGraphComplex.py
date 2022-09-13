@@ -19,6 +19,7 @@ import StoreLoad
 import Parameters
 import GCDimensions
 import time
+import BufferedGeng
 
 graph_type = "hairy"
 
@@ -141,8 +142,9 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
         verts_total = self.n_vertices + self.n_hairs
         edges_total = self.n_edges + self.n_hairs
-        
-        nauty_string = "-cd1 %d %d:%d" % (verts_total, edges_total, edges_total)
+
+        nauty_string = "-cd1 %d %d:%d" % (verts_total,
+                                          edges_total, edges_total)
         # print(nauty_string)
         for G in graphs.nauty_geng(nauty_string):
             # throw out graphs that have vertices of valence 2 and find hairs
@@ -151,7 +153,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                 yield G
 
     def _normalizeG(self, G) -> bool:
-        # takes a graph with possibly bivalent vertices, 
+        # takes a graph with possibly bivalent vertices,
         # and moves all univalent vertices to the end (in place!)
         # return true if graph is valid (correct number of hairs, no bivalent verts)
         verts_total = self.n_vertices + self.n_hairs
@@ -173,7 +175,6 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             # print("hairnumber failed")
             return False
 
-        
         # permute hairs to end
         G.relabel(hair_perm, inplace=True)
         # print(self.graph_to_canon_g6(G)[0])
@@ -191,29 +192,124 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     # print("double hair failed")
                     return False
 
-        return True 
-    
+        return True
+
+    def get_generating_graphs3(self):
+        # generates graphs by deleting one vertex, or one edge
+        if not self.is_valid():
+            return
+
+        if self.h_hairs >= 3:
+            # delete one vertex
+            for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices+1, self.n_edges+self.n_hairs, False):
+                for v in G.vertices():
+                    if G.degree(v) == self.n_hairs:
+                        GG = copy(G)
+                        for vv in G[v]:
+                            h = GG.order()
+                            GG.add_vertex(h)
+                            GG.add_edge(vv, h)
+                        GG.delete_vertex(v)
+                        GG.relabel(range(self.n_vertices + self.n_hairs))
+                        if GG.is_connected():
+                            yield GG
+        elif self.n_hairs == 2:
+            # Generate graphs with 3 hairs and forget one ... does not generate graphs with 2 vertices only
+            othervs = HairyGraphVS(
+                self.n_vertices, self.n_loops, 3, self.even_edges, self.even_hairs)
+            nv = self.n_vertices
+            for G in othervs.get_generating_graphs3():
+                for v in [nv, nv+1, nv+2]:
+                    GG = copy(G)
+                    if G.degree(G[v][0]) >= 4:
+                        GG.delete_vertex(v)
+                        yield GG
+            # # Case 1: cut an edge in the middle
+            # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges+1, False):
+            #     for u,v in G.edges():
+            #         GG = copy(G)
+            #         h = GG.order()
+            #         GG.add_vertices([h,h+1])
+            #         GG.add_edge(u, h)
+            #         GG.add_edge(v, h+1)
+            #         GG.remove_edge(u,v)
+            #         if GG.is_connected():
+            #             yield GG
+            # # Case 2: add two hairs on both sides of an edge (4 choices possible)
+            # # todo : edge cases
+            # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
+            #     for u,v in G.edges():
+            #         GG = copy(G)
+            #         h = GG.order()
+            #         GG.add_vertices([h,h+1])
+            #         #1
+            #         GG.add_edge(u,h)
+            #         GG.add_edge(v,h+1)
+            #         yield GG
+            # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices-1, self.n_edges-1, False):
+            #     for u,v in G.edges():
+            #         GG = copy(G)
+            #         h = GG.order()
+            #         GG.add_vertices([h,h+1,h+2])
+            #         GG.remove_edge(u,v)
+            #         GG.add_edges( [ (h,h+1), (u,h), (v,h) ])
+            #         #2
+            #         GGG = copy(GG)
+            #         GGG.add_edge(u,h+1)
+            #         yield GG
+            #         #3
+            #         GGG = copy(GG)
+            #         GGG.add_edge(v,h+1)
+            #         yield GG
+            # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices-2, self.n_edges-2, False):
+            #     for u,v in G.edges():
+            #         GG = copy(G)
+            #         h = GG.order()
+            #         GG.add_vertices([h,h+1, h+2, h+3])
+            #         #4
+            #         GG.remove_edge(u,v)
+            #         GG.add_edges( [ (h,h+1), (u,h), (v,h+1) , (h,h+2), (h+1,h+3) ] )
+            #         yield GG
+        elif self.n_hairs == 1:
+            # add one hair to a vertex, or glue to two existing hairs
+            for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
+                for v in G.vertices():
+                    GG = copy(G)
+                    h = GG.order()
+                    GG.add_vertex(h)
+                    GG.add_edge(v, h)
+                    yield GG
+            othervs = HairyGraphVS(
+                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
+            for G in othervs.get_basis():
+                nv = self.n_vertices
+                G.merge_vertices([nv, nv+1])
+                G.add_vertex(nv+1)
+                G.add_edge(nv, nv+1)
+                yield G
+        elif self.n_hairs == 0:
+            for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
+                yield G
+
     def test_graph_generation(self):
         # compares the two graph generation methods in speed in result
         def canonlist(Gs):
-            return sorted( [ self.graph_to_canon_g6(G)[0] for G in Gs ] )
+            return sorted({self.graph_to_canon_g6(G)[0] for G in Gs})
 
         t1 = time.time()
-        lst1 = canonlist( self.get_generating_graphs() )
+        lst1 = canonlist(self.get_generating_graphs())
         t1 = time.time() - t1
         t2 = time.time()
-        lst2 = canonlist( self.get_generating_graphs2() )
+        lst2 = canonlist(self.get_generating_graphs3())
         t2 = time.time() - t2
 
         print(f"List 1 ({t1} s)")
         # print(lst1)
-        
+
         print(f"List 2 ({t2} s)")
         # print(lst2)
 
         print("Is same: ", lst1 == lst2)
-        
-
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the
