@@ -303,10 +303,10 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         lst2 = canonlist(self.get_generating_graphs3())
         t2 = time.time() - t2
 
-        print(f"List 1 ({t1} s)")
+        print(f"List 1 (length {len(lst1)}, {t1} s)")
         # print(lst1)
 
-        print(f"List 2 ({t2} s)")
+        print(f"List 2 (length {len(lst2)}, {t2} s)")
         # print(lst2)
 
         print("Is same: ", lst1 == lst2)
