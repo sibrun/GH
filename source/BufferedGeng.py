@@ -1,21 +1,8 @@
 
 from sage.all import *
-import OrdinaryGraphComplex
-import OrdinaryMerkulovComplex
-import OrdinaryGraphBiComplex
-import HairyGraphComplex
-import HairyGraphBiComplex
-import BiColoredHairyGraphComplex
-import BiColoredHairyGraphBiComplex
 import Parameters
 import StoreLoad
-import LinboxInterface
-import RheinfallInterface
-import CHairyGraphComplex
-import ForestedGraphComplex
-import WRHairyGraphComplex
 import os
-import SymmetricGraphComplex
 import NautyInterface
 
 
