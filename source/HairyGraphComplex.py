@@ -281,28 +281,43 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             #         GG.add_edges( [ (h,h+1), (u,h), (v,h+1) , (h,h+2), (h+1,h+3) ] )
             #         yield GG
         elif self.n_hairs == 1:
+            # delete one hair from 2-hair graph
+            for hair_parity in [True, False]:
+                othervs = HairyGraphVS(
+                    self.n_vertices, self.n_loops, 2, self.even_edges, hair_parity)
+                nv = self.n_vertices
+                if othervs.is_valid():
+                    for G in othervs.get_basis():
+                        for v in [nv, nv+1]:
+                            GG = copy(G)
+                            if G.degree(G[v][0]) >= 4:
+                                GG.delete_vertex(v)
+                                GG.relabel(range(nv+1))
+                                yield GG
+
             # add one hair to a vertex, or glue to two existing hairs
-            for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
-                for v in G.vertices():
-                    GG = copy(G)
-                    h = GG.order()
-                    GG.add_vertex(h)
-                    GG.add_edge(v, h)
-                    # print(self.graph_to_canon_g6(GG)[0])
-                    yield GG
-            othervs = HairyGraphVS(
-                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
-            nv = self.n_vertices
-            if not othervs.exists_basis_file():
-                print("not found: ", othervs.get_basis_file_path())
-            for G in othervs.get_basis():
-                GG = copy(G)
-                # print("orig2: ", othervs.graph_to_canon_g6(G)[0])
-                GG.merge_vertices([nv-1, nv])
-                GG.add_vertex(nv)
-                GG.add_edge(nv-1, nv)
-                # print(self.graph_to_canon_g6(GG)[0])
-                yield GG
+            # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
+            #     for v in G.vertices():
+            #         GG = copy(G)
+            #         h = GG.order()
+            #         GG.add_vertex(h)
+            #         GG.add_edge(v, h)
+            #         # print(self.graph_to_canon_g6(GG)[0])
+            #         yield GG
+            # othervs = HairyGraphVS(
+            #     self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
+            # nv = self.n_vertices
+            # if othervs.is_valid():
+            #     if not othervs.exists_basis_file():
+            #         print("not found: ", othervs.get_basis_file_path())
+            #     for G in othervs.get_basis():
+            #         GG = copy(G)
+            #         # print("orig2: ", othervs.graph_to_canon_g6(G)[0])
+            #         GG.merge_vertices([nv-1, nv])
+            #         GG.add_vertex(nv)
+            #         GG.add_edge(nv-1, nv)
+            #         # print(self.graph_to_canon_g6(GG)[0])
+            #         yield GG
         elif self.n_hairs == 0:
             for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
                 yield G
