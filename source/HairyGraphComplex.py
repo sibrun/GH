@@ -278,16 +278,18 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     h = GG.order()
                     GG.add_vertex(h)
                     GG.add_edge(v, h)
+                    print(self.graph_to_canon_g6(GG)[0])
                     yield GG
             othervs = HairyGraphVS(
                 self.n_vertices-1, self.n_loops-1, 2, self.even_edges, not self.even_edges)
             nv = self.n_vertices
             for G in othervs.get_basis():
                 GG = copy(G)
-                print(othervs.graph_to_canon_g6(G)[0])
+                print("orig2: ", othervs.graph_to_canon_g6(G)[0])
                 GG.merge_vertices([nv-1, nv])
                 GG.add_vertex(nv)
                 GG.add_edge(nv-1, nv)
+                print(self.graph_to_canon_g6(GG)[0])
                 yield GG
         elif self.n_hairs == 0:
             for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
