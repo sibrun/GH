@@ -293,6 +293,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             othervs = HairyGraphVS(
                 self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
             nv = self.n_vertices
+            print(othervs.exists_basis_file())
             for G in othervs.get_basis():
                 GG = copy(G)
                 # print("orig2: ", othervs.graph_to_canon_g6(G)[0])
