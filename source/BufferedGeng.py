@@ -38,6 +38,8 @@ def fill_cache(n_vertices, n_edges, onlyonevi=True):
     NautyInterface.run_sys_cmd(nauty_string)
 
 
-for v in range(8):
-    for e in range(15):
+for l in range(12):
+    print(f"Loop order {l}")
+    for v in range(2*l-1):
+        e = l+v-1
         fill_cache(v, e, False)
