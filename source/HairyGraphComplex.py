@@ -291,7 +291,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     # print(self.graph_to_canon_g6(GG)[0])
                     yield GG
             othervs = HairyGraphVS(
-                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, not self.even_edges)
+                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
             nv = self.n_vertices
             for G in othervs.get_basis():
                 GG = copy(G)
