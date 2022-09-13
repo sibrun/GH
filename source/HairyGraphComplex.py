@@ -37,7 +37,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
     and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
     composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
-    hair vertex alone.
+    hair vertex alone (<- ??? I think not).
 
     Attributes:
         - n_vertices (int): Number of internal vertices.
@@ -280,7 +280,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     GG.add_edge(v, h)
                     yield GG
             othervs = HairyGraphVS(
-                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
+                self.n_vertices-1, self.n_loops-1, 2, self.even_edges, not self.even_edges)
             nv = self.n_vertices
             for G in othervs.get_basis():
                 G.merge_vertices([nv-1, nv])
