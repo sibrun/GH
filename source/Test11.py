@@ -24,4 +24,5 @@ for path1, path2 in [("gh_data/data/hairy/even_edges_odd_hairs", "gh_data/data/h
                 txt1 = f.read()
             with open(fullfile2) as f:
                 txt2 = f.read()
-            print(f"Comparing {file}: {'OK' if txt1 == txt2 else 'ERROR'}")
+            print(
+                f"Comparing {fullfile2}: {'OK' if txt1 == txt2 else 'ERROR'}")
