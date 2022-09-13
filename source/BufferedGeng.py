@@ -1,4 +1,4 @@
-ifrom sage.all import *
+from sage.all import *
 import OrdinaryGraphComplex
 import OrdinaryMerkulovComplex
 import OrdinaryGraphBiComplex
