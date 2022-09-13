@@ -37,7 +37,7 @@ def list_simple_graphs_buffered(n_vertices, n_edges, onlyonevi=True):
         return []
     _, filename = _get_geng_args_and_file(n_vertices, n_edges, onlyonevi)
 
-    if os.path.exists(filename):
+    if not os.path.exists(filename):
         raise ValueError(
             f"Buffered geng: requeted cache file {filename} does not exist. Generate cache first")
     with open(filename, "r") as f:
