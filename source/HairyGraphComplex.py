@@ -281,11 +281,11 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     yield GG
             othervs = HairyGraphVS(
                 self.n_vertices-1, self.n_loops-1, 2, self.even_edges, True)
+            nv = self.n_vertices
             for G in othervs.get_basis():
-                nv = self.n_vertices
-                G.merge_vertices([nv, nv+1])
-                G.add_vertex(nv+1)
-                G.add_edge(nv, nv+1)
+                G.merge_vertices([nv-1, nv])
+                G.add_vertex(nv)
+                G.add_edge(nv-1, nv)
                 yield G
         elif self.n_hairs == 0:
             for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges, False):
