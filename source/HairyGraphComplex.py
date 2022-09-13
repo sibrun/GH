@@ -199,7 +199,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         if not self.is_valid():
             return
 
-        if self.h_hairs >= 3:
+        if self.n_hairs >= 3:
             # delete one vertex
             for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices+1, self.n_edges+self.n_hairs, False):
                 for v in G.vertices():
