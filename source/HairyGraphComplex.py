@@ -223,6 +223,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     GG = copy(G)
                     if G.degree(G[v][0]) >= 4:
                         GG.delete_vertex(v)
+                        GG.relabel(range(nv+2))
                         yield GG
             # # Case 1: cut an edge in the middle
             # for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices, self.n_edges+1, False):
