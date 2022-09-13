@@ -287,6 +287,8 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     self.n_vertices, self.n_loops, 2, self.even_edges, hair_parity)
                 nv = self.n_vertices
                 if othervs.is_valid():
+                    if not othervs.exists_basis_file():
+                        print("Generate 2-hair basis before 1-hair basis!!")
                     for G in othervs.get_basis():
                         for v in [nv, nv+1]:
                             GG = copy(G)
