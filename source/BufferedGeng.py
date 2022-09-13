@@ -50,8 +50,8 @@ def list_simple_graphs_buffered(n_vertices, n_edges, onlyonevi=True):
     return (Graph(g6) for g6 in list_g6)
 
 
-for l in range(12):
-    print(f"****** Loop order {l} ******")
-    for v in range(2*l-1):
-        e = l+v-1
-        fill_cache(v, e, False)
+# for l in range(12):
+#     print(f"****** Loop order {l} ******")
+#     for v in range(2*l-1):
+#         e = l+v-1
+#         fill_cache(v, e, False)
