@@ -6,7 +6,7 @@ import GraphVectorSpace
     computable means complexity <=max_complexity.
 """
 
-max_complexity = 11
+max_complexity = 10
 
 if __name__ == "__main__":
     nr_jobs = 20
@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     for even_e in [True, False]:
         for even_h in [True, False]:
-            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v,l,1,even_e,even_h)
-            #                     for v in range(18) for l in range(max_complexity-1)]
+            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v,l,1,even_e,even_h)
+                                for v in range(18) for l in range(max_complexity-1)]
             vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 2, even_e, even_h)
                                  for v in range(20) for l in range(max_complexity-1)]
             vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 3, even_e, even_h)
