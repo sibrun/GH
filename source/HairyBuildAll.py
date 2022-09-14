@@ -6,7 +6,7 @@ import GraphVectorSpace
     computable means complexity <=max_complexity.
 """
 
-max_complexity = 9
+max_complexity = 10
 
 if __name__ == "__main__":
     nr_jobs = 10
