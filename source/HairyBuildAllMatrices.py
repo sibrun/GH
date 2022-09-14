@@ -7,7 +7,7 @@ import GraphOperator
 
 
 if __name__ == "__main__":
-    nr_jobs = 10
+    nr_jobs = 20
     print(f"Building all computable hairy matrices using {nr_jobs} jobs ...")
     vs_list = []
     op_list = []
@@ -46,6 +46,6 @@ if __name__ == "__main__":
 
     print("Finished computing hairy matrices.")
 
-    print("computing ranks")
-    allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
-    print("Finished")
+    # print("computing ranks")
+    # allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
+    # print("Finished")
