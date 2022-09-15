@@ -1097,18 +1097,18 @@ def write_tables():
     # with open(latexfile_ordinaryme_cohom, 'w') as f:
     #     f.write(s)
 
-    # print("Hairy....")
-    # s = create_hairy_vs_table(range(22), range(12), range(1, 9))
-    # with open(latexfile_hairy_vs, 'w') as f:
-    #     f.write(s)
+    print("Hairy....")
+    s = create_hairy_vs_table(range(22), range(12), range(1, 9))
+    with open(latexfile_hairy_vs, 'w') as f:
+        f.write(s)
 
-    # s = create_hairy_ops_table(range(20), range(12), range(1, 9))
-    # with open(latexfile_hairy_ops, 'w') as f:
-    #     f.write(s)
+    s = create_hairy_ops_table(range(20), range(12), range(1, 9))
+    with open(latexfile_hairy_ops, 'w') as f:
+        f.write(s)
 
-    # s = create_hairy_cohom_table(range(20), range(10), range(1, 9))
-    # with open(latexfile_hairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_hairy_cohom_table(range(20), range(10), range(1, 9))
+    with open(latexfile_hairy_cohom, 'w') as f:
+        f.write(s)
 
     # print("CHairy....")
     # s = create_chairy_vs_table(range(20), range(12), range(6))
