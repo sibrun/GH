@@ -46,6 +46,6 @@ if __name__ == "__main__":
 
     print("Finished computing hairy matrices.")
 
-    print("computing ranks")
-    allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
-    print("Finished")
+    # print("computing ranks")
+    # allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
+    # print("Finished")
