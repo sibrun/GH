@@ -9,7 +9,7 @@ import GraphVectorSpace
 max_complexity = 11
 
 if __name__ == "__main__":
-    nr_jobs = 5
+    nr_jobs = 10
     print(f"Building all computable hairy bases using {nr_jobs} jobs ...")
     vs_list = []
 
