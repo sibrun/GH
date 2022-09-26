@@ -54,7 +54,7 @@ if __name__ == "__main__":
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 
     # sumvs.build_basis(n_jobs=nr_jobs)
-    allop.build_matrix(n_jobs=nr_jobs)
+    # allop.build_matrix(n_jobs=nr_jobs)
 
     print("Finished computing hairy matrices.")
 
