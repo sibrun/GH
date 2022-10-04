@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     for even_e in [True, False]:
         for even_h in [True, False]:
-            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 1, even_e, even_h)
-            #                      for v in range(18) for l in range(max_complexity-1)]
+            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 1, even_e, even_h)
+                                 for v in range(18) for l in range(max_complexity-1)]
             # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 2, even_e, even_h)
             #                      for v in range(20) for l in range(max_complexity-1)]
             # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 3, even_e, even_h)
@@ -25,12 +25,12 @@ if __name__ == "__main__":
             #                      for v in range(20) for l in range(max_complexity-2)]
             # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 5, even_e, even_h)
             #                      for v in range(20) for l in range(max_complexity-3)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 6, even_e, even_h)
-                                 for v in range(20) for l in range(max_complexity-3)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 7, even_e, even_h)
-                                 for v in range(20) for l in range(max_complexity-3)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 8, even_e, even_h)
-                                 for v in range(20) for l in range(max_complexity-3)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 6, even_e, even_h)
+            #                      for v in range(20) for l in range(max_complexity-3)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 7, even_e, even_h)
+            #                      for v in range(20) for l in range(max_complexity-3)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 8, even_e, even_h)
+            #                      for v in range(20) for l in range(max_complexity-3)]
 
     sumvs = GraphVectorSpace.SumVectorSpace(vs_list)
 
