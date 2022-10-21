@@ -88,6 +88,9 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
                                                               even_edges, even_hairs_a, even_hairs_b)
              for v in range(0, deg + 1)], deg)
 
+    def __hash__(self):
+        return hash(str(self))
+
     def get_ordered_param_dict(self):
         return Shared.OrderedDict([('deg', self.deg), ('min_hairs_a', self.h_a_min), ('min_hairs_b', self.h_b_min)])
 
