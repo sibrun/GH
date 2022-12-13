@@ -56,7 +56,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
         :param n_vertices: Number of internal vertices.
         :type n_vertices: int
-        :param n_loops: the genus of the graph.
+        :param n_loops: the genus of the graph. Warning: this is counted without the special vertex.... e.g., in weight 11 the actual genus is one more
         :type n_loops: int
         :param n_hairs: Number of hairs. They are distinguishable, numbered 1,...,n
         :type n_hairs: int
@@ -97,7 +97,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        return [list(range(0, self.n_vertices))] + [ [self.n_vertices] ] + [ list(range(self.n_vertices+1, self.n_vertices+1+self.n_ws)) ] + [[j] for j in range(self.n_vertices+1+self.n_ws, self.n_vertices + self.n_hairs+self.n_ws+1)]
+        return [list(range(0, self.n_vertices))] + [[self.n_vertices]] + [list(range(self.n_vertices+1, self.n_vertices+1+self.n_ws))] + [[j] for j in range(self.n_vertices+1+self.n_ws, self.n_vertices + self.n_hairs+self.n_ws+1)]
 
     def plot_graph(self, G):
         GG = Graph(G, loops=True)
@@ -126,11 +126,10 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return GCDimensions.get_wrhairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
         # return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) * (self.n_vertices ** self.n_hairs) / factorial(self.n_vertices)
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
-        """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
+    def get_hairy_graphs_no_hair_edge(self, nvertices, nloops, nhairs):
+        """ Produces all possibly disconnected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
-        :param include_novertgraph: Whether to include the graph with one edge and no vertices as a two-hair graph
-        :type include_novertgraph: bool
+        Also (!!!): The graphs cannot have edges connecting two hairs, i.e., connected components without (internal) vertex
         """
         # Idea: produce all bipartite graphs, the second color being either of degree 1 or 2.
         # Degree 1 vertices are hairs, degree 2 vertices are edges and are removed later.
@@ -145,182 +144,88 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         if (nvertices >= 1 and nloops >= 0 and nhairs >= 0 and n_edges_bip >= n_vertices_2
             and n_edges_bip <= 2*n_vertices_2 and n_edges_bip >= 3 * n_vertices_1
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):
-            bipartite_graphs = NautyInterface.list_bipartite_graphs2(
+            bipartite_graphs = NautyInterface.list_bipartite_graphs_disc(
                 n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
 
             for G in bipartite_graphs:
                 yield self._bip_to_ordinary(G, nvertices, nedges, nhairs)
 
-        if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
-            yield Graph([(0, 1)])
-
-    def _get_connected_wgraphs_w0(self, nvertices, nloops, nhairs):
-        """Produces connected w-graphs with zero omega hairs.
-        Disregards the ordering of numbered hairs.
-        Note that the graphs produced still have a (zero-valent) omega vertex,
-        and a zero-or higher valent eps vertex.
-        nloops is 2 minus the Euler characteristic of the returned graphs
-        """
-        # print("wk0 ", nvertices, nloops, nhairs)
-        # Algorithm: produce all hairy graphs, then fuse hairs
-        max_eps_hairs = nloops+1
-        for n_eps_hairs in range(max_eps_hairs+1):
-            for G in self.get_hairy_graphs(nvertices, 1+nloops-n_eps_hairs, nhairs+n_eps_hairs, include_novertgraph=True):
-                # make space for eps and omega vertex, and create both vertices
-                # Warning: we assume here that we can modify the parameter... maybe make a copy first, but this costs space
-                G.relabel({nvertices+j: nvertices+j +
-                          2 for j in range(nhairs+n_eps_hairs)})
-                G.add_vertex(nvertices)  # eps vertex
-                G.add_vertex(nvertices+1)  # omega vertex
-                for S in itertools.combinations(range(nvertices+2, nvertices+nhairs+n_eps_hairs+2), n_eps_hairs):
-                    GG = copy(G)
-                    GG.merge_vertices([nvertices] + list(S))
-                    if GG.size() < G.size():
-                        continue
-                    # make sure vertices are consecutively labeled
-                    GG.relabel(range(G.order()))
-                    assert GG.order() == nvertices + nhairs + 2, "Error: wrong graph size."
-                    assert -GG.order() + 2 + GG.size() == nloops, "Error: wrong loop number"
-                    yield GG
-
-    def _get_connected_wgraphs_w0_memo(self, nvertices, nloops, nhairs):
-        fName = "cache/get_connected_wgraphs_w0_%d_%d_%d.g6" % (
-            nvertices, nloops, nhairs)
-        part = [list(range(nvertices)), [nvertices], [nvertices+1],
-                list(range(nvertices+2, nvertices+nhairs+2))]
-        if os.path.isfile(fName):
-            lst = StoreLoad.load_string_list(fName)
-        else:
-            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
-            ) for G in self._get_connected_wgraphs_w0(nvertices, nloops, nhairs)}
-            StoreLoad.store_string_list(lst, fName)
-
-        return map(Graph, lst)
-
-    def _get_connected_wgraphs_wk(self, nvertices, nloops, nhairs, nws):
-        """Produces connected graphs with k omega-hairs. disregards the ordering of numbered hairs.
-        """
-        # print("wk ", nvertices, nloops, nhairs, nws)
-        # Algorithm: produce all w graphs with nws hairs more, then fuse
-        for G in self._get_connected_wgraphs_w0_memo(nvertices, nloops-nws, nhairs+nws):
-            for S in itertools.combinations(range(nvertices+2, nvertices+nhairs+2+nws), nws):
-                GG = copy(G)
-                to_merge = [nvertices+1] + list(S)
-                # print(to_merge, GG.vertices())
-                GG.merge_vertices(to_merge)
-                if GG.size() < G.size():
-                    continue
-                GG.relabel(range(G.order()))
-                if not GG.has_edge(nvertices, nvertices+1):
-                    yield GG
-
-    def _get_connected_wgraphs_wk_memo(self, nvertices, nloops, nhairs, nws):
-        fName = "cache/get_connected_wgraphs_wk_%d_%d_%d_%d.g6" % (
-            nvertices, nloops, nhairs, nws)
-        part = [list(range(nvertices)), [nvertices], [nvertices+1],
-                list(range(nvertices+2, nvertices+nhairs+2))]
-        if os.path.isfile(fName):
-            lst = StoreLoad.load_string_list(fName)
-        else:
-            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
-            ) for G in self._get_connected_wgraphs_wk(nvertices, nloops, nhairs, nws)}
-            StoreLoad.store_string_list(lst, fName)
-
-        return map(Graph, lst)
-
-    def _get_pre_wgraphs_wk(self, nvertices, nloops, nhairs, nws):
-        """Produces all wgraphs with at least one omega per connected component.
-        Only implemented for nws =1,2.
-        Disregards hair labels.
-        """
-        # print("pre wk ", nvertices, nloops, nhairs, nws)
-        if nws == 1:
-            # just forward the other routine
-            for G in self._get_connected_wgraphs_wk_memo(nvertices, nloops, nhairs, 1):
+    def get_hairy_graphs_with_hair_edges(self, nvertices, nloops, nhairs):
+        """ Same as before, but graphs can contaîn edges between hairs"""
+        nedges = nloops + nvertices - 1
+        max_hairedges = min(nhairs // 2, nedges)
+        for n_hairedges in range(0, max_hairedges+1):
+            for G in self.get_hairy_graphs_no_hair_edge(nvertices, nloops-n_hairedges, nhairs-2*n_hairedges):
+                # add n_hairedges hair edges
+                nverts = nvertices + nhairs-2*n_hairedges
+                for j in range(n_hairedges):
+                    G.add_vertex(nverts + 2*j)
+                    G.add_vertex(nverts + 2*j+1)
+                    G.add_edge(nverts + 2*j, nverts + 2*j+1)
                 yield G
-        elif nws == 2:
-            # Our graph can have either one or two connected components
-            # (A) one connected component.
-            for G in self._get_connected_wgraphs_wk_memo(nvertices, nloops, nhairs, 2):
-                yield G
-            # (B) two connected components.
-            # We need to distribute hairs, loops and vertices over the components, in all possible ways
-            # precompute graph lists
 
-            for nvertices1 in range(int(nvertices/2)+1):
-                for nloops1 in range(nloops+1):
-                    for nhairs1 in range(nhairs+1):
-                        # use itertools.product to avoid recomputing one list multiple times
-                        for G1, G2 in itertools.product(self._get_connected_wgraphs_wk_memo(nvertices1, nloops1, nhairs1, 1),
-                                                        self._get_connected_wgraphs_wk_memo(nvertices-nvertices1, nloops-nloops1, nhairs-nhairs1, 1)):
-                            # take union of graphs, after relabeling
-                            GG1 = G1.relabel(list(
-                                range(nvertices1))+list(range(nvertices, nvertices+2+nhairs1)), inplace=False)
-                            GG2 = G2.relabel(list(range(nvertices1, nvertices+2))+list(
-                                range(nvertices+2+nhairs1, nvertices+2+nhairs)), inplace=False)
-                            yield GG1.union(GG2)
-        else:
-            raise ValueError("Only nws=1 and 2 are implemented so far")
-
-    def _get_pre_wgraphs_wk_memo(self, nvertices, nloops, nhairs, nws):
-        fName = "cache/get_pre_wgraphs_wk_%d_%d_%d_%d.g6" % (
-            nvertices, nloops, nhairs, nws)
-        part = [list(range(nvertices)), [nvertices], [nvertices+1],
-                list(range(nvertices+2, nvertices+nhairs+2))]
-        if os.path.isfile(fName):
-            lst = StoreLoad.load_string_list(fName)
-        else:
-            lst = {G.canonical_label(partition=part, algorithm=Parameters.canonical_label_algorithm).graph6_string(
-            ) for G in self._get_pre_wgraphs_wk(nvertices, nloops, nhairs, nws)}
-            StoreLoad.store_string_list(lst, fName)
-
-        return map(Graph, lst)
-
-    def _attach_epsj(self, G, nvertices):
-        """Takes the union of the w-graph G with an extra edge eps-hair
-        nvertices must be the number of internal vertices, so that nvertices is also the label of the eps-vertex
+    def get_generating_graphs(self, nvertices, nloops, nhairs, nws):
         """
-        GG = copy(G)
-        n = GG.order()
-        GG.add_vertex(n)
-        GG.add_edge(nvertices, n)
-        return GG
-
-    def _get_all_wgraphs(self, nvertices, nloops, nhairs, nws):
-        """Produces all (reduced) wgraphs.
-        Disregards hair labels.
+        Produces a list of generating graphs
         """
-        # Idea: just take the wgraphs produced above, and attach an extra hair and or an eps tadpole
-        for G in self._get_pre_wgraphs_wk_memo(nvertices, nloops, nhairs, nws):
-            yield G
-        for G in self._get_pre_wgraphs_wk_memo(nvertices, nloops, nhairs-1, nws):
-            yield self._attach_epsj(G, nvertices)
-        # with tadpole
-        for G in self._get_pre_wgraphs_wk_memo(nvertices, nloops-1, nhairs, nws):
-            yield G
-        for G in self._get_pre_wgraphs_wk_memo(nvertices, nloops-1, nhairs-1, nws):
-            yield self._attach_epsj(G, nvertices)
+        # we have to have at least one eps or w
+        mineps = 1 if nws == 0 else 0
+        maxeps = nloops - nws + 1
+        for neps in range(mineps, maxeps+1):
+            # Produce all permutations of the hairs
+            all_perm = [list(range(0, nvertices)) + list(p)
+                        for p in itertools.permutations(range(nvertices, nvertices+nhairs+neps+nws))]
+            for G in self.get_hairy_graphs(nvertices, nloops, nhairs+nws+neps):
+                for p in all_perm:
+                    GGG = G.relabel(p, inplace=False)
+                    # check for connectivity
+                    GG = copy(GGG)
+                    GG.merge_vertices(
+                        list(range(nvertices, nvertices+neps+nws)))
+                    if GG.is_connected():
+                        # merge eps vertices into one
+                        tadpole_flag = 0
+                        if neps > 0:
+                            vertstomerge = list(
+                                range(nvertices, nvertices+neps))
+                            # check whether merge produces tadpole
+                            tadpole_flag = sum(
+                                1 for v1 in vertstomerge for v2 in vertstomerge if GGG.has_edge((v1, v2)))
+                            if tadpole_flag > 1:
+                                continue
+                            GGG.merge_vertices(vertstomerge)
+                            GGG.relabel(list(range(nvertices+nws+nhairs+1)))
+                        else:
+                            # add one empty vertex for eps
+                            GGG.relabel(
+                                list(range(nvertices)) + list(range(nvertices+1, nvertices+nws+nhairs+1)))
+                            GGG.add_vertex(nvertices)
+                        # check whether graph is admissible...
+                        if G.size() - GGG.size() == tadpole_flag:
+                            # no edges were removed in the merge
+                            yield GGG
 
-    def get_generating_graphs(self):
-        # The routines above produce all wgraphs, we just have to permute the hair labels
+    # def get_generating_graphs(self):
+    #     # The routines above produce all wgraphs, we just have to permute the hair labels
 
-        # Produce all permutations of the hairs
-        all_perm = [list(range(0, self.n_vertices+2)) + list(p)
-                    for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2))]
+    #     # Produce all permutations of the hairs
+    #     all_perm = [list(range(0, self.n_vertices+2)) + list(p)
+    #                 for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2))]
 
-        return (G.relabel(p, inplace=False) for G in self._get_all_wgraphs(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
-                for p in all_perm)
+    #     return (G.relabel(p, inplace=False) for G in self._get_all_wgraphs(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
+    #             for p in all_perm)
 
     def perm_sign(self, G, p):
         # The sign is the same as the corresponding sign in the
-        # ordinary graph complex, apart from an extra contribution from the hair-vertices.
+        # ordinary graph complex, apart from an extra contribution from the omega-vertices.
         sgn = self.ogvs.perm_sign(G, p)
 
-        # Compute the extra contribution from hairs.
+        # Compute the extra contribution from omegas.
         # if self.even_hairs == self.even_edges:
-        #     hairs = p[self.n_vertices:]
-        #     if len(hairs) != 0:
-        #         sgn *= Shared.Perm.shifted(hairs).signature()
+        if self.n_ws > 0:
+            wperm = p[self.n_vertices+1:]
+            if len(wperm) != 0:
+                sgn *= Shared.Perm.shifted(wperm).signature()
         return sgn
 
     def _bip_to_ordinary(self, G, nvertices, nedges, nhairs):
@@ -349,7 +254,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return SymmProjector(self, rep_index)
 
 
-class WRHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
+class WOHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
     """Direct sum of hairy graph vector spaces with specified number of omega hairs.
 
     Attributes:
@@ -380,12 +285,12 @@ class WRHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.w_range = w_range
         self.sub_type = ""
 
-        vs_list = [WRHairyGraphVS(v, l, h, w) for
+        vs_list = [WOHairyGraphVS(v, l, h, w) for
                    (v, l, h, w) in itertools.product(self.v_range, self.l_range, self.h_range, self.w_range)]
-        super(WRHairyGraphSumVS, self).__init__(vs_list)
+        super(WOHairyGraphSumVS, self).__init__(vs_list)
 
     def get_type(self):
-        return 'wrhairy graphs'
+        return 'wohairy graphs'
 
     def get_ordered_param_range_dict(self):
         return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range), ('hairs', self.h_range), ('ws', self.w_range)])
@@ -447,8 +352,8 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         :return: Contract edges graph operator based on the specified domain vector space.
         :rtype: ContractEdgesGO
         """
-        domain = WRHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
-        target = WRHairyGraphVS(n_vertices - 1, n_loops, n_hairs, n_ws)
+        domain = WOHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
+        target = WOHairyGraphVS(n_vertices - 1, n_loops, n_hairs, n_ws)
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -489,7 +394,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
             # only edges not connected to a numbered hair-vertex can be contracted
-            if u >= self.domain.n_vertices+2 or v >= self.domain.n_vertices+2:
+            if u >= self.domain.n_vertices+self.domain.n_ws+1 or v >= self.domain.n_vertices+self.domain.n_ws+1:
                 continue
 
             # ensure u<v (this should be always true anyway actually)
@@ -515,10 +420,10 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
                 image.append((G1, sgn))
-            elif v == self.domain.n_vertices+1:
-                # the second vertex is now omega, so we need to merge the vertex with the eps vertex
-                # after reonnecting one of the edges to omega
-                # we assume that u != eps, because this is forbidden in our graphs
+            elif u < self.domain.n_vertices and v >= self.domain.n_vertices+1:
+                # the second vertex is now an omega-vertex, so we need to merge the vertex with the eps vertex
+                # after reconnecting one of the edges to omega
+                # we assume that u != eps, because eps-omega-edges cannot be contracted
                 G1.delete_edge(u, v)
                 # special care must be taken since a tadpole could be created at eps
                 # and this is true iff there is an edge u-eps
@@ -546,8 +451,8 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                     # in case we have too few edges some double edges have been created => zero
                     if (previous_size - G2.size()) != (2 if new_has_tadpole else 1):
                         continue
-                    G2.relabel(range(0, self.domain.n_vertices+1 +
-                               self.domain.n_hairs), inplace=True)
+                    G2.relabel(range(0, self.domain.n_vertices +
+                               self.domain.n_hairs+self.domain.n_ws), inplace=True)
                     # find edge permutation sign
                     sgn2 *= Shared.shifted_edge_perm_sign2(G2)
                     image.append((G2, sgn2))
@@ -625,6 +530,183 @@ class RestrictedContractEdgesD(SymmetricGraphComplex.SymmetricDifferential):
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
 
 
+class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
+    """Operator that makes one eps into an omega hair.
+
+    Attributes:
+        - sub_type (str): Graphs sub type of the domain.
+    """
+
+    def __init__(self, domain, target):
+        """Initialize the domain and target vector space of the contract edges graph operator.
+
+        :param domain: Domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Target vector space of the operator.
+        :type target: HairyGraphVS
+        """
+        self.sub_type = domain.sub_type
+        super(EpsToOmegaGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+
+        The contract edges operator reduces the number of vertices by one.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: HairyGraphVS
+        :param target: Potential target vector space of the operator.
+        :type target: HairyGraphVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
+        """
+        return domain.n_vertices == target.n_vertices and domain.n_loops == target.n_loops \
+            and domain.n_hairs == target.n_hairs and domain.n_ws+1 == target.n_ws
+
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops, n_hairs, n_ws):
+        """Return a contract edges graph operator.
+
+        :param n_vertices: Number of vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param n_hairs: Number of (numbered) hairs.
+        :type n_hairs: int
+        :param n_ws: Number of omega hairs.
+        :type n_ws: int
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype: ContractEdgesGO
+        """
+        domain = WOHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws)
+        target = WOHairyGraphVS(n_vertices, n_loops, n_hairs, n_ws+1)
+        return cls(domain, target)
+
+    def get_matrix_file_path(self):
+        s = "epstowD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "epstowD%d_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
+
+    # def get_ref_matrix_file_path(self):
+    #     s = "epstowD%d_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+    #     return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    # def get_ref_rank_file_path(self):
+    #     s = "epstowD%d_%d_%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+    #     return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
+
+    def get_work_estimate(self):
+        # Returns as work estimate: domain.n_edges * domain_dim * log(target dimension, 2)
+        if not self.is_valid():
+            return 0
+        try:
+            (domain_dim, dimtarget_dim) = (
+                self.domain.get_dimension(), self.target.get_dimension())
+        except StoreLoad.FileNotFoundError:
+            return 0
+        if domain_dim == 0 or dimtarget_dim == 0:
+            return 0
+        return self.domain.n_edges * domain_dim * math.log(dimtarget_dim, 2)
+
+    def get_type(self):
+        return 'contract edges'
+
+    def operate_on(self, G):
+        GG = copy(G)
+        sgn = (-1)**G.size()
+        image = []
+
+        # add one new omega vertex in position n_vertices +1
+        GG.relabel(list(range(self.domain.n_vertices)) + list(range(self.domain.n_vertices +
+                   1, self.domain.n_vertices+self.domain.n_ws+self.domain.n_hairs+1)))
+        GG.add_vertex(self.domain.n_vertices+1)
+
+        # reconnect one eps edge to the new vertex
+        eps = self.domain.n_vertices
+        new_w = self.domain.n_vertices+1
+        for v in GG.neighbors(eps):
+            GGG = copy(GG)
+            GGG.delete_edge(v, eps)
+            GGG.add_edge(v, new_w)
+            image.append((GGG, sgn))
+
+        return image
+
+    def restrict_to_isotypical_component(self, rep_index):
+        return RestrictedEpsToOmegaGO(self, rep_index)
+
+
+class RestrictedEpsToOmegaGO(SymmetricGraphComplex.SymmetricRestrictedOperatorMatrix):
+    # def __init__(opD, opP):
+
+    def get_matrix_file_path(self):
+        s = "contractD%d_%d_%d_r%d.txt" % (
+            self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
+        return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = "contractD%d_%d_%d_r%d_rank.txt" % (
+            self.domain.vs.get_ordered_param_dict().get_value_tuple() + (self.rep_index,))
+        return os.path.join(Parameters.data_dir, graph_type, self.opD.sub_type, s)
+
+    def get_work_estimate(self):
+        return self.opD.get_work_estimate()
+
+    def is_match(self, domain, target):
+        return EpsToOmegaGO.is_match(domain.vs, target.vs) and domain.rep_index == target.rep_index
+
+
+class EpsToOmegaD(GraphOperator.Differential):
+    """Contract edges differential."""
+
+    def __init__(self, sum_vector_space):
+        """Initialize the contract edges differential with the underlying sum vector space.
+
+        :param sum_vector_space: Underlying vector space.
+        :type sum_vector_space: HairyGraphSumVS
+        """
+        super(EpsToOmegaD, self).__init__(sum_vector_space,
+                                          EpsToOmegaGO.generate_op_matrix_list(sum_vector_space))
+
+    def get_type(self):
+        return 'EpsToOmega'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_epstoomega_D_%s" % (graph_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_cohomology_web_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_epstoomega_D_%s" % (graph_type)
+        return os.path.join(Parameters.web_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_epstoomega_D_%s" % (graph_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+
+class RestrictedEpsToOmegaD(SymmetricGraphComplex.SymmetricDifferential):
+
+    def get_type(self):
+        return 'isotypical epstoomega'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.diff.sum_vector_space.sub_type
+        s = "cohomology_dim_epstoomega_D_iso_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.diff.sum_vector_space.sub_type
+        s = "info_epstoomega_D_iso_%s_%s" % (graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
+
+
 class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
     """This class encodes the projector to an isotypical component of the symmetric group action
         by permuting numbered hairs.
@@ -668,7 +750,7 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
 
 
 # ------- Graph Complex --------
-class WRHairyGC(GraphComplex.GraphComplex):
+class WOHairyGC(GraphComplex.GraphComplex):
     """Graph complex for hairy graphs.
 
     Attributes:
@@ -699,7 +781,7 @@ class WRHairyGC(GraphComplex.GraphComplex):
         self.w_range = w_range
         self.sub_type = ""
 
-        sum_vector_space = WRHairyGraphSumVS(
+        sum_vector_space = WOHairyGraphSumVS(
             self.v_range, self.l_range, self.h_range, self.w_range)
         differential_list = []
         if not set(differentials).issubset(['contract', 'contract_iso']):
@@ -713,7 +795,7 @@ class WRHairyGC(GraphComplex.GraphComplex):
                 contract_edges_dif)
             differential_list.append(contract_iso_edges_dif)
             print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
-        super(WRHairyGC, self).__init__(sum_vector_space, differential_list)
+        super(WOHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
@@ -722,7 +804,7 @@ class WRHairyGC(GraphComplex.GraphComplex):
         for w in self.w_range:
             for h in self.h_range:
                 for l in self.l_range:
-                    ds = [WRHairyGraphVS(v, l, h, w).get_dimension()
+                    ds = [WOHairyGraphVS(v, l, h, w).get_dimension()
                           for v in self.v_range]
                     eul = sum([(1 if j % 2 == 0 else -1) *
                               d for j, d in enumerate(ds)])
@@ -738,7 +820,7 @@ class WRHairyGC(GraphComplex.GraphComplex):
                         D1 = ContractEdgesGO.generate_operator(v, l, h, w)
                         D2 = ContractEdgesGO.generate_operator(v+1, l, h, w)
                         try:
-                            d = WRHairyGraphVS(v, l, h, w).get_dimension()
+                            d = WOHairyGraphVS(v, l, h, w).get_dimension()
                             r1 = D1.get_matrix_rank()
                             r2 = D2.get_matrix_rank()
                             cohomdict[v] = d-r1-r2
