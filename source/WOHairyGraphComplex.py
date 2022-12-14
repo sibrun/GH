@@ -14,9 +14,9 @@ TODO: Take care that this does not produce problems
 """
 
 
-# __all__ = ['WRHairyGraphVS', 'WRHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
+# __all__ = ['WOHairyGraphVS', 'WOHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
 #            'RestrictedContractEdgesGO', 'RestrictedContractEdgesD',
-#            'SymmProjector', 'WRHairyGC']
+#            'SymmProjector', 'WOHairyGC']
 
 import itertools
 from sage.all import *
@@ -30,11 +30,31 @@ import StoreLoad
 import Parameters
 import SymmetricGraphComplex
 import GCDimensions
+import inspect
+from sage.combinat.shuffle import ShuffleProduct
 
 graph_type = "wohairy"
 
 
+def dump_args(func):
+    """
+    Decorator to print function call details.
+
+    This includes parameters names and effective values.
+    """
+
+    def wrapper(*args, **kwargs):
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = ", ".join(
+            map("{0[0]} = {0[1]!r}".format, func_args.items()))
+        print(f"{func.__module__}.{func.__qualname__} ( {func_args_str} )")
+        return func(*args, **kwargs)
+
+    return wrapper
+
 # ------- Graph Vector Space --------
+
+
 class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     """WOHairy graph vector space.
 
@@ -126,6 +146,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return GCDimensions.get_wrhairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
         # return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) * (self.n_vertices ** self.n_hairs) / factorial(self.n_vertices)
 
+    @dump_args
     def get_hairy_graphs_no_hair_edge(self, nvertices, nloops, nhairs):
         """ Produces all possibly disconnected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
@@ -141,17 +162,19 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         deg_range_2 = (1, 2)
 
         # check if valid
-        if (nvertices >= 1 and nloops >= 0 and nhairs >= 0 and n_edges_bip >= n_vertices_2
+        if (nvertices >= 1 and nedges >= 0 and nhairs >= 0 and n_edges_bip >= n_vertices_2
             and n_edges_bip <= 2*n_vertices_2 and n_edges_bip >= 3 * n_vertices_1
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):
             bipartite_graphs = NautyInterface.list_bipartite_graphs_disc(
-                n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip)
+                n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip, 1)
 
             for G in bipartite_graphs:
                 yield self._bip_to_ordinary(G, nvertices, nedges, nhairs)
 
+    @dump_args
     def get_hairy_graphs_with_hair_edges(self, nvertices, nloops, nhairs):
         """ Same as before, but graphs can contaîn edges between hairs"""
+        count = 0
         nedges = nloops + nvertices - 1
         max_hairedges = min(nhairs // 2, nedges)
         for n_hairedges in range(0, max_hairedges+1):
@@ -162,21 +185,36 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                     G.add_vertex(nverts + 2*j)
                     G.add_vertex(nverts + 2*j+1)
                     G.add_edge(nverts + 2*j, nverts + 2*j+1)
+                print("hairy", count)
+                count += 1
                 yield G
 
-    def get_generating_graphs(self, nvertices, nloops, nhairs, nws):
+    def get_generating_graphs(self):
         """
         Produces a list of generating graphs
         """
+        nvertices = self.n_vertices
+        nloops = self.n_loops
+        nhairs = self.n_hairs
+        nws = self.n_ws
+
+        count = 0
         # we have to have at least one eps or w
         mineps = 1 if nws == 0 else 0
-        maxeps = nloops - nws + 1
+        maxeps = nloops - nws + nvertices
+        # print(maxeps)
         for neps in range(mineps, maxeps+1):
             # Produce all permutations of the hairs
-            all_perm = [list(range(0, nvertices)) + list(p)
-                        for p in itertools.permutations(range(nvertices, nvertices+nhairs+neps+nws))]
-            for G in self.get_hairy_graphs(nvertices, nloops, nhairs+nws+neps):
+            vlist = list(range(0, nvertices))
+            all_perm = [vlist + list(p)
+                        for hs in itertools.permutations(range(nvertices+neps+nws, nvertices+nhairs+neps+nws))
+                        for pp in ShuffleProduct(range(nvertices, nvertices+neps), range(nvertices+neps, nvertices+neps+nws))
+                        for p in ShuffleProduct(hs, pp)]
+            print(len(all_perm))
+            for G in self.get_hairy_graphs_with_hair_edges(nvertices, nloops-nws-neps+1, nhairs+nws+neps):
                 for p in all_perm:
+                    print("gengr", count, len(all_perm), neps, maxeps)
+                    count += 1
                     GGG = G.relabel(p, inplace=False)
                     # check for connectivity
                     GG = copy(GGG)
