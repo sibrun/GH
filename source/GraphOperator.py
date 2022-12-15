@@ -1400,8 +1400,8 @@ class Differential(OperatorMatrixCollection):
         fail_l = len(fail)
         print("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" % (
             triv_l, succ_l, inc_l, fail_l))
-        logger.warninging("Square zero test for %s:" % str(self))
-        logger.warninging("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
+        logger.warning("Square zero test for %s:" % str(self))
+        logger.warning("trivial success: %d, success: %d, inconclusive: %d, failed: %d pairs" %
                           (triv_l, succ_l, inc_l, fail_l))
         return (triv_l, succ_l, inc_l, fail_l)
 

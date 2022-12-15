@@ -117,7 +117,10 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        return [list(range(0, self.n_vertices))] + [[self.n_vertices]] + [list(range(self.n_vertices+1, self.n_vertices+1+self.n_ws))] + [[j] for j in range(self.n_vertices+1+self.n_ws, self.n_vertices + self.n_hairs+self.n_ws+1)]
+        ret = [list(range(0, self.n_vertices))] + [[self.n_vertices]] + [list(range(self.n_vertices+1, self.n_vertices+1+self.n_ws))] + [[j] for j in range(self.n_vertices+1+self.n_ws, self.n_vertices + self.n_hairs+self.n_ws+1)]
+        # take out empty lists
+        # return [l for l in ret if l != []]
+        return ret
 
     def plot_graph(self, G):
         GG = Graph(G, loops=True)
@@ -175,10 +178,11 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_hairy_graphs_with_hair_edges(self, nvertices, nloops, nhairs):
         """ Same as before, but graphs can contaîn edges between hairs"""
         count = 0
-        nedges = nloops + nvertices - 1
+        nedges = nloops + nvertices + nhairs - 1
         max_hairedges = min(nhairs // 2, nedges)
         for n_hairedges in range(0, max_hairedges+1):
-            for G in self.get_hairy_graphs_no_hair_edge(nvertices, nloops-n_hairedges, nhairs-2*n_hairedges):
+            print("hairy0", n_hairedges)
+            for G in self.get_hairy_graphs_no_hair_edge(nvertices, nloops+n_hairedges, nhairs-2*n_hairedges):
                 # add n_hairedges hair edges
                 nverts = nvertices + nhairs-2*n_hairedges
                 for j in range(n_hairedges):
@@ -188,6 +192,15 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                 print("hairy", count)
                 count += 1
                 yield G
+
+        # if applicable, produce the graph with only hair edges
+        if nhairs % 2 == 0 and nvertices == 0 and nloops == -nhairs //2 + 1:
+            G = Graph(nhairs)
+            for j in range(nhairs //2):
+                G.add_edge(2*j, 2*j+1)
+            print("hairyall", count)
+            count += 1
+            yield G
 
     def get_generating_graphs(self):
         """
@@ -201,7 +214,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         count = 0
         # we have to have at least one eps or w
         mineps = 1 if nws == 0 else 0
-        maxeps = nloops - nws + nvertices
+        maxeps = 2+nws+nvertices+nhairs   #nloops - nws + nvertices
         # print(maxeps)
         for neps in range(mineps, maxeps+1):
             # Produce all permutations of the hairs
@@ -210,7 +223,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                         for hs in itertools.permutations(range(nvertices+neps+nws, nvertices+nhairs+neps+nws))
                         for pp in ShuffleProduct(range(nvertices, nvertices+neps), range(nvertices+neps, nvertices+neps+nws))
                         for p in ShuffleProduct(hs, pp)]
-            print(len(all_perm))
+            # print("allperm", all_perm)
             for G in self.get_hairy_graphs_with_hair_edges(nvertices, nloops-nws-neps+1, nhairs+nws+neps):
                 for p in all_perm:
                     print("gengr", count, len(all_perm), neps, maxeps)
@@ -228,7 +241,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                                 range(nvertices, nvertices+neps))
                             # check whether merge produces tadpole
                             tadpole_flag = sum(
-                                1 for v1 in vertstomerge for v2 in vertstomerge if GGG.has_edge((v1, v2)))
+                                1 for v1 in vertstomerge for v2 in vertstomerge if GGG.has_edge((v1, v2)) and v2>v1)
                             if tadpole_flag > 1:
                                 continue
                             GGG.merge_vertices(vertstomerge)
@@ -427,17 +440,19 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return 'contract edges'
 
     def operate_on(self, G):
+        print("operate on:", G.graph6_string(), self.domain.get_ordered_param_dict())
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
         for (i, e) in enumerate(G.edges(labels=False)):
             (u, v) = e
-            # only edges not connected to a numbered hair-vertex can be contracted
-            if u >= self.domain.n_vertices+self.domain.n_ws+1 or v >= self.domain.n_vertices+self.domain.n_ws+1:
-                continue
 
             # ensure u<v (this should be always true anyway actually)
             if u > v:
                 u, v = v, u
+
+            # only edges connected to at least one internal vertex, and not connected to a numbered hair-vertex can be contracted
+            if u >= self.domain.n_vertices or v >= self.domain.n_vertices+self.domain.n_ws+1:
+                continue
 
             sgn = 1 if i % 2 == 0 else -1
             previous_size = G.size()
@@ -453,11 +468,13 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 G1.merge_vertices([v, u])
                 if (previous_size - G1.size()) != 1:
                     continue
-                G1.relabel(range(0, self.domain.n_vertices+1 +
+                G1.relabel(range(0, self.domain.n_vertices+self.domain.n_ws+
                            self.domain.n_hairs), inplace=True)
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
                 image.append((G1, sgn))
+                # image.append((Graph(G1.graph6_string()), sgn))
+                print("hmm0:", G.graph6_string(), G1.graph6_string())
             elif u < self.domain.n_vertices and v >= self.domain.n_vertices+1:
                 # the second vertex is now an omega-vertex, so we need to merge the vertex with the eps vertex
                 # after reconnecting one of the edges to omega
@@ -466,16 +483,17 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 # special care must be taken since a tadpole could be created at eps
                 # and this is true iff there is an edge u-eps
                 eps = self.domain.n_vertices
-                new_has_tadpole = G1.has_edge(u, eps)
-                # double tadpole => zero
-                if new_has_tadpole and previous_has_tadpole:
-                    continue
-                if new_has_tadpole:
-                    # remove the edge and compute the appropriate sign
-                    k = G1.edge_label(u, eps)
-                    G1.delete_edge(u, eps)
-                    sgn *= 1 if ((k % 2 == 0) == (k < i)) else -1
-                # loop over other neighbors w to be connected to omega
+                # new_has_tadpole = G1.has_edge(u, eps)
+                # # double tadpole => zero
+                # if new_has_tadpole and previous_has_tadpole:
+                #     continue
+                # if new_has_tadpole:
+                #     # remove the edge and compute the appropriate sign
+                #     k = G1.edge_label(u, eps)
+                #     G1.delete_edge(u, eps)
+                #     sgn *= 1 if ((k % 2 == 0) == (k < i)) else -1
+
+                # loop over neighbors w to be connected to omega
                 for w in G1.neighbors(u):
                     G2 = copy(G1)
                     sgn2 = sgn
@@ -483,6 +501,16 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                     old_label = G2.edge_label(u, w)
                     G2.delete_edge(u, w)
                     G2.add_edge(w, v, old_label)
+
+                    # we want to merge u and eps... however, this might create a tadpole
+                    new_has_tadpole = G2.has_edge(u, eps)
+                    if new_has_tadpole and previous_has_tadpole:
+                        continue
+                    if new_has_tadpole:
+                        # remove the edge and compute the appropriate sign
+                        k = G2.edge_label(u, eps)
+                        G2.delete_edge(u, eps)
+                        sgn *= 1 if ((k % 2 == 0) == (k < i)) else -1
 
                     # now merge u and eps
                     G2.merge_vertices([eps, u])
@@ -493,6 +521,11 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                                self.domain.n_hairs+self.domain.n_ws), inplace=True)
                     # find edge permutation sign
                     sgn2 *= Shared.shifted_edge_perm_sign2(G2)
+                    #sanity checks
+                    if G2.order() != self.target.n_vertices+self.target.n_hairs+self.target.n_ws+1:
+                        print("Error contract:", G.graph6_string(), G2.graph6_string())
+                    else:
+                        print("hmm:", G.graph6_string(), G2.graph6_string())
                     image.append((G2, sgn2))
 
         return image

@@ -328,6 +328,9 @@ class GraphVectorSpace(VectorSpace):
             corresponding permutation sign.
         :rtype: tuple(str, int)
         """
+        # print("graph_to_canon_g6", graph.graph6_string(), self.get_partition())
+        # graph = copy(graph)
+        # graph = Graph(graph.graph6_string())
         canonG, perm_dict = graph.canonical_label(
             partition=self.get_partition(), certificate=True,
             algorithm=Parameters.canonical_label_algorithm)
