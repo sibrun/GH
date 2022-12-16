@@ -52,9 +52,9 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
             print(g6, " has odd automorphisms")
         else:
             if not g6 in ba1:
-                print(g6, " not found in basis ", " v=", x)
+                print(g6, " not found in basis ", " v=", x," sgn=", sgn)
             else:
-                print(g6, " exists at index ", ba1.index(g6), " v=", x)
+                print(g6, " exists at index ", ba1.index(g6), " v=", x, " sgn=", sgn)
 
     # compute D^2
     ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
@@ -94,4 +94,5 @@ GC.square_zero_test()
 
 go1 = ContractEdgesGO.generate_operator(2,2,1,2)
 go2 = ContractEdgesGO.generate_operator(1,2,1,2)
+go2.target.plot_all_graphs_to_file(skip_existing=False)
 DSquareTestSingle(go1, go2, plot_basis=True)
