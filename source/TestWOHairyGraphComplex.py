@@ -52,9 +52,10 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
             print(g6, " has odd automorphisms")
         else:
             if not g6 in ba1:
-                print(g6, " not found in basis ", " v=", x," sgn=", sgn)
+                print(g6, " not found in basis ", " v=", x, " sgn=", sgn)
             else:
-                print(g6, " exists at index ", ba1.index(g6), " v=", x, " sgn=", sgn)
+                print(g6, " exists at index ", ba1.index(
+                    g6), " v=", x, " sgn=", sgn)
 
     # compute D^2
     ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
@@ -75,10 +76,10 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
         print("all entries zero, i.e., success.")
 
 
-
-
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
-GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
+# GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
+GC = WOHairyGC(range(5), range(3), range(
+    3), range(3), ['epstoomega', 'contract'])
 
 
 GC.build_basis(ignore_existing_files=False)
@@ -94,6 +95,8 @@ GC.build_matrix(ignore_existing_files=False)
 # VS1.display_basis_plots()
 
 GC.square_zero_test()
+
+GC.test_pairwise_anti_commutativity()
 
 # go1 = ContractEdgesGO.generate_operator(2,2,1,2)
 # go2 = ContractEdgesGO.generate_operator(1,2,1,2)
