@@ -77,12 +77,15 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
 
 
 
-GC = WOHairyGC(range(5), range(3), range(2), range(3), ['contract'])
+# GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
+GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
 
 
+GC.build_basis(ignore_existing_files=False)
 # GC.build_basis(ignore_existing_files=True)
 
-GC.build_matrix(ignore_existing_files=True)
+GC.build_matrix(ignore_existing_files=False)
+# GC.build_matrix(ignore_existing_files=True)
 
 # VS1 = WOHairyGraphVS(1, 4, 1, 3)
 # print(VS1.is_valid())
@@ -92,7 +95,22 @@ GC.build_matrix(ignore_existing_files=True)
 
 GC.square_zero_test()
 
-go1 = ContractEdgesGO.generate_operator(2,2,1,2)
-go2 = ContractEdgesGO.generate_operator(1,2,1,2)
-go2.target.plot_all_graphs_to_file(skip_existing=False)
-DSquareTestSingle(go1, go2, plot_basis=True)
+# go1 = ContractEdgesGO.generate_operator(2,2,1,2)
+# go2 = ContractEdgesGO.generate_operator(1,2,1,2)
+# go2.target.plot_all_graphs_to_file(skip_existing=False)
+# DSquareTestSingle(go1, go2, plot_basis=False)
+
+# G1 = Graph("EkQ?")
+# ret = go1.operate_on(G1)
+# for g, x in ret:
+#     g6, sgn = go1.target.graph_to_canon_g6(g)
+#     print(g.graph6_string(), g6, x, sgn)
+
+# G2 = Graph(4)
+# G2.add_edge((0,1))
+# G2.add_edge((0,2))
+# G2.add_edge((0,3))
+# go3 = ContractEdgesGO.generate_operator(1,1,1,1)
+# ret = go3.operate_on(G2)
+# for g, x in ret:
+#     print(g.graph6_string(), x)

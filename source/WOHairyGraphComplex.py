@@ -455,10 +455,12 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 continue
 
             sgn = 1 if i % 2 == 0 else -1
+            # print("sgn0",sgn)
             previous_size = G.size()
             previous_has_tadpole = (
                 previous_size - self.domain.n_vertices - self.domain.n_hairs < self.domain.n_loops)
             sgn *= -1 if previous_has_tadpole else 1
+            # print("sgn1",sgn)
             G1 = copy(G)
             # label all edges to determine sign later
             Shared.enumerate_edges(G1)
@@ -472,6 +474,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                            self.domain.n_hairs), inplace=True)
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
+                # print("sgn3_",sgn)
                 image.append((G1, sgn))
                 # image.append((Graph(G1.graph6_string()), sgn))
                 print("hmm0:", G.graph6_string(), G1.graph6_string())
@@ -510,7 +513,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                         # remove the edge and compute the appropriate sign
                         k = G2.edge_label(u, eps)
                         G2.delete_edge(u, eps)
-                        sgn *= 1 if ((k % 2 == 0) == (k < i)) else -1
+                        sgn2 *= 1 if ((k % 2 == 0) == (k < i)) else -1
 
                     # now merge u and eps
                     G2.merge_vertices([eps, u])
@@ -687,23 +690,40 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return 'contract edges'
 
     def operate_on(self, G):
-        GG = copy(G)
+        G1 = copy(G)
         sgn = (-1)**G.size()
         image = []
 
+        # label all edges to determine sign later
+        Shared.enumerate_edges(G1)
+
         # add one new omega vertex in position n_vertices +1
-        GG.relabel(list(range(self.domain.n_vertices)) + list(range(self.domain.n_vertices +
-                   1, self.domain.n_vertices+self.domain.n_ws+self.domain.n_hairs+1)))
-        GG.add_vertex(self.domain.n_vertices+1)
+        G1.relabel(list(range(self.domain.n_vertices+1)) + list(range(self.domain.n_vertices +
+                   2, self.domain.n_vertices+self.domain.n_ws+self.domain.n_hairs+2)))
+        G1.add_vertex(self.domain.n_vertices+1)
 
         # reconnect one eps edge to the new vertex
         eps = self.domain.n_vertices
         new_w = self.domain.n_vertices+1
-        for v in GG.neighbors(eps):
-            GGG = copy(GG)
-            GGG.delete_edge(v, eps)
-            GGG.add_edge(v, new_w)
-            image.append((GGG, sgn))
+        for v in G1.neighbors(eps):
+            sgn2 = sgn
+            G2 = copy(G1)
+            old_label = G2.edge_label(v, eps)
+            G2.delete_edge(v, eps)
+            G2.add_edge(v, new_w, old_label)
+            sgn2 *= Shared.shifted_edge_perm_sign2(G2)
+            image.append((G2, sgn2))
+
+        # In case the original graph has a tadpole at eps, we also have to reconnect the tadpole edge (twice)
+        previous_size = G.size()
+        previous_has_tadpole = (
+                previous_size - self.domain.n_vertices - self.domain.n_hairs < self.domain.n_loops)
+        if previous_has_tadpole:
+            sgn2 = sgn
+            G2 = copy(G1)
+            G2.add_edge(eps, new_w, -1) # the tadpole edges label is the first in the ordering
+            sgn2 *= Shared.shifted_edge_perm_sign2(G2)
+            image.append((G2, 2*sgn2)) #factor 2 because tadpole has 2 eps vertices
 
         return image
 
@@ -855,10 +875,11 @@ class WOHairyGC(GraphComplex.GraphComplex):
         sum_vector_space = WOHairyGraphSumVS(
             self.v_range, self.l_range, self.h_range, self.w_range)
         differential_list = []
-        if not set(differentials).issubset(['contract', 'contract_iso']):
+        if not set(differentials).issubset(['contract', 'contract_iso', 'epstoomega', 'epstoomega_iso']):
             raise ValueError(
                 "Differentials for hairy graph complex: 'contract'")
         contract_edges_dif = ContractEdgesD(sum_vector_space)
+        epstoomega_dif = EpsToOmegaD(sum_vector_space)
         if 'contract' in differentials:
             differential_list.append(contract_edges_dif)
         if 'contract_iso' in differentials:
@@ -866,6 +887,8 @@ class WOHairyGC(GraphComplex.GraphComplex):
                 contract_edges_dif)
             differential_list.append(contract_iso_edges_dif)
             print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
+        if 'epstoomega' in differentials:
+            differential_list.append(epstoomega_dif)
         super(WOHairyGC, self).__init__(sum_vector_space, differential_list)
 
     def __str__(self):
