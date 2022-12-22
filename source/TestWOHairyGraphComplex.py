@@ -79,7 +79,7 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
 # GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
 GC = WOHairyGC(range(6), range(3,4), range(
-    4), range(5), ['epstoomega', 'contract'])
+    5), range(4), ['epstoomega', 'contract'])
 
 
 GC.build_basis(ignore_existing_files=False)
@@ -105,18 +105,18 @@ GC.print_cohomology_dim()
 
 
 
-go1 = ContractEdgesGO.generate_operator(5,3,2,1)
-go2 = ContractEdgesGO.generate_operator(4,3,2,1)
-# go2.target.plot_all_graphs_to_file(skip_existing=False)
-# DSquareTestSingle(go1, go2, plot_basis=True)
+# go1 = ContractEdgesGO.generate_operator(5,3,2,1)
+# go2 = ContractEdgesGO.generate_operator(4,3,2,1)
+# # go2.target.plot_all_graphs_to_file(skip_existing=False)
+# # DSquareTestSingle(go1, go2, plot_basis=True)
 
-D = go1.get_matrix()
-DD = go2.get_matrix()
+# D = go1.get_matrix()
+# DD = go2.get_matrix()
 
-print(DD.right_kernel())
-print(D.transpose().image())
+# print(DD.right_kernel())
+# print(D.transpose().image())
 
-go2.domain.display_basis_plots()
+# go2.domain.display_basis_plots()
 # G1 = Graph("EkQ?")
 # ret = go1.operate_on(G1)
 # for g, x in ret:
