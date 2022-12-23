@@ -78,15 +78,15 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
 
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
 # GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
-GC = WOHairyGC(range(5), range(3), range(
-    3), range(3), ['epstoomega', 'contract'])
+GC = WOHairyGC(range(6), range(3, 4), range(
+    3, 4), range(3), ['epstoomega', 'contract'])
 
 
-GC.build_basis(ignore_existing_files=False)
-# GC.build_basis(ignore_existing_files=True)
+# GC.build_basis(ignore_existing_files=False)
+GC.build_basis(ignore_existing_files=True)
 
-GC.build_matrix(ignore_existing_files=False)
-# GC.build_matrix(ignore_existing_files=True)
+# GC.build_matrix(ignore_existing_files=False)
+GC.build_matrix(ignore_existing_files=True)
 
 # VS1 = WOHairyGraphVS(1, 4, 1, 3)
 # print(VS1.is_valid())
@@ -97,6 +97,10 @@ GC.build_matrix(ignore_existing_files=False)
 GC.square_zero_test()
 
 GC.test_pairwise_anti_commutativity()
+
+GC.compute_rank(sage="integer", ignore_existing_files=True)
+GC.print_dim_and_eulerchar()
+GC.print_cohomology_dim()
 
 # go1 = ContractEdgesGO.generate_operator(2,2,1,2)
 # go2 = ContractEdgesGO.generate_operator(1,2,1,2)
