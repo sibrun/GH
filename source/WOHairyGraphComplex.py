@@ -217,10 +217,14 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         mineps = 1 if nws == 0 else 0
         maxeps = 2+nws+nvertices+nhairs  # nloops - nws + nvertices
         maxeps = min(maxeps, 2*nloops + nhairs - nws)
+        # cannot have more eps than excess... mind that nloops does not include the genus at the special vertex
+        maxeps = min(maxeps, 3*nloops+2*nhairs-2*nws)
+        # maxeps = min(maxeps, 3*nloops+2*nhairs-22)
         # print(maxeps)
         for neps in range(mineps, maxeps+1):
             # Produce all permutations of the hairs
             vlist = list(range(0, nvertices))
+            print("neps",neps, "nws",nws)
             all_perm = [vlist + list(p)
                         for hs in itertools.permutations(range(nvertices+neps+nws, nvertices+nhairs+neps+nws))
                         for pp in ShuffleProduct(range(nvertices, nvertices+neps), range(nvertices+neps, nvertices+neps+nws))

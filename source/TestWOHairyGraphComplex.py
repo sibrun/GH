@@ -78,16 +78,16 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
 
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
 # GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
-GC = WOHairyGC(range(3), range( 4), range(6), range(6), ['epstoomega', 'contract'])
+GC = WOHairyGC(range(0,15), range(5,7), range(0,1), range(0,2   ), ['epstoomega', 'contract'])
 
 
-GC.build_basis(ignore_existing_files=False)
-# GC.build_basis(ignore_existing_files=True)
+# GC.build_basis(ignore_existing_files=False)
+GC.build_basis(ignore_existing_files=True)
 
-GC.build_matrix(ignore_existing_files=False)
-# GC.build_matrix(ignore_existing_files=True)
+# GC.build_matrix(ignore_existing_files=False)
+GC.build_matrix(ignore_existing_files=True)
 
-GC.compute_rank(sage="integer")
+GC.compute_rank(sage="integer", ignore_existing_files=True)
 # GC.compute_rank(sage="integer", ignore_existing_files=True)
 
 # GC.compute_rank(sage="integer")
