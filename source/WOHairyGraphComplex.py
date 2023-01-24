@@ -150,7 +150,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return GCDimensions.get_wrhairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
         # return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) * (self.n_vertices ** self.n_hairs) / factorial(self.n_vertices)
 
-    @dump_args
+    # @dump_args
     def get_hairy_graphs_no_hair_edge(self, nvertices, nloops, nhairs):
         """ Produces all possibly disconnected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
@@ -175,14 +175,14 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             for G in bipartite_graphs:
                 yield self._bip_to_ordinary(G, nvertices, nedges, nhairs)
 
-    @dump_args
+    # @dump_args
     def get_hairy_graphs_with_hair_edges(self, nvertices, nloops, nhairs):
         """ Same as before, but graphs can contaîn edges between hairs"""
         count = 0
         nedges = nloops + nvertices + nhairs - 1
         max_hairedges = min(nhairs // 2, nedges)
         for n_hairedges in range(0, max_hairedges+1):
-            print("hairy0", n_hairedges)
+            # print("hairy0", n_hairedges)
             for G in self.get_hairy_graphs_no_hair_edge(nvertices, nloops+n_hairedges, nhairs-2*n_hairedges):
                 # add n_hairedges hair edges
                 nverts = nvertices + nhairs-2*n_hairedges
@@ -190,7 +190,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                     G.add_vertex(nverts + 2*j)
                     G.add_vertex(nverts + 2*j+1)
                     G.add_edge(nverts + 2*j, nverts + 2*j+1)
-                print("hairy", count)
+                # print("hairy", count)
                 count += 1
                 yield G
 
@@ -199,7 +199,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             G = Graph(nhairs)
             for j in range(nhairs // 2):
                 G.add_edge(2*j, 2*j+1)
-            print("hairyall", count)
+            # print("hairyall", count)
             count += 1
             yield G
 
@@ -216,10 +216,15 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # we have to have at least one eps or w
         mineps = 1 if nws == 0 else 0
         maxeps = 2+nws+nvertices+nhairs  # nloops - nws + nvertices
+        maxeps = min(maxeps, 2*nloops + nhairs - nws)
+        # cannot have more eps than excess... mind that nloops does not include the genus at the special vertex
+        maxeps = min(maxeps, 3*nloops+2*nhairs-2*nws)
+        # maxeps = min(maxeps, 3*nloops+2*nhairs-22)
         # print(maxeps)
         for neps in range(mineps, maxeps+1):
             # Produce all permutations of the hairs
             vlist = list(range(0, nvertices))
+            print("neps",neps, "nws",nws)
             all_perm = [vlist + list(p)
                         for hs in itertools.permutations(range(nvertices+neps+nws, nvertices+nhairs+neps+nws))
                         for pp in ShuffleProduct(range(nvertices, nvertices+neps), range(nvertices+neps, nvertices+neps+nws))
@@ -227,7 +232,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             # print("allperm", all_perm)
             for G in self.get_hairy_graphs_with_hair_edges(nvertices, nloops-nws-neps+1, nhairs+nws+neps):
                 for p in all_perm:
-                    print("gengr", count, len(all_perm), neps, maxeps)
+                    # print("gengr", count, len(all_perm), neps, maxeps)
                     count += 1
                     GGG = G.relabel(p, inplace=False)
                     # check for connectivity
@@ -441,8 +446,8 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return 'contract edges'
 
     def operate_on(self, G):
-        print("operate on:", G.graph6_string(),
-              self.domain.get_ordered_param_dict())
+        # print("operate on:", G.graph6_string(),
+            #   self.domain.get_ordered_param_dict())
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
         for (i, e) in enumerate(G.edges(labels=False)):
@@ -479,7 +484,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 # print("sgn3_",sgn)
                 image.append((G1, sgn))
                 # image.append((Graph(G1.graph6_string()), sgn))
-                print("hmm0:", G.graph6_string(), G1.graph6_string())
+                # print("hmm0:", G.graph6_string(), G1.graph6_string())
             elif u < self.domain.n_vertices and v >= self.domain.n_vertices+1:
                 # the second vertex is now an omega-vertex, so we need to merge the vertex with the eps vertex
                 # after reconnecting one of the edges to omega
@@ -530,8 +535,8 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                     if G2.order() != self.target.n_vertices+self.target.n_hairs+self.target.n_ws+1:
                         print("Error contract:", G.graph6_string(),
                               G2.graph6_string())
-                    else:
-                        print("hmm:", G.graph6_string(), G2.graph6_string())
+                    # else:
+                    #     print("hmm:", G.graph6_string(), G2.graph6_string())
                     image.append((G2, sgn2))
 
         return image
