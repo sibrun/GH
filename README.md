@@ -47,7 +47,7 @@ Continue inside the tmux shell.
 Mount a persistent storage location to the Docker container and run the docker image. 
 The generated data will be stored in the persistent storage location:
 ```
-$ docker run -it -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
+$ docker run -it -v <path to persistent storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
 For developing purposes mount the [GH/source](https://github.com/sibrun/GH/tree/master/source) 
 folder of a copy of the GH library to the Docker container such that the Docker container keeps track of changes in the source code:
@@ -56,7 +56,7 @@ $ docker run -it -v <path to GH library>/GH/source:/root/GH/source <name docker 
 ```
 It is possible to mount both the source directory as well as the data directory to the Docker container:
 ```
-$ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistant storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
+$ docker run -it -v <path to GH library>/GH/source:/root/GH/source -v <path to persistent storage location>:/root/GH/gh_data <name docker image:tagname> /bin/bash
 ```
 Run a command from the GH library (as stated below) inside the Docker container:
 ```
@@ -79,7 +79,7 @@ tmux kill-session -t <tmux process number>
 
 ## Running the tests
 
-Change to the [GH](https://github.com/sibrun/GH) directuory to run the tests:
+Change to the [GH](https://github.com/sibrun/GH) directory to run the tests:
 ```
 $ sage --python ./source/TestOrdinaryGraphComplex.py
 $ sage --python ./source/TestOrdinaryGraphBiComplex.py
