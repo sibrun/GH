@@ -356,15 +356,15 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
-def get_34cohom_dim(v,l, h, even_e, even_h):
-        """ Compute cohomology dimension ..."""
-        op1 = ContractEdgesGO.generate_operator(v,l, h,  even_e, even_h)
-        op2 = ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h)
-        opc = ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h, False)
+def get_34cohom_dim(v, l, h, even_e, even_h):
+    """ Compute cohomology dimension ..."""
+    op1 = ContractEdgesGO.generate_operator(v, l, h, even_e, even_h)
+    op2 = ContractEdgesGO.generate_operator(v + 1, l, h, even_e, even_h)
+    opc = ContractEdgesGO.generate_operator(v + 1, l, h, even_e, even_h, False)
 
-        return cohom_formatted_merkulov(op1, op2, opc)
+    return cohom_formatted_merkulov(op1, op2, opc)
 
-        # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
+    # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
 
 def cohom_formatted2(D1, D2):
     vs = D1.get_domain()
@@ -392,12 +392,12 @@ def cohom_formatted2(D1, D2):
 
     return str(d-r1-r2) + r_str
 
-def get_ref_cohom_dim(v,l, h, even_e, even_h):
-        """ Compute cohomology dimension ..."""
-        op1 = HairyGraphComplex.ContractEdgesGO.generate_operator(v,l, h,  even_e, even_h)
-        op2 = HairyGraphComplex.ContractEdgesGO.generate_operator(v+1,l, h,  even_e, even_h)
+def get_ref_cohom_dim(v, l, h, even_e, even_h):
+    """ Compute cohomology dimension ..."""
+    op1 = HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, even_e, even_h)
+    op2 = HairyGraphComplex.ContractEdgesGO.generate_operator(v+1, l, h, even_e, even_h)
        
-        return cohom_formatted2(op1, op2)
+    return cohom_formatted2(op1, op2)
 
 # ------- Graph Complexes --------
 class HairyMerkulovGC(GraphComplex.GraphComplex):

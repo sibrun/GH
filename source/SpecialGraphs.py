@@ -58,10 +58,10 @@ def forested_ring_graph(n_marked_edges : int):
     return G
 
 def forested_morita_graph(k: int, p):
-    """Generates the Morita graphs whose linear combinations span the low degree cohomology 
+    """Generates the Morita graphs whose linear combinations span the low degree cohomology
     of the odd_e forested graph complex.
     They have 2*k vertices and k+2 unmarked edges and 2*k-2 marked edges.
-    p is the zero-based permutation connecting both halfs of the graph.
+    p is the zero-based permutation connecting both halves of the graph.
     Mind that unmarked edges are represented by bivalent vertices in the forested 
     graph complex.
     """

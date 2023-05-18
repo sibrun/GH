@@ -3,11 +3,12 @@
 It provides functionality to compare the basis of a vector space as well as the operator matrices with
 reference data.
 """
+import os
 
 __all__ = ['RefGraphVectorSpace', 'RefOperatorMatrix']
 
 import Log
-from sage.all import *
+from sage.all import ZZ, matrix, Graph
 import StoreLoad
 import Parameters
 
@@ -177,7 +178,7 @@ class RefOperatorMatrix(object):
                 Matrix index too large.
         """
         if not self.exists_matrix_file():
-           raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
+            raise StoreLoad.FileNotFoundError("%s: Reference basis file not found" % str(self))
         stringList = StoreLoad.load_string_list(self.matrix_file_path)
         entriesList = []
         if len(stringList) == 0:
@@ -255,5 +256,5 @@ class RefOperatorMatrix(object):
         :raise StoreLoad.FileNotFoundError: Raised if reference rank file not found.
         """
         if not self.exists_rank_file():
-           raise StoreLoad.FileNotFoundError("%s: Reference rank file not found" % str(self))
+            raise StoreLoad.FileNotFoundError("%s: Reference rank file not found" % str(self))
         return int(StoreLoad.load_line(self.rank_file_path))

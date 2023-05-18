@@ -7,9 +7,10 @@ import StoreLoad as SL
 
 
 def cond_decorator(flag, dec):
-   def decorate(func):
-      return dec(func) if flag else func
-   return decorate
+    def decorate(func):
+        return dec(func) if flag else func
+    return decorate
+
 
 def profile(dir_name):
     def inner(func):

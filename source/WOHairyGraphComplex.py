@@ -1,4 +1,4 @@
-"""Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations 
+"""Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations
 as in the graph complex computing weight 11 cohomology.
 
 The omega decorations are considered odd !!!!
@@ -12,14 +12,16 @@ from the overall one too small loop number.
 There must not be tadpoles at internal vertices
 TODO: Take care that this does not produce problems
 """
-
+import math
+import os
+from copy import copy
 
 # __all__ = ['WOHairyGraphVS', 'WOHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
 #            'RestrictedContractEdgesGO', 'RestrictedContractEdgesD',
 #            'SymmProjector', 'WOHairyGC']
 
 import itertools
-from sage.all import *
+from sage.all import Graph
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -447,7 +449,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
 
     def operate_on(self, G):
         # print("operate on:", G.graph6_string(),
-            #   self.domain.get_ordered_param_dict())
+        #   self.domain.get_ordered_param_dict())
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
         for (i, e) in enumerate(G.edges(labels=False)):

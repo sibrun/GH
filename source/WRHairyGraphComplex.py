@@ -1,4 +1,4 @@
-"""Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations 
+"""Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations
 as in [Payne-Willwacher, arXiv:2110.05711].
 
 Implemented Differentials: Contract edges.
@@ -11,14 +11,17 @@ WARNING: If there is a tadpole the corresponding loop is not part of the graph--
 from the overall one too small loop number.
 TODO: Take care that this does not produce problems
 """
-
+import os
+import math
 
 __all__ = ['WRHairyGraphVS', 'WRHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'RestrictedContractEdgesGO', 'RestrictedContractEdgesD',
            'SymmProjector', 'WRHairyGC']
 
 import itertools
-from sage.all import *
+from copy import copy
+
+from sage.all import Graph
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -343,7 +346,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return self.n_hairs
 
     def vertex_permutation_from_permutation(self, p):
-        return list(range(0, self.n_vertices+2)) + [j+self.n_vertices+1 for j in p]
+        return list(range(self.n_vertices+2)) + [j+self.n_vertices+1 for j in p]
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
