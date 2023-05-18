@@ -104,7 +104,7 @@ class InfoTracker(object):
         - parameter_names_list (list(str)): List with the parameter and property names.
         - data_dict (dict(tuple -> tuple/list)): Dictionary (parameters -> properties) containing the data.
         - queue (Queue): Queue to push new data.
-        - p (multiprocessing.Process): Process which runs the information trakcer.
+        - p (multiprocessing.Process): Process which runs the information tracker.
         - f (tempfile.NamedTemporaryFile): Temporary html file.
         - html_path (path): Path to the temporary html file.
         - url (url): Url of the html file to open in the webbrowser.

@@ -113,7 +113,7 @@ cohomology dimensions of the associated graph complexs for each differential:
 ```
 $ sage --python ./source/GraphHomology.py ordinary -op1 contract -op2 delete -v 0,12 -l 0,9 -odd_e -square_zero -anti_commute -cohomology
 ```
-The comhomology dimensions of the bicomplex with the two differentials contract edges and delete edges can be computed with:
+The cohomology dimensions of the bicomplex with the two differentials contract edges and delete edges can be computed with:
 ```
 $ sage --python ./source/GraphHomology.py ordinary -bicomplex contract_delete -d 0,18 -odd_e -n_jobs 4 -sage mod -build_b -build_op -rank -square_zero -cohomology -csv
 ```

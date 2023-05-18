@@ -551,7 +551,7 @@ class GraphVectorSpace(VectorSpace):
         P.save(path)
 
     def plot_all_graphs_to_file(self, skip_existing=False):
-        """ Plots all graphs in the basis of this vector space and stores then into their repsective file paths.
+        """ Plots all graphs in the basis of this vector space and stores then into their respective file paths.
         The respective filename is the index of the graph in the basis (plus .png).
         """
         ba = self.get_basis()
