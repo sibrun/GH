@@ -86,7 +86,7 @@ StoreLoad.makedirs(latexdir)
 alldata_tex = r"""
 \documentclass{amsart}
 %\usepackage{fullpage}
-\usepackage[a4paper, landscape, margin=0.5in]{geometry}
+\usepackage[a4paper, margin=0.5in]{geometry}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{diagbox}
@@ -1012,9 +1012,9 @@ def write_tables():
     # with open(latexfile_hairy_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_hairy_cohom_table(range(20), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
-    # with open(latexfile_hairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_hairy_cohom_table(range(18), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
+    with open(latexfile_hairy_cohom, 'w') as f:
+        f.write(s)
 
     print("CHairy....")
     # s = create_chairy_vs_table(range(20), range(12), range(6))
