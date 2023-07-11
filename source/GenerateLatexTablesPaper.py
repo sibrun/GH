@@ -977,17 +977,17 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 def write_tables():
     # Generate tables
     print("Ordinary....")
-    s = create_ordinary_vs_table(range(4, 24), range(3, 13))
-    with open(latexfile_ordinary_vs, 'w') as f:
-        f.write(s)
+    # s = create_ordinary_vs_table(range(4, 24), range(3, 13))
+    # with open(latexfile_ordinary_vs, 'w') as f:
+    #     f.write(s)
 
     # s = create_ordinary_ops_table(range(4, 24), range(3, 13))
     # with open(latexfile_ordinary_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
-    # with open(latexfile_ordinary_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
+    with open(latexfile_ordinary_cohom, 'w') as f:
+        f.write(s)
 
     print("Ordinary Merkulov....")
     # s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
