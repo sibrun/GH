@@ -109,7 +109,7 @@ alldata_tex = r"""
 %\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
 \newcolumntype{M}{V{3cm}}
 \newcolumntype{D}{V{6cm}}
-\newcolumntype{F}{p{2cm}} % fixed width
+\newcolumntype{F}{p{1cm}} % fixed width
 
 
 \usepackage[table]{xcolor}
@@ -127,7 +127,17 @@ alldata_tex = r"""
 \newpage
 
 \section{Hairy}
-\input{hairy_cohom.tex}
+\subsection{ee}
+\input{hairy_cohom_ee.tex}
+\newpage
+\subsection{eo}
+\input{hairy_cohom_eo.tex}
+\newpage
+\subsection{oe}
+\input{hairy_cohom_oe.tex}
+\newpage
+\subsection{oo}
+\input{hairy_cohom_oo.tex}
 
 \newpage
 
@@ -605,27 +615,27 @@ def is_hairy_zero(v, l, h):
     return (v < l+h-2) or (v > 2*l-2+h)
 
 
-def create_hairy_cohom_table(v_range, hl_pairs):
+def create_hairy_cohom_table(v_range, hl_pairs, even_edges, even_hairs):
     s = ""
 
     header = ["l,v"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
-        for even_hairs in [True, False]:
-            s = s + "\n\n\\smallskip\n\n" + \
-                ("even" if even_edges else "odd") + " edges, " + \
-                ("even" if even_hairs else "odd") + " hairs \n\n"
-            for h, l_range in hl_pairs:
-                s = s + f"\n{h} hairs\n\n"
-                data = []
-                for l in l_range:
-                    data.append(
-                        [str(l)] + [cohom_formatted2(
-                            HairyGraphComplex.ContractEdgesGO.generate_operator(
-                                v, l, h, even_edges, even_hairs),
-                            HairyGraphComplex.ContractEdgesGO.generate_operator(
-                                v+1, l, h, even_edges, even_hairs)
-                        ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
-                s = s+latex_table(header, data,scale=0.75, coltype="F")
+    # for even_edges in [True, False]:
+    #     for even_hairs in [True, False]:
+    # s = s + "\n\n\\smallskip\n\n" #+ \
+        # ("even" if even_edges else "odd") + " edges, " + \
+        # ("even" if even_hairs else "odd") + " hairs \n\n"
+    for h, l_range in hl_pairs:
+        s = s + f"\n\n{h} hairs\n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted2(
+                    HairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v, l, h, even_edges, even_hairs),
+                    HairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, h, even_edges, even_hairs)
+                ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
+        s = s+latex_table(header, data,scale=0.75, coltype="F")
     return s
 
 
@@ -1013,9 +1023,18 @@ def write_tables():
     # s = create_hairy_ops_table(range(20), range(12), range(1, 9))
     # with open(latexfile_hairy_ops, 'w') as f:
     #     f.write(s)
-
-    s = create_hairy_cohom_table(range(18), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
-    with open(latexfile_hairy_cohom, 'w') as f:
+    hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6))]
+    s = create_hairy_cohom_table(range(18), hl_pairs, True, True)
+    with open(latexfile_hairy_cohom_ee, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, True, False)
+    with open(latexfile_hairy_cohom_eo, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, False, True)
+    with open(latexfile_hairy_cohom_oe, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, False, False)
+    with open(latexfile_hairy_cohom_oo, 'w') as f:
         f.write(s)
 
     print("CHairy....")
