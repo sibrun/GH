@@ -22,15 +22,15 @@ if __name__ == "__main__":
         FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
-        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(5), range(16), range(3,4), even_e)
+        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(6), range(16), range(3,4), even_e)
         FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
-        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(4), range(16), range(4,5), even_e)
+        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(5), range(16), range(4,5), even_e)
         FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
-        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(3), range(16), range(5,6), even_e)
+        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(4), range(16), range(5,6), even_e)
         FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 
