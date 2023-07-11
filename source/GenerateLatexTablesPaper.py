@@ -804,7 +804,8 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
                         CHairyGraphComplex.ContractEdgesGO.generate_operator(
                             v, l, h, even_edges),
                         CHairyGraphComplex.ContractEdgesGO.generate_operator(
-                            v+1, l, h, even_edges)
+                            v+1, l, h, even_edges),
+                        compute_iso=True
                     ) for v in v_range])
             s = s+latex_table(header, data)
     return s
