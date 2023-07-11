@@ -27,7 +27,7 @@ import SymmetricGraphComplex
 # Parameters.log_dir = Parameters.data_home_dir + "log"
 ##########
 
-latexdir = os.path.join(Parameters.plots_dir, "latex")
+latexdir = os.path.join(Parameters.plots_dir, "latex", "paper")
 
 latexfile_wrhairy_vs = os.path.join(latexdir, "wrhairy_vs.tex")
 latexfile_wrhairy_ops = os.path.join(latexdir, "wrhairy_ops.tex")
@@ -78,7 +78,7 @@ latexfile_forested_nobl_top_cohom = os.path.join(
 latexfile_forested_pre_vs = os.path.join(latexdir, "forested_pre_vs.tex")
 
 
-latexfile_alldata = os.path.join(latexdir, "alldata.tex")
+latexfile_alldata = os.path.join(latexdir, "alldata_paper.tex")
 
 
 StoreLoad.makedirs(latexdir)
@@ -115,122 +115,27 @@ alldata_tex = r"""
 \begin{document}
 
 \section{Ordinary}
-
-\subsection{VS Dimensions}
-\input{ordinary_vs.tex}
- 
-\subsection{Operator ranks}
-\input{ordinary_ops.tex}
-
-\subsection{Cohomology}
 \input{ordinary_cohom.tex}
 
 \newpage
 
 \section{Ordinary Merkulov}
-
-\subsection{VS Dimensions}
-\input{ordinaryme_vs.tex}
- 
-\subsection{Operator ranks}
-\input{ordinaryme_ops.tex}
-
-\subsection{Cohomology}
 \input{ordinaryme_cohom.tex}
 
 \newpage
 
 \section{Hairy}
-
-\subsection{VS Dimensions}
-\input{hairy_vs.tex}
- 
-\subsection{Operator ranks}
-\input{hairy_ops.tex}
-
-\subsection{Cohomology}
 \input{hairy_cohom.tex}
 
 \newpage
 
 \section{CHairy}
-
-\subsection{VS Dimensions}
-\input{chairy_vs.tex}
- 
-\subsection{Operator ranks}
-\input{chairy_ops.tex}
-
-\subsection{Cohomology}
 \input{chairy_cohom.tex}
 
 \newpage
 
-\section{BiCHairy}
-
-\subsection{VS Dimensions}
-\input{bichairy_vs.tex}
- 
-\subsection{Operator ranks}
-\input{bichairy_ops.tex}
-
-\subsection{Cohomology}
-\input{bichairy_cohom.tex}
-
-\newpage
-
-\section{WRHairy}
-
-\subsection{VS Dimensions}
-\input{wrhairy_vs.tex}
- 
-\subsection{Operator ranks}
-\input{wrhairy_ops.tex}
-
-\subsection{Cohomology}
-\input{wrhairy_cohom.tex}
-
-\newpage
-
-\section{Forested}
-
-\subsection{PreVS Dimensions}
-\input{forested_pre_vs.tex}
-
-\subsection{VS Dimensions}
-\input{forested_vs.tex}
- 
-\subsection{Operator ranks}
-\input{forested_ops.tex}
-
-\subsection{Cohomology}
-\input{forested_cohom.tex}
-
-\newpage
-
 \section{Forested Top}
-
-\subsection{VS Dimensions}
-\input{forested_top_vs.tex}
- 
-\subsection{Operator ranks}
-\input{forested_top_ops.tex}
-
-\subsection{Cohomology}
 \input{forested_top_cohom.tex}
-
-\newpage
-
-\section{Forested Top nobl}
-
-\subsection{VS Dimensions}
-\input{forested_top_vs_nobl.tex}
- 
-\subsection{Operator ranks}
-\input{forested_top_ops_nobl.tex}
-
-\subsection{Cohomology}
-\input{forested_top_cohom_nobl.tex}
 
 \end{document}
 """
@@ -698,7 +603,7 @@ def is_hairy_zero(v, l, h):
     return (v < l+h-2) or (v > 2*l-2+h)
 
 
-def create_hairy_cohom_table(v_range, l_range, h_range):
+def create_hairy_cohom_table(v_range, hl_pairs):
     s = ""
 
     header = ["l,v"] + [str(v) for v in v_range]
@@ -707,7 +612,7 @@ def create_hairy_cohom_table(v_range, l_range, h_range):
             s = s + "\n\n\\smallskip\n" + \
                 ("even" if even_edges else "odd") + " edges, " + \
                 ("even" if even_hairs else "odd") + " hairs \n\n"
-            for h in h_range:
+            for h, l_range in hl_pairs:
                 s = s + f"\n{h} hairs\n\n"
                 data = []
                 for l in l_range:
@@ -1071,10 +976,10 @@ def create_forested_top_cohom_table(l_range, m_range, h_range):
 
 def write_tables():
     # Generate tables
-    # print("Ordinary....")
-    # s = create_ordinary_vs_table(range(4, 24), range(3, 13))
-    # with open(latexfile_ordinary_vs, 'w') as f:
-    #     f.write(s)
+    print("Ordinary....")
+    s = create_ordinary_vs_table(range(4, 24), range(3, 13))
+    with open(latexfile_ordinary_vs, 'w') as f:
+        f.write(s)
 
     # s = create_ordinary_ops_table(range(4, 24), range(3, 13))
     # with open(latexfile_ordinary_ops, 'w') as f:
@@ -1084,7 +989,7 @@ def write_tables():
     # with open(latexfile_ordinary_cohom, 'w') as f:
     #     f.write(s)
 
-    # print("Ordinary Merkulov....")
+    print("Ordinary Merkulov....")
     # s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
     # with open(latexfile_ordinaryme_vs, 'w') as f:
     #     f.write(s)
@@ -1093,24 +998,24 @@ def write_tables():
     # with open(latexfile_ordinaryme_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
-    # with open(latexfile_ordinaryme_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
+    with open(latexfile_ordinaryme_cohom, 'w') as f:
+        f.write(s)
 
     print("Hairy....")
-    s = create_hairy_vs_table(range(22), range(12), range(1, 9))
-    with open(latexfile_hairy_vs, 'w') as f:
-        f.write(s)
+    # s = create_hairy_vs_table(range(22), range(12), range(1, 9))
+    # with open(latexfile_hairy_vs, 'w') as f:
+    #     f.write(s)
 
-    s = create_hairy_ops_table(range(20), range(12), range(1, 9))
-    with open(latexfile_hairy_ops, 'w') as f:
-        f.write(s)
+    # s = create_hairy_ops_table(range(20), range(12), range(1, 9))
+    # with open(latexfile_hairy_ops, 'w') as f:
+    #     f.write(s)
 
-    s = create_hairy_cohom_table(range(20), range(10), range(1, 9))
+    s = create_hairy_cohom_table(range(20), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
     with open(latexfile_hairy_cohom, 'w') as f:
         f.write(s)
 
-    # print("CHairy....")
+    print("CHairy....")
     # s = create_chairy_vs_table(range(20), range(12), range(6))
     # with open(latexfile_chairy_vs, 'w') as f:
     #     f.write(s)
@@ -1119,9 +1024,9 @@ def write_tables():
     # with open(latexfile_chairy_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_chairy_cohom_table(range(20), range(12), range(6))
-    # with open(latexfile_chairy_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_chairy_cohom_table(range(20), range(12), range(6))
+    with open(latexfile_chairy_cohom, 'w') as f:
+        f.write(s)
 
     # print("BiColoredHairy....")
     # s = create_bichairy_vs_table(range(25), range(12), range(6))
@@ -1136,7 +1041,7 @@ def write_tables():
     # with open(latexfile_bichairy_cohom, 'w') as f:
     #     f.write(s)
 
-    print("WRHairy....")
+    # print("WRHairy....")
     # s = create_wrhairy_vs_table(range(25), range(11), range(8), range(1, 3))
     # with open(latexfile_wrhairy_vs, 'w') as f:
     #     f.write(s)
@@ -1145,9 +1050,9 @@ def write_tables():
     # with open(latexfile_wrhairy_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_wrhairy_cohom_table(range(21), range(11), range(8), range(1, 3))
-    with open(latexfile_wrhairy_cohom, 'w') as f:
-        f.write(s)
+    # s = create_wrhairy_cohom_table(range(21), range(11), range(8), range(1, 3))
+    # with open(latexfile_wrhairy_cohom, 'w') as f:
+    #     f.write(s)
 
     # print("Forested....")
     # s = create_forested_vs_table(range(9), range(20), range(6))
@@ -1166,9 +1071,9 @@ def write_tables():
     # with open(latexfile_forested_cohom, 'w') as f:
     #     f.write(s)
 
-    # print("Forested Top BL....")
-    # ForestedGraphComplex.use_bridgeless = True
-    # ForestedGraphComplex.graph_type = "forestedbl"
+    print("Forested Top BL....")
+    ForestedGraphComplex.use_bridgeless = True
+    ForestedGraphComplex.graph_type = "forestedbl"
     # s = create_forested_top_vs_table(range(9), range(20), range(6))
     # with open(latexfile_forested_top_vs, 'w') as f:
     #     f.write(s)
@@ -1177,9 +1082,9 @@ def write_tables():
     # with open(latexfile_forested_top_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_top_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    with open(latexfile_forested_top_cohom, 'w') as f:
+        f.write(s)
 
     # print("Forested Top noBL....")
     # ForestedGraphComplex.use_bridgeless = False
