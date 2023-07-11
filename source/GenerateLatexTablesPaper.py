@@ -986,9 +986,9 @@ def write_tables():
     # with open(latexfile_ordinary_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
-    with open(latexfile_ordinary_cohom, 'w') as f:
-        f.write(s)
+    # s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
+    # with open(latexfile_ordinary_cohom, 'w') as f:
+    #     f.write(s)
 
     print("Ordinary Merkulov....")
     # s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
@@ -999,9 +999,9 @@ def write_tables():
     # with open(latexfile_ordinaryme_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
-    with open(latexfile_ordinaryme_cohom, 'w') as f:
-        f.write(s)
+    # s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
+    # with open(latexfile_ordinaryme_cohom, 'w') as f:
+    #     f.write(s)
 
     print("Hairy....")
     # s = create_hairy_vs_table(range(22), range(12), range(1, 9))
@@ -1012,9 +1012,9 @@ def write_tables():
     # with open(latexfile_hairy_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_hairy_cohom_table(range(20), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
-    with open(latexfile_hairy_cohom, 'w') as f:
-        f.write(s)
+    # s = create_hairy_cohom_table(range(20), [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6)),])
+    # with open(latexfile_hairy_cohom, 'w') as f:
+    #     f.write(s)
 
     print("CHairy....")
     # s = create_chairy_vs_table(range(20), range(12), range(6))
@@ -1083,9 +1083,9 @@ def write_tables():
     # with open(latexfile_forested_top_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    with open(latexfile_forested_top_cohom, 'w') as f:
-        f.write(s)
+    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
+    # with open(latexfile_forested_top_cohom, 'w') as f:
+    #     f.write(s)
 
     # print("Forested Top noBL....")
     # ForestedGraphComplex.use_bridgeless = False
