@@ -12,15 +12,15 @@ if __name__ == "__main__":
 
     for even_e in [True, False]:
         vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 1, even_e)
-                             for v in range(18) for l in range(8)]
+                             for v in range(18) for l in range(9)]
         vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 2, even_e)
-                             for v in range(18) for l in range(8)]
+                             for v in range(18) for l in range(9)]
         vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 3, even_e)
-                             for v in range(18) for l in range(8)]
-        vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 4, even_e)
                              for v in range(18) for l in range(7)]
-        vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 5, even_e)
+        vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 4, even_e)
                              for v in range(18) for l in range(6)]
+        vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 5, even_e)
+                             for v in range(18) for l in range(5)]
 
     sumvs = GraphVectorSpace.SumVectorSpace(vs_list)
 
