@@ -109,7 +109,7 @@ alldata_tex = r"""
 %\newcolumntype{M}{>{\begin{varwidth}{4cm}}c<{\end{varwidth}}} %M is for Maximal column
 \newcolumntype{M}{V{3cm}}
 \newcolumntype{D}{V{6cm}}
-\newcolumntype{F}{p{1cm}} % fixed width
+\newcolumntype{F}{p{.75cm}} % fixed width
 
 
 \usepackage[table]{xcolor}
@@ -128,16 +128,31 @@ alldata_tex = r"""
 
 \section{Hairy}
 \subsection{ee}
+
+\begin{center}
 \input{hairy_cohom_ee.tex}
+\end{center}
 \newpage
+
 \subsection{eo}
+
+\begin{center}
 \input{hairy_cohom_eo.tex}
+\end{center}
+
 \newpage
 \subsection{oe}
+
+\begin{center}
 \input{hairy_cohom_oe.tex}
+\end{center}
+
 \newpage
 \subsection{oo}
+
+\begin{center}
 \input{hairy_cohom_oo.tex}
+\end{center}
 
 \newpage
 
