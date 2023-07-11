@@ -623,7 +623,7 @@ def create_hairy_cohom_table(v_range, hl_pairs):
                             HairyGraphComplex.ContractEdgesGO.generate_operator(
                                 v+1, l, h, even_edges, even_hairs)
                         ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
-                s = s+latex_table(header, data)
+                s = s+latex_table(header, data,scale=0.75)
     return s
 
 
