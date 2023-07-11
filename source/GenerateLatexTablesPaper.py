@@ -640,7 +640,7 @@ def create_hairy_cohom_table(v_range, hl_pairs, even_edges, even_hairs):
         # ("even" if even_edges else "odd") + " edges, " + \
         # ("even" if even_hairs else "odd") + " hairs \n\n"
     for h, l_range in hl_pairs:
-        s = s + f"\n\n{h} hairs\n\n"
+        s = s + f"\n\n\\smallskip\n\n{h} hairs\n\n"
         data = []
         for l in l_range:
             data.append(
