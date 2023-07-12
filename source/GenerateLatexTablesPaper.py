@@ -1022,7 +1022,7 @@ def create_forested_top_cohom_table(m_range, hl_pairs, even_edges):
                         l, m+1, h, even_edges),
                     iso_dict=iso_strings
                 ) for m in m_range])
-        s = s+latex_table(header, data, coltype="F")
+        s = s+latex_table(header, data, coltype="F", scale=.75)
 
     return s
 
