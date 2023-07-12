@@ -360,7 +360,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
             cohom_string = ""
         if not cohom_string.strip().startswith("0"):
             ret.append( cohom_string + part_str)
-    iso_string = "$ " + "+".join(ret) + "$"
+    iso_string = "$ " + "$+$".join(ret) + "$"
     # todo: make sure we have no hash collisions among the different complexes
     iso_strings[D1.domain] = iso_string
     return iso_string
