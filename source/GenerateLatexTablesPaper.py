@@ -348,7 +348,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         D1iso = D1.restrict_to_isotypical_component(i)
         D2iso = D2.restrict_to_isotypical_component(i)
         isovs = D1iso.domain
-        if isovs.opP.rep_dim < cohom_dim:
+        if isovs.opP.rep_dim > cohom_dim:
             continue
         part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
         if not isovs.opP.exists_rank_file():
