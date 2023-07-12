@@ -850,7 +850,7 @@ def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
                         v+1, l, h, even_edges),
                     compute_iso=True
                 ) for v in v_range])
-        s = s+latex_table(header, data, scale=.4)
+        s = s+latex_table(header, data, scale=.4, coltype="D")
     return s
 
 
@@ -1078,10 +1078,10 @@ def write_tables():
     #     f.write(s)
 
     hl_pairs = [(2,range(9)),(3,range(8)),(4,range(7)),(5,range(6))]
-    s = create_chairy_cohom_table(range(20), hl_pairs, True)
+    s = create_chairy_cohom_table(range(16), hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
-    s = create_chairy_cohom_table(range(20),hl_pairs, False)
+    s = create_chairy_cohom_table(range(16),hl_pairs, False)
     with open(latexfile_chairy_cohom_o, 'w') as f:
         f.write(s)
 
