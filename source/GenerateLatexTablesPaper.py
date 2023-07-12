@@ -324,7 +324,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
     # isotypical components
     isostr = ""
     if compute_iso and cohomdim > 0 and vs.get_n() >= 2:
-        isostr = " (" + get_iso_string(D1, D2) + ")"
+        isostr = " (" + get_iso_string(D1, D2, cohomdim) + ")"
 
 
     return cohomdim_str + r_str + isostr
@@ -338,13 +338,18 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
 iso_strings = {}
 
 
-def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: SymmetricGraphComplex.SymmetricBiOperatorMatrix):
+def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: SymmetricGraphComplex.SymmetricBiOperatorMatrix, cohom_dim):
+    """ cohom_dim should be set to the total cohomology dimension.
+    Irreducible representations of higher dimension cannot appear in the decomposition.
+    """
     vs = D1.domain
     ret = []
     for i, p in enumerate(Partitions(vs.get_n())):
         D1iso = D1.restrict_to_isotypical_component(i)
         D2iso = D2.restrict_to_isotypical_component(i)
         isovs = D1iso.domain
+        if isovs.opP.rep_dim < cohom_dim:
+            continue
         part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
         if not isovs.opP.exists_rank_file():
             ret.append("?" + part_str)
