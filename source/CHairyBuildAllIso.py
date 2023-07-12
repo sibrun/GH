@@ -13,10 +13,15 @@ if __name__ == "__main__":
     op_list = []
     CGCs = []
     for even_e in [True, False]:
-        CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(8), range(2, 3), even_e, ['contract_iso']) )
-        CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(7), range(3, 4), even_e, ['contract_iso']) )
-        CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(6), range(4, 5), even_e, ['contract_iso']) )
-        CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(5), range(5, 6), even_e, ['contract_iso']) )
+        # CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(8), range(2, 3), even_e, ['contract_iso']) )
+        CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(5), range(3, 4), even_e, ['contract_iso']) )
+        CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(4), range(4, 5), even_e, ['contract_iso']) )
+        CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(3), range(5, 6), even_e, ['contract_iso']) )
+
+        # CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(8), range(2, 3), even_e, ['contract_iso']) )
+        # CGCs.append( CHairyGraphComplex.CHairyGC(range(0, 18), range(7), range(3, 4), even_e, ['contract_iso']) )
+        # CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(6), range(4, 5), even_e, ['contract_iso']) )
+        # CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(5), range(5, 6), even_e, ['contract_iso']) )
 
         
     print("Computing matrices")
