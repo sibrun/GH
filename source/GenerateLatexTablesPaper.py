@@ -340,7 +340,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
             ret.append("?" + part_str)
             continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
-        cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias)
+        cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias, divide_by=isovs.rep_dim)
         if cohom_string.strip() == "1" or cohom_string.strip() == "1 p":
             cohom_string = ""
         if not cohom_string.strip().startswith("0"):
