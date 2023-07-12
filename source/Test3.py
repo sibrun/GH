@@ -1,5 +1,6 @@
 import OrdinaryGraphComplex
 import CHairyGraphComplex
+import HairyGraphComplex
 import ForestedGraphComplex
 from sage.all import *
 import os
@@ -31,9 +32,16 @@ import os
 # print("Blabla alive....")
 
 
-op = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 0, 0, True)
+# op = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 0, 0, True)
 
-print(op.is_valid())
+# print(op.is_valid())
 
-print(op.domain.is_valid())
-print(op.target.is_valid())
+# print(op.domain.is_valid())
+# print(op.target.is_valid())
+
+
+vs = HairyGraphComplex.HairyGraphVS(12,5,8, True, True)
+
+print(vs.get_basis_file_path())
+
+print(vs.get_dimension())
