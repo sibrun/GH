@@ -285,7 +285,7 @@ def cohom_formatted(cohom_dict, tuple):
         return str(dim)
 
 
-def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False):
+def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
     vs = D1.get_domain()
     if not vs.is_valid():
         return "-"
@@ -315,7 +315,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False):
     if compute_iso and cohomdim > 0 and vs.get_n() >= 2:
         isostr = " (" + get_iso_string(D1, D2) + ")"
 
-    return str(cohomdim) + r_str + isostr
+    return str(cohomdim / divide_by) + r_str + isostr
 
 # def get_forested_isostring(l, m, h, even_edges):
 #     vs = ForestedGraphComplex.ForestedDegSlice(l,m,h,even_edges)
