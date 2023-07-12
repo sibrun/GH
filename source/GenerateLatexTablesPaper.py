@@ -309,7 +309,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
     # exact or not?
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
     cohomdim = d-r1-r2 + dim_bias
-    cohomdim_str = str(cohomdim / divide_by)
+    cohomdim_str = str(cohomdim // divide_by)
     
     # isotypical components
     isostr = ""
