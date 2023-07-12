@@ -65,6 +65,8 @@ latexfile_bichairy_cohom = os.path.join(latexdir, "bichairy_cohom.tex")
 
 latexfile_forested_top_vs = os.path.join(latexdir, "forested_top_vs.tex")
 latexfile_forested_top_ops = os.path.join(latexdir, "forested_top_ops.tex")
+latexfile_forested_top_cohom_e = os.path.join(latexdir, "forested_top_cohom_e.tex")
+latexfile_forested_top_cohom_o = os.path.join(latexdir, "forested_top_cohom_o.tex")
 latexfile_forested_top_cohom = os.path.join(latexdir, "forested_top_cohom.tex")
 
 latexfile_forested_nobl_top_vs = os.path.join(
@@ -172,7 +174,17 @@ alldata_tex = r"""
 \newpage
 
 \section{Forested Top}
-\input{forested_top_cohom.tex}
+
+\subsection{e}
+\begin{center}
+\input{forested_top_cohom_e.tex}
+\end{center}
+\newpage
+
+\subsection{o}
+\begin{center}
+\input{forested_top_cohom_o.tex}
+\end{center}
 
 \end{document}
 """
@@ -990,30 +1002,27 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
     return s
 
 
-def create_forested_top_cohom_table(l_range, m_range, h_range):
+def create_forested_top_cohom_table(m_range, hl_pairs, even_edges):
     s = ""
 
     header = ["l,m"] + [str(m) for m in m_range]
-    for even_edges in [True, False]:
-        s = s + "\n\n\\smallskip\n" + \
-            ("even" if even_edges else "odd") + " edges\n\n "
-        for h in h_range:
-            s = s + f"\n\n{h} hairs, contractunmarktop \n\n"
-            data = []
-            for l in l_range:
-                data.append(
-                    [str(l)] + [cohom_formatted_forested_top(
-                        ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
-                            l, m, h, even_edges),
-                        ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
-                            l, m+1, h, even_edges),
-                        ForestedGraphComplex.ContractEdgesGO.generate_operator(
-                            2*l-2+h, l, m+1, h, even_edges),
-                        use_Dc2_rank=forested_contract_euler_rank(
-                            l, m+1, h, even_edges),
-                        iso_dict=iso_strings
-                    ) for m in m_range])
-            s = s+latex_table(header, data)
+    for h, l_range in hl_pairs:
+        s = s + f"\n\n\smallskip\n\n {h} hairs \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted_forested_top(
+                    ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                        l, m, h, even_edges),
+                    ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                        l, m+1, h, even_edges),
+                    ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                        2*l-2+h, l, m+1, h, even_edges),
+                    use_Dc2_rank=forested_contract_euler_rank(
+                        l, m+1, h, even_edges),
+                    iso_dict=iso_strings
+                ) for m in m_range])
+        s = s+latex_table(header, data, coltype="F")
 
     return s
 
@@ -1139,9 +1148,13 @@ def write_tables():
     # with open(latexfile_forested_top_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_forested_top_cohom_table(range(9), range(20), range(6))
-    # with open(latexfile_forested_top_cohom, 'w') as f:
-    #     f.write(s)
+    hl_pairs = [(0,range(8)), (1, range(7)), (2,range(6)),(3,range(5)),(4,range(4)),(5,range(4))]
+    s = create_forested_top_cohom_table(range(9), hl_pairs, True)
+    with open(latexfile_forested_top_cohom_e, 'w') as f:
+        f.write(s)
+    s = create_forested_top_cohom_table(range(9), hl_pairs, False)
+    with open(latexfile_forested_top_cohom_o, 'w') as f:
+        f.write(s)
 
     # print("Forested Top noBL....")
     # ForestedGraphComplex.use_bridgeless = False
