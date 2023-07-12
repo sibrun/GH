@@ -309,13 +309,15 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
     # exact or not?
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
     cohomdim = d-r1-r2 + dim_bias
-
+    cohomdim_str = str(cohomdim / divide_by)
+    
     # isotypical components
     isostr = ""
     if compute_iso and cohomdim > 0 and vs.get_n() >= 2:
         isostr = " (" + get_iso_string(D1, D2) + ")"
 
-    return str(cohomdim / divide_by) + r_str + isostr
+
+    return cohomdim_str + r_str + isostr
 
 # def get_forested_isostring(l, m, h, even_edges):
 #     vs = ForestedGraphComplex.ForestedDegSlice(l,m,h,even_edges)
@@ -338,9 +340,11 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
             ret.append("?" + part_str)
             continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
-        cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias)+ part_str
+        cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias)
+        if cohom_string.strip() == "1" or cohom_string.strip() == "1 p":
+            cohom_string = ""
         if not cohom_string.strip().startswith("0"):
-            ret.append( cohom_string )
+            ret.append( cohom_string + part_str)
     iso_string = "$ " + "+".join(ret) + "$"
     # todo: make sure we have no hash collisions among the different complexes
     iso_strings[D1.domain] = iso_string
