@@ -850,7 +850,7 @@ def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
                         v+1, l, h, even_edges),
                     compute_iso=True
                 ) for v in v_range])
-        s = s+latex_table(header, data, scale=.75)
+        s = s+latex_table(header, data, scale=.4)
     return s
 
 
