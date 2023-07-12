@@ -30,5 +30,5 @@ if __name__ == "__main__":
 
     print("computing ranks")
     for CGC in CGCs:
-        CGC.compute_rank(linbox="mod",progress_bar=False, info_tracker=False, n_jobs=nr_jobs)
+        CGC.compute_rank(linbox="mod", n_jobs=nr_jobs)
     print("Finished")
