@@ -22,7 +22,7 @@ if __name__ == "__main__":
         # vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, 5, even_e)
         #                      for v in range(18) for l in range(5)]
         vs_list = vs_list + [CHairyGraphComplex.CHairyGraphVS(v, l, h, even_e)
-                             for v in range(18) for l in range(2,3) for h in range(6,8)]
+                             for v in range(18) for l in range(2,4) for h in range(6,8)]
 
     sumvs = GraphVectorSpace.SumVectorSpace(vs_list)
 
