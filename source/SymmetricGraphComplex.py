@@ -125,7 +125,8 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
     def get_normalizing_c(self):
         """ Returns the normalization constant c, that is, the matrix is c*P, with P the projector.
         """
-        return factorial(self.n)
+        return factorial(self.n) / self.rep_dim
+        # return factorial(self.n)
 
     def trace_rank(self):
         """ For projection operators the rank equals the trace. Hence one does not need to compute the rank

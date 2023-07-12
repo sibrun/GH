@@ -102,7 +102,7 @@ def PSquareTest(n_vertices, n_loops, n_hairs, even_edges, rep_ind):
         n_vertices, n_loops, n_hairs, even_edges, rep_ind)
     symmp.build_matrix(ignore_existing_files=False)
     P = symmp.get_matrix()
-    diff = P*P - factorial(n_hairs) * P  # should be zero
+    diff = P*P - symmp.get_normalizing_c() * P  # should be zero
     diffs = sum(abs(c) for cc in diff.columns() for c in cc)
     print(diffs)
 
@@ -267,9 +267,21 @@ WGCi = CHairyGraphComplex.CHairyGC(range(0, 12), range(
 #                 ignore_existing_files=True)
 # WGCi.build_matrix(progress_bar=False, info_tracker=False,
 #                  ignore_existing_files=True)
-# WGCi.compute_rank(ignore_existing_files=True, sage="integer")
+WGCi.compute_rank(ignore_existing_files=True, sage="integer")
+
+ppo = CHairyGraphComplex.SymmProjector.generate_operator(6,3,3,True,1)
+print(ppo.rep_partition)
+print(ppo.norm_char_perm)
+
+P6 = ppo.get_matrix()
+
+print(P6.trace(), P6.rank())
 
 
+for v in range(4,9):
+    for r in range(1,2):
+        print(f"{v}, {r}:")
+        PSquareTest(v,3,3,True,r)
 
 # diff = WGC.operator_collection_list[0]
 # print(diff)
