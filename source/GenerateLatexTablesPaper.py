@@ -338,9 +338,10 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
             ret.append("?" + part_str)
             continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
-        ret.append(cohom_formatted2(D1iso, D2iso, dim_bias=bias)
-                   + part_str)
-    iso_string = "$ " + ",".join(ret) + "$"
+        cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias)+ part_str
+        if not cohom_string.strip().startswith("0"):
+            ret.append( cohom_string )
+    iso_string = "$ " + "+".join(ret) + "$"
     # todo: make sure we have no hash collisions among the different complexes
     iso_strings[D1.domain] = iso_string
     return iso_string
@@ -834,7 +835,7 @@ def create_chairy_cohom_table(v_range, l_range, h_range):
                             v+1, l, h, even_edges),
                         compute_iso=True
                     ) for v in v_range])
-            s = s+latex_table(header, data)
+            s = s+latex_table(header, data, scale=.75)
     return s
 
 
