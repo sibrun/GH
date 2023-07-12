@@ -248,8 +248,8 @@ def getCohomDimPAll(gvs):
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC = CHairyGraphComplex.CHairyGC(range(0, 8), range(
-    0, 5), range(0, 4), False, ['contract'])
+WGC = CHairyGraphComplex.CHairyGC(range(0, 12), range(
+    0, 5), range(3, 4), True, ['contract'])
 
 # WGC.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)
@@ -260,9 +260,20 @@ WGC = CHairyGraphComplex.CHairyGC(range(0, 8), range(
 WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
 
-diff = WGC.operator_collection_list[0]
+WGCi = CHairyGraphComplex.CHairyGC(range(0, 12), range(
+    0, 5), range(3, 4), True, ['contract_iso'])
+
+# WGCi.build_basis(progress_bar=False, info_tracker=False,
+#                 ignore_existing_files=True)
+# WGCi.build_matrix(progress_bar=False, info_tracker=False,
+#                  ignore_existing_files=True)
+# WGCi.compute_rank(ignore_existing_files=True, sage="integer")
+
+
+
+# diff = WGC.operator_collection_list[0]
 # print(diff)
-diff_split = CHairyGraphComplex.RestrictedContractEdgesD(diff)
+# diff_split = CHairyGraphComplex.RestrictedContractEdgesD(diff)
 # for oo in diff_split.op_matrix_list:
 #     print(str(oo))
 # diff_split.build_matrix(ignore_existing_files=True)
@@ -274,32 +285,32 @@ diff_split = CHairyGraphComplex.RestrictedContractEdgesD(diff)
 # WGC.print_dim_and_eulerchar()
 # WGC.print_cohomology_dim()
 
-d1 = diff._get_cohomology_dim_dict()
-cd = diff_split._get_cohomology_dim_dict()
-for vs, dim in cd.items():
-    print(str(vs) + ","+ str(dim) )
+# d1 = diff._get_cohomology_dim_dict()
+# cd = diff_split._get_cohomology_dim_dict()
+# for vs, dim in cd.items():
+#     print(str(vs) + ","+ str(dim) )
 
-op = CHairyGraphComplex.ContractEdgesGO.generate_operator(1,0,3,False)
-op0 = CHairyGraphComplex.RestrictedContractEdgesGO(op,0)
-op2 = CHairyGraphComplex.RestrictedContractEdgesGO(op,2)
+# op = CHairyGraphComplex.ContractEdgesGO.generate_operator(1,0,3,False)
+# op0 = CHairyGraphComplex.RestrictedContractEdgesGO(op,0)
+# op2 = CHairyGraphComplex.RestrictedContractEdgesGO(op,2)
 
-mm=op0.get_matrix()
-print(mm)
+# mm=op0.get_matrix()
+# print(mm)
 
-mm=op2.get_matrix()
-print(mm)
+# mm=op2.get_matrix()
+# print(mm)
 
 # print(cd)
 # print(d1)
 
-d2 = diff_split.refine_cohom_dim_dict(d1)
-for vs, dim in d2.items():
-    print(str(vs) + ","+ str(dim) )
+# d2 = diff_split.refine_cohom_dim_dict(d1)
+# for vs, dim in d2.items():
+#     print(str(vs) + ","+ str(dim) )
 
 # print(diff_split)
 
 # diff_split.compute_rank(ignore_existing_files=True, sage="integer")
-diff_split.plot_refined_cohomology_dim()
+# diff_split.plot_refined_cohomology_dim()
 
 
 # # WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=False)
