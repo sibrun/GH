@@ -1078,10 +1078,10 @@ def write_tables():
     #     f.write(s)
 
     hl_pairs = [(2,range(9)),(3,range(8)),(4,range(7)),(5,range(6))]
-    s = create_chairy_cohom_table(range(16), hl_pairs, True)
+    s = create_chairy_cohom_table(range(17), hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
-    s = create_chairy_cohom_table(range(16),hl_pairs, False)
+    s = create_chairy_cohom_table(range(17),hl_pairs, False)
     with open(latexfile_chairy_cohom_o, 'w') as f:
         f.write(s)
 
