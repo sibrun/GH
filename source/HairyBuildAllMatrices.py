@@ -15,37 +15,37 @@ if __name__ == "__main__":
     for even_e in [True, False]:
         for even_h in [True, False]:
 
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 1, even_e, even_h)
-                                 for v in range(18) for l in range(10)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 2, even_e, even_h)
-                                 for v in range(18) for l in range(9)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 3, even_e, even_h)
-                                 for v in range(18) for l in range(8)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 4, even_e, even_h)
-                                 for v in range(18) for l in range(7)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 5, even_e, even_h)
-                                 for v in range(18) for l in range(7)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 6, even_e, even_h)
-                                 for v in range(18) for l in range(6)]
-            vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 7, even_e, even_h)
-                                 for v in range(18) for l in range(6)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 1, even_e, even_h)
+            #                      for v in range(18) for l in range(10)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 2, even_e, even_h)
+            #                      for v in range(18) for l in range(9)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 3, even_e, even_h)
+            #                      for v in range(18) for l in range(8)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 4, even_e, even_h)
+            #                      for v in range(18) for l in range(7)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 5, even_e, even_h)
+            #                      for v in range(18) for l in range(7)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 6, even_e, even_h)
+            #                      for v in range(18) for l in range(6)]
+            # vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 7, even_e, even_h)
+            #                      for v in range(18) for l in range(6)]
             vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v, l, 8, even_e, even_h)
                                  for v in range(18) for l in range(6)]
 
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 1, even_e, even_h)
-                                 for v in range(18) for l in range(10)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 2, even_e, even_h)
-                                 for v in range(18) for l in range(9)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 3, even_e, even_h)
-                                 for v in range(18) for l in range(8)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 4, even_e, even_h)
-                                 for v in range(18) for l in range(7)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 5, even_e, even_h)
-                                 for v in range(18) for l in range(7)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 6, even_e, even_h)
-                                 for v in range(18) for l in range(6)]
-            op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 7, even_e, even_h)
-                                 for v in range(18) for l in range(6)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 1, even_e, even_h)
+            #                      for v in range(18) for l in range(10)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 2, even_e, even_h)
+            #                      for v in range(18) for l in range(9)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 3, even_e, even_h)
+            #                      for v in range(18) for l in range(8)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 4, even_e, even_h)
+            #                      for v in range(18) for l in range(7)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 5, even_e, even_h)
+            #                      for v in range(18) for l in range(7)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 6, even_e, even_h)
+            #                      for v in range(18) for l in range(6)]
+            # op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 7, even_e, even_h)
+            #                      for v in range(18) for l in range(6)]
             op_list = op_list + [HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, 8, even_e, even_h)
                                  for v in range(18) for l in range(6)]
 
