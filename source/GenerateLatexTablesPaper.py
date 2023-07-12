@@ -157,7 +157,17 @@ alldata_tex = r"""
 \newpage
 
 \section{CHairy}
-\input{chairy_cohom.tex}
+
+\subsection{e}
+\begin{center}
+\input{chairy_cohom_e.tex}
+\end{center}
+\newpage
+
+\subsection{o}
+\begin{center}
+\input{chairy_cohom_o.tex}
+\end{center}
 
 \newpage
 
@@ -820,26 +830,22 @@ def create_chairy_ops_table(v_range, l_range, h_range):
     return s
 
 
-def create_chairy_cohom_table(v_range, l_range, h_range):
+def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
     s = ""
-
     header = ["l,v"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
-        s = s + "\n\n\\smallskip\n" + \
-            ("even" if even_edges else "odd") + " edges\n\n "
-        for h in h_range:
-            s = s + f"\n\n{h} hairs\n\n"
-            data = []
-            for l in l_range:
-                data.append(
-                    [str(l)] + [cohom_formatted2(
-                        CHairyGraphComplex.ContractEdgesGO.generate_operator(
-                            v, l, h, even_edges),
-                        CHairyGraphComplex.ContractEdgesGO.generate_operator(
-                            v+1, l, h, even_edges),
-                        compute_iso=True
-                    ) for v in v_range])
-            s = s+latex_table(header, data, scale=.75)
+    for h, l_range in hl_pairs:
+        s = s + f"\n\n\\smallskip\n\n{h} hairs\n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted2(
+                    CHairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v, l, h, even_edges),
+                    CHairyGraphComplex.ContractEdgesGO.generate_operator(
+                        v+1, l, h, even_edges),
+                    compute_iso=True
+                ) for v in v_range])
+        s = s+latex_table(header, data, scale=.75)
     return s
 
 
@@ -1066,8 +1072,12 @@ def write_tables():
     # with open(latexfile_chairy_ops, 'w') as f:
     #     f.write(s)
 
-    s = create_chairy_cohom_table(range(20), range(12), range(6))
-    with open(latexfile_chairy_cohom, 'w') as f:
+    hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6))]
+    s = create_chairy_cohom_table(range(20), hl_pairs, True)
+    with open(latexfile_chairy_cohom_e, 'w') as f:
+        f.write(s)
+    s = create_chairy_cohom_table(range(20),hl_pairs, False)
+    with open(latexfile_chairy_cohom_o, 'w') as f:
         f.write(s)
 
     # print("BiColoredHairy....")
