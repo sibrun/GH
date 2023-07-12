@@ -40,8 +40,9 @@ def list_simple_graphs_buffered(n_vertices, n_edges, onlyonevi=True):
     _, filename = _get_geng_args_and_file(n_vertices, n_edges, onlyonevi)
 
     if not os.path.exists(filename):
+        print(f"Buffered geng: requested cache file {filename} does not exist. Generate cache first")
         raise ValueError(
-            f"Buffered geng: requeted cache file {filename} does not exist. Generate cache first")
+            f"Buffered geng: requested cache file {filename} does not exist. Generate cache first")
     with open(filename, "r") as f:
         txt = f.read()
         if not type(txt) is str:
