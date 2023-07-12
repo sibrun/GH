@@ -1120,7 +1120,7 @@ def write_tables():
     # with open(latexfile_wrhairy_cohom, 'w') as f:
     #     f.write(s)
 
-    # print("Forested....")
+    print("Forested....")
     # s = create_forested_vs_table(range(9), range(20), range(6))
     # with open(latexfile_forested_vs, 'w') as f:
     #     f.write(s)
@@ -1133,7 +1133,7 @@ def write_tables():
     # with open(latexfile_forested_ops, 'w') as f:
     #     f.write(s)
 
-    # s = create_forested_cohom_table(range(9), range(20), range(6))
+    s = create_forested_cohom_table(range(8), range(12), range(6))
     # with open(latexfile_forested_cohom, 'w') as f:
     #     f.write(s)
 
@@ -1149,10 +1149,10 @@ def write_tables():
     #     f.write(s)
 
     hl_pairs = [(0,range(8)), (1, range(7)), (2,range(6)),(3,range(5)),(4,range(4)),(5,range(4))]
-    s = create_forested_top_cohom_table(range(9), hl_pairs, True)
+    s = create_forested_top_cohom_table(range(12), hl_pairs, True)
     with open(latexfile_forested_top_cohom_e, 'w') as f:
         f.write(s)
-    s = create_forested_top_cohom_table(range(9), hl_pairs, False)
+    s = create_forested_top_cohom_table(range(12), hl_pairs, False)
     with open(latexfile_forested_top_cohom_o, 'w') as f:
         f.write(s)
 
