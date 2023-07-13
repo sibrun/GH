@@ -7,7 +7,7 @@ import GraphOperator
 
 
 if __name__ == "__main__":
-    nr_jobs = 5
+    nr_jobs = 15
     print(f"Building all computable hairy matrices using {nr_jobs} jobs ...")
     vs_list = []
     op_list = []
