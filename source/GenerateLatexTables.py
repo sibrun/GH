@@ -1111,15 +1111,15 @@ def write_tables():
         f.write(s)
 
     print("CHairy....")
-    s = create_chairy_vs_table(range(20), range(12), range(6))
+    s = create_chairy_vs_table(range(20), range(12), range(8))
     with open(latexfile_chairy_vs, 'w') as f:
         f.write(s)
 
-    s = create_chairy_ops_table(range(20), range(12), range(6))
+    s = create_chairy_ops_table(range(20), range(12), range(8))
     with open(latexfile_chairy_ops, 'w') as f:
         f.write(s)
 
-    s = create_chairy_cohom_table(range(20), range(12), range(6))
+    s = create_chairy_cohom_table(range(20), range(12), range(8))
     with open(latexfile_chairy_cohom, 'w') as f:
         f.write(s)
 
