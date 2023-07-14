@@ -21,7 +21,7 @@ from sage.all import *
 
 # FTD.plot_cohomology_dim()
 
-for even_edges in [True, False]:
+for even_edges in [False]:
     for h in range(2,6):
         for l in range(0,7-h):
             for m in range(2):
