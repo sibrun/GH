@@ -1118,7 +1118,7 @@ def write_tables():
     # with open(latexfile_forested_top_ops, 'w') as f:
     #     f.write(s)
 
-    hl_pairs = [(0,range(8)), (1, range(7)), (2,range(6)),(3,range(5)),(4,range(4)),(5,range(4))]
+    hl_pairs = [(0,range(1,8)), (1, range(1,7)), (2,range(1,6)),(3,range(1,5)),(4,range(1,4)),(5,range(1,4))]
     s = create_forested_top_cohom_table(range(12), hl_pairs, True)
     with open(latexfile_forested_top_cohom_e, 'w') as f:
         f.write(s)
