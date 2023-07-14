@@ -854,7 +854,7 @@ def create_chairy_ops_table(v_range, l_range, h_range):
 def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
     s = ""
     header = ["l,v"] + [str(v) for v in v_range]
-    for h, l_range in hl_pairs:
+    for h, l_range, iso_cap in hl_pairs:
         s = s + f"\n\n\\smallskip\n\n{h} hairs\n\n"
         data = []
         for l in l_range:
@@ -864,7 +864,7 @@ def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
                         v, l, h, even_edges),
                     CHairyGraphComplex.ContractEdgesGO.generate_operator(
                         v+1, l, h, even_edges),
-                    compute_iso=True
+                    compute_iso= (l <= iso_cap)
                 ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
         s = s+latex_table(header, data, scale=.4, coltype="D")
     return s
@@ -1090,7 +1090,7 @@ def write_tables():
     # with open(latexfile_chairy_ops, 'w') as f:
     #     f.write(s)
 
-    hl_pairs = [(2,range(9)),(3,range(8)),(4,range(7)),(5,range(6)),(6,range(5))]
+    hl_pairs = [(2,range(9),7),(3,range(8),6),(4,range(7),5),(5,range(6),4),(6,range(4),2)]
     s = create_chairy_cohom_table(range(17), hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
