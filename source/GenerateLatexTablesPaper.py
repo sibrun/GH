@@ -856,8 +856,8 @@ def create_chairy_ops_table(v_range, l_range, h_range):
 
 def create_chairy_cohom_table(hl_pairs, even_edges):
     s = ""
-    header = ["l,v"] + [str(v) for v in v_range]
     for h, l_range, v_range, iso_cap in hl_pairs:
+        header = ["l,v"] + [str(v) for v in v_range]
         s = s + f"\n\n\\smallskip\n\n{h} hairs\n\n"
         data = []
         for l in l_range:
@@ -1012,8 +1012,8 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
 def create_forested_top_cohom_table(hl_pairs, even_edges):
     s = ""
 
-    header = ["l,m"] + [str(m) for m in m_range]
     for h, l_range, m_range in hl_pairs:
+        header = ["l,m"] + [str(m) for m in m_range]
         s = s + f"\n\n\smallskip\n\n {h} hairs \n\n"
         data = []
         for l in l_range:
@@ -1029,7 +1029,7 @@ def create_forested_top_cohom_table(hl_pairs, even_edges):
                         l, m+1, h, even_edges),
                     iso_dict=iso_strings
                 ) for m in m_range])
-        s = s+latex_table(header, data, coltype="D", scale=.6)
+        s = s+latex_table(header, data, coltype="D", scale=.75)
 
     return s
 
