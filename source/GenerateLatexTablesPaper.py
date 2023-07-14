@@ -335,7 +335,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
             return "?"
 
     # exact or not?
-    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else " p"
+    r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else (" "+p_marker)
     cohomdim = d-r1-r2 + dim_bias
     cohomdim_str = str(cohomdim // divide_by)
     
@@ -421,7 +421,7 @@ def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None, iso_dict=None):
 
     # exact or not?
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank(
-    ) and Dc2.exists_exact_rank() else " p"
+    ) and Dc2.exists_exact_rank() else (" "+p_marker)
 
     # iso string
     cohomdim = d+rc2-r1-r2
