@@ -23,13 +23,20 @@ from sage.all import *
 
 for even_edges in [True, False]:
     for h in range(2,6):
-        for l in range(0,8-h):
-            for m in range(1):
-                FD = ForestedGraphComplex.ForestedDegSlice(l,m,h, even_edges)
-                # print(FD.is_valid())
-                if FD.is_valid():
-                    for rep_index in range(len(Partitions(h))):
-                        print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
-                        pop = FD.get_isotypical_projector(rep_index)
-                        pop.build_matrix()
-                        pop.compute_rank(linbox="rational")
+        for l in range(0,7-h):
+            for m in range(2):
+                
+                # FD = ForestedGraphComplex.ForestedDegSlice(l,m,h, even_edges)
+                # # print(FD.is_valid())
+                # if FD.is_valid():
+                #     for rep_index in range(len(Partitions(h))):
+                #         print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
+                #         pop = FD.get_isotypical_projector(rep_index)
+                #         pop.build_matrix()
+                #         pop.compute_rank(linbox="rational")
+                op = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(l,m,h,even_edges)
+                for rep_index in range(len(Partitions(h))):
+                    rop = op.restrict_to_isotypical_component(rep_index)
+                    rop.build_matrix()
+                    rop.compute_rank(linbox="rational")
+
