@@ -325,11 +325,13 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
         if D1.exists_rank_file():
             r1 = D1.get_matrix_rank()
         else:
+            print("no op rank:", D1)
             return "?"
     if D2.is_valid():
         if D2.exists_rank_file():
             r2 = D2.get_matrix_rank()
         else:
+            print("no op rank:", D2)
             return "?"
 
     # exact or not?
