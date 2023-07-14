@@ -325,13 +325,13 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
         if D1.exists_rank_file():
             r1 = D1.get_matrix_rank()
         else:
-            print("no op rank:", D1)
+            # print("no op rank:", D1)
             return "?"
     if D2.is_valid():
         if D2.exists_rank_file():
             r2 = D2.get_matrix_rank()
         else:
-            print("no op rank:", D2)
+            # print("no op rank:", D2)
             return "?"
 
     # exact or not?
@@ -371,7 +371,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
         if not isovs.opP.exists_rank_file():
             ret.append("?" + part_str)
-            print(vs, " ... projector rank file not found")
+            # print(vs, " ... projector rank file not found")
             continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
         cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias, divide_by=isovs.opP.rep_dim)
