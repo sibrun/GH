@@ -28,7 +28,7 @@ for even_edges in [True, False]:
                 FD = ForestedGraphComplex.ForestedDegSlice(l,m,h, even_edges)
                 # print(FD.is_valid())
                 if FD.is_valid():
-                    for rep_index in len(Partitions(h)):
+                    for rep_index in range(len(Partitions(h))):
                         print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
                         pop = FD.get_isotypical_projector(rep_index)
                         pop.build_matrix()
