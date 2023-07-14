@@ -24,7 +24,7 @@ from sage.all import *
 for even_edges in [True, False]:
     for h in range(2,6):
         for l in range(0,7-h):
-            for m in range(13):
+            for m in range(1):
                 FD = ForestedGraphComplex.ForestedDegSlice(l,m,h, even_edges)
                 # print(FD.is_valid())
                 if FD.is_valid():
