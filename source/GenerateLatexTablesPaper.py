@@ -20,7 +20,7 @@ import SymmetricGraphComplex
 
 
 # marker for entries that are computed mod p
-p_marker="p" 
+p_marker="" 
 # p_marker="" 
 
 # ***** only use if external hd
