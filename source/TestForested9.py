@@ -21,8 +21,14 @@ from sage.all import *
 
 # FTD.plot_cohomology_dim()
 
-
-FD = ForestedGraphComplex.ForestedDegSlice(2,0,2, True)
-print(FD.is_valid())
-pop = FD.get_isotypical_projector(0)
-pop.build_matrix()
+for even_edges in [True, False]:
+    for h in range(2,6):
+        for l in range(0,7-h):
+            for m in range(13):
+                FD = ForestedGraphComplex.ForestedDegSlice(l,m,h, even_edges)
+                # print(FD.is_valid())
+                if FD.is_valid():
+                    for rep_index in len(Partitions(h)):
+                        print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
+                        pop = FD.get_isotypical_projector(rep_index)
+                        pop.build_matrix()

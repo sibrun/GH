@@ -320,6 +320,7 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         self.opD = opD
         self.rep_index = rep_index
         self.opP = opD.domain.get_isotypical_projector(rep_index)
+        # self.opP_tgt = opD.target.get_isotypical_projector(rep_index)
         # if opD.domain != opP.domain:
         #     raise ValueError("Domain %s and target %s don't match to build the symmetric composite operator matrix %s"
         #                      % (str(opD.domain), str(self.opP.domain), str(self)))
