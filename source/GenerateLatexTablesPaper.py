@@ -369,6 +369,7 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
         if not isovs.opP.exists_rank_file():
             ret.append("?" + part_str)
+            print(vs, " ... projector rank file not found")
             continue
         bias = - isovs.get_dimension() + isovs.get_iso_dimension()
         cohom_string = cohom_formatted2(D1iso, D2iso, dim_bias=bias, divide_by=isovs.opP.rep_dim)
@@ -1090,7 +1091,7 @@ def write_tables():
     # with open(latexfile_chairy_ops, 'w') as f:
     #     f.write(s)
 
-    hl_pairs = [(2,range(9),7),(3,range(8),6),(4,range(7),5),(5,range(6),4),(6,range(4),2)]
+    hl_pairs = [(2,range(9),7),(3,range(7),6),(4,range(6),5),(5,range(5),4),(6,range(4),2)]
     s = create_chairy_cohom_table(range(17), hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
