@@ -32,3 +32,4 @@ for even_edges in [True, False]:
                         print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
                         pop = FD.get_isotypical_projector(rep_index)
                         pop.build_matrix()
+                        pop.compute_rank(linbox="rational")
