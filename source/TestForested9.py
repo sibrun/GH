@@ -36,6 +36,7 @@ for even_edges in [False]:
                 #         pop.compute_rank(linbox="rational")
                 op = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(l,m,h,even_edges)
                 for rep_index in range(len(Partitions(h))):
+                    print(f"Building projector {even_edges},{h},{l},{m}, {rep_index}...")
                     rop = op.restrict_to_isotypical_component(rep_index)
                     rop.build_matrix()
                     rop.compute_rank(linbox="rational")
