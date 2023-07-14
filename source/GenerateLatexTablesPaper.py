@@ -1037,56 +1037,42 @@ def create_forested_top_cohom_table(m_range, hl_pairs, even_edges):
 def write_tables():
     # Generate tables
     print("Ordinary....")
-    # s = create_ordinary_vs_table(range(4, 24), range(3, 13))
-    # with open(latexfile_ordinary_vs, 'w') as f:
-    #     f.write(s)
 
-    # s = create_ordinary_ops_table(range(4, 24), range(3, 13))
-    # with open(latexfile_ordinary_ops, 'w') as f:
-    #     f.write(s)
-
-    # s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
-    # with open(latexfile_ordinary_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinary_cohom_table(range(4, 22), range(3, 12))
+    with open(latexfile_ordinary_cohom, 'w') as f:
+        f.write(s)
 
     print("Ordinary Merkulov....")
-    # s = create_ordinaryme_vs_table(range(4, 24), range(3, 13))
-    # with open(latexfile_ordinaryme_vs, 'w') as f:
-    #     f.write(s)
 
-    # s = create_ordinaryme_ops_table(range(4, 25), range(3, 13))
-    # with open(latexfile_ordinaryme_ops, 'w') as f:
-    #     f.write(s)
-
-    # s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
-    # with open(latexfile_ordinaryme_cohom, 'w') as f:
-    #     f.write(s)
+    s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
+    with open(latexfile_ordinaryme_cohom, 'w') as f:
+        f.write(s)
 
     print("Hairy....")
 
-    # hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6))]
-    # s = create_hairy_cohom_table(range(18), hl_pairs, True, True)
-    # with open(latexfile_hairy_cohom_ee, 'w') as f:
-    #     f.write(s)
-    # s = create_hairy_cohom_table(range(18), hl_pairs, True, False)
-    # with open(latexfile_hairy_cohom_eo, 'w') as f:
-    #     f.write(s)
-    # s = create_hairy_cohom_table(range(18), hl_pairs, False, True)
-    # with open(latexfile_hairy_cohom_oe, 'w') as f:
-    #     f.write(s)
-    # s = create_hairy_cohom_table(range(18), hl_pairs, False, False)
-    # with open(latexfile_hairy_cohom_oo, 'w') as f:
-    #     f.write(s)
+    hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6))]
+    s = create_hairy_cohom_table(range(18), hl_pairs, True, True)
+    with open(latexfile_hairy_cohom_ee, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, True, False)
+    with open(latexfile_hairy_cohom_eo, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, False, True)
+    with open(latexfile_hairy_cohom_oe, 'w') as f:
+        f.write(s)
+    s = create_hairy_cohom_table(range(18), hl_pairs, False, False)
+    with open(latexfile_hairy_cohom_oo, 'w') as f:
+        f.write(s)
 
     print("CHairy....")
 
-    # hl_pairs = [(2,range(9),7),(3,range(7),6),(4,range(6),5),(5,range(5),4),(6,range(4),2)]
-    # s = create_chairy_cohom_table(range(17), hl_pairs, True)
-    # with open(latexfile_chairy_cohom_e, 'w') as f:
-    #     f.write(s)
-    # s = create_chairy_cohom_table(range(17),hl_pairs, False)
-    # with open(latexfile_chairy_cohom_o, 'w') as f:
-    #     f.write(s)
+    hl_pairs = [(2,range(9),7),(3,range(7),6),(4,range(6),5),(5,range(5),4),(6,range(4),2)]
+    s = create_chairy_cohom_table(range(17), hl_pairs, True)
+    with open(latexfile_chairy_cohom_e, 'w') as f:
+        f.write(s)
+    s = create_chairy_cohom_table(range(17),hl_pairs, False)
+    with open(latexfile_chairy_cohom_o, 'w') as f:
+        f.write(s)
 
     
 
