@@ -19,6 +19,10 @@ import os
 import SymmetricGraphComplex
 
 
+# marker for entries that are computed mod p
+p_marker="p" 
+# p_marker="" 
+
 # ***** only use if external hd
 # Parameters.data_home_dir = "/Volumes/backup2/gh_data/"
 # Parameters.data_dir = Parameters.data_home_dir + "data"
@@ -290,7 +294,7 @@ def ops_formatted(op):
     if not op.exists_rank_file():
         return "R=?"
     # check if rank is mod p or rational
-    r_str = "p"
+    r_str = p_marker
     if op.exists_exact_rank():
         r_str = ""
     return f"{str(op.get_matrix_rank())} {r_str}"
@@ -1086,7 +1090,7 @@ def write_tables():
     # with open(latexfile_chairy_ops, 'w') as f:
     #     f.write(s)
 
-    hl_pairs = [(2,range(9)),(3,range(8)),(4,range(7)),(5,range(6)),(6,range(5)),(7,range(4))]
+    hl_pairs = [(2,range(9)),(3,range(8)),(4,range(7)),(5,range(6)),(6,range(5))]
     s = create_chairy_cohom_table(range(17), hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
