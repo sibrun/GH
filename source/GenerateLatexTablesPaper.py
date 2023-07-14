@@ -854,10 +854,10 @@ def create_chairy_ops_table(v_range, l_range, h_range):
     return s
 
 
-def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
+def create_chairy_cohom_table(hl_pairs, even_edges):
     s = ""
     header = ["l,v"] + [str(v) for v in v_range]
-    for h, l_range, iso_cap in hl_pairs:
+    for h, l_range, v_range, iso_cap in hl_pairs:
         s = s + f"\n\n\\smallskip\n\n{h} hairs\n\n"
         data = []
         for l in l_range:
@@ -869,7 +869,7 @@ def create_chairy_cohom_table(v_range, hl_pairs, even_edges):
                         v+1, l, h, even_edges),
                     compute_iso= (l <= iso_cap)
                 ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
-        s = s+latex_table(header, data, scale=.4, coltype="D")
+        s = s+latex_table(header, data, scale=.6, coltype="D")
     return s
 
 
@@ -1009,11 +1009,11 @@ def create_forested_top_ops_table(l_range, m_range, h_range):
     return s
 
 
-def create_forested_top_cohom_table(m_range, hl_pairs, even_edges):
+def create_forested_top_cohom_table(hl_pairs, even_edges):
     s = ""
 
     header = ["l,m"] + [str(m) for m in m_range]
-    for h, l_range in hl_pairs:
+    for h, l_range, m_range in hl_pairs:
         s = s + f"\n\n\smallskip\n\n {h} hairs \n\n"
         data = []
         for l in l_range:
@@ -1066,11 +1066,11 @@ def write_tables():
 
     print("CHairy....")
 
-    hl_pairs = [(2,range(9),7),(3,range(7),6),(4,range(6),5),(5,range(5),4),(6,range(4),2)]
-    s = create_chairy_cohom_table(range(17), hl_pairs, True)
+    hl_pairs = [(2,range(9),range(17),7),(3,range(7),range(15),6),(4,range(6),range(14),5),(5,range(5),range(13),4),(6,range(4),range(12),2)]
+    s = create_chairy_cohom_table(hl_pairs, True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
-    s = create_chairy_cohom_table(range(17),hl_pairs, False)
+    s = create_chairy_cohom_table(hl_pairs, False)
     with open(latexfile_chairy_cohom_o, 'w') as f:
         f.write(s)
 
@@ -1104,11 +1104,11 @@ def write_tables():
     # with open(latexfile_forested_top_ops, 'w') as f:
     #     f.write(s)
 
-    hl_pairs = [(0,range(1,8)), (1, range(1,7)), (2,range(1,6)),(3,range(1,5)),(4,range(1,4)),(5,range(1,4))]
-    s = create_forested_top_cohom_table(range(12), hl_pairs, True)
+    hl_pairs = [(0,range(1,8), range(12)), (1, range(1,7), range(12)), (2,range(1,6), range(11)),(3,range(1,5), range(10)),(4,range(1,4), range(10)),(5,range(1,4), range(10))]
+    s = create_forested_top_cohom_table(hl_pairs, True)
     with open(latexfile_forested_top_cohom_e, 'w') as f:
         f.write(s)
-    s = create_forested_top_cohom_table(range(12), hl_pairs, False)
+    s = create_forested_top_cohom_table(hl_pairs, False)
     with open(latexfile_forested_top_cohom_o, 'w') as f:
         f.write(s)
 
