@@ -1050,7 +1050,7 @@ def write_tables():
 
     print("Hairy....")
 
-    hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(5))]
+    hl_pairs = [(1,range(10)), (2,range(9)),(3,range(8)),(4,range(7)),(5,range(7)),(6,range(6)),(7,range(6)),(8,range(6))]
     s = create_hairy_cohom_table(range(18), hl_pairs, True, True)
     with open(latexfile_hairy_cohom_ee, 'w') as f:
         f.write(s)
