@@ -869,8 +869,8 @@ def create_chairy_cohom_table(hl_pairs, even_edges, inv_partitions=False):
                     CHairyGraphComplex.ContractEdgesGO.generate_operator(
                         v, l, h, even_edges),
                     CHairyGraphComplex.ContractEdgesGO.generate_operator(
-                        v+1, l, h, even_edges,inv_partitions=inv_partitions),
-                    compute_iso= (l <= iso_cap)
+                        v+1, l, h, even_edges),
+                    compute_iso= (l <= iso_cap),inv_partitions=inv_partitions
                 ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
         s = s+latex_table(header, data, scale=.6, coltype="D")
     return s
