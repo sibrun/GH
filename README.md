@@ -137,7 +137,7 @@ The html documentation will be found under GH/docs/build/html/index.html.
 
 ## Data file
 
-A large pdf file with data tables produced by GH can be found [here](https://github.com/sibrun/GH/alldata.pdf).
+A large pdf file with data tables produced by GH can be found [here](https://github.com/sibrun/GH/blob/master/alldata.pdf).
 
 ## License
 
