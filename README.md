@@ -135,6 +135,10 @@ The html documentation will be found under GH/docs/build/html/index.html.
 * **Simon Brun** 
 * **Thomas Willwacher**
 
+## Data file
+
+A large pdf file with data tables produced by GH can be found [here](https://github.com/sibrun/GH/alldata.pdf).
+
 ## License
 
 
