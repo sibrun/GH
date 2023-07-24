@@ -311,7 +311,7 @@ def cohom_formatted(cohom_dict, tuple):
         return str(dim)
 
 
-def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
+def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1,inv_partitions=False):
     vs = D1.get_domain()
     if not vs.is_valid():
         return "-"
@@ -342,7 +342,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
     # isotypical components
     isostr = ""
     if compute_iso and cohomdim > 0 and vs.get_n() >= 2:
-        isostr = " (" + get_iso_string(D1, D2, cohomdim) + ")"
+        isostr = " (" + get_iso_string(D1, D2, cohomdim, inv_partitions=inv_partitions) + ")"
 
 
     return cohomdim_str + r_str + isostr
@@ -356,7 +356,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1):
 iso_strings = {}
 
 
-def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: SymmetricGraphComplex.SymmetricBiOperatorMatrix, cohom_dim):
+def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: SymmetricGraphComplex.SymmetricBiOperatorMatrix, cohom_dim, inv_partitions=False):
     """ cohom_dim should be set to the total cohomology dimension.
     Irreducible representations of higher dimension cannot appear in the decomposition.
     """
@@ -368,7 +368,10 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
         isovs = D1iso.domain
         if isovs.opP.rep_dim > cohom_dim:
             continue
-        part_str = "s_{" + str(isovs.opP.rep_partition) + "}"
+        part = isovs.opP.rep_partition
+        if inv_partitions:
+            part = part.conjugate()
+        part_str = "s_{" + str(part) + "}"
         if not isovs.opP.exists_rank_file():
             ret.append("?" + part_str)
             # print(vs, " ... projector rank file not found")
@@ -854,7 +857,7 @@ def create_chairy_ops_table(v_range, l_range, h_range):
     return s
 
 
-def create_chairy_cohom_table(hl_pairs, even_edges):
+def create_chairy_cohom_table(hl_pairs, even_edges, inv_partitions=False):
     s = ""
     for h, l_range, v_range, iso_cap in hl_pairs:
         header = ["l,v"] + [str(v) for v in v_range]
@@ -866,7 +869,7 @@ def create_chairy_cohom_table(hl_pairs, even_edges):
                     CHairyGraphComplex.ContractEdgesGO.generate_operator(
                         v, l, h, even_edges),
                     CHairyGraphComplex.ContractEdgesGO.generate_operator(
-                        v+1, l, h, even_edges),
+                        v+1, l, h, even_edges,inv_partitions=inv_partitions),
                     compute_iso= (l <= iso_cap)
                 ) + cell_color[is_hairy_zero(v, l, h)] for v in v_range])
         s = s+latex_table(header, data, scale=.6, coltype="D")
@@ -1067,7 +1070,7 @@ def write_tables():
     print("CHairy....")
 
     hl_pairs = [(2,range(9),range(17),7),(3,range(7),range(15),6),(4,range(6),range(14),5),(5,range(5),range(13),3),(6,range(4),range(12),2)]
-    s = create_chairy_cohom_table(hl_pairs, True)
+    s = create_chairy_cohom_table(hl_pairs, True, inv_partitions=True)
     with open(latexfile_chairy_cohom_e, 'w') as f:
         f.write(s)
     s = create_chairy_cohom_table(hl_pairs, False)
