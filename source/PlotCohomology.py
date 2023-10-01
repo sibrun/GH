@@ -21,7 +21,7 @@ import Shared
 def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv=False, x_plots=2, parameter_order=None):
     """Plot the values in the dictionary value_dict.
 
-    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be plotted.
     :type value_dict: dict(tuple -> int)
     :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
     :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
@@ -59,7 +59,7 @@ def plot_array(value_dict, ordered_param_range_dict, path, to_html=False, to_csv
 def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=False):
     """Plot the values in the dictionary value_dict in a html list and/or a csv file.
 
-    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be plotted.
     :type value_dict: dict(tuple -> int)
     :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
     :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
@@ -96,7 +96,7 @@ def plot_list(value_dict, ordered_param_range_dict, path, to_html=True, to_csv=F
 def plot_2d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0, 1)):
     """Plot a 2 dimensional array given by the value_dict.
 
-    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be plotted.
     :type value_dict: dict(tuple -> int)
     :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
     :type ordered_param_range_dict: Shared.OrderedDict(str -> range)
@@ -168,7 +168,7 @@ def plot_3d_array(value_dict, ordered_param_range_dict, path, parameter_order=(0
     """Plot a 3 dimensional array given by the value_dict as a list of 2 dimensional plots with
     x_plots per line.
 
-    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be ploted.
+    :param value_dict: Dictionary (parameters tuple -> value) containing the values to be plotted.
     :type value_dict: dict(tuple -> int)
     :param ordered_param_range_dict: Ordered dictionary (parameter name -> range of the parameter).
     :type ordered_param_range_dict: Shared.OrderedDict(str -> range)

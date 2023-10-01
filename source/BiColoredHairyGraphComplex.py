@@ -38,7 +38,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     """Hairy graph vector space with two colours of hairs.
 
     Sub vector space with specified number of vertices, loops, hairs per colour, even or odd edges, even or odd hair vertices
-    per colour and at least trivalent vertices. No multiple edges and not mor than one hair per colour is attached to a vertex.
+    per colour and at least trivalent vertices. No multiple edges and not more than one hair per colour is attached to a vertex.
     One hair is composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the
     parity of the hair vertex alone.
 

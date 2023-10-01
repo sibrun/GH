@@ -3,7 +3,7 @@
 import sys
 import os
 
-# ---- Genearal Parameters ----
+# ---- General Parameters ----
 # ---- Directory Names ----
 data_home_dir = "gh_data/"
 data_dir = data_home_dir + "data"

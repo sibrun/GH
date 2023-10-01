@@ -39,7 +39,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     """Hairy graph vector space.
 
     Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
-    and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
+    and at least trivalent vertices. No multiple edges and not more than one hair is attached to a vertex. One hair is
     composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
     hair vertex alone (<- ??? I think not).
 

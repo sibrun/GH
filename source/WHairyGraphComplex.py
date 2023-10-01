@@ -41,7 +41,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     """Hairy graph vector space.
 
     Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
-    and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
+    and at least trivalent vertices. No multiple edges and not more than one hair is attached to a vertex. One hair is
     composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
     hair vertex alone.
 
@@ -158,7 +158,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         return unordered
 
     def get_generating_graphs(self):
-        # Idea: produce all hairy graphs with either two additonal vertices or
+        # Idea: produce all hairy graphs with either two additional vertices or
         # one additional vertex , or an additional vertex and a hair.
         # hair, the second color being either of degree 1 or 2.
         # Degree 1 vertices are hairs, degree 2 vertices are edges and are removed later.

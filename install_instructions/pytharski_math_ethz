@@ -4,19 +4,19 @@ ssh <username>@pytharski.math.ethz.ch
 ###########################################################################################
 #rund code on d-math servers with docker image from docker hub
 ###########################################################################################
-#lsit all docker images
+#list all docker images
 docker image ls
 #remove existing docker images
 docker image rm (-f)
 #pull existing docker image from docker hub
 docker pull sibrun/ubuntu-gh:latest
 
-#lsit all docker images
+#list all docker images
 docker image ls
 #tag docker image
 docker tag docker.io/sibrun/ubuntu-gh:canonical-sage /sibrun/ubuntu-gh:latest
 
-#persistant storage on dmath servers for large quantities of data (<username> might ned to be created first)
+#persistent storage on dmath servers for large quantities of data (<username> might need to be created first)
 /r/scratch/users/<username>/
 #create the directory
 /r/scratch/users/<username>/gh_data
@@ -75,7 +75,7 @@ docker build -t ubuntu-gh .
 ###########################################################################################
 #upload docker image to docker hub
 ###########################################################################################
-#change to local storage of server (<username>/docker-image might ned to be created first)
+#change to local storage of server (<username>/docker-image might need to be created first)
 cd /scratch/userdata/<username>/docker-image
 #save docker image to .tar file
 docker save ubuntu-gh > ubuntu-gh.tar

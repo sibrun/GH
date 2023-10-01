@@ -219,7 +219,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
     def is_bridgeless(self, G):
         """Checks whether the graph G is bridgeless."""
         GG = copy(G)
-        # Delte the hairs before checking
+        # Delete the hairs before checking
         GG.delete_vertices(range(self.n_vertices+self.n_unmarked_edges,
                            self.n_vertices+self.n_unmarked_edges+self.n_hairs))
         return len(list(GG.bridges())) == 0
@@ -306,9 +306,11 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                                    ('marked_edges', self.n_marked_edges), ('hairs', self.n_hairs)])
 
     def get_partition(self):
-        # All internal vertices are in color 0
-        # the unmarked-edge-vertices are in color 1
-        # the hair vertices are in colors 2,...,n_hairs+1.
+        """
+        All internal vertices are in color 0
+        the unmarked-edge-vertices are in color 1
+        the hair vertices are in colors 2,...,n_hairs+1.
+        """
         return self.preVS.get_partition()
 
     def is_valid(self):
@@ -322,7 +324,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             print("Invalid")
             return
 
-        # we assume the basis of the intermediate GVS has alread been constructed
+        # we assume the basis of the intermediate GVS has already been constructed
         # We need to add (tp many) tadpoles to graphs and permute hairs
 
         # res = []

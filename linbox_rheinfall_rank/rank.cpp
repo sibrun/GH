@@ -240,7 +240,7 @@ typedef mpz_class val_t;
 // typedef rheinfall::SparseRow<val_t,coord_t> SparseRow_;
 // typedef rheinfall::DenseRow<val_t,coord_t> DenseRow_;
 
-// // elminate serialization overhead at the cost of
+// // eliminate serialization overhead at the cost of
 // // never being able to increase the version.
 // BOOST_CLASS_IMPLEMENTATION(Row_, boost::serialization::object_serializable);
 // BOOST_CLASS_IMPLEMENTATION(SparseRow_, boost::serialization::object_serializable);
@@ -494,7 +494,7 @@ main(int argc, char** argv)
     {"modulus",         1, 0, 'm'},
 #endif
     {"pivot-threshold", 1, 0, 'p'},
-    {"tranpose",        0, 0, 't'},
+    {"transpose",       0, 0, 't'},
     {"verbose",         0, 0, 'v'},
     {"width",           1, 0, 'w'},
     {0, 0, 0, 0}

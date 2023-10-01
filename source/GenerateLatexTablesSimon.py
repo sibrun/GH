@@ -235,8 +235,8 @@ alldata_tex = r"""
 \end{document}
 """
 
-# Refrence Euler characteristics
-# from zivkovic-willwacher
+# Reference Euler characteristics
+# from Zivkovic-Willwacher
 ordinary_ec_evenedges = [0, 0, 0, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 3, 4, 2, 2]
 ordinary_ec_oddedges = [0, 0, 0, 1, 0, 1, -1, 1, 0,
                         0, -2, 1, 0, 0, -2, 0, -4, -3, -1, 8, 12, 27]

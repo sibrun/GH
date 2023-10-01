@@ -528,7 +528,7 @@ class GraphVectorSpace(VectorSpace):
         return os.path.splitext(self.get_basis_file_path())[0]+'_plots'
 
     def plot_graph(self, G):
-        """ Plots a graph for use in the visuaization routines.
+        """ Plots a graph for use in the visualization routines.
         This method can be overwritten to provide custom visualization.
         :param G: The graph to be drawn. Must belong to this vector space.
         :type G: Graph.
@@ -762,7 +762,7 @@ class SumVectorSpace(VectorSpace):
         info_tracker = False if isinstance(
             self, DegSlice) and not Parameters.second_info else info_tracker
         if n_jobs > 1:
-            # If mor than 1 process progress bar and info tracker are not activated.
+            # If more than 1 process progress bar and info tracker are not activated.
             progress_bar = False
             info_tracker = False
         if info_tracker:
@@ -813,7 +813,7 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
-        """Stop tracking informations about the sub vector spaces."""
+        """Stop tracking information about the sub vector spaces."""
         self.info_tracker.stop()
 
     def plot_info(self):
@@ -967,7 +967,7 @@ class DegSlice(SumVectorSpace):
     def build_basis(self, **kwargs):
         """Build the basis of the sub vector spaces of the degree slice.
 
-        :param kwargs: Forward keword arguments to the build basis method of the SumVectorSpace.
+        :param kwargs: Forward keyword arguments to the build basis method of the SumVectorSpace.
         :raise ValueError: If the basis of the degree slice is not completely built, i.e. not for all valid sub vector
                 spaces there exists a basis file.
         """
