@@ -46,6 +46,24 @@ def list_simple_graphs(n_vertices, n_edges, onlyonevi=True):
     #logger.warning('List of simple graphs generated using nauty has zero length')
     return graph_list
 
+def list_simple_graphs_1(n_vertices, n_edges, onlyonevi=True):
+    """Create a list of simple 1vi graphs with at least 1-valent vertices.
+
+    :param n_vertices: Number of vertices.
+    :type n_vertices: int
+    :param n_edges: Number of edges.
+    :type n_edges: int
+    :param onlyonevi: TODO
+    :return: List of generated sage graphs.
+    :rtype: list(Graph)
+    """
+    if n_vertices <= 0 or n_edges <= 0 or n_vertices > 2 * n_edges or n_edges > n_vertices * (n_vertices - 1) / 2:
+        return []
+    nauty_string = ("-Cd1" if onlyonevi else "-cd1") + \
+        " %d %d:%d" % (n_vertices, n_edges, n_edges)
+    graph_list = graphs.nauty_geng(nauty_string)
+    return graph_list if graph_list else []
+
 
 def list_simple_graphs_valence(n_vertices, n_edges, max_valence, onlyonevi=True):
     """Create a list of simple 1vi graphs with at least trivalent vertices.
