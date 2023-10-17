@@ -217,7 +217,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
             if len(e_list) == 0:
                 # output graph
                 sgn2 = sgn * Shared.shifted_edge_perm_sign(GG)
-                image.append((G1, sgn2))
+                image.append((GG, sgn2))
             else:
                 (u,v) = e_list[0]
                 ### three ways: connect none, first, or second half-edge
@@ -239,7 +239,9 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
                     G2.add_edge(0,u,label=lbl)
                     reconnect_rec(G2, e_list[1:], sgn, image)
 
-        reconnect_rec(G, G.edges(labels=False), 1, image)
+        Gp = copy(G)
+        Shared.enumerate_edges(Gp)
+        reconnect_rec(Gp, Gp.edges(labels=False), 1, image)
         # for (i, e) in enumerate(G.edges(labels=False)):
         #     (u, v) = e
         #     # print("contract", u, v)
