@@ -124,6 +124,89 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
 
 
+class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
+    """Ordinary graph vector space, with one marked vertex, i.e., Graphs_2(1).
+    The marked vertex is the first in the ordering.
+    In comparison to GOneVS we require here that the exernal vertex has valence at least 3
+
+
+    Attributes:
+        - n_vertices (int): Number of internal vertices.
+        - n_loops (int): Number of loops.
+        - n_edges (int): Number of edges.
+
+    """
+
+    def __init__(self, n_vertices, n_loops):
+        """Initialize the ordinary graph vector space.
+
+        :param n_vertices: int: Number of vertices.
+        :type n_vertices: int
+        :param n_loops: int: Number of loops.
+        :type n_loops: int
+        """
+        self.n_vertices = n_vertices
+        self.n_loops = n_loops
+        self.n_edges = self.n_loops + self.n_vertices
+        self.gonevs = GOneVS(n_vertices, n_loops)
+        super(GOneVS3V, self).__init__()
+
+    def get_type(self):
+        return '%s graphs' % (graph_type)
+
+    def __eq__(self, other):
+        return self.n_vertices == other.n_vertices and self.n_loops == other.n_loops
+
+    def __hash__(self):
+        return hash("gra3v%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple())
+
+    def get_basis_file_path(self):
+        s = "gra3v%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_ref_basis_file_path(self):
+        s = "gra3v%d_%d.g6" % self.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, s)
+
+    def get_ordered_param_dict(self):
+        return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops)])
+
+    def get_partition(self):
+        return [[0], list(range(1,self.n_vertices+1))]
+
+    def is_valid(self):
+        # internal Vertices at least trivalent. Positive number of vertices. Non-negative number of loops.
+        # At most fully connected graph, no multiple edges.
+        return (3 * self.n_vertices +3 <= 2 * self.n_edges) and self.n_vertices >= 0 and self.n_loops >= 0 \
+            and self.n_edges <= self.n_vertices * (self.n_vertices + 1) / 2
+
+    def get_work_estimate(self):
+        # Returns the number of possible graphs as work estimate.
+        if not self.is_valid():
+            return 0
+        return GCDimensions.get_ordinary_dim_estimate(self.n_vertices+1, self.n_loops)
+        #return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
+
+    def get_generating_graphs(self):
+        # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
+        if not self.is_valid():
+            return []
+    
+        for G in NautyInterface.list_simple_graphs(self.n_vertices+1, self.n_edges, onlyonevi=False):
+            for j in range(self.n_vertices+1):
+                p = [ (i+j) % (self.n_vertices+1) for i in range(self.n_vertices+1) ]
+                GG = G.relabel(p, inplace=False)
+                yield GG
+
+    def perm_sign(self, G, p):
+        # The sign is (induced sign of the edge permutation)
+        # We assume the edges are always lexicographically ordered
+        # For the computation we use that G.edges() returns the edges in lex ordering
+        # We first label the edges on a copy of G lexicographically
+        return self.gonevs.perm_sign(G,p)
+
+
+
 
 
 # ------- Operators --------
@@ -270,6 +353,94 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         #         sgn *= -1  # TODO overall sign for even edges
         #     image.append((G1, sgn))
         return image
+
+class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
+    """Reconnect edges graph operator.
+
+    Operates on an ordinary graph with one marked vertex by 
+    reconnecting an arbitrary subset of the half-edges to the special vertex.
+    Afterwards makes the special vertex normal, so that the image is an ordinary graph.
+
+    The image is multiplied by (-1)**(degree of vertex 0).
+    Also, the identity matrix is implicitly added. 
+
+    """
+
+    def __init__(self, domain, target):
+        """Initialize the domain and target vector space of the contract edges graph operator.
+
+        :param domain: Domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Target vector space of the operator.
+        :type target: OrdinaryGVS
+        """
+        if not ReconnectEdgesGO3V.is_match(domain, target):
+            raise ValueError(
+                "Domain and target not consistent for contract edges operator")
+        self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
+        super(ReconnectEdgesGO3V, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+
+        The contract edges operator reduces the number of vertices by one.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Potential target vector space of the operator.
+        :type target: OrdinaryGVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
+        """
+        return domain.n_vertices + 1 == target.n_vertices and domain.n_loops == target.n_loops \
+            and target.even_edges == False
+
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops):
+        """Return a contract edge graph operator.
+
+        :param n_vertices: Number of (internal) vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype:ContractEdgesGO
+        """
+        domain = GOneVS3V(n_vertices, n_loops)
+        target = OrdinaryGraphComplex.OrdinaryGVS(n_vertices + 1, n_loops, False)
+        return cls(domain, target)
+
+    def get_matrix_file_path(self):
+        s = "reconnect3vF%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_rank_file_path(self):
+        s = "reconnect3vF%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "reconnect3vF%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, s)
+
+    def get_ref_rank_file_path(self):
+        s = "reconnect3vF%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, s)
+
+    def get_work_estimate(self):
+        # Returns as work estimate: domain.n_edges * log(target dimension, 2)
+        if not self.is_valid():
+            return 0
+        return self.domain.n_edges # think: 2**edges
+
+    def get_type(self):
+        return 'reconnect edges 3v'
+
+
+    def operate_on(self, G):
+        return self.reconnect_op.operate_on(G)
 
 
 class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
