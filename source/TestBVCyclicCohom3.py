@@ -85,6 +85,11 @@ ooo.compute_rank(sage = "integer")
 
 for nl in range(9):
     for nv in range(16):
+        vs = BVCyclic.GOneVS3V(nv, nl)
+        vs.build_basis()
+
+for nl in range(9):
+    for nv in range(16):
         op = BVCyclic.ReconnectEdgesGO3V.generate_operator(nv,nl)
         # op.build_matrix(ignore_existing_files=True)
         op.build_matrix(ignore_existing_files=False, progress_bar=True)
