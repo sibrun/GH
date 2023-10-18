@@ -3,10 +3,10 @@ import OrdinaryGraphComplex
 
 
 # Test basis generation
-for nv in range(12):
-    for nl in range(9):
-        # BVCyclic.GOneVS(nv,nl).build_basis(ignore_existing_files=True)
-        BVCyclic.GOneVS(nv,nl).build_basis(ignore_existing_files=False)
+# for nv in range(12):
+#     for nl in range(9):
+#         # BVCyclic.GOneVS(nv,nl).build_basis(ignore_existing_files=True)
+#         BVCyclic.GOneVS(nv,nl).build_basis(ignore_existing_files=False)
 
 # vs = BVCyclic.GOneVS(5,6)
 # vs.display_basis_plots()
@@ -20,23 +20,21 @@ for nv in range(12):
 
 # Test Operator generation
 for nv in range(12):
-    for nl in range(9):
-        op = BVCyclic.ReconnectEdgesGO.generate_operator(nv,nl)
-        # op.build_matrix(ignore_existing_files=True)
-        op.build_matrix(ignore_existing_files=False)
-        op.compute_rank(sage="integer", ignore_existing_files=False)
-        # op.compute_rank(sage="integer", ignore_existing_files=True)
+    for nl in range(8,9):
+        op = BVCyclic.AddVReconnectEdgesGO.generate_operator(nv,nl)
+        op.build_matrix(ignore_existing_files=True, progress_bar=True)
+        # op.build_matrix(ignore_existing_files=False, progress_bar=True)
+        # op.compute_rank(sage="integer", ignore_existing_files=False)
+        op.compute_rank(sage="integer", ignore_existing_files=True)
 
 # ooo = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(6, 8, False)
 # print(ooo.is_valid(), ooo.domain.is_valid(), ooo.target.is_valid() )
 # print(ooo.domain.get_dimension(), ooo.target.get_dimension())
 
-gvs66 = OrdinaryGraphComplex.OrdinaryGVS(6,6, False)
-# gvs66.display_basis_plots()
 
 # display and compare ranks
 for nv in range(12):
-    for nl in range(9):
+    for nl in range(8):
         
         gvs = OrdinaryGraphComplex.OrdinaryGVS(nv+1,nl,False)
         if not gvs.is_valid() or gvs.get_dimension() == 0:
@@ -47,7 +45,7 @@ for nv in range(12):
         opr = BVCyclic.ReconnectEdgesGO.generate_operator(nv,nl)
         print(opr.target)
         r1 = opr.get_matrix_rank()
-        opd = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(nv+1, nl+1, False)
+        opd = BVCyclic.AddVReconnectEdgesGO.generate_operator(nv, nl+1)
         print(opd.target)
         r2 = opd.get_matrix_rank()
         print("Ranks: ",r1,r2)

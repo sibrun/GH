@@ -134,6 +134,9 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
     reconnecting an arbitrary subset of the half-edges to the special vertex.
     Afterwards makes the special vertex normal, so that the image is an ordinary graph.
 
+    The image is multiplied by (-1)**(degree of vertex 0).
+    Also, the identity matrix is implicitly added. 
+
     """
 
     def __init__(self, domain, target):
@@ -211,6 +214,8 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by reconnecting half-edges to the special vertex 0
         image = []
+        # start with identity operator
+        image.append( (G, 1) )
 
         def reconnect_rec(GG, e_list, sgn, image):
             # recursive subroutine that reconnects the edges in e_list in all possible ways
@@ -225,14 +230,14 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
                 reconnect_rec(GG, e_list[1:], sgn, image)
                 sgn *= -1
                 # reconnect first half-edge 
-                if u != 0 and v != 0 and GG.degree(u) >= 4:
+                if u != 0 and v != 0 and GG.degree(u) >= 4 and not GG.has_edge(0,v):
                     G1 = copy(GG)
                     lbl = G1.edge_label(u,v)
                     G1.delete_edge(u,v)
                     G1.add_edge(0,v,label=lbl)
                     reconnect_rec(G1, e_list[1:], sgn, image)
                 # reconnect second half-edge 
-                if u != 0 and v != 0 and GG.degree(v) >= 4:
+                if u != 0 and v != 0 and GG.degree(v) >= 4 and not GG.has_edge(0,u):
                     G2 = copy(GG)
                     lbl = G2.edge_label(u,v)
                     G2.delete_edge(u,v)
@@ -241,7 +246,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
 
         Gp = copy(G)
         Shared.enumerate_edges(Gp)
-        reconnect_rec(Gp, Gp.edges(labels=False), 1, image)
+        reconnect_rec(Gp, Gp.edges(labels=False), (-1) ** (Gp.degree(0)), image)
         # for (i, e) in enumerate(G.edges(labels=False)):
         #     (u, v) = e
         #     # print("contract", u, v)
@@ -265,5 +270,102 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         #         sgn *= -1  # TODO overall sign for even edges
         #     image.append((G1, sgn))
         return image
+
+
+class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
+    """Reconnect edges graph operator of Marko Zivkovic.
+
+    Operates on an ordinary graph by adding a vertex and then 
+    reconnecting an arbitrary subset of the half-edges to the new vertex.
+   
+    The image is multiplied by (-1)**(degree of vertex 0).
+
+    """
+
+    def __init__(self, domain, target):
+        """Initialize the domain and target vector space of the contract edges graph operator.
+
+        :param domain: Domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Target vector space of the operator.
+        :type target: OrdinaryGVS
+        """
+        if not AddVReconnectEdgesGO.is_match(domain, target):
+            raise ValueError(
+                "Domain and target not consistent for addvreconnect  edges operator")
+        
+        self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
+        super(AddVReconnectEdgesGO, self).__init__(domain, target)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target match to generate a corresponding contract edges graph operator.
+
+        The contract edges operator reduces the number of vertices by one.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: OrdinaryGVS
+        :param target: Potential target vector space of the operator.
+        :type target: OrdinaryGVS
+        :return: True if domain and target match to generate a corresponding contract edges graph operator.
+        :rtype: bool
+        """
+        return domain.n_vertices + 1 == target.n_vertices and domain.n_loops == target.n_loops+1 \
+            and target.even_edges == False and domain.even_edges == False
+
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops):
+        """Return a contract edge graph operator.
+
+        :param n_vertices: Number of (internal) vertices of the domain.
+        :type n_vertices: int
+        :param n_loops: Number of loops of the domain.
+        :type n_loops: int
+        :param even_edges: True for even edges, False for odd edges.
+        :type even_edges: bool
+        :return: Contract edges graph operator based on the specified domain vector space.
+        :rtype:ContractEdgesGO
+        """
+        domain = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)
+        target = OrdinaryGraphComplex.OrdinaryGVS(n_vertices + 1, n_loops-1, False)
+        return cls(domain, target)
+
+    def get_matrix_file_path(self):
+        s = "addvreconnectF%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_rank_file_path(self):
+        s = "addvreconnectF%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_ref_matrix_file_path(self):
+        s = "addvreconnectF%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, s)
+
+    def get_ref_rank_file_path(self):
+        s = "addvreconnectF%d_%d.txt.rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.ref_data_dir, graph_type, s)
+
+    def get_work_estimate(self):
+        # Returns as work estimate: domain.n_edges * log(target dimension, 2)
+        if not self.is_valid():
+            return 0
+        return self.domain.n_edges # think: 2**edges
+
+    def get_type(self):
+        return 'add v and reconnect edges'
+
+
+    def operate_on(self, G):
+        # act by re-using ReconnectEdgesGO, on a graph built by adding one more external vertex
+        # It is not necessary to subtract id, since that graph is not connected and automatically removed
+
+        # add a new vertex that becomes the first
+        G1 = copy(G)
+        G1.add_vertex()
+        p = [self.domain.n_vertices - j for j in range(self.domain.n_vertices+1) ]
+        G1.relabel(p, inplace=True)
+        return self.reconnect_op.operate_on(G1)
+
 
 

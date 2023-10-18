@@ -267,7 +267,7 @@ parser.add_argument('-marked', type=non_negative_range_type,
                     help='range min,max for number of marked edges')
 parser.add_argument('-omega', type=non_negative_range_type,
                     help='range min,max for number of omega vertices')
-parser.add_argument('-shift', type=int_value, default=1,
+parser.add_argument('-shift', type=int, default=1,
                     help='maximal shift = loops - vertices')
 parser.add_argument('-hairs', type=non_negative_range_type,
                     help='range min,max for number of hairs')

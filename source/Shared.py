@@ -118,6 +118,7 @@ def shifted_edge_perm_sign(graph):
     :rtype: int
     """
     p = [j for (a, b, j) in graph.edges()]
+    # print("Edge perm", p)
     return Perm.shifted(p).signature()
 
 def shifted_edge_perm_sign2(graph):
