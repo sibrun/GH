@@ -83,13 +83,13 @@ ooo.build_matrix()
 ooo.compute_rank(sage = "integer")
 # print(ooo.is_valid(), ooo.get_matrix())
 
-# for nl in range(9):
-#     for nv in range(16):
-#         op = BVCyclic.ReconnectEdgesGO3V.generate_operator(nv,nl)
-#         # op.build_matrix(ignore_existing_files=True)
-#         op.build_matrix(ignore_existing_files=False, progress_bar=True)
-#         op.compute_rank(sage="integer", ignore_existing_files=False)
-#         # op.compute_rank(sage="integer", ignore_existing_files=True)
+for nl in range(9):
+    for nv in range(16):
+        op = BVCyclic.ReconnectEdgesGO3V.generate_operator(nv,nl)
+        # op.build_matrix(ignore_existing_files=True)
+        op.build_matrix(ignore_existing_files=False, progress_bar=True)
+        op.compute_rank(linbox="rational", ignore_existing_files=False)
+        # op.compute_rank(sage="integer", ignore_existing_files=True)
 
 # Test commutativity
 # for nv in range(9):
