@@ -540,3 +540,232 @@ class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
 
 
 
+
+class GOneDegSlice(GraphVectorSpace.DegSlice):
+    """Represents the sum of GOne and ordinary graph vector spaces used for the cohomology computation.
+    n_vertices refers to the number of vertices in the ordinary GC part
+    top_n=0 -> just ordinary GC
+    top_n=1 -> also GOne present
+    """
+
+    def is_complete(self):
+        for vs in self.vs_list:
+            if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
+                return False
+        return True
+
+    def __init__(self,  n_vertices, n_loops, top_n):
+        """Initialize the degree slice.
+        """
+        self.n_vertices = n_vertices
+        self.n_loops = n_loops
+        self.top_n = top_n
+        if top_n == 0:
+            vs_list = [ OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)]
+        elif top_n == 1:
+            vs_list = [GOneVS(n_vertices-2, n_loops) , OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)]
+        else:
+            raise ValueError("GOneDegSlice init: top_n must be 0 or 1")
+        
+        super(GOneDegSlice, self).__init__(vs_list, n_vertices)
+
+    def get_ordered_param_dict(self):
+        return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('topn', self.top_n)])
+
+    def __eq__(self, other):
+        return self.n_loops == other.n_loops \
+            and self.n_vertices == other.n_vertices \
+            and self.top_n == other.top_n
+
+    def __str__(self):
+        return ("GOneDegSlice_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple())
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_top_degree_slice_deg_%d_%d_%d_%d_%s_%s" % (
+            self.n_vertices, self.n_loops, self.top_n, graph_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class ContractReconnectBiOM(GraphOperator.BiOperatorMatrix):
+    def __init__(self, domain, target):
+        """Bi operator matrix based on contract edges and reconnect edges.
+
+        """
+        self.domain = domain 
+        self.target = target
+        super(ContractReconnectBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+                                                ReconnectEdgesGO)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one and increases the minimal number of hairs by one for both hair colors.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: VertexLoopDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: VertexLoopDegSlice
+        :return: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
+        """
+        return domain.n_vertices == target.n_vertices + 1 \
+            and domain.n_loops == target.n_loops
+
+    def get_matrix_file_path(self):
+        s = "bi_D_contract_reconnect_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_rank_file_path(self):
+        s = "bi_D_contract_reconnect_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+    
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops):
+        domain = GOneDegSlice(n_vertices, n_loops,1)
+        target = GOneDegSlice(n_vertices-1, n_loops,0)
+        return cls(domain, target)
+
+
+class GOneSumVS(GraphVectorSpace.SumVectorSpace):
+    """Direct sum of forested graph vector spaces with specified edge parity.
+
+    Attributes:
+        - v_range (range): Range for the number of vertices.
+        - l_range (range): Range for the number of loops.
+        - even_edges (bool): True for even edges, False for odd edges.
+        - sub_type (str): Sub type of graphs.
+    """
+
+    def __init__(self, v_range, l_range):
+        self.l_range = l_range
+        self.v_range = v_range
+        # todo : misses top vs.... but seems ok in practice
+        vs_list = [OrdinaryGraphComplex.OrdinaryGVS(v, l, False) for v in v_range for l in l_range] \
+            + \
+            [GOneVS(v-2, l) for v in v_range for l in l_range]
+
+        super(GOneSumVS, self).__init__(vs_list)
+
+    def get_type(self):
+        return '%s graphs' % (graph_type)
+
+    def get_ordered_param_range_dict(self):
+        return Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+
+    def get_info_plot_path(self):
+        s = "info_vector_space_top_%s" % (graph_type)
+        return os.path.join(Parameters.plots_dir, graph_type, s)
+
+
+class ContractReconnectTopD(GraphOperator.Differential):
+    """ Represents a collection of ContractUnmarkTopBiOM.
+    This class is also used to compute cohomology.
+    """
+
+    def __init__(self, v_range, l_range):
+        self.l_range = l_range
+        self.v_range = v_range
+        op_list = [ContractReconnectBiOM.generate_operator(v, l,)
+                   for v in v_range
+                   for l in l_range]
+        sum_vs = GOneSumVS(v_range, l_range)
+        super(ContractReconnectTopD, self).__init__(sum_vs, op_list)
+
+    def get_type(self):
+        return 'contract edges and reconnect edges'
+
+    def get_cohomology_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "cohomology_dim_contract_edges_reconnect_edges_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, s)
+
+    def get_info_plot_path(self):
+        sub_type = self.sum_vector_space.sub_type
+        s = "info_contract_edges_reconnect_edges_D_%s_%s" % (
+            graph_type, sub_type)
+        return os.path.join(Parameters.plots_dir, graph_type, s)
+
+    def get_ordered_cohomology_param_range_dict(self):
+        s = self.sum_vector_space
+        return Shared.OrderedDict([('vertices', s.v_range), ('loops', s.l_range)])
+
+    # def _get_single_cohomology(self, n_loops, n_marked, n_hairs):
+    #     """
+    #     Computes a single cohomology dimension.
+    #     """
+    #     opD = ContractUnmarkTopBiOM.generate_operator(
+    #         n_loops, n_marked, n_hairs, self.even_edges)
+    #     opDD = ContractUnmarkTopBiOM.generate_operator(
+    #         n_loops, n_marked+1, n_hairs, self.even_edges)
+    #     n_vertices = opD.domain.n_vertices
+
+    #     opC = ContractEdgesGO.generate_operator(
+    #         n_vertices, n_loops, n_marked, n_hairs, self.even_edges)
+
+    #     try:
+    #         # dimension of the kernel of the contraction
+    #         dimV = opD.get_domain().get_dimension() - opC.get_matrix_rank()
+    #     except StoreLoad.FileNotFoundError:
+    #         logger.info(
+    #             "Cannot compute cohomology: First build basis for %s " % str(opD.get_domain()))
+    #         return None
+    #     if dimV == 0:
+    #         return '*'
+    #     if opD.is_valid():
+    #         try:
+    #             rankD = opD.get_true_rank()
+    #         except StoreLoad.FileNotFoundError:
+    #             logger.info(
+    #                 "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opD))
+    #             return None
+    #     else:
+    #         rankD = 0
+    #     if opDD.is_valid():
+    #         try:
+    #             rankDD = opDD.get_true_rank()
+    #         except StoreLoad.FileNotFoundError:
+    #             logger.info(
+    #                 "Cannot compute cohomology: Matrix rank not calculated for %s " % str(opDD))
+    #             return None
+    #     else:
+    #         rankDD = 0
+    #     cohomology_dim = dimV - rankD - rankDD
+    #     if cohomology_dim < 0:
+    #         raise ValueError("Negative cohomology dimension for %s (%d - %d - %d)" %
+    #                          (str(opD.domain), dimV, rankD, rankDD))
+    #         # logger.error("Negative cohomology dimension for %s" % str(opD.domain))
+    #     return cohomology_dim
+
+    # def get_cohomology_dim_dict(self):
+    #     ms = list(self.m_range)[:-1]
+    #     return {(l, m, h): self._get_single_cohomology(l, m, h)
+    #             for l in self.l_range
+    #             for h in self.h_range
+    #             for m in ms}
+
+        # return super().get_cohomology_dim_dict()
+
+    # def build_basis(self, **kwargs):
+    #     # self.sum_vector_space.compute_all_pregraphs(**kwargs)
+    #     self.sum_vector_space.build_basis(**kwargs)
+
+    # def compute_rank(self, sage=None, linbox=None, rheinfall=None, sort_key='size', ignore_existing_files=False, n_jobs=1, info_tracker=False):
+    #     # compute ranks of contractto operators
+    #     super().compute_rank(sage, linbox, rheinfall, sort_key,
+    #                          ignore_existing_files, n_jobs, info_tracker)
+    #     # compute ranks of contract operators that are also necessary to have
+    #     print("Computing contract operator ranks...")
+    #     coplist = [ContractEdgesGO.generate_operator(2*l-2+h, l, m, h, self.even_edges)
+    #                for l in self.l_range
+    #                for m in self.m_range
+    #                for h in self.h_range]
+    #     oc = GraphOperator.OperatorMatrixCollection(
+    #         self.sum_vector_space, coplist)
+    #     oc.compute_rank(sage, linbox, rheinfall, sort_key,
+    #                     ignore_existing_files, n_jobs, info_tracker)
+
