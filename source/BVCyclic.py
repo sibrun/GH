@@ -22,7 +22,11 @@ import HairyGraphComplex
 import OrdinaryGraphComplex
 
 
-graph_type = "gograph"
+# whether to allow disconnect graphs in the definition of GOneVS
+allow_disconnected = True
+
+graph_type = "gograph" + ("_d" if allow_disconnected else "")
+
 
 
 
@@ -103,6 +107,15 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         #     HGC = HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops - ext_valence+1, ext_valence, False, True)
         #     for G in HGC.get_basis():
         #         yield G
+
+        if allow_disconnected:
+            # add all graphs consisting of a single external vertex and a disconnected internal component
+            for G in NautyInterface.list_simple_graphs(self.n_vertices, self.n_edges, onlyonevi=False):
+                G.add_vertex()
+                # make new vertex the 0-th
+                p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+                G.relabel(p, inplace=True)
+                yield G
 
         for G in NautyInterface.list_simple_graphs_1(self.n_vertices+1, self.n_edges, onlyonevi=False):
             for j in range(self.n_vertices+1):
