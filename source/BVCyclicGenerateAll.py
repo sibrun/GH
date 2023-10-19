@@ -7,9 +7,10 @@ import GraphOperator
 
 if __name__ == "__main__":
     nr_jobs = 10
+    max_loops = 8
 
     print(f"Building GOneVS bases using {nr_jobs} jobs ...")
-    sumvs = GraphVectorSpace.SumVectorSpace( [ BVCyclic.GOneVS(v, l) for v in range(0,20) for l in range(0,6) ] )
+    sumvs = GraphVectorSpace.SumVectorSpace( [ BVCyclic.GOneVS(v, l) for v in range(0,16) for l in range(0,max_loops+1) ] )
 
     sumvs.build_basis(n_jobs=nr_jobs)
 
@@ -20,7 +21,7 @@ if __name__ == "__main__":
 
     # allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 
-    theD = BVCyclic.ContractReconnectTopD(range(16), range(6))
+    theD = BVCyclic.ContractReconnectTopD(range(16), range(max_loops+1))
 
     theD.build_matrix(n_jobs=nr_jobs)
 
