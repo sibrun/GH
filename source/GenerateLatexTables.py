@@ -17,6 +17,7 @@ import ForestedGraphComplex
 import WRHairyGraphComplex
 import os
 import SymmetricGraphComplex
+import BVCyclic
 
 
 # ***** only use if external hd
@@ -40,6 +41,10 @@ latexfile_ordinary_cohom = os.path.join(latexdir, "ordinary_cohom.tex")
 latexfile_ordinaryme_vs = os.path.join(latexdir, "ordinaryme_vs.tex")
 latexfile_ordinaryme_ops = os.path.join(latexdir, "ordinaryme_ops.tex")
 latexfile_ordinaryme_cohom = os.path.join(latexdir, "ordinaryme_cohom.tex")
+
+latexfile_ordinarycyclic_vs = os.path.join(latexdir, "ordinarycyclic_vs.tex")
+latexfile_ordinarycyclic_ops = os.path.join(latexdir, "ordinarycyclic_ops.tex")
+latexfile_ordinarycyclic_cohom = os.path.join(latexdir, "ordinarycyclic_cohom.tex")
 
 latexfile_hairy_vs = os.path.join(latexdir, "hairy_vs.tex")
 latexfile_hairy_ops = os.path.join(latexdir, "hairy_ops.tex")
@@ -137,6 +142,19 @@ alldata_tex = r"""
 
 \subsection{Cohomology}
 \input{ordinaryme_cohom.tex}
+
+\newpage
+
+\section{Ordinary Cyclic}
+
+\subsection{VS Dimensions}
+\input{ordinarcyclic_vs.tex}
+ 
+\subsection{Operator ranks}
+\input{ordinarycyclic_ops.tex}
+
+\subsection{Cohomology}
+\input{ordinarycyclic_cohom.tex}
 
 \newpage
 
@@ -692,6 +710,58 @@ def create_ordinaryme_cohom_table(v_range, l_range):
         s = s+latex_table(header, data)
     return s
 
+def create_ordinarycyclic_vs_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] +
+                [vs_dim_formatted(BVCyclic.GOneVS(v, l)) #+ cell_color[is_ordinary_zero(v, l)]
+                 for v in v_range]
+            )
+        s = s+latex_table(header, data, scale=0.75)
+    return s
+
+
+def create_ordinarycyclic_ops_table(v_range, l_range):
+    s = ""
+
+    header = ["l,v"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [ops_formatted(BVCyclic.ContractReconnectBiOM.generate_operator(v, l)) for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
+def create_ordinarycyclic_cohom_table(v_range, l_range):
+    s = ""
+
+    header = ["\\diagbox{l}{v}"] + [str(v) for v in v_range]
+    for even_edges in [True, False]:
+        s = s + "\n\n\\smallskip\n" + \
+            ("even" if even_edges else "odd") + " edges \n\n"
+        data = []
+        for l in l_range:
+            data.append(
+                [str(l)] + [cohom_formatted_merkulov(
+                    BVCyclic.ContractReconnectBiOM.generate_operator(v, l),
+                    BVCyclic.ContractReconnectBiOM.generate_operator(v+1, l),
+                    BVCyclic.ReconnectEdgesGO.generate_operator(v-2, l)
+                ) + cell_color[is_ordinary_zero(v, l)] for v in v_range])
+        s = s+latex_table(header, data)
+    return s
+
+
 
 def is_hairy_zero(v, l, h):
     """Determines whether the cohomology in the given degree is zero by abstract reasons."""
@@ -1096,6 +1166,19 @@ def write_tables():
     # s = create_ordinaryme_cohom_table(range(4, 22), range(3, 12))
     # with open(latexfile_ordinaryme_cohom, 'w') as f:
     #     f.write(s)
+
+    print("Ordinary Cyclic....")
+    s = create_ordinarycyclic_vs_table(range(4, 24), range(3, 13))
+    with open(latexfile_ordinarycyclic_vs, 'w') as f:
+        f.write(s)
+
+    s = create_ordinarycyclic_ops_table(range(4, 25), range(3, 13))
+    with open(latexfile_ordinarycyclic_ops, 'w') as f:
+        f.write(s)
+
+    s = create_ordinarycyclic_cohom_table(range(4, 22), range(3, 12))
+    with open(latexfile_ordinarycyclic_cohom, 'w') as f:
+        f.write(s)
 
     print("Hairy....")
     s = create_hairy_vs_table(range(22), range(12), range(1, 9))
