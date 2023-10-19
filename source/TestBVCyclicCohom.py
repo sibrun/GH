@@ -83,7 +83,7 @@ ooo.build_matrix()
 ooo.compute_rank(sage = "integer")
 # print(ooo.is_valid(), ooo.get_matrix())
 
-for nl in range(9):
+for nl in range(8):
     for nv in range(16):
         op = BVCyclic.ReconnectEdgesGO.generate_operator(nv,nl)
         # op.build_matrix(ignore_existing_files=True)
@@ -113,7 +113,7 @@ for nl in range(9):
 
 # compute cohomology:
 
-for nl in range(9):
+for nl in range(8):
     print("nl=", nl)
     for nv in range(16):
         print(nv, "->", cohom_dim(nv, nl), cohom_dim2(nv, nl))
