@@ -7,7 +7,7 @@ import GraphOperator
 
 if __name__ == "__main__":
     nr_jobs = 10
-    max_loops = 8
+    max_loops = 7
 
     print(f"Building GOneVS bases using {nr_jobs} jobs ...")
     sumvs = GraphVectorSpace.SumVectorSpace( [ BVCyclic.GOneVS(v, l) for v in range(0,16) for l in range(0,max_loops+1) ] )
