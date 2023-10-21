@@ -148,7 +148,7 @@ alldata_tex = r"""
 \section{Ordinary Cyclic}
 
 \subsection{VS Dimensions}
-\input{ordinarcyclic_vs.tex}
+\input{ordinarycyclic_vs.tex}
  
 \subsection{Operator ranks}
 \input{ordinarycyclic_ops.tex}
@@ -714,7 +714,7 @@ def create_ordinarycyclic_vs_table(v_range, l_range):
     s = ""
 
     header = ["l,v"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
+    for even_edges in [False]:
         s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
@@ -732,7 +732,7 @@ def create_ordinarycyclic_ops_table(v_range, l_range):
     s = ""
 
     header = ["l,v"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
+    for even_edges in [False]:
         s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
@@ -747,7 +747,7 @@ def create_ordinarycyclic_cohom_table(v_range, l_range):
     s = ""
 
     header = ["\\diagbox{l}{v}"] + [str(v) for v in v_range]
-    for even_edges in [True, False]:
+    for even_edges in [False]:
         s = s + "\n\n\\smallskip\n" + \
             ("even" if even_edges else "odd") + " edges \n\n"
         data = []
