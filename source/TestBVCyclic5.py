@@ -8,9 +8,11 @@ import BVCyclic
 
 ovs1 = BVCyclic.GOneVS(9,6)
 ovs2 = BVCyclic.GOneVS(8,6)
-print(ovs1.get_generating_graphs())
+print(list(ovs1.get_generating_graphs()))
 l = list(ovs1.get_generating_graphs())
 print(len(l))
+ll = list(ovs1.get_generating_graphs2())
+print(len(ll))
 G = l[500]
 autom_list = G.automorphism_group().gens()
 print(G.graph6_string(), ovs1._has_odd_automorphisms(G,autom_list))
