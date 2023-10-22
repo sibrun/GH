@@ -9,7 +9,7 @@ import BVCyclic
 ovs1 = BVCyclic.GOneVS(9,6)
 ovs2 = BVCyclic.GOneVS(8,6)
 
-l = list(ovs1.get_generating_graphs2())
+l = list(ovs1.get_generating_graphs())
 print(len(l))
 G = l[500]
 autom_list = G.automorphism_group().gens()
