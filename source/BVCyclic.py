@@ -95,7 +95,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
 
     def get_generating_graphs(self):
         if alternate_generation:
-            return self.get_generating_graphs2()
+            yield from self.get_generating_graphs2()
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return []
