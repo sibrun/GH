@@ -4,8 +4,9 @@ import BVCyclic
 ovs1 = BVCyclic.GOneVS(9,6)
 ovs2 = BVCyclic.GOneVS(8,6)
 
-l = ovs1.get_generating_graphs2()
-print(len(list(l)))
+l = list(ovs1.get_generating_graphs2())
+print(len(l))
+print(ovs1.graph_to_canon_g6( l[25]))
 ovs1.build_basis(ignore_existing_files=True)
 print(ovs1.get_dimension())
 
