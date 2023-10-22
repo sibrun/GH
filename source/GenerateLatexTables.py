@@ -432,8 +432,8 @@ def get_iso_string(D1: SymmetricGraphComplex.SymmetricBiOperatorMatrix, D2: Symm
     return iso_string
 
 
-def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None, iso_dict=None):
-    vs = D1.get_domain()
+def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None, iso_dict=None, use_D1domain = True):
+    vs = D1.get_domain() if use_D1domain else D2.get_target()
     if not vs.is_valid():
         return "-"
     if not vs.exists_basis_file():
@@ -753,10 +753,11 @@ def create_ordinarycyclic_cohom_table(v_range, l_range):
         data = []
         for l in l_range:
             data.append(
-                [str(l)] + [cohom_formatted_merkulov(
+                [str(l)] + [cohom_formatted_forested_top(
                     BVCyclic.ContractReconnectBiOM.generate_operator(v, l),
                     BVCyclic.ContractReconnectBiOM.generate_operator(v+1, l),
-                    BVCyclic.ReconnectEdgesGO.generate_operator(v-2, l)
+                    BVCyclic.ReconnectEdgesGO.generate_operator(v-2, l),
+                    use_D1domain=False
                 ) + cell_color[is_ordinary_zero(v, l)] for v in v_range])
         s = s+latex_table(header, data)
     return s
@@ -1289,8 +1290,8 @@ def all_export():
     write_tables()
     write_alldata()
 
-
-all_export()
+if __name__ == "__main__":
+    all_export()
 
 
 #  def print_dim_and_eulerchar(self):
