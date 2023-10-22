@@ -24,8 +24,9 @@ import OrdinaryGraphComplex
 
 # whether to allow disconnect graphs in the definition of GOneVS
 allow_disconnected = True
+alternate_generation = False
 
-graph_type = "gograph" + ("_d" if allow_disconnected else "")
+graph_type = "gograph" + ("_d" if allow_disconnected else "")+ ("_a" if alternate_generation else "")
 
 
 
@@ -93,6 +94,8 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         #return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
+        if alternate_generation:
+            return self.get_generating_graphs2()
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return []
@@ -124,6 +127,120 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
                 # check if valence conditions satisfied
                 if all( GG.degree(v+1) >=3 for v in range(self.n_vertices) ):
                     yield GG
+
+    def get_generating_graphs2(self):
+        # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
+        if not self.is_valid():
+            return []
+        if self.n_vertices == 0 and self.n_loops == 0:
+            # Output the empty graph
+            G = Graph(1)
+            return [ G ]
+
+        # for ext_valence in range(1,self.n_vertices+1):
+        #     # take hairy graph complex
+        #     # ideally, hairy gc should have been created including non-1vi vertices
+        #     HGC = HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops - ext_valence+1, ext_valence, False, True)
+        #     for G in HGC.get_basis():
+        #         yield G
+
+        if allow_disconnected:
+            # add all graphs consisting of a single external vertex and a disconnected internal component
+            for G in NautyInterface.list_simple_graphs(self.n_vertices, self.n_edges, onlyonevi=False):
+                G.add_vertex()
+                # make new vertex the 0-th
+                p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+                G.relabel(p, inplace=True)
+                yield G
+
+        # add all graphs with >=trivalent external vertex
+        for G in NautyInterface.list_simple_graphs(self.n_vertices+1, self.n_edges, onlyonevi=False):
+            for j in range(self.n_vertices+1):
+                p = [ (i+j) % (self.n_vertices+1) for i in range(self.n_vertices+1) ]
+                GG = G.relabel(p, inplace=False)
+                yield GG
+        
+        # add graphs with uni- or bivalent external vertex using hairy graphs
+        hvs1 = HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops, 1, False, True)
+        for G in hvs1.get_basis():
+            # relabel so that hair is first vertex
+            p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+            G.relabel(p, inplace=True)
+            yield G
+        hvs2 =  HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops-1, 2, False, True)
+        for G in hvs2.get_basis():
+            # merge hairs
+            G.merge_vertices([self.n_vertices, self.n_vertices+1])
+            G.relabel(list(range(0, self.n_vertices+1)), inplace=True)
+            # relabel so that hairs are first vertex
+            p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+            G.relabel(p, inplace=True)
+            yield G
+
+
+        # add all graphs with univalent external vertex, connected to a >=4-valent vertex
+        # ...and all graphs with bivalent external vertex
+        # for G in NautyInterface.list_simple_graphs(self.n_vertices, self.n_edges-1, onlyonevi=False):
+        #     G.add_vertex()
+        #     # make new vertex the 0-th
+        #     p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+        #     G.relabel(p, inplace=True)
+        #     # add an edge
+        #     for j in range(self.n_vertices):
+        #         GG = copy(G)
+        #         GG.add_edge(0,j+1)
+        #         yield GG
+        #     # or put 0 in the middle of an edge
+        #     for u,v in G.edges(labels=False):
+        #         GG = copy(G)
+        #         GG.delete_edge( (u,v) )
+        #         GG.add_edge(0,u)
+        #         GG.add_edge(0,v)
+        #         yield GG
+
+        # add all graphs with univalent external vertex, connected to a 3-valent vertex
+        # for G in NautyInterface.list_simple_graphs(self.n_vertices-1, self.n_edges-2, onlyonevi=False):
+        #     G.add_vertex()  # new 0 vertex
+        #     G.add_vertex()  # new neighbor of 0 -> vertex 1
+        #     # make new vertex the 0-th
+        #     p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+        #     G.relabel(p, inplace=True)
+        #     # iterate over all edges and connect 0 to the middle of the edge
+        #     for u,v in G.edges(labels=False):
+        #         GG = copy(G)
+        #         GG.delete_edge( (u,v) )
+        #         GG.add_edge(0,1)
+        #         GG.add_edge(u,1)
+        #         GG.add_edge(v,1)
+        #         yield GG
+        # # ... plus cases where a bivalent vertex is added parallel to an existing edge
+        # for G in NautyInterface.list_simple_graphs(self.n_vertices, self.n_edges-2, onlyonevi=False):
+        #     G.add_vertex()  # new 0 vertex
+        #     # make new vertex the 0-th
+        #     p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+        #     G.relabel(p, inplace=True)
+        #     # iterate over all edges and connect 0 to the middle of the edge
+        #     for u,v in G.edges(labels=False):
+        #         GG = copy(G)
+        #         GG.add_edge(u,0)
+        #         GG.add_edge(v,0)
+        #         yield GG
+
+        # # ...plus cases where we put the new double-edge parallel to an existing one
+        # for G in NautyInterface.list_simple_graphs(self.n_vertices-1, self.n_edges-3, onlyonevi=False):
+        #     G.add_vertex()  # new 0 vertex
+        #     G.add_vertex()  # new neighbor of 0 -> vertex 1
+        #     # make new vertex the 0-th
+        #     p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
+        #     G.relabel(p, inplace=True)
+        #     # iterate over all edges and connect 0 to the middle of a parallel edge
+        #     for u,v in G.edges(labels=False):
+        #         GG = copy(G)
+        #         GG.add_edge(0,1)
+        #         GG.add_edge(u,1)
+        #         GG.add_edge(v,1)
+        #         yield GG
+
 
     def perm_sign(self, G, p):
         # The sign is (induced sign of the edge permutation)
