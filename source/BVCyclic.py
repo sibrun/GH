@@ -24,7 +24,7 @@ import OrdinaryGraphComplex
 
 # whether to allow disconnect graphs in the definition of GOneVS
 allow_disconnected = True
-alternate_generation = True
+alternate_generation = False
 
 graph_type = "gograph" + ("_d" if allow_disconnected else "")+ ("_a" if alternate_generation else "")
 
