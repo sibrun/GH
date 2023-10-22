@@ -72,5 +72,8 @@ op1 = BVCyclic.ContractReconnectBiOM.generate_operator(10,6)
 op2 = BVCyclic.ContractReconnectBiOM.generate_operator(11,6)
 vs = op2.get_target()
 opc = BVCyclic.ReconnectEdgesGO.generate_operator(8,6)
+ovs1 = BVCyclic.GOneVS(9,6)
+ovs2 = BVCyclic.GOneVS(8,6)
 
 print(vs.get_dimension(), op1.get_matrix_rank(), op2.get_matrix_rank(), opc.get_matrix_rank())
+print(ovs1.get_dimension(), ovs2.get_dimension())
