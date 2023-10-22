@@ -8,7 +8,7 @@ import BVCyclic
 
 ovs1 = BVCyclic.GOneVS(9,6)
 ovs2 = BVCyclic.GOneVS(8,6)
-
+print(ovs1.get_generating_graphs())
 l = list(ovs1.get_generating_graphs())
 print(len(l))
 G = l[500]
