@@ -155,9 +155,10 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
 
         # add all graphs with >=trivalent external vertex
         for G in NautyInterface.list_simple_graphs(self.n_vertices+1, self.n_edges, onlyonevi=False):
+            G1 = copy(G)
             for j in range(self.n_vertices+1):
                 p = [ (i+j) % (self.n_vertices+1) for i in range(self.n_vertices+1) ]
-                GG = G.relabel(p, inplace=False)
+                GG = G1.relabel(p, inplace=False)
                 yield GG
         
         # add graphs with uni- or bivalent external vertex using hairy graphs
@@ -165,17 +166,18 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         for G in hvs1.get_basis():
             # relabel so that hair is first vertex
             p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
-            G.relabel(p, inplace=True)
-            yield G
+            GG = G.relabel(p, inplace=False)
+            yield GG
         hvs2 =  HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops-1, 2, False, True)
         for G in hvs2.get_basis():
             # merge hairs
-            G.merge_vertices([self.n_vertices, self.n_vertices+1])
-            G.relabel(list(range(0, self.n_vertices+1)), inplace=True)
+            G1 = copy(G)
+            G1.merge_vertices([self.n_vertices, self.n_vertices+1])
+            G1.relabel(list(range(0, self.n_vertices+1)), inplace=True)
             # relabel so that hairs are first vertex
             p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
-            G.relabel(p, inplace=True)
-            yield G
+            G1.relabel(p, inplace=True)
+            yield G1
 
 
         # add all graphs with univalent external vertex, connected to a >=4-valent vertex
