@@ -7,8 +7,8 @@ import NautyInterface
 
 
 # this is a hack... should be geng, with symlink to bin"
-geng_path = "/root/nauty27r3/gengL"
-# geng_path = "gengL"
+# geng_path = "/root/nauty27r3/gengL"
+geng_path = "gengL"
 
 
 def _get_geng_args_and_file(n_vertices, n_edges, onlyonevi=True):

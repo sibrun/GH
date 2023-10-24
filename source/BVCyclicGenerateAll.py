@@ -7,7 +7,7 @@ import GraphOperator
 
 if __name__ == "__main__":
     nr_jobs = 20
-    max_loops = 8
+    max_loops = 9
     max_vert = 16
     ignore_ex = False
 
