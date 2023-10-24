@@ -54,6 +54,7 @@ def cohom_dim2(nv, nl):
     vs = opc1.target
     opr1 = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(nv,nl+1, False)
     opr2 = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(nv-1,nl+1, False)
+    
 
     if not vs.is_valid():
         return "-"
