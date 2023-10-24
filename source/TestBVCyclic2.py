@@ -20,7 +20,7 @@ import OrdinaryGraphComplex
 
 # Test Operator generation
 for nv in range(12):
-    for nl in range(8):
+    for nl in range(9):
         op = BVCyclic.AddVReconnectEdgesGO.generate_operator(nv,nl)
         # op.build_matrix(ignore_existing_files=True, progress_bar=True)
         op.build_matrix(ignore_existing_files=False, progress_bar=True)
@@ -39,7 +39,7 @@ for nv in range(12):
 
 # display and compare ranks
 for nv in range(12):
-    for nl in range(7):
+    for nl in range(8):
         
         gvs = OrdinaryGraphComplex.OrdinaryGVS(nv+1,nl,False)
         if not gvs.is_valid() or gvs.get_dimension() == 0:
