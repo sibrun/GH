@@ -902,3 +902,243 @@ class ContractReconnectTopD(GraphOperator.Differential):
     #     oc.compute_rank(sage, linbox, rheinfall, sort_key,
     #                     ignore_existing_files, n_jobs, info_tracker)
 
+
+
+class TriOperatorMatrix(GraphOperator.OperatorMatrix):
+    """Bi operator matrix to be used as operator matrix in bicomplexes."""
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def __init__(self, domain, target, operator_cls1, operator_cls2, operator_cls3):
+        """Initialize domain and target degree slice and the two operator classes composing the bi operator.
+
+        :param domain: Domain degree slice.
+        :type domain: GraphVectorSpace.DegSlice
+        :param target: Target degree slice.
+        :type target: GraphVectorSpace.DegSlice
+        :param operator_cls1: First operator class to compose the bi operator.
+        :type operator_cls1: OperatorMatrix
+        :param operator_cls2: Second operator class to compose the bi operator.
+        :type operator_cls2: OperatorMatrix
+        """
+        super(TriOperatorMatrix, self).__init__(domain, target)
+        self.operator_cls1 = operator_cls1
+        self.operator_cls2 = operator_cls2
+        self.operator_cls3 = operator_cls3
+
+    @classmethod
+    def generate_op_matrix_list(cls, graded_sum_vs):
+        """Return a list of all possible bi operator matrices of this type with domain and target being degree slices
+        of the graded sum vector space.
+
+        :param graded_sum_vs: Graded sum vector space composed of degree slices.
+        :type graded_sum_vs: GraphVectorSpace.SumVectorSpace
+        :return: List of all possible bi operator matrices with domain and target being degree slices of the
+            graded sum vector space.
+        :rtype: list(BiOperatorMatrix)
+        """
+        graded_sum_vs_list = graded_sum_vs.get_vs_list()
+        bi_op_matrix_list = []
+        for (domain, target) in itertools.permutations(graded_sum_vs_list, 2):
+            if cls.is_match(domain, target):
+                bi_op_matrix_list.append(cls(domain, target))
+        return bi_op_matrix_list
+
+    def __str__(self):
+        """Return a unique description of the bi operator matrix.
+
+        :return: Unique description of the bi operator matrix.
+        :rtype: str
+        """
+        return '<tri operator matrix on domain: %s>' % str(self.domain)
+
+    def is_valid(self):
+        # return True
+        return self.domain.is_valid() and self.target.is_valid()
+
+    def get_work_estimate(self):
+        """Estimate the work needed to build the bi operator matrix by the product of the dimensions of domain and target.
+
+        Used to schedule the order of building the operator matrices.
+
+        :return int: Estimate the work to build the operator matrix.
+        :rtype: int
+        """
+
+        return self.domain.get_dimension() * self.target.get_dimension()
+
+    def build_matrix(self, ignore_existing_files=False, progress_bar=False, **kwargs):
+        if (not ignore_existing_files) and self.exists_matrix_file():
+            return
+        print(' ')
+        print('Build matrix of %s' % str(self))
+        shape = (self.domain.get_dimension(), self.target.get_dimension())
+        underlying_matrices = self._get_underlying_matrices()
+        self._build_underlying_matrices(underlying_matrices, ignore_existing_files=ignore_existing_files,
+                                        progress_bar=progress_bar)
+        matrix_list = self._get_matrix_list(underlying_matrices)
+        self._store_matrix_list(matrix_list, shape)
+
+    def _get_underlying_matrices(self):
+        op_matrix_list = []
+        for (domain, target) in itertools.product(self.domain.get_vs_list(), self.target.get_vs_list()):
+            if self.operator_cls1.is_match(domain, target):
+                op_matrix_list.append(self.operator_cls1(domain, target))
+            if self.operator_cls2.is_match(domain, target):
+                op_matrix_list.append(self.operator_cls2(domain, target))            
+            if self.operator_cls3.is_match(domain, target):
+                op_matrix_list.append(self.operator_cls3(domain, target))
+        return op_matrix_list
+
+    def _build_underlying_matrices(self, op_matrix_list, **kwargs):
+        for op in op_matrix_list:
+            op.build_matrix(**kwargs)
+
+    def _get_matrix_list(self, underlying_matrices):
+        matrixList = []
+        for op in underlying_matrices:
+            if not op.is_valid():
+                continue
+            domain_start_idx = self.domain.get_start_idx(op.get_domain())
+            target_start_idx = self.target.get_start_idx(op.get_target())
+            subMatrixList = op.get_matrix_list()
+            for (i, j, v) in subMatrixList:
+                matrixList.append(
+                    (i + domain_start_idx, j + target_start_idx, v))
+        matrixList.sort()
+        return matrixList
+
+class MultiGCDegSlice(GraphVectorSpace.DegSlice):
+    """Represents the sum of GOne and ordinary graph vector spaces used for the cohomology computation.
+    n_vertices refers to the number of vertices in the ordinary GC part
+    top_n=0 -> just one ordinary GC
+    top_n=1 -> two ordinary GC for areconnect delete
+    top_n=2 -> three ordinary GC for cotract areconnect delete
+    """
+
+    def is_complete(self):
+        for vs in self.vs_list:
+            if vs is None or (vs.is_valid() and not vs.exists_basis_file()):
+                return False
+        return True
+
+    def __init__(self,  n_vertices, n_loops, top_n):
+        """Initialize the degree slice.
+        """
+        self.n_vertices = n_vertices
+        self.n_loops = n_loops
+        self.top_n = top_n
+        if top_n == 0:
+            vs_list = [ OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)]
+        elif top_n == 1:
+            vs_list = [OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False), OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)]
+        elif top_n == 2:
+            vs_list = [OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False), OrdinaryGraphComplex.OrdinaryGVS(n_vertices-1, n_loops+1, False), OrdinaryGraphComplex.OrdinaryGVS(n_vertices-2, n_loops+1, False)]
+        else:
+            raise ValueError("MultiGCDegSlice init: top_n must be 0 or 1 or 2")
+        
+        super(GOneDegSlice, self).__init__(vs_list, n_vertices)
+
+    def get_ordered_param_dict(self):
+        return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('topn', self.top_n)])
+
+    def __eq__(self, other):
+        return self.n_loops == other.n_loops \
+            and self.n_vertices == other.n_vertices \
+            and self.top_n == other.top_n
+
+    def __str__(self):
+        return ("GOneDegSlice_%s_%s_%s" % self.get_ordered_param_dict().get_value_tuple())
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def get_info_plot_path(self):
+        s = "info_vertex_loop_top_degree_slice_deg_%d_%d_%d_%d_%s_%s" % (
+            self.n_vertices, self.n_loops, self.top_n, graph_type)
+        return os.path.join(Parameters.plots_dir, graph_type, self.sub_type, s)
+
+
+class AReconnectDeleteBiOM(GraphOperator.BiOperatorMatrix):
+    def __init__(self, domain, target):
+        """Bi operator matrix based on contract edges and reconnect edges.
+
+        """
+        self.domain = domain 
+        self.target = target
+        super(AReconnectDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.DeleteEdgesGO,
+                                                AddVReconnectEdgesGO)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one and increases the minimal number of hairs by one for both hair colors.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: VertexLoopDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: VertexLoopDegSlice
+        :return: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
+        """
+        return domain.n_vertices == target.n_vertices + 1 \
+            and domain.n_loops == target.n_loops
+
+    def get_matrix_file_path(self):
+        s = "bi_D_areconnect_delete_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_rank_file_path(self):
+        s = "bi_D_areconnect_delete_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+    
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops):
+        domain = MultiGCDegSlice(n_vertices, n_loops,1)
+        target = MultiGCDegSlice(n_vertices-1, n_loops,0)
+        return cls(domain, target)
+
+
+
+class ContractAReconnectDeleteTriOM(TriOperatorMatrix):
+    def __init__(self, domain, target):
+        """Bi operator matrix based on contract edges and reconnect edges.
+
+        """
+        self.domain = domain 
+        self.target = target
+        super(ContractReconnectBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+                                                    OrdinaryGraphComplex.DeleteEdgesGO,
+                                                AddVReconnectEdgesGO)
+
+    @staticmethod
+    def is_match(domain, target):
+        """Check whether domain and target degree slices match to generate a corresponding bi operator matrix.
+
+        The bi operator reduces the degree by one and increases the minimal number of hairs by one for both hair colors.
+
+        :param domain: Potential domain vector space of the operator.
+        :type domain: VertexLoopDegSlice
+        :param target: Potential target vector space of the operator.
+        :type target: VertexLoopDegSlice
+        :return: True if domain and target match to generate a corresponding bi operator matrix.
+        :rtype: bool
+        """
+        return domain.n_vertices == target.n_vertices + 1 \
+            and domain.n_loops == target.n_loops
+
+    def get_matrix_file_path(self):
+        s = "tri_D_contract_areconnect_delete_%d_%d_%d.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+
+    def get_rank_file_path(self):
+        s = "tri_D_contract_areconnect_delete_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
+        return os.path.join(Parameters.data_dir, graph_type, s)
+    
+    @classmethod
+    def generate_operator(cls, n_vertices, n_loops):
+        domain = MultiGCDegSlice(n_vertices, n_loops,2)
+        target = MultiGCDegSlice(n_vertices-1, n_loops,0)
+        return cls(domain, target)
+
