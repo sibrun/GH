@@ -111,7 +111,8 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
         # attach all 2k+2 rim edges... all but one is marked
         for j in range(2*k+2):
             # j is the edge that is not marked
-            #TODO
+            #
+            pass
 
         return ret 
 
