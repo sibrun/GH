@@ -75,6 +75,47 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
 
 
 class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
+    # TODO: not finished yet...
+    # The forested wheel with 2k+1 spokes and all but one of the edges along the rim marked
+    def __init__(self, k):
+        even_edges = True
+        self.even_edges = even_edges
+        self.k = k
+        self.sub_type = ForestedGraphComplex.sub_types[self.even_edges]
+        op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(2*k+1, 2*k+2, 1, even_edges)
+        op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(2*k+1, 2*k+1, 1, even_edges)
+        name = f"Forested wheel class "+self.sub_type
+        super(ForestedMoritaTetrahedronCheck, self).__init__(op1, op2, name)
+
+    def get_matrix_file_path(self):
+        s = f"contract_unmarkD_forested_wheel_check.txt"
+        return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
+
+    def get_rank_file_path(self):
+        s = f"contract_unmarkD_forested_wheel_check_rank.txt"
+        return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
+
+    def generate_vector(self):
+        k = self.k
+        G = Graph(4*k + 6) # 2k+3 normal vertices then 2k+2 bivalent edge vertices, then 1 hair
+        # the first vertex is the center, then the spokes-rim-vertices, then the special rim vertex
+        # attach spokes 
+        for j in range(2*k+1):
+            G.add_edge(0, 2*k+3+j)
+            G.add_edge(j+1, 2*k+3+j)
+        # edge from hair to special rim vertex
+        G.add_edge(2*k+4, 4*k+5)
+
+        ret = []
+
+        # attach all 2k+2 rim edges... all but one is marked
+        for j in range(2*k+2):
+            # j is the edge that is not marked
+            #TODO
+
+        return ret 
+
+class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, even_edges):
         self.even_edges = even_edges
         self.sub_type = ForestedGraphComplex.sub_types[even_edges]
@@ -100,8 +141,6 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
                     for p3 in itertools.permutations(range(3))
                     for p4 in itertools.permutations(range(3))
                     ]
-
-
 
 ##### run tests #####
 # OrdinaryWheelCheck(3, False).checkit(sage="integer")
