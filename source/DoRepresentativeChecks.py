@@ -6,6 +6,7 @@ import SpecialGraphs
 import os
 import itertools
 import Shared
+from sage.all import *
 
 class OrdinaryWheelCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, k_spokes, even_edges):
@@ -74,7 +75,7 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
                     for p in itertools.permutations(range(self.k))]
 
 
-class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
+class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
     # TODO: not finished yet...
     # The forested wheel with 2k+1 spokes and all but one of the edges along the rim marked
     def __init__(self, k):
@@ -82,44 +83,57 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
         self.even_edges = even_edges
         self.k = k
         self.sub_type = ForestedGraphComplex.sub_types[self.even_edges]
-        op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(2*k+1, 2*k+2, 1, even_edges)
-        op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(2*k+1, 2*k+1, 1, even_edges)
-        name = f"Forested wheel class "+self.sub_type
-        super(ForestedMoritaTetrahedronCheck, self).__init__(op1, op2, name)
+        op1 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(2*k+1, 2*k+1, 1, even_edges)
+        op2 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(2*k+1, 2*k+2, 1, even_edges)
+        primary_vs = ForestedGraphComplex.ForestedGVS(2*k+3, 2*k+1, 2*k+1, 1, even_edges)
+        op1.build_matrix()
+        op2.build_matrix()
+        op1.compute_rank(sage="integer")
+        op2.compute_rank(sage="integer")
+        self.unmark_op = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(2*k+3,2*k+1, 2*k+2, 1, even_edges )
+        name = f"Forested wheel class k={k} "+self.sub_type
+        super(ForestedWheelCheck, self).__init__(op1, op2, name, primaryvs=primary_vs)
 
     def get_matrix_file_path(self):
-        s = f"contract_unmarkD_forested_wheel_check.txt"
+        s = f"contract_unmarkD_forested_wheel_check_{self.k}.txt"
         return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
 
     def get_rank_file_path(self):
-        s = f"contract_unmarkD_forested_wheel_check_rank.txt"
+        s = f"contract_unmarkD_forested_wheel_check_{self.k}_rank.txt"
         return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
 
     def generate_vector(self):
         k = self.k
-        G = Graph(4*k + 6) # 2k+3 normal vertices then 2k+2 bivalent edge vertices, then 1 hair
+        G = Graph(4*k + 5) # 2k+3 normal vertices then 2k+1 bivalent edge vertices, then 1 hair
         # the first vertex is the center, then the spokes-rim-vertices, then the special rim vertex
         # attach spokes 
         for j in range(2*k+1):
             G.add_edge(0, 2*k+3+j)
             G.add_edge(j+1, 2*k+3+j)
         # edge from hair to special rim vertex
-        G.add_edge(2*k+4, 4*k+5)
+        G.add_edge(2*k+2, 4*k+4)
+        # rim edges
+        G.add_edge(2*k+2, 1)
+        G.add_edge(2*k+2, 2*k+1)
+        for j in range(2*k):
+            G.add_edge(j+1, j+2)
+        
+        # print(G.graph6_string())
 
-        ret = []
+        # apply unmark differential to produce class
+        ret = self.unmark_op.operate_on(G)
+        # print(ret)
+        # for (GG, x) in ret:
+        #     print(x, GG.graph6_string())
 
-        # attach all 2k+2 rim edges... all but one is marked
-        for j in range(2*k+2):
-            # j is the edge that is not marked
-            #
-            pass
+        return ret
+    
 
-        return ret 
-
-class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
+class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, even_edges):
         self.even_edges = even_edges
         self.sub_type = ForestedGraphComplex.sub_types[even_edges]
+        # TODO: seems like a mistake here...
         op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
         op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
         name = f"Forested Morita tetrahedron class "+self.sub_type
@@ -162,7 +176,7 @@ class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
 # ForestedMoritaCheck(5, False).checkit(linbox="mod")
 
 
-FC = ForestedMoritaTetrahedronCheck(False)
+# FC = ForestedMoritaTetrahedronCheck(False)
 # vvv=FC.generate_vector()
 # (G,a) = vvv[0]
 # G.show()
@@ -171,10 +185,28 @@ FC = ForestedMoritaTetrahedronCheck(False)
 # print(G.graph6_string())
 # G.show()
 
+FW = ForestedWheelCheck(2)
+# vss = FW.op1.domain
+# v6 = FW.get_vector_g6()
+# print(v6)
+# bb = FW.op1.domain.get_basis_g6()
+# print(FW.op1.domain.get_dimension())
+# print(len(bb))
+# print(vss.get_vs_list())
+
+# print(FW.op1.domain.get_basis_g6())
+
+# FW.checkit(sage="integer", ignore_existing_files=True)
+
+# FW.build_matrix(ignore_existing_files=True)
+print(FW.is_cocycle())
 # print(FC.is_cocycle())
-print("matrix...")
-# FC.build_matrix()
-print("built.. starting rank")
-# FC.compute_rank(linbox="modprecond")
-print("Done.")
-FC.is_cocycle_exact()
+# print("matrix...")
+
+# # FC.build_matrix()
+# print("built.. starting rank")
+# FW.compute_rank(sage="integer", ignore_existing_files=True)
+# # FC.compute_rank(linbox="modprecond")
+# print("Done.")
+print(FW.is_cocycle_exact() )
+# FC.is_cocycle_exact()
