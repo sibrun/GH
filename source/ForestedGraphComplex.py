@@ -306,9 +306,11 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                                    ('marked_edges', self.n_marked_edges), ('hairs', self.n_hairs)])
 
     def get_partition(self):
-        # All internal vertices are in color 0
-        # the unmarked-edge-vertices are in color 1
-        # the hair vertices are in colors 2,...,n_hairs+1.
+        """
+        All internal vertices are in color 0
+        the unmarked-edge-vertices are in color 1
+        the hair vertices are in colors 2,...,n_hairs+1.
+        """
         return self.preVS.get_partition()
 
     def is_valid(self):

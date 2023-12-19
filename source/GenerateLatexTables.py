@@ -243,7 +243,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{forested_top_vs_nobl.tex}
- 
+
 \subsection{Operator ranks}
 \input{forested_top_ops_nobl.tex}
 
