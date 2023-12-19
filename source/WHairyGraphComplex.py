@@ -6,7 +6,7 @@ Graph complexes based on simple graphs with numbered hairs and hairs of two deco
 Implemented Differentials: Contract edges.
 
 Graphs are realized as simple graphs with 2 extra vertices for epsilon and omega, (index self.n_vertices and self.n_vertices+1).
-WARNING: If there is a tadpole the corresponding loop is not part of the graph--one can determine the presence of the tadpole 
+WARNING: If there is a tadpole the corresponding loop is not part of the graph--one can determine the presence of the tadpole
 from the overall one too small loop number.
 TODO: Take care that this does not produce problems
 """

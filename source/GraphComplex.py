@@ -107,7 +107,7 @@ class GraphComplex(object):
         :return: Dictionary (differential -> square zero test successful)
         :rtype: dict(differential -> bool)
         """
-        test_dict = dict()
+        test_dict = {}
         for dif in self.operator_collection_list:
             if isinstance(dif, GraphOperator.Differential):
                 (triv_l, succ_l, inc_l, fail_l) = dif.square_zero_test()
@@ -187,7 +187,7 @@ class GraphComplex(object):
         :return: Dictionary (pair of operators -> square zero test successful)
         :rtype: dict(tuple(GraphOperator.OperatorMatrixCollection, GraphOperator.OperatorMatrixCollection)  -> bool)
         """
-        test_dict = dict()
+        test_dict = {}
         for (op_collection1, op_collection2) in itertools.combinations(self.operator_collection_list, 2):
             (triv_l, succ_l, inc_l, fail_l) = self.test_anti_commutativity(
                 op_collection1, op_collection2, commute=commute)

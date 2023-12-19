@@ -10,7 +10,7 @@ from sage.all import *
 
 class OrdinaryWheelCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, k_spokes, even_edges):
-        self.k_spokes = k_spokes 
+        self.k_spokes = k_spokes
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types[even_edges]
         op1 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(k_spokes+1, k_spokes, even_edges)
@@ -32,7 +32,7 @@ class OrdinaryWheelCheck(RepresentativeCheck.RepresentativeCheck):
 
 class ForestedRingCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, n_marked, even_edges):
-        self.n_marked = n_marked 
+        self.n_marked = n_marked
         self.even_edges = even_edges
         self.sub_type = ForestedGraphComplex.sub_types[even_edges]
         op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(n_marked+1, n_marked, 0, even_edges)
@@ -71,7 +71,7 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
         return os.path.join(Parameters.data_dir, ForestedGraphComplex.graph_type, self.sub_type, s)
 
     def generate_vector(self):
-        return [ (SpecialGraphs.forested_morita_graph(self.k, p), Shared.Perm(p).signature()) 
+        return [ (SpecialGraphs.forested_morita_graph(self.k, p), Shared.Perm(p).signature())
                     for p in itertools.permutations(range(self.k))]
 
 
@@ -106,7 +106,7 @@ class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
         k = self.k
         G = Graph(4*k + 5) # 2k+3 normal vertices then 2k+1 bivalent edge vertices, then 1 hair
         # the first vertex is the center, then the spokes-rim-vertices, then the special rim vertex
-        # attach spokes 
+        # attach spokes
         for j in range(2*k+1):
             G.add_edge(0, 2*k+3+j)
             G.add_edge(j+1, 2*k+3+j)
@@ -117,7 +117,7 @@ class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
         G.add_edge(2*k+2, 2*k+1)
         for j in range(2*k):
             G.add_edge(j+1, j+2)
-        
+
         # print(G.graph6_string())
 
         # apply unmark differential to produce class
@@ -127,7 +127,7 @@ class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
         #     print(x, GG.graph6_string())
 
         return ret
-    
+
 
 class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
     def __init__(self, even_edges):
@@ -149,8 +149,8 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
 
     def generate_vector(self):
         return [ (SpecialGraphs.forested_morita_tetrahedron([p1,p2,p3,p4]),
-                     Shared.Perm(p1).signature() * Shared.Perm(p2).signature() 
-                     * Shared.Perm(p3).signature() * Shared.Perm(p4).signature()) 
+                     Shared.Perm(p1).signature() * Shared.Perm(p2).signature()
+                     * Shared.Perm(p3).signature() * Shared.Perm(p4).signature())
                     for p1 in itertools.permutations(range(3))
                     for p2 in itertools.permutations(range(3))
                     for p3 in itertools.permutations(range(3))

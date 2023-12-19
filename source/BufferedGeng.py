@@ -45,7 +45,7 @@ def list_simple_graphs_buffered(n_vertices, n_edges, onlyonevi=True):
             f"Buffered geng: requested cache file {filename} does not exist. Generate cache first")
     with open(filename, "r") as f:
         txt = f.read()
-        if not type(txt) is str:
+        if type(txt) is not str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
         print(f"Buffered nauty generated {len(list_g6)} graphs.")

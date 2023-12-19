@@ -157,7 +157,7 @@ class SymmetricDegSlice(GraphVectorSpace.DegSlice):
 
 
 class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
-    """ Represents the projection operator on a degree slice. 
+    """ Represents the projection operator on a degree slice.
     """
 
     def __init__(self, domain, rep_index):
@@ -299,7 +299,7 @@ class IsotypicalComponent():
         d = self.vs.get_ordered_param_dict().copy()
         d.update({'rep_index': self.rep_index})
         return d
-    
+
     def exists_basis_file(self):
         return self.vs.exists_basis_file()
 
@@ -459,7 +459,7 @@ class SymmetricDifferential(GraphOperator.Differential):
     Then a new SymmetricDifferential is constructed, passing the old differential as constructor parameter.
 
     Attributes:
-    diff - The (old) differential from which this differential (on isotypical components) is built, 
+    diff - The (old) differential from which this differential (on isotypical components) is built,
            by splitting the relevant operators into their restrictions on istypical components.
     """
 
@@ -474,7 +474,7 @@ class SymmetricDifferential(GraphOperator.Differential):
 
     def refine_cohom_dim_dict(self, dict):
         """Refines the given dictionary of cohomology dimensions (vectorspace->int) by providing info on the splitting into
-        Sn irreducible components. 
+        Sn irreducible components.
         Returns a new dictionary, the old is unchanged. """
         newdict = dict.copy()
         mydict = self._get_cohomology_dim_dict()
@@ -524,7 +524,7 @@ class SymmetricDifferential(GraphOperator.Differential):
         dim_dict_refined = self.refine_cohom_dim_dict(dim_dict)
 
         # look up parameter values
-        dim_dict_refined2 = dict()
+        dim_dict_refined2 = {}
         for vs in self.diff.sum_vector_space.get_vs_list():
             dim_dict_refined2.update(
                 {vs.get_ordered_param_dict().get_value_tuple(): dim_dict_refined.get(vs)})
@@ -565,12 +565,12 @@ class SymmetricDifferential(GraphOperator.Differential):
                             opA = opD.restrict_to_isotypical_component(rep_ind)
                             if opA.opP.rep_dim > dim:
                                 continue
-                            if not (opA in opD_list):
+                            if opA not in opD_list:
                                 opD_list.append(opA)
 
                             opA = opDD.restrict_to_isotypical_component(
                                 rep_ind)
-                            if not (opA in opD_list):
+                            if opA not in opD_list:
                                 opD_list.append(opA)
         vsList = [op.domain for op in opD_list]
         return (vsList, opD_list)

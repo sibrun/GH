@@ -11,7 +11,7 @@ def wheel_graph(nspokes):
     """Generates the wheel graphs, i.e., a central vertex connected to a ring of n vertices.
     The number of vertices will be nspokes+1. The central vertex is the first in the ordering.
 
-        :param nspokes: The number of spokes in the wheel. 
+        :param nspokes: The number of spokes in the wheel.
         :type nspokes: int
     """
     G = Graph(nspokes+1)
@@ -22,11 +22,11 @@ def wheel_graph(nspokes):
 
 
 def hedgehog_graph(nvertices):
-    """Generates the hedgehog graphs, i.e., a ring of nvertices vertices, 
+    """Generates the hedgehog graphs, i.e., a ring of nvertices vertices,
     each carrying one hair, with a unary vertex at the end.
     The trivalent vertices will be the first in the ordering
 
-        :param nvertices: The number of trivalent vertices in the ring. 
+        :param nvertices: The number of trivalent vertices in the ring.
         :type nvertices: int
     """
     G = Graph(2*nvertices)
@@ -36,10 +36,10 @@ def hedgehog_graph(nvertices):
     return G
 
 def forested_ring_graph(n_marked_edges : int):
-    """Generates the ring graphs that span the low degree cohomology 
+    """Generates the ring graphs that span the low degree cohomology
     of the even_e forested graph complex.
     They have 2*n_marked_edges vertices and 2*n_marked_edges unmarked edges.
-    Mind that unmarked edges are represented by bivalent vertices in the forested 
+    Mind that unmarked edges are represented by bivalent vertices in the forested
     graph complex.
     """
     n_unmarked = 2*n_marked_edges
@@ -62,7 +62,7 @@ def forested_morita_graph(k: int, p):
     of the odd_e forested graph complex.
     They have 2*k vertices and k+2 unmarked edges and 2*k-2 marked edges.
     p is the zero-based permutation connecting both halves of the graph.
-    Mind that unmarked edges are represented by bivalent vertices in the forested 
+    Mind that unmarked edges are represented by bivalent vertices in the forested
     graph complex.
     """
     n_unmarked = k+2
@@ -92,7 +92,7 @@ def forested_morita_tetrahedron(ps):
     the degree 8 cohomology of the 7-loop odd_e forested graph complex.
     They have 12 vertices and 10 unmarked edges and 8 marked edges.
     ps are 4 zero-based permutations of (0,1,2) stating how the edges should be connected.
-    Mind that unmarked edges are represented by bivalent vertices in the forested 
+    Mind that unmarked edges are represented by bivalent vertices in the forested
     graph complex.
     """
     n_unmarked = 10

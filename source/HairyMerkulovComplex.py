@@ -50,7 +50,7 @@ class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         :type n_loops: int
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
-        :param valence_type: Can be 34 (only 3 and 4-valent vertices), 
+        :param valence_type: Can be 34 (only 3 and 4-valent vertices),
             3456 (at most one vertex of valence 5 or 6), 56 (exactly one vertex of valence 5 or 6).
         """
         self.n_vertices = n_vertices
@@ -118,10 +118,10 @@ class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         n_vertices_2 = self.n_hairs + self.n_edges
         n_edges_bip = self.n_hairs + 2 * self.n_edges
         deg_range_2 = (1, 2)
-        
+
         if self.valence_type == 3456:
             deg_range_1 = (3, 6)
-            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G)
                     for G in NautyInterface.list_bipartite_graphs(
                     n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
             for G in bipartite_graphs:
@@ -130,14 +130,14 @@ class HairyMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
                     yield G
         elif self.valence_type == 34:
             deg_range_1 = (3, 4)
-            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G)
                     for G in NautyInterface.list_bipartite_graphs(
                     n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
             for G in bipartite_graphs:
                 yield G
         elif self.valence_type == 56:
             deg_range_1 = (3, 6)
-            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G) 
+            bipartite_graphs = ( self.ogvs._bip_to_ordinary(G)
                     for G in NautyInterface.list_bipartite_graphs(
                     n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip) )
             for G in bipartite_graphs:
@@ -179,9 +179,9 @@ class HairyMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.even_hairs = even_hairs
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [HairyMerkulovGVS(v, l, h, self.even_edges, self.even_hairs, vt) 
+        vs_list = [HairyMerkulovGVS(v, l, h, self.even_edges, self.even_hairs, vt)
                 for v in self.v_range
-                for l in self.l_range 
+                for l in self.l_range
                 for h in self.h_range
                 for vt in valence_types ]
         super(HairyMerkulovGraphSumVS, self).__init__(vs_list)
@@ -257,7 +257,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         """
         domain = HairyMerkulovGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs, 34)
         target = HairyMerkulovGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs, 3456 if to3456 else 56)
-        
+
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -320,8 +320,8 @@ class ContractEdgesD(GraphOperator.Differential):
         sub_type = self.sum_vector_space.sub_type
         s = "info_contract_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-    
-    
+
+
 def cohom_formatted_merkulov(D1, D2, Dc2):
     vs = D1.get_domain()
     if not vs.is_valid():
@@ -396,7 +396,7 @@ def get_ref_cohom_dim(v, l, h, even_e, even_h):
     """ Compute cohomology dimension ..."""
     op1 = HairyGraphComplex.ContractEdgesGO.generate_operator(v, l, h, even_e, even_h)
     op2 = HairyGraphComplex.ContractEdgesGO.generate_operator(v+1, l, h, even_e, even_h)
-       
+
     return cohom_formatted2(op1, op2)
 
 # ------- Graph Complexes --------
@@ -446,13 +446,13 @@ class HairyMerkulovGC(GraphComplex.GraphComplex):
     def print_cohom(self):
         for h in self.h_range:
             for l in self.l_range:
-                print(f"l={l}, h={h}: {list( get_34cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range)}")
-            
+                print(f"l={l}, h={h}: {[ get_34cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range]}")
+
 
     def print_cohom_reference(self):
         """Print cohomology of analogous ordinary hairy gvs for reference."""
         for h in self.h_range:
             for l in self.l_range:
-                print(f"l={l}, h={h}: {list( get_ref_cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range)}")
-  
+                print(f"l={l}, h={h}: {[ get_ref_cohom_dim(v,l,h, self.even_edges, self.even_hairs) for v in self.v_range]}")
+
 

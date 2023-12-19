@@ -34,7 +34,7 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
         ccount[j] += 1
         if previj == (i,j):
             multis += 1
-    
+
     print("evaluating...")
     zerorows = sum( 1 if j==0 else 0 for j in rcount)
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
@@ -42,7 +42,7 @@ def precond_stats(op:GraphOperator.OperatorMatrix):
     onecols = sum( 1 if j==1 else 0 for j in ccount)
     tworows = sum( 1 if j==2 else 0 for j in rcount)
     twocols = sum( 1 if j==2 else 0 for j in ccount)
-    
+
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
@@ -57,15 +57,15 @@ def get_submatrix(lst, keeprow, keepcol):
     print("Submatrix...")
     newm = sum(1 for b in keeprow if b)
     newn = sum(1 for b in keepcol if b)
-    
+
     newrowinds = [i for (i,b) in enumerate(keeprow) if b]
     newcolinds = [j for (j,b) in enumerate(keepcol) if b]
-    
+
     # dict from old index to new
     rowdict = { iold : inew for (inew, iold) in enumerate(newrowinds) }
     coldict = { iold : inew for (inew, iold) in enumerate(newcolinds) }
 
-    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst 
+    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst
                                 if keeprow[i] and keepcol[j] ]
 
     return (newlst, newm, newn)
@@ -83,7 +83,7 @@ def graphcheck(lst, m, n):
         rcount[i] += 1
         ccount[j] += 1
         colsupports[j].add(i)
-    
+
     # consider only columns with 2 nonzero entries
     cols = [c == 2 or c==3 for c in ccount]
     lst2, m2, n2 =  get_submatrix(lst, [True for _ in range(m)], cols)
@@ -91,11 +91,11 @@ def graphcheck(lst, m, n):
     # make graph
     G = Graph(m2)
     edges = []
-    es = [-1 for _ in range(n2)] 
+    es = [-1 for _ in range(n2)]
     for (i,j,v) in lst2:
         if es[j] >0:
             edges.append( (i, es[j],j) )
-        
+
         es[j] = i
     G.add_edges(edges)
     print("Graph generated, finding ccs")
@@ -104,7 +104,7 @@ def graphcheck(lst, m, n):
     # ccs = G.connected_components()
     # ccsizes = [len(a) for a in ccs]
     # print(f"#connected comp{len(ccs)}")
-    
+
 
     ccgs = G.connected_components_subgraphs()
     ccinfo = [ (GG.num_verts(), GG.num_edges()) for GG in ccgs ]
@@ -119,7 +119,7 @@ def graphcheck(lst, m, n):
             break
         iset = set(verts)
         # jset = set(cc.edge_labels())
-        lst3, m3, n3 = get_submatrix(lst, [(i in iset) for i in range(m)], 
+        lst3, m3, n3 = get_submatrix(lst, [(i in iset) for i in range(m)],
                 [colsupports[j] <= iset for j in range(n)] )
         print(f"Submatrix {m3}x{n3}")
         M = matrix(QQ,m3,n3, {(i,j) : v for (i,j,v) in lst3 } )
@@ -128,7 +128,7 @@ def graphcheck(lst, m, n):
             print( f"OK, full rank {r}")
         else:
             print( f"NO, rank deficient {r}")
-            print( M.left_kernel().basis() ) 
+            print( M.left_kernel().basis() )
 
 
 
@@ -140,7 +140,7 @@ def removerstep(lst, m,n, rankbias):
     for (i,j, v) in lst:
         rcount[i] += 1
         ccount[j] += 1
-    
+
     print("evaluating...")
     zerorows = sum( 1 if j==0 else 0 for j in rcount)
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
@@ -148,7 +148,7 @@ def removerstep(lst, m,n, rankbias):
     onecols = sum( 1 if j==1 else 0 for j in ccount)
     tworows = sum( 1 if j==2 else 0 for j in rcount)
     twocols = sum( 1 if j==2 else 0 for j in ccount)
-    
+
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
@@ -178,16 +178,16 @@ def removerstep(lst, m,n, rankbias):
 
     newm = m - sum(1 for b in delrow if b)
     newn = n - sum(1 for b in delcol if b)
-    
+
     newrowinds = [i for (i,b) in enumerate(delrow) if not b]
     newcolinds = [j for (j,b) in enumerate(delcol) if not b]
-    
+
     # dict from old index to new
     rowdict = { iold : inew for (inew, iold) in enumerate(newrowinds) }
     coldict = { iold : inew for (inew, iold) in enumerate(newcolinds) }
 
     print("creating new matrix...")
-    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst 
+    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst
                                 if not delrow[i] and not delcol[j] ]
 
     return (newlst, newm, newn, newrankbias)

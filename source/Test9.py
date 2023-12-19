@@ -37,6 +37,5 @@ for opP in [opP0, opP1]:
         print(vs.graph_to_canon_g6(G))
         for (GG, v) in opP.operate_on(G):
             print(vs.graph_to_canon_g6(GG), v)
-        
 
-    
+

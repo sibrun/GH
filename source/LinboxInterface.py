@@ -28,7 +28,7 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
                  - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
                  - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
     """
-    if not (linbox_option in linbox_options):
+    if linbox_option not in linbox_options:
         raise ValueError('Possible options for linbox: ' + str(linbox_options))
     linbox_path = os.path.join(os.path.curdir, "rank_exe", "rank")
 

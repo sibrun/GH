@@ -20,8 +20,8 @@ import SymmetricGraphComplex
 
 
 # marker for entries that are computed mod p
-p_marker="" 
-# p_marker="" 
+p_marker=""
+# p_marker=""
 
 # ***** only use if external hd
 # Parameters.data_home_dir = "/Volumes/backup2/gh_data/"
@@ -301,7 +301,7 @@ def ops_formatted(op):
 
 
 def cohom_formatted(cohom_dict, tuple):
-    if not tuple in cohom_dict:
+    if tuple not in cohom_dict:
         return "?"
 
     dim = cohom_dict[tuple]
@@ -338,7 +338,7 @@ def cohom_formatted2(D1, D2, dim_bias=0, compute_iso=False, divide_by=1,inv_part
     r_str = "" if D1.exists_exact_rank() and D2.exists_exact_rank() else (" "+p_marker)
     cohomdim = d-r1-r2 + dim_bias
     cohomdim_str = str(cohomdim // divide_by)
-    
+
     # isotypical components
     isostr = ""
     if compute_iso and cohomdim > 0 and vs.get_n() >= 2:
@@ -513,14 +513,14 @@ def is_wrhairy_zero(v,l,h,w):
     deg = l+v +1
     dim = 6*l - 6 + 2*h
     if l == 0:
-        vcd = h-3 
+        vcd = h-3
         return h < 2 or deg < dim - vcd or deg > dim
     elif h == 0:
         vcd = 4*l-5
         return deg < dim - vcd + 1 or deg > dim
     else:
         vcd = 4*l-4+h
-        return deg < dim - vcd +(1 if l==1 else 0)  or deg > dim 
+        return deg < dim - vcd +(1 if l==1 else 0)  or deg > dim
 
 def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
     s = ""
@@ -1017,7 +1017,7 @@ def create_forested_top_cohom_table(hl_pairs, even_edges):
 
     for h, l_range, m_range in hl_pairs:
         header = ["l,m"] + [str(m) for m in m_range]
-        s = s + f"\n\n\smallskip\n\n {h} hairs \n\n"
+        s = s + f"\n\n\\smallskip\n\n {h} hairs \n\n"
         data = []
         for l in l_range:
             data.append(
@@ -1077,7 +1077,7 @@ def write_tables():
     with open(latexfile_chairy_cohom_o, 'w') as f:
         f.write(s)
 
-    
+
 
     print("Forested....")
     # s = create_forested_vs_table(range(9), range(20), range(6))

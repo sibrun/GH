@@ -57,7 +57,7 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         if tu.domain._has_odd_automorphisms(H, autom_list):
             print(g6, " has odd automorphisms")
         else:
-            if not g6 in ba1:
+            if g6 not in ba1:
                 print(g6, " not found in basis ", " v=", x)
             else:
                 print(g6, " exists at index ", ba1.index(

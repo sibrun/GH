@@ -23,7 +23,7 @@ if __name__ == "__main__":
         # CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(6), range(4, 5), even_e, ['contract_iso']) )
         # CGCs.append(CHairyGraphComplex.CHairyGC(range(0, 18), range(5), range(5, 6), even_e, ['contract_iso']) )
 
-        
+
     print("Computing matrices")
     for CGC in CGCs:
         CGC.build_matrix(progress_bar=False, info_tracker=False, n_jobs=nr_jobs)
