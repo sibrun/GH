@@ -1,7 +1,5 @@
 import unittest
 import itertools
-import logging
-import Log
 import TestGraphComplex
 import WRHairyGraphComplex
 
@@ -29,7 +27,7 @@ class OperatorTest(TestGraphComplex.OperatorTest):
 class GraphComplexTest(TestGraphComplex.GraphComplexTest):
     def setUp(self):
         self.gc_list = [ WRHairyGraphComplex.WRHairyGC(v_range, l_range, h_range, w_range, ['contract']) ]
-                       
+
 class CohomologyTest(TestGraphComplex.CohomologyTest):
     def setUp(self):
         self.gc_list = [ WRHairyGraphComplex.WRHairyGC(v_range, l_range, h_range, w_range, ['contract']) ]

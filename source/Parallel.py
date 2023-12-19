@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 def parallel(func, iter_arg, n_jobs=1, **kwargs):
     """Map the function func on the iterable iter_arg and executes it using n_jobs parallel processes.
-    :param func: Function to be maped on the ietrable argument.
+    :param func: Function to be mapped on the iterable argument.
     :type func: function object
     :param iter_arg: Iterable argument.
     :type iter_arg: iterable

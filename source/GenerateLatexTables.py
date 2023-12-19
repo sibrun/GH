@@ -253,8 +253,8 @@ alldata_tex = r"""
 \end{document}
 """
 
-# Refrence Euler characteristics
-# from zivkovic-willwacher
+# Reference Euler characteristics
+# from Zivkovic-Willwacher
 ordinary_ec_evenedges = [0, 0, 0, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 3, 4, 2, 2]
 ordinary_ec_oddedges = [0, 0, 0, 1, 0, 1, -1, 1, 0,
                         0, -2, 1, 0, 0, -2, 0, -4, -3, -1, 8, 12, 27]
@@ -551,9 +551,9 @@ def create_wrhairy_ops_table(v_range, l_range, h_range, w_range):
             s = s+latex_table(header, data)
     return s
 
-def is_wrhairy_zero(v,l,h,w):
-    if w!=2:
-         return False
+def is_wrhairy_zero(v, l, h, w):
+    if w != 2:
+        return False
     deg = l+v +1
     dim = 6*l - 6 + 2*h
     if l == 0:

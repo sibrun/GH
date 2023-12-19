@@ -3,9 +3,10 @@ import os
 import tempfile
 
 
-rheinfall_options = {"int64", "mpq", "mpz"}  # Rheinfall options for rank computation: 'int64' (rank calculation
-                                             # modulo 64 bit integer), 'mpz' (exact rank over Z), 'mpq' (exact rank over
-                                             # the rational numbers).
+rheinfall_options = {"int64", "mpq", "mpz"}
+# Rheinfall options for rank computation: 'int64' (rank calculation
+# modulo 64 bit integer), 'mpz' (exact rank over Z), 'mpq' (exact rank over
+# the rational numbers).
 
 
 def rank(rheinfall_option, matrix_file):

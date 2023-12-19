@@ -456,9 +456,9 @@ class SymmetricBiOperatorMatrix(GraphOperator.BiOperatorMatrix):
 class SymmetricDifferential(GraphOperator.Differential):
     """ Represents a differential on a symmetric graph complex, on a per-isotypical-component basis.
     The typical usage is that an ordinary differential holds the SymmetricGraphOperators.
-    Then a new SymmetricDifferential is constructed, passing the old differential as constructor paramter.
+    Then a new SymmetricDifferential is constructed, passing the old differential as constructor parameter.
 
-    Attributes: 
+    Attributes:
     diff - The (old) differential from which this differential (on isotypical components) is built, 
            by splitting the relevant operators into their restrictions on istypical components.
     """
@@ -509,7 +509,7 @@ class SymmetricDifferential(GraphOperator.Differential):
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
 
-        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Dafault: False).
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Default: False).
         :type to_html: bool
         :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (default: False).
         :type to_csv: bool

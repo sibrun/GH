@@ -324,15 +324,15 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
-def get_34cohom_dim(v,l, even_e):
-        """ Compute cohomology dimension ..."""
-        op1 = ContractEdgesGO.generate_operator(v,l, even_e)
-        op2 = ContractEdgesGO.generate_operator(v+1,l, even_e)
-        opc = ContractEdgesGO.generate_operator(v+1,l, even_e, False)
+def get_34cohom_dim(v, l, even_e):
+    """ Compute cohomology dimension ..."""
+    op1 = ContractEdgesGO.generate_operator(v, l, even_e)
+    op2 = ContractEdgesGO.generate_operator(v + 1, l, even_e)
+    opc = ContractEdgesGO.generate_operator(v + 1, l, even_e, False)
 
-        return cohom_formatted_merkulov(op1, op2, opc)
+    return cohom_formatted_merkulov(op1, op2, opc)
 
-        # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
+    # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
 
 
 

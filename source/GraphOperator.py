@@ -1219,7 +1219,7 @@ class Differential(OperatorMatrixCollection):
     __metaclass__ = ABCMeta
 
     def __init__(self, sum_vector_space, op_matrix_list):
-        """Initialze the underlying sum vector space and the list of operator matrices composing the differential.
+        """Initialize the underlying sum vector space and the list of operator matrices composing the differential.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: GraphVectorSpace.SumVectorSpace
@@ -1358,7 +1358,7 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         """Generic test whether the differential squares to zero.
 
-        Searche for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+        Search for matching pairs in the list of underlying operator matrices and test whether they square to zero.
         Report for how many of them the test was trivially successful (because at least two matrices are trivial),
         successful, inconclusive (because matrices are missing) or unsuccessful.
 
@@ -1428,7 +1428,7 @@ class Differential(OperatorMatrixCollection):
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
 
-        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Dafault: False).
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Default: False).
         :type to_html: bool
         :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (default: False).
         :type to_csv: bool
