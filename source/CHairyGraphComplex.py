@@ -462,10 +462,10 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
         # )), self.norm_permutation(p)) for p in Permutations(nn)]
 
         # print(self.norm_char_perm)
-    @staticmethod 
+    @staticmethod
     def generate_operator(n_vertices, n_loops, n_hairs, even_edges, rep_index):
         return CHairyGraphVS(n_vertices, n_loops, n_hairs, even_edges).get_isotypical_projector(rep_index)
-    
+
     # @staticmethod
     # def is_match(domain, target):
     #     """Check whether domain and target match to generate a corresponding contract edges graph operator.

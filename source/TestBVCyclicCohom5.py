@@ -38,7 +38,7 @@ def cohom_formatted_forested_top(D1, D2, Dc2, use_Dc2_rank=None, iso_dict=None, 
             return "?2"
 
     # exact or not?
-    r_str = "" 
+    r_str = ""
 
     # iso string
     cohomdim = d+rc2-r1-r2

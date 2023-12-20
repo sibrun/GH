@@ -20,7 +20,7 @@ def check_graphs_vs_basis(GVS, w):
         if GVS._has_odd_automorphisms(H, autom_list):
             print(g6, " has odd automorphisms")
         else:
-            if not g6 in ba:
+            if g6 not in ba:
                 print(g6, " not found in basis")
             else:
                 print(g6, " exists with index ", ba.index(g6))
@@ -72,7 +72,7 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, pl
         if tu.domain._has_odd_automorphisms(H, autom_list):
             print(g6, " has odd automorphisms")
         else:
-            if not g6 in ba1:
+            if g6 not in ba1:
                 print(g6, " not found in basis ", " v=", x)
             else:
                 print(g6, " exists at index ", ba1.index(g6), " v=", x)

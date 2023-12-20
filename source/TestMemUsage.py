@@ -1,19 +1,20 @@
 
 import OrdinaryGraphComplex
 
-import os, psutil
-from time import perf_counter
+import os
+import psutil
+# from time import perf_counter
 
 process = psutil.Process(os.getpid())
 
-op = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(13,10,False)
+op = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(13, 10, False)
 vs = op.domain
 # vs2=op.target
 # lookup = {G6: j for (j, G6) in enumerate(vs2.get_basis_g6())}
 # ppp=vs.get_partition()
 # inimem = process.memory_info().rss
 # tt = perf_counter()
-# print(inimem)  # in bytes 
+# print(inimem)  # in bytes
 # for (i,G) in enumerate(vs.get_basis()):
 #     if i==0:
 #         inimem = process.memory_info().rss
@@ -28,10 +29,8 @@ vs = op.domain
 #         tt = perf_counter()
 
 
-print(process.memory_info().rss) 
+print(process.memory_info().rss)
 
 lll = list(vs.get_basis())
 
-print(process.memory_info().rss)  # in bytes 
-
-
+print(process.memory_info().rss)  # in bytes

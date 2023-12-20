@@ -385,7 +385,7 @@ class GraphVectorSpace(VectorSpace):
 
             canon6 = canonG.graph6_string()
 
-            if not (canon6 in basis_set):
+            if canon6 not in basis_set:
                 if not self._has_odd_automorphisms(G, autom_list):
                     basis_set.add(canon6)
 
@@ -887,7 +887,7 @@ class SumVectorSpace(VectorSpace):
 
     def get_vs_from_basis_index(self, j):
         """
-        Returns the direct summand (in vslist) corresponding to the basis 
+        Returns the direct summand (in vslist) corresponding to the basis
         element of index j in the basis of the sum vector space.
         """
         cur_ind = 0
@@ -982,7 +982,7 @@ class DegSlice(SumVectorSpace):
         The dictionary contains the coordinate of the first basis vector of each sub vector space as basis vector of the
         degree slice.
         """
-        self.start_idx_dict = dict()
+        self.start_idx_dict = {}
         start_idx = 0
         for vs in self.vs_list:
             self.start_idx_dict.update({vs: start_idx})

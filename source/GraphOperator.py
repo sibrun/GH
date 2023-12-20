@@ -542,10 +542,10 @@ class OperatorMatrix(object):
 
         if not self.is_valid():
             return
-        # 
+        #
         # if not ignore_existing_files and self.exists_rank_file():
-        is_exact_method = (not (sage is None) and  "integer" in sage) \
-                     or (not (linbox is None) and "rational" in linbox)
+        is_exact_method = (sage is not None and  "integer" in sage) \
+                     or (linbox is not None and "rational" in linbox)
         # compute the rank even if rank file is present, if we improve regarding exactness
         if not ignore_existing_files and self.exists_rank_file():
             if self.exists_exact_rank() or (not is_exact_method):
@@ -621,7 +621,7 @@ class OperatorMatrix(object):
         return rank_dict
 
     def exists_exact_rank(self):
-        """Determines whether there has been a rank computed that is exact, i.e., 
+        """Determines whether there has been a rank computed that is exact, i.e.,
         over rationals."""
         if not self.is_valid():
             return True
@@ -636,7 +636,7 @@ class OperatorMatrix(object):
         try:
             rank_dict = self._load_rank_dict()
         except StoreLoad.FileNotFoundError:
-            rank_dict = dict()
+            rank_dict = {}
         rank_dict.update(update_rank_dict)
         rank_list = [str(rank) + ' ' + mode for (mode, rank)
                      in rank_dict.items()]
@@ -650,7 +650,7 @@ class OperatorMatrix(object):
         except StoreLoad.FileNotFoundError:
             raise StoreLoad.FileNotFoundError(
                 "Cannot load matrix rank, No rank file found for %s: " % str(self))
-        rank_dict = dict()
+        rank_dict = {}
         for line in rank_list:
             (rank, mode) = line.split(" ")
             rank_dict.update({mode: int(rank)})
@@ -799,7 +799,7 @@ class GraphOperator(Operator, OperatorMatrix):
         :return: List of tuples (GG, factor), such that (operator)(graph_sgn_list) = sum(factor * GG)
         :rtype: list(tuple(Graph, factor))
         """
-        image_dict = dict()
+        image_dict = {}
         for (G1, sgn1) in graph_sgn_list:
             G1_image = self.operate_on(G1)
             for (G2, sgn2) in G1_image:
@@ -867,7 +867,7 @@ class GraphOperator(Operator, OperatorMatrix):
     def _generate_matrix_list(self, domain_basis_element, lookup):
         (domain_index, G) = domain_basis_element
         image_list = self.operate_on(G)
-        canon_images = dict()
+        canon_images = {}
         for (GG, prefactor) in image_list:
             (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
             sgn0 = canon_images.get(GGcanon6)
@@ -1323,7 +1323,7 @@ class Differential(OperatorMatrixCollection):
         :return: Dictionary (vector space -> cohomology dimension)
         :rtype: dict(GraphVectorSpace.VectorSpace -> int)
         """
-        cohomology_dim_dict = dict()
+        cohomology_dim_dict = {}
         for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
             if opD.get_domain() == opDD.get_target():
                 dim = Differential.cohomology_dim(opD, opDD)
@@ -1337,7 +1337,7 @@ class Differential(OperatorMatrixCollection):
         :rtype: dict(tuple(int) -> int)
         """
         cohomology_dim = self._get_cohomology_dim_dict()
-        dim_dict = dict()
+        dim_dict = {}
         for vs in self.sum_vector_space.get_vs_list():
             dim_dict.update(
                 {vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})

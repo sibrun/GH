@@ -27,7 +27,7 @@ if __name__ == "__main__":
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
     allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
     allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
-    
+
     theD = BVCyclic.ContractReconnectTopD(range(max_vert+1), range(max_loops+1))
 
     theD.build_matrix(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)

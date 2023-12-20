@@ -16,7 +16,7 @@ def get_blfilepath(path):
     return path.replace("/forested/", "/forestedbl/")
 
 
-"""Contains routines for transcribing existing forested data files 
+"""Contains routines for transcribing existing forested data files
 (with bridges) into bridgeless form."""
 
 
@@ -42,7 +42,7 @@ class BridgelessMask():
 
     def _compute_mask(self):
         vsdim = self.vs.get_dimension()
-        return [(1 if self.prevs.is_bridgeless(G) else 0) 
+        return [(1 if self.prevs.is_bridgeless(G) else 0)
             for G in tqdm(self.vs.get_basis(), total=vsdim, desc="Computing mask...")]
 
     def compute_mask(self):

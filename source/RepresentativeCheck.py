@@ -66,13 +66,13 @@ class RepresentativeCheck(GraphOperator.OperatorMatrix):
             if s in basis_dict:
                 j = basis_dict[s]
                 v[j] = v[j] + c
-        
+
         return v
 
     def get_vector1(self):
         """Returns the vector in the domain of op1"""
         return self._get_vector_rel(self.op1.domain)
-    
+
     def get_vector2(self):
         """Returns the vector in the target of op2"""
         return self._get_vector_rel(self.op2.target)
@@ -86,7 +86,7 @@ class RepresentativeCheck(GraphOperator.OperatorMatrix):
         print("Loading matrix...")
         A = self.op1.get_matrix()
         print("Computing product...")
-        w = A*v 
+        w = A*v
         print("Computing norm...")
         norm = w.norm(p=1)
         if norm == 0:
@@ -128,10 +128,10 @@ class RepresentativeCheck(GraphOperator.OperatorMatrix):
         r2 = self.get_matrix_rank()
         if r1 > r2 or r2 > r1+1:
             raise RuntimeError(f"is_cocycle_exact error: r2 must be in [r1,r1+1] (r1={r1}, r2={r2})")
-        
+
         if r1 == r2:
             print(self.name, f": is exact ({r1}={r2})")
-        else: 
+        else:
             print(self.name, f": is not exact ({r1}<{r2})")
         return r1 == r2
 

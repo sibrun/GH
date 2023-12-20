@@ -23,7 +23,7 @@ def rank(rheinfall_option, matrix_file):
     .. seealso:: - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
                  - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
     """
-    if not (rheinfall_option in rheinfall_options):
+    if rheinfall_option not in rheinfall_options:
         raise ValueError('Possible options for rheinfall: ' + str(rheinfall_options))
     rheinfall_path = os.path.join(os.path.curdir, "rank_exe", "rank")
     with tempfile.NamedTemporaryFile() as temp_rank_file:
