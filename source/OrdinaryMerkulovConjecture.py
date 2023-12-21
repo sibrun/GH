@@ -8,7 +8,7 @@ from tqdm import tqdm
 maskfile_ending = ".34mask"
 
 
-class Valence34Mask():
+class Valence34Mask:
     def __init__(self, vs) -> None:
         """ """
         self.vs : GraphVectorSpace.GraphVectorSpace = vs

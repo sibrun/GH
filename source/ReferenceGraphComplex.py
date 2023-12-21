@@ -16,7 +16,7 @@ import Parameters
 logger = Log.logger.getChild('ref_graph_complex')
 
 
-class RefGraphVectorSpace(object):
+class RefGraphVectorSpace:
     """Reference graph vector space.
 
     Read the graph vector space basis from the reference data file and provide
@@ -90,10 +90,7 @@ class RefGraphVectorSpace(object):
         :raise StoreLoad.FileNotFoundError: If the reference basis file is not found.
         """
         basis_g6 = self._load_basis_g6()
-        basis_g6_canon = []
-        for G6 in basis_g6:
-            basis_g6_canon.append(self._g6_to_canon_g6(G6))
-        return basis_g6_canon
+        return [self._g6_to_canon_g6(G6) for G6 in basis_g6]
 
     def get_dimension(self):
         """Return the dimension of the reference vector space.
@@ -127,7 +124,7 @@ class RefGraphVectorSpace(object):
         return T
 
 
-class RefOperatorMatrix(object):
+class RefOperatorMatrix:
     """Reference operator matrix.
 
     Read the operator matrix from the reference data file and provides operator matrix w.r.t. the reference basis

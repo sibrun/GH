@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 class DummyVSOneMore(GraphVectorSpace.VectorSpace):
     def __init__(self, vs):
         self.vs = vs
-        super(DummyVSOneMore, self).__init__()
+        super().__init__()
 
     def get_dimension(self):
         return self.vs.get_dimension() + 1
@@ -34,7 +34,7 @@ class RepresentativeCheck(GraphOperator.OperatorMatrix):
             else:
                 self.primaryvs = self.op1.domain
         print(str(self.primaryvs))
-        super(RepresentativeCheck, self).__init__(DummyVSOneMore(op2.domain), op2.target)
+        super().__init__(DummyVSOneMore(op2.domain), op2.target)
 
     def __str__(self):
         return self.name

@@ -92,7 +92,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # we count only the internal edges and omega and eps edges, but not the hair edges
         self.n_edges = self.n_loops + self.n_vertices
         self.sub_type = ""
-        super(WOHairyGraphVS, self).__init__()
+        super().__init__()
         self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
             self.n_vertices + self.n_hairs+1+self.n_ws, self.n_loops, False)
 
@@ -346,7 +346,7 @@ class WOHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
         vs_list = [WOHairyGraphVS(v, l, h, w) for
                    (v, l, h, w) in itertools.product(self.v_range, self.l_range, self.h_range, self.w_range)]
-        super(WOHairyGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return 'wohairy graphs'
@@ -378,7 +378,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -576,7 +576,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -630,7 +630,7 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
         :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(EpsToOmegaGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -776,7 +776,7 @@ class EpsToOmegaD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(EpsToOmegaD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                           EpsToOmegaGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -833,7 +833,7 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
         """
         self.sub_type = domain.sub_type
 
-        super(SymmProjector, self).__init__(domain, rep_index)
+        super().__init__(domain, rep_index)
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -905,7 +905,7 @@ class WOHairyGC(GraphComplex.GraphComplex):
             print("Attention: contract_iso operates on nonzero cohomology entries only, so they need to be computed before!")
         if 'epstoomega' in differentials:
             differential_list.append(epstoomega_dif)
-        super(WOHairyGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

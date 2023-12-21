@@ -16,7 +16,7 @@ class OrdinaryWheelCheck(RepresentativeCheck.RepresentativeCheck):
         op1 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(k_spokes+1, k_spokes, even_edges)
         op2 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(k_spokes+2, k_spokes, even_edges)
         name = f"Wheel ordinary ({k_spokes} spokes) "+self.sub_type
-        super(OrdinaryWheelCheck, self).__init__(op1, op2, name)
+        super().__init__(op1, op2, name)
 
     def get_matrix_file_path(self):
         s = f"contractD_wheelcheck{self.k_spokes}.txt"
@@ -38,7 +38,7 @@ class ForestedRingCheck(RepresentativeCheck.RepresentativeCheck):
         op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(n_marked+1, n_marked, 0, even_edges)
         op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(n_marked+1, n_marked+1, 0, even_edges)
         name = f"Forested ring ({n_marked} marked edges) "+self.sub_type
-        super(ForestedRingCheck, self).__init__(op1, op2, name)
+        super().__init__(op1, op2, name)
 
     def get_matrix_file_path(self):
         s = f"contract_unmarkD_ringcheck{self.n_marked}.txt"
@@ -60,7 +60,7 @@ class ForestedMoritaCheck(RepresentativeCheck.RepresentativeCheck):
         op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(k+1, 2*k-2, 0, even_edges)
         op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(k+1, 2*k-1, 0, even_edges)
         name = f"Forested Morita class ({k} bridge edges) "+self.sub_type
-        super(ForestedMoritaCheck, self).__init__(op1, op2, name)
+        super().__init__(op1, op2, name)
 
     def get_matrix_file_path(self):
         s = f"contract_unmarkD_moritacheck{self.k}.txt"
@@ -92,7 +92,7 @@ class ForestedWheelCheck(RepresentativeCheck.RepresentativeCheck):
         op2.compute_rank(sage="integer")
         self.unmark_op = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(2*k+3,2*k+1, 2*k+2, 1, even_edges )
         name = f"Forested wheel class k={k} "+self.sub_type
-        super(ForestedWheelCheck, self).__init__(op1, op2, name, primaryvs=primary_vs)
+        super().__init__(op1, op2, name, primaryvs=primary_vs)
 
     def get_matrix_file_path(self):
         s = f"contract_unmarkD_forested_wheel_check_{self.k}.txt"
@@ -137,7 +137,7 @@ class ForestedMoritaTetrahedronCheck(RepresentativeCheck.RepresentativeCheck):
         op1 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
         op2 = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7, 8, 0, even_edges)
         name = f"Forested Morita tetrahedron class "+self.sub_type
-        super(ForestedMoritaTetrahedronCheck, self).__init__(op1, op2, name)
+        super().__init__(op1, op2, name)
 
     def get_matrix_file_path(self):
         s = f"contract_unmarkD_morita_tetrahedron_check.txt"

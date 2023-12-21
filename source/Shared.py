@@ -59,7 +59,7 @@ class OrderedDict(collections.OrderedDict):
 
     """
     def __init__(self, *args):
-        super(OrderedDict, self).__init__(*args)
+        super().__init__(*args)
 
     def __str__(self):
         """Return the string of the ordered dictionary.

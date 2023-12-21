@@ -55,7 +55,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.n_edges = self.n_loops + self.n_vertices
-        super(GOneVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -282,7 +282,7 @@ class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
         self.n_loops = n_loops
         self.n_edges = self.n_loops + self.n_vertices
         self.gonevs = GOneVS(n_vertices, n_loops)
-        super(GOneVS3V, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -366,7 +366,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         if not ReconnectEdgesGO.is_match(domain, target):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
-        super(ReconnectEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -511,7 +511,7 @@ class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
         self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
-        super(ReconnectEdgesGO3V, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -599,7 +599,7 @@ class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
                 "Domain and target not consistent for addvreconnect  edges operator")
 
         self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
-        super(AddVReconnectEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -700,7 +700,7 @@ class GOneDegSlice(GraphVectorSpace.DegSlice):
         else:
             raise ValueError("GOneDegSlice init: top_n must be 0 or 1")
 
-        super(GOneDegSlice, self).__init__(vs_list, n_vertices)
+        super().__init__(vs_list, n_vertices)
 
     def get_ordered_param_dict(self):
         return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('topn', self.top_n)])
@@ -729,7 +729,7 @@ class ContractReconnectBiOM(GraphOperator.BiOperatorMatrix):
         """
         self.domain = domain
         self.target = target
-        super(ContractReconnectBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+        super().__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
                                                 ReconnectEdgesGO)
 
     @staticmethod
@@ -781,7 +781,7 @@ class GOneSumVS(GraphVectorSpace.SumVectorSpace):
             + \
             [GOneVS(v-2, l) for v in v_range for l in l_range]
 
-        super(GOneSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -806,7 +806,7 @@ class ContractReconnectTopD(GraphOperator.Differential):
                    for v in v_range
                    for l in l_range]
         sum_vs = GOneSumVS(v_range, l_range)
-        super(ContractReconnectTopD, self).__init__(sum_vs, op_list)
+        super().__init__(sum_vs, op_list)
 
     def get_type(self):
         return 'contract edges and reconnect edges'
@@ -921,7 +921,7 @@ class TriOperatorMatrix(GraphOperator.OperatorMatrix):
         :param operator_cls2: Second operator class to compose the bi operator.
         :type operator_cls2: OperatorMatrix
         """
-        super(TriOperatorMatrix, self).__init__(domain, target)
+        super().__init__(domain, target)
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
         self.operator_cls3 = operator_cls3
@@ -1066,7 +1066,7 @@ class AReconnectDeleteBiOM(GraphOperator.BiOperatorMatrix):
         """
         self.domain = domain
         self.target = target
-        super(AReconnectDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.DeleteEdgesGO,
+        super().__init__(domain, target, OrdinaryGraphComplex.DeleteEdgesGO,
                                                 AddVReconnectEdgesGO)
 
     @staticmethod

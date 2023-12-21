@@ -20,7 +20,7 @@ def get_blfilepath(path):
 (with bridges) into bridgeless form."""
 
 
-class BridgelessMask():
+class BridgelessMask:
     def __init__(self, vs) -> None:
         """ vs must be a ForestedGraphComplex or PreForestedGVS.
         WITH BRIDGES (...that is use_bridgeless must be off)"""
@@ -82,7 +82,7 @@ class BridgelessMask():
         return sum(self.load_mask())
 
 
-class BridgeLessMaskOM():
+class BridgeLessMaskOM:
     def __init__(self, op: GraphOperator.OperatorMatrix):
         self.op = op
         self.domain = BridgelessMask(op.domain)

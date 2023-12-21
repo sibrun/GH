@@ -81,7 +81,7 @@ class SymmetricProjectionOperator(GraphOperator.GraphOperator):
             raise ValueError(
                 "Error: SymmetricProjectionOperator should not be constructed on vector space with no Sn action.")
 
-        super(SymmetricProjectionOperator, self).__init__(domain, domain)
+        super().__init__(domain, domain)
 
         # pre-fill in representation and character
         if len(Partitions(n)) <= rep_index:
@@ -178,8 +178,7 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
         self.rep_dim = symmetrica.charvalue(
             self.rep_partition, [1 for j in range(n)])
 
-        super(SymmetricProjectionOperatorDegSlice,
-              self).__init__(domain, domain)
+        super().__init__(domain, domain)
 
     @staticmethod
     def is_match(domain, target):
@@ -261,7 +260,7 @@ class SymmetricProjectionOperatorDegSlice(GraphOperator.OperatorMatrix):
         return matrixList
 
 
-class IsotypicalComponent():
+class IsotypicalComponent:
     """Represents an isotypical component in a graph vector space.
     Attributes:
     vs : The underlying vector space
@@ -324,7 +323,7 @@ class SymmetricRestrictedOperatorMatrix(GraphOperator.OperatorMatrix):
         # if opD.domain != opP.domain:
         #     raise ValueError("Domain %s and target %s don't match to build the symmetric composite operator matrix %s"
         #                      % (str(opD.domain), str(self.opP.domain), str(self)))
-        super(SymmetricRestrictedOperatorMatrix, self).__init__(
+        super().__init__(
             IsotypicalComponent(opD.domain, rep_index), IsotypicalComponent(opD.target, rep_index))
         # self.is_pseudo_matrix = True
 
@@ -469,7 +468,7 @@ class SymmetricDifferential(GraphOperator.Differential):
         operators that are necessary for computing nonzero cohomology."""
         self.diff = diff
         (vsList, opList) = SymmetricDifferential.split_isotypical_components(diff)
-        super(SymmetricDifferential, self).__init__(
+        super().__init__(
             GraphVectorSpace.SumVectorSpace(vsList), opList)
 
     def refine_cohom_dim_dict(self, dict):
@@ -487,7 +486,7 @@ class SymmetricDifferential(GraphOperator.Differential):
                     # found match
                     refines.append("%d$s_{%s}$" %
                                    (val, str(iso.opP.rep_partition)))
-            if len(refines) > 0:
+            if refines:
                 newdim = str(dim) + " (" + "+".join(refines) + ")"
                 newdict[vs] = newdim
         return newdict
@@ -495,8 +494,8 @@ class SymmetricDifferential(GraphOperator.Differential):
     def _get_cohomology_dim_dict(self):
         # need tooverride this to correct for dimensions
         d = super()._get_cohomology_dim_dict()
-        for vs, dim in d.items():
-            print(".... "+str(vs))
+        for vs in d:
+            print(".... " + str(vs))
             print(vs.get_dimension(), vs.get_iso_dimension())
             d[vs] = d[vs] - vs.get_dimension() + vs.get_iso_dimension()
         return d

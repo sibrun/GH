@@ -76,7 +76,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # we count only the internal edges and omega and eps edges, but not the hair edges
         self.n_edges = self.n_loops + self.n_vertices
         self.sub_type = "w"
-        super(WHairyGraphVS, self).__init__()
+        super().__init__()
         self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
             self.n_vertices + self.n_hairs+2, self.n_loops, False)
 
@@ -507,7 +507,7 @@ class WHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
         vs_list = [WHairyGraphVS(v, l, h, w) for
                    (v, l, h, w) in itertools.product(self.v_range, self.l_range, self.h_range, self.w_range)]
-        super(WHairyGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return 'whairy graphs'
@@ -539,7 +539,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -691,7 +691,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -757,7 +757,7 @@ class WHairyGC(GraphComplex.GraphComplex):
         if 'contract' in differentials:
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
-        super(WHairyGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
