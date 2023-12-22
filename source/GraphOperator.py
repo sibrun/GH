@@ -25,7 +25,7 @@ logger = Log.logger.getChild('graph_operator')
 
 # defines all rank methods that are considered exact
 exact_rank_methods = ["sage_integer", "exact", "linbox_rational"]
-class OperatorMatrixProperties(object):
+class OperatorMatrixProperties:
     """Properties of an operator matrix.
 
     Attributes:
@@ -69,7 +69,7 @@ class OperatorMatrixProperties(object):
         return [self.valid, self.shape, self.entries, self.rank]
 
 
-class OperatorMatrix(object):
+class OperatorMatrix:
     """Operator matrix class.
 
     Abstract class defining the interface for an operator matrix.
@@ -728,7 +728,7 @@ class OperatorMatrix(object):
         return self.properties
 
 
-class Operator(object):
+class Operator:
     """Interface for operators."""
     __metaclass__ = ABCMeta
 
@@ -762,7 +762,7 @@ class GraphOperator(Operator, OperatorMatrix):
     __metaclass__ = ABCMeta
 
     def __init__(self, domain, target):
-        super(GraphOperator, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @classmethod
     def generate_op_matrix_list(cls, sum_vector_space):
@@ -899,7 +899,7 @@ class BiOperatorMatrix(OperatorMatrix):
         :param operator_cls2: Second operator class to compose the bi operator.
         :type operator_cls2: OperatorMatrix
         """
-        super(BiOperatorMatrix, self).__init__(domain, target)
+        super().__init__(domain, target)
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
 
@@ -984,7 +984,7 @@ class BiOperatorMatrix(OperatorMatrix):
         return matrixList
 
 
-class OperatorMatrixCollection(object):
+class OperatorMatrixCollection:
     """Graph operator on the direct sum of graph vector spaces.
 
     Collection of operator matrices composing an operator on a sum vector space.
@@ -1226,7 +1226,7 @@ class Differential(OperatorMatrixCollection):
         :param op_matrix_list: List of operator matrices composing the differential
         :type op_matrix_list: list(OperatorMatrix)
         """
-        super(Differential, self).__init__(sum_vector_space, op_matrix_list)
+        super().__init__(sum_vector_space, op_matrix_list)
 
     @abstractmethod
     def get_cohomology_plot_path(self):

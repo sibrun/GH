@@ -60,7 +60,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         self.ogvs : OrdinaryGraphComplex.OrdinaryGVS = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, even_edges)
         if valence_type != 3456:
             self.gvs3456 = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 3456)
-        super(OrdinaryMerkulovGVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -160,7 +160,7 @@ class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
                 for v in self.v_range
                 for l in self.l_range
                 for vt in valence_types ]
-        super(OrdinaryMerkulovGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -196,7 +196,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                 "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
         self.oop = OrdinaryGraphComplex.ContractEdgesGO(domain.ogvs, target.ogvs)
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -268,7 +268,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :type sum_vector_space: OrdinaryGraphSumVS
         """
 
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -373,7 +373,7 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
 
-        super(OrdinaryMerkulovGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

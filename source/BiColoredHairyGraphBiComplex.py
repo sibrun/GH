@@ -22,7 +22,7 @@ class ContractSplitBiOM(GraphOperator.BiOperatorMatrix):
                 - sub_type (str): Sub type of graphs.
         """
         self.sub_type = domain.sub_type
-        super(ContractSplitBiOM, self).__init__(domain, target, BiColoredHairyGraphComplex.ContractEdgesGO,
+        super().__init__(domain, target, BiColoredHairyGraphComplex.ContractEdgesGO,
                                                 BiColoredHairyGraphComplex.SplitEdgesGO)
 
     @staticmethod
@@ -83,7 +83,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         self.h_b_min = h_b_min
         self.sub_type = BiColoredHairyGraphComplex.get_sub_type(
             even_edges, h_a_min, h_b_min)
-        super(VertexLoopDegSlice, self).__init__(
+        super().__init__(
             [BiColoredHairyGraphComplex.BiColoredHairyGraphVS(v, deg - v, self.h_a_min + v, self.h_b_min + v,
                                                               even_edges, even_hairs_a, even_hairs_b)
              for v in range(0, deg + 1)], deg)
@@ -149,7 +149,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
                 continue  # Symmetry between a and b hairs.
             vs_list.append(VertexLoopDegSlice(deg, h_a_min + (max_deg - deg), h_b_min + (max_deg - deg), even_edges,
                                               even_hairs_a, even_hairs_b))
-        super(VertexLoopBigradedSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (BiColoredHairyGraphComplex.graph_type, self.sub_type)
@@ -176,7 +176,7 @@ class ContractSplitD(GraphOperator.Differential):
         :param graded_sum_vs: Underlying bi graded vector space.
         :type graded_sum_vs: VertexLoopBigradedSumVS
         """
-        super(ContractSplitD, self).__init__(graded_sum_vs,
+        super().__init__(graded_sum_vs,
                                              ContractSplitBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
@@ -253,7 +253,7 @@ class BiColoredHairyContractSplitBiGC(GraphComplex.GraphComplex):
 
         graded_sum_vs = VertexLoopBigradedSumVS(deg_range, h_a_min_range, h_b_min_range, even_edges, even_hairs_a,
                                                 even_hairs_b)
-        super(BiColoredHairyContractSplitBiGC, self).__init__(
+        super().__init__(
             graded_sum_vs, [ContractSplitD(graded_sum_vs)])
 
     def __str__(self):

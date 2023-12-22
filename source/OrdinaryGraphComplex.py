@@ -53,7 +53,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         self.even_edges = even_edges
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get(self.even_edges)
-        super(OrdinaryGVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -151,7 +151,7 @@ class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
             for (v, l) in itertools.product(self.v_range, self.l_range):
                 if l - v <= shift_loops_minus_vertices:
                     vs_list.append(OrdinaryGVS(v, l, self.even_edges))
-        super(OrdinaryGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -186,7 +186,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -286,7 +286,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -330,7 +330,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
             raise ValueError(
                 "Domain and target not consistent for delete edges operator")
         self.sub_type = domain.sub_type
-        super(DeleteEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -417,7 +417,7 @@ class DeleteEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(DeleteEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                            DeleteEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -479,7 +479,7 @@ class OrdinaryGC(GraphComplex.GraphComplex):
         if 'delete' in differentials:
             delete_edges_dif = DeleteEdgesD(sum_vector_space)
             differential_list.append(delete_edges_dif)
-        super(OrdinaryGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

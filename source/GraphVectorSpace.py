@@ -20,7 +20,7 @@ import DisplayInfo
 logger = Log.logger.getChild('graph_vector_space')
 
 
-class VectorSpaceProperties(object):
+class VectorSpaceProperties:
     """Properties of a vector space.
 
     Attributes:
@@ -89,7 +89,7 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
         return [self.valid, self.dimension]
 
 
-class VectorSpace(object):
+class VectorSpace:
     """Vector space interface.
 
     Abstract class defining the interface for a vector space.
@@ -614,7 +614,7 @@ class SumVectorSpace(VectorSpace):
         """
         self.vs_list = vs_list
         self.info_tracker = None
-        super(SumVectorSpace, self).__init__()
+        super().__init__()
 
     def __eq__(self, other):
         pass
@@ -924,7 +924,7 @@ class DegSlice(SumVectorSpace):
         :type deg: int
         """
         self.deg = deg
-        super(DegSlice, self).__init__(vs_list)
+        super().__init__(vs_list)
         self.start_idx_dict = None
 
     def __str__(self):
@@ -971,7 +971,7 @@ class DegSlice(SumVectorSpace):
         :raise ValueError: If the basis of the degree slice is not completely built, i.e. not for all valid sub vector
                 spaces there exists a basis file.
         """
-        super(DegSlice, self).build_basis(**kwargs)
+        super().build_basis(**kwargs)
         if not self.is_complete():
             raise ValueError(
                 'Degree slice %s should be completely built' % str(self))

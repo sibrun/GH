@@ -13,7 +13,7 @@ import Log
 logger = Log.logger.getChild('graph_complex')
 
 
-class GraphComplex(object):
+class GraphComplex:
     """Graph complex.
 
     Attributes:
