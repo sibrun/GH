@@ -738,7 +738,7 @@ class Operator:
 
         :return: Unique description of the operator type.
         :rtype: str
-            """
+        """
         pass
 
     @abstractmethod
@@ -994,7 +994,7 @@ class OperatorMatrixCollection:
         - op_matrix_list (list(OperatorMatrix)): List of operator matrices composing the operator.
         - info_tracker (DisplayInfo.InfoTracker): Tracker for information about the operator matrices in op_matrix_list.
             Tracker is only active if the different operator matrices are not built in parallel.
-        """
+    """
 
     def __init__(self, sum_vector_space, op_matrix_list):
         """Initialize the underlying sum vector space and the list of operator matrices composing the operator.
@@ -1256,10 +1256,10 @@ class Differential(OperatorMatrixCollection):
     def get_ordered_cohomology_param_range_dict(self):
         """Return an ordered dictionary of parameter ranges for the sub vector spaces of the underlying sum vector space.
 
-         :return: Ordered dictionary of parameter ranges.
-         :rtype: Shared.OrderedDict
-         :Example: Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
-         """
+        :return: Ordered dictionary of parameter ranges.
+        :rtype: Shared.OrderedDict
+        :Example: Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
+        """
         return self.sum_vector_space.get_ordered_param_range_dict()
 
     def __str__(self):

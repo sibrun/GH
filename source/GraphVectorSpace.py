@@ -638,7 +638,7 @@ class SumVectorSpace(VectorSpace):
         :Example:
 
         Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
-         """
+        """
         pass
 
     @abstractmethod
@@ -653,7 +653,7 @@ class SumVectorSpace(VectorSpace):
 
         :Example:
         Shared.OrderedDict([('deg', self.deg)])
-         """
+        """
         pass
 
     def __str__(self):
@@ -961,7 +961,7 @@ class DegSlice(SumVectorSpace):
 
         :Example:
         Shared.OrderedDict([('deg', self.deg)])
-         """
+        """
         pass
 
     def build_basis(self, **kwargs):

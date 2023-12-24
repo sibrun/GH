@@ -541,7 +541,7 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
 class PreForestedGraphSumVS2(GraphVectorSpace.SumVectorSpace):
     """This is for holding an arbitrary list of PreForestedGVS that are not necessarily in a consecutive range
-     in the parameter table."""
+    in the parameter table."""
 
     def __init__(self, vs_list):
         self.sub_type = "pre"

@@ -53,12 +53,12 @@ class SymmetricGraphVectorSpace(GraphVectorSpace.GraphVectorSpace):
 
 class SymmetricProjectionOperator(GraphOperator.GraphOperator):
     """This abstract class encodes the projection operator to an isotypical component of the symmetric group action
-        by permuting numbered hairs.
-        Warning: The matrix stores not the projector, but projector * c, with c = n!, to have integral matrices.
-        The constant c can be obtained by get_normalizing_c().
-        The main method to be implemented by the user is
+    by permuting numbered hairs.
+    Warning: The matrix stores not the projector, but projector * c, with c = n!, to have integral matrices.
+    The constant c can be obtained by get_normalizing_c().
+    The main method to be implemented by the user is
 
-        Deriving
+    Deriving
     """
 
     def __init__(self, domain, rep_index):
