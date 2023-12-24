@@ -256,7 +256,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             (u, v) = e
             # print("contract", u, v)
             pp = Shared.permute_to_left(
-                (u, v), range(0, self.domain.n_vertices))
+                (u, v), range(self.domain.n_vertices))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -266,7 +266,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             if (previous_size - G1.size()) != 1:
                 continue
             # print(sgn)
-            G1.relabel(list(range(0, G1.order())), inplace=True)
+            G1.relabel(list(range(G1.order())), inplace=True)
             if not self.domain.even_edges:
                 # p = [j for (a, b, j) in G1.edges()]
                 # sgn *= Permutation(p).signature()

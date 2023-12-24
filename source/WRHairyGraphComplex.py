@@ -99,7 +99,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        return [list(range(0, self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
+        return [list(range(self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
 
     def plot_graph(self, G):
         GG = Graph(G, loops=True)
@@ -308,7 +308,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # The routines above produce all wgraphs, we just have to permute the hair labels
 
         # Produce all permutations of the hairs
-        all_perm = [list(range(0, self.n_vertices+2)) + list(p)
+        all_perm = [list(range(self.n_vertices+2)) + list(p)
                     for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2))]
 
         return (G.relabel(p, inplace=False) for G in self._get_all_wgraphs(self.n_vertices, self.n_loops, self.n_hairs, self.n_ws)
@@ -339,7 +339,7 @@ class WRHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             else:
                 raise ValueError(
                     '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
-        G.relabel(range(0, G.order()))
+        G.relabel(range(G.order()))
         return G
 
     def get_n(self):
@@ -513,7 +513,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 G1.merge_vertices([v, u])
                 if (previous_size - G1.size()) != 1:
                     continue
-                G1.relabel(range(0, self.domain.n_vertices+1 +
+                G1.relabel(range(self.domain.n_vertices+1 +
                            self.domain.n_hairs), inplace=True)
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
@@ -549,7 +549,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                     # in case we have too few edges some double edges have been created => zero
                     if (previous_size - G2.size()) != (2 if new_has_tadpole else 1):
                         continue
-                    G2.relabel(range(0, self.domain.n_vertices+1 +
+                    G2.relabel(range(self.domain.n_vertices+1 +
                                self.domain.n_hairs), inplace=True)
                     # find edge permutation sign
                     sgn2 *= Shared.shifted_edge_perm_sign2(G2)

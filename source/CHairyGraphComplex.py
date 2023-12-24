@@ -4,13 +4,15 @@ These graphs compute W_0 H_c(M_g,n), with n the number of hairs, g the loop orde
 Implemented Differentials: Contract edges.
 The first vertices correspond to internal vertices, and the last to the hairs.
 """
-
+import os
+import math
+from copy import copy
 
 __all__ = ['graph_type', 'sub_types', 'CHairyGraphVS', 'CHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'CHairyGC']
 
 import itertools
-from sage.all import *
+from sage.all import Graph
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -98,7 +100,7 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        return [list(range(0, self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs)]
+        return [list(range(self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs)]
 
     def plot_graph(self, G):
         GG = Graph(G)  # , loops=True)
@@ -122,7 +124,7 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return GCDimensions.get_chairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs)
         # return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
+    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
         :param include_novertgraph: Whether to include the graph with one edge and no vertices as a two-hair graph
@@ -157,7 +159,7 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # The routines above produce all hairy graphs, we just have to permute the hair labels
 
         # Produce all permutations of the hairs
-        all_perm = [list(range(0, self.n_vertices)) + list(p)
+        all_perm = [list(range(self.n_vertices)) + list(p)
                     for p in itertools.permutations(range(self.n_vertices, self.n_vertices+self.n_hairs))]
 
         return (G.relabel(p, inplace=False) for G in self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs)
@@ -188,14 +190,14 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             else:
                 raise ValueError(
                     '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
-        G.relabel(range(0, G.order()))
+        G.relabel(range(G.order()))
         return G
 
     def get_n(self):
         return self.n_hairs
 
     def vertex_permutation_from_permutation(self, p):
-        return list(range(0, self.n_vertices)) + [j+self.n_vertices-1 for j in p]
+        return list(range(self.n_vertices)) + [j+self.n_vertices-1 for j in p]
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
@@ -346,7 +348,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             pp = Shared.permute_to_left((u, v), range(
-                0, self.domain.n_vertices + self.domain.n_hairs))
+                self.domain.n_vertices + self.domain.n_hairs))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -355,14 +357,14 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             G1.merge_vertices([0, 1])
             if (previous_size - G1.size()) != 1:
                 continue
-            G1.relabel(list(range(0, G1.order())), inplace=True)
+            G1.relabel(list(range(G1.order())), inplace=True)
             if not self.domain.even_edges:
                 sgn *= Shared.shifted_edge_perm_sign(G1)
             image.append((G1, sgn))
         return image
 
     def restrict_to_isotypical_component(self, rep_index):
-        #opP = self.domain.get_isotypical_projector(rep_index)
+        # opP = self.domain.get_isotypical_projector(rep_index)
         return RestrictedContractEdgesGO(self, rep_index)
 
 
@@ -396,7 +398,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :type sum_vector_space: HairyGraphSumVS
         """
         super().__init__(sum_vector_space,
-                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+                         ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'
