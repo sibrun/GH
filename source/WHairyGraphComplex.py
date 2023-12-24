@@ -10,13 +10,15 @@ WARNING: If there is a tadpole the corresponding loop is not part of the graph--
 from the overall one too small loop number.
 TODO: Take care that this does not produce problems
 """
-
+import os
+from copy import copy
+import math
 
 __all__ = ['graph_type', 'sub_types', 'HairyGraphVS', 'HairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'EdgeToOneHairGO', 'EdgeToOneHairD', 'HairyGC']
 
 import itertools
-from sage.all import *
+from sage.all import binomial, factorial, Graph
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -132,7 +134,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             return 0
         return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
+    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
         :param include_novertgraph: Whether to include the graph with one edge and no vertices as a two-hair graph
@@ -151,7 +153,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         unordered = [self._bip_to_ordinary(
             G, nvertices, nedges, nhairs) for G in bipartite_graphs]
         # Produce all permutations of the hairs
-        #all_perm = [ range(0,nvertices) + p for p in Permutations(range(nvertices, nvertices+nhairs)) ]
+        # all_perm = [ range(0,nvertices) + p for p in Permutations(range(nvertices, nvertices+nhairs)) ]
         # return [G.relabel(p, inplace=False) for p in all_perm ]
         if include_novertgraph and nvertices == 0 and nhairs == 2 and nloops == 0:
             unordered.append(Graph([(0, 1)]))
@@ -430,7 +432,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                                 {i: self.n_vertices, k: self.n_vertices+1, self.n_vertices+1: k, self.n_vertices: i}, GG.order()))
                             GG.relabel(dict_to_list(
                                 {self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1}, GG.order()))
-                            #GG.delete_edge(self.n_vertices, self.n_vertices +1)
+                            # GG.delete_edge(self.n_vertices, self.n_vertices +1)
                             newj = k if j == self.n_vertices+1 else j
                             GG.delete_vertex(newj)
                             GG.relabel(
@@ -454,7 +456,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                     GG.relabel(dict_to_list(
                         {i: self.n_vertices+1, self.n_vertices+1: i}, GG.order()))
                     # GG.relabel(dict_to_list({self.n_vertices+1: self.n_vertices, self.n_vertices: self.n_vertices+1}, GG.order()))
-                    #GG.delete_edge(self.n_vertices, self.n_vertices +1)
+                    # GG.delete_edge(self.n_vertices, self.n_vertices +1)
                     newj = i if j == self.n_vertices+1 else j
                     GG.relabel(dict_to_list(
                         {newj: self.n_vertices, self.n_vertices: newj}, GG.order()))
@@ -692,7 +694,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :type sum_vector_space: HairyGraphSumVS
         """
         super().__init__(sum_vector_space,
-                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+                         ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'

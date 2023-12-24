@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 from WOHairyGraphComplex import *
-from sage.all import *
+from sage.all import Graph
 
 
 def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
@@ -12,7 +11,7 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
     tu = D2_go
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
-    C = D2*D1
+    C = D2 * D1
 
     print(D1)
     print(D2)
@@ -58,7 +57,7 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
                     g6), " v=", x, " sgn=", sgn)
 
     # compute D^2
-    ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
+    ww = [(HH, x * xx) for H, x in w for HH, xx in tu.operate_on(H)]
     wwd = {}
     for H, x in ww:
         g6, sgn = tu.target.graph_to_canon_g6(H)
@@ -67,18 +66,18 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
 
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
 # GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
-GC = WOHairyGC(range(15), range(5,7), range(1), range(2   ), ['epstoomega', 'contract'])
+GC = WOHairyGC(range(15), range(5, 7), range(1), range(2), ['epstoomega', 'contract'])
 
 
 # GC.build_basis(ignore_existing_files=False)

@@ -1,16 +1,16 @@
 import OrdinaryGraphComplex
 import CHairyGraphComplex
-from sage.all import *
+from sage.all import Graph
 
 
 def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=False):
     tt = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
         n_vertices, n_loops, even_edges)
     tu = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(
-        n_vertices-1, n_loops, even_edges)
+        n_vertices - 1, n_loops, even_edges)
     D1 = tt.get_matrix()
     D2 = tu.get_matrix()
-    C = D2*D1
+    C = D2 * D1
 
     print("D1")
     print(D1)
@@ -64,7 +64,7 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
                     g6), " v=", x, "sgn=", sgn)
 
     # compute D^2
-    ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
+    ww = [(HH, x * xx) for H, x in w for HH, xx in tu.operate_on(H)]
     wwd = {}
     for H, x in ww:
         g6, sgn = tu.target.graph_to_canon_g6(H)
@@ -73,11 +73,11 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         else:
             wwd[g6] = x * sgn
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 

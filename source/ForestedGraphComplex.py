@@ -1,12 +1,14 @@
 """Graph complexes with a distinguished spanning forest, such as computing the cohomology
 of Out(F_n). Hairs are also allowed and distinguishable"""
-
+import os
+from copy import copy
+import math
 
 __all__ = ['graph_type', 'sub_types', 'ForestedGVS', 'ForestedGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'ColorEdgesGO', 'ColorEdgesD', 'ForestedGC']
 
 import itertools
-from sage.all import *
+from sage.all import binomial, factorial, Graph, Permutation, Permutations
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -122,7 +124,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices) \
             + self.n_marked_edges
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
+    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs or multiple edges, but not tadpoles.
         Edges are encoded via bivalent vertices of the second color.
@@ -140,7 +142,6 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         deg_range_2 = (1, 2)
 
         # check if valid
-        unordered = []
         if (nvertices >= 1 and nloops >= 0 and nhairs >= 0 and n_edges_bip >= n_vertices_2
             and n_edges_bip <= 2*n_vertices_2 and n_edges_bip >= 3 * n_vertices_1
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):

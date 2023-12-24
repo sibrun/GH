@@ -4,13 +4,15 @@ These graphs compute W_0 H_c(M_g,n), with n the number of hairs, g the loop orde
 Implemented Differentials: Contract edges.
 The first vertices correspond to internal vertices, and the last to the hairs.
 """
-
+import os
+import math
+from copy import copy
 
 __all__ = ['graph_type', 'sub_types', 'CHairyGraphVS', 'CHairyGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'CHairyGC']
 
 import itertools
-from sage.all import *
+from sage.all import Graph
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -122,7 +124,7 @@ class CHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return GCDimensions.get_chairy_dim_estimate(self.n_vertices, self.n_loops, self.n_hairs)
         # return (self.n_vertices ** self.n_hairs) * binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
-    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=false):
+    def get_hairy_graphs(self, nvertices, nloops, nhairs, include_novertgraph=False):
         """ Produces all connected hairy graphs with nhairs hairs, that are the last vertices in the ordering.
         Graphs can have multiple hairs, but not tadpoles or multiple edges.
         :param include_novertgraph: Whether to include the graph with one edge and no vertices as a two-hair graph
@@ -362,7 +364,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return image
 
     def restrict_to_isotypical_component(self, rep_index):
-        #opP = self.domain.get_isotypical_projector(rep_index)
+        # opP = self.domain.get_isotypical_projector(rep_index)
         return RestrictedContractEdgesGO(self, rep_index)
 
 
@@ -396,7 +398,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :type sum_vector_space: HairyGraphSumVS
         """
         super().__init__(sum_vector_space,
-                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+                         ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'

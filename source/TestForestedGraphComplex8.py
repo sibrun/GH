@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import ForestedGraphComplex
-from sage.all import *
+from sage.all import Graph, vector
 
 log_file = "Forested_Unittest.log"
 
@@ -86,11 +85,11 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -347,8 +346,8 @@ FBGC.compute_rank(ignore_existing_files=False, sage="integer")
 FBGC.print_dim_and_eulerchar()
 FBGC.print_cohomology_dim()
 
-uc1 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4,3,0,evenedges)
-uc2 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4,4,0,evenedges)
+uc1 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 3, 0, evenedges)
+uc2 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 4, 0, evenedges)
 
 
 D1 = uc1.get_matrix()
@@ -360,13 +359,12 @@ D2 = uc2.get_matrix()
 
 
 # uc1.domain.display_basis_plots()
-g_ind = 42 #index of graph in basis
-v=vector( [0 for j in range(43)] )
-v[g_ind]=1
+g_ind = 42  # index of graph in basis
+v = vector([0 for j in range(43)])
+v[g_ind] = 1
 print(v)
 
-print(D1*v) # should be 0
-
+print(D1*v)  # should be 0
 
 
 # DDTest(6,4,3,0,evenedges)

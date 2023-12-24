@@ -1,11 +1,10 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import CHairyGraphComplex
 import SymmetricGraphComplex
-from sage.all import *
+from sage.all import Graph, Partitions, symmetrica
 
 log_file = "CHGC_Unittest.log"
 
@@ -14,7 +13,7 @@ def check_graphs_vs_basis(GVS, w):
     # Takes a list of graphs and checks whether they are found in the basis
     ba = GVS.get_basis_g6()
     for HH in w:
-        H = Graph(HH) if type(HH) is str else H
+        H = Graph(HH) if type(HH) is str else HH
         g6, sgn = GVS.graph_to_canon_g6(H)
         autom_list = H.automorphism_group(partition=GVS.get_partition()).gens()
         if GVS._has_odd_automorphisms(H, autom_list):
@@ -87,11 +86,11 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, pl
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -192,7 +191,7 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, even_edges, rep_ind):
     if cohomdim > 0:
         print("Cohomology found:  ", "even_edges" if even_edges else "odd_edges", ", h=", n_hairs, ", l=", n_loops, ", vertices=", n_vertices,
               " (degree ", n_vertices+n_loops -
-              1, "), partition=", part,  ", invpartition=", part.conjugate(),
+              1, "), partition=", part, ", invpartition=", part.conjugate(),
               ", multiplicity=", cohomdim/rep_dim, ", cohomdim=", cohomdim)
     return isocomp_dim - r1-r2
 
@@ -361,7 +360,7 @@ for v in range(4,9):
 
 # print(getCohomDimP(6, 5, 2, 2, 1))
 
-#SumOneTest(4, 2, 3, 1)
+# SumOneTest(4, 2, 3, 1)
 # PSquareTest(4, 2, 3, 1, 0)
 # PSquareTest(4, 2, 3, 1, 1)
 # PSquareTest(4, 2, 3, 1, 2)

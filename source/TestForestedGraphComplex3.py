@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import ForestedGraphComplex
-from sage.all import *
+from sage.all import Graph
 
 
 log_file = "Forested_Unittest.log"
@@ -48,7 +47,7 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         tu.domain.display_basis_plots()
         tu.target.display_basis_plots()
 
-    if (j_to_pick < 0):
+    if j_to_pick < 0:
         for i in range(C.nrows()):
             for j in range(C.ncols()):
                 if C[i, j] != 0:
@@ -87,11 +86,11 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -306,7 +305,7 @@ print(III)
 # z = D2tx.solve_right(y)
 # print(z)
 
-#sol = D2.solve_right(vloop)
+# sol = D2.solve_right(vloop)
 
 # print(D2*sol)
 
