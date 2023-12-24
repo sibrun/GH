@@ -174,7 +174,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
             # merge hairs
             G1 = copy(G)
             G1.merge_vertices([self.n_vertices, self.n_vertices+1])
-            G1.relabel(list(range(0, self.n_vertices+1)), inplace=True)
+            G1.relabel(list(range(self.n_vertices+1)), inplace=True)
             # relabel so that hairs are first vertex
             p = [self.n_vertices - j for j in range(self.n_vertices+1) ]
             G1.relabel(p, inplace=True)

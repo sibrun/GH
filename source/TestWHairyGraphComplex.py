@@ -33,8 +33,8 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
     C = D2*D1
 
     if (j_to_pick<0):
-        for i in range(0,C.nrows()):
-            for j in range(0,C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i,j] != 0:
                     print(i,j, C[i,j])
                     j_to_pick = j
@@ -102,7 +102,7 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
 #tt.display_basis_plots()
 
 # WGC = WHairyGraphComplex.WHairyGC(range(0,11), range(5,7), range(0,4), range(2,3) , ['contract'])
-WGC = WHairyGraphComplex.WHairyGC(range(0,6), range(0,2), range(0,4), range(1,2) , ['contract'])
+WGC = WHairyGraphComplex.WHairyGC(range(6), range(2), range(4), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=True)

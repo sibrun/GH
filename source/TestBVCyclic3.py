@@ -5,13 +5,13 @@ import GraphOperator
 
 nr_jobs = 10
 print(f"Building GOneVS3 bases using {nr_jobs} jobs ...")
-sumvs = GraphVectorSpace.SumVectorSpace( [ BVCyclic.GOneVS3V(v, l) for v in range(0,20) for l in range(0,9) ] )
+sumvs = GraphVectorSpace.SumVectorSpace( [ BVCyclic.GOneVS3V(v, l) for v in range(20) for l in range(9) ] )
 
 sumvs.build_basis(n_jobs=nr_jobs)
 
 print("Finished computing bases.")
 
-op_list = [ BVCyclic.ReconnectEdgesGO3V.generate_operator(v, l) for v in range(0,20) for l in range(0,9) ]
+op_list = [ BVCyclic.ReconnectEdgesGO3V.generate_operator(v, l) for v in range(20) for l in range(9) ]
 
 allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 

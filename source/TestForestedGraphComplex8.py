@@ -48,8 +48,8 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -300,7 +300,7 @@ maxm = maxv+1
 #         range(0, maxv+1), range(l, l+1), range(0, maxm+1), range(0, maxl-l+1+maxh))
 #     PFGC.build_basis(ignore_existing_files=False)
 
-PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(0,maxv+1), range(0,maxl+1), range(0,maxm+1), range(0,maxh+1))
+PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1))
 # PFGC.build_basis(ignore_existing_files=True)
 
 # # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
@@ -319,7 +319,7 @@ PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(0,maxv+1), range(0,maxl+
 evenedges = True
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
+    range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1), evenedges, {'contract', 'unmark'})
 FGC.build_basis(ignore_existing_files=True)
 FGC.build_matrix(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
@@ -333,7 +333,7 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 #             DDTest(v, g, m, 0, False)
 
 FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
-    range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges)
+    range(maxl+1), range(maxm+1), range(maxh+1), evenedges)
 FBGC.build_basis(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
 FBGC.build_matrix(progress_bar=False, info_tracker=False,

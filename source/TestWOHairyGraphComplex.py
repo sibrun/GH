@@ -28,8 +28,8 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -78,7 +78,7 @@ def DSquareTestSingle(D1_go, D2_go, j_to_pick=-1, plot_basis=False):
 
 # GC = WOHairyGC(range(7), range(5), range(3), range(3), ['contract'])
 # GC = WOHairyGC(range(5), range(3), range(3), range(3), ['epstoomega'])
-GC = WOHairyGC(range(0,15), range(5,7), range(0,1), range(0,2   ), ['epstoomega', 'contract'])
+GC = WOHairyGC(range(15), range(5,7), range(1), range(2   ), ['epstoomega', 'contract'])
 
 
 # GC.build_basis(ignore_existing_files=False)

@@ -117,10 +117,10 @@ class BridgeLessMaskOM:
         StoreLoad.store_string_list(stringList, newfilepath)
 
 
-h_range = range(0, 9)
-v_range = range(0, 25)
-l_range = range(0, 10)
-m_range = range(0, 25)
+h_range = range(9)
+v_range = range(25)
+l_range = range(10)
+m_range = range(25)
 for h in h_range:
     for l in l_range:
         for v in v_range:

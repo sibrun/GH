@@ -99,7 +99,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         # All internal vertices are in color 0
         # the unmarked-edge-vertices are in color 1
         # the hair vertices are in colors 2,...,n_hairs+1.
-        return [list(range(0, self.n_vertices))] + [list(range(self.n_vertices, self.n_vertices + self.n_unmarked_edges))] \
+        return [list(range(self.n_vertices))] + [list(range(self.n_vertices, self.n_vertices + self.n_unmarked_edges))] \
             + [[j] for j in range(self.n_vertices + self.n_unmarked_edges,
                                   self.n_vertices + self.n_unmarked_edges + self.n_hairs)]
 
@@ -207,7 +207,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
                 GG = copy(G)
                 GG.add_edge(nb)
                 GG.delete_vertex(i)
-                GG.relabel(range(0, GG.order()))
+                GG.relabel(range(GG.order()))
 
                 # check for loop
                 if (GG.subgraph(range(self.n_vertices)).is_forest()):
@@ -330,7 +330,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # res = []
         # we have no tadpoles if edges are even
         maxtp = 0 if self.even_edges else self.n_loops
-        for tp in range(0, maxtp+1):
+        for tp in range(maxtp+1):
             # newgs = []
             preVS = PreForestedGVS(
                 self.n_vertices, self.n_loops-tp, self.n_marked_edges, self.n_hairs+tp)
@@ -344,7 +344,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                 id = Permutation(range(1, tp+1))
                 p1s = [p for pp in Permutations(self.n_hairs)
                        for p in id.shifted_shuffle(pp)]
-                idv = list(range(0, self.n_vertices+self.n_unmarked_edges-tp))
+                idv = list(range(self.n_vertices+self.n_unmarked_edges-tp))
                 all_perm = [idv + [j+self.n_vertices - 1 +
                                    self.n_unmarked_edges-tp for j in p] for p in p1s]
 
@@ -438,7 +438,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         return self.n_hairs
 
     def vertex_permutation_from_permutation(self, p):
-        return list(range(0, self.n_vertices+self.n_unmarked_edges)) + [j+self.n_vertices+self.n_unmarked_edges-1 for j in p]
+        return list(range(self.n_vertices+self.n_unmarked_edges)) + [j+self.n_vertices+self.n_unmarked_edges-1 for j in p]
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
@@ -655,7 +655,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             if (u < self.domain.n_vertices and v < self.domain.n_vertices):
                 # move the two vertices to be merged to the first two positions
                 pp = Shared.permute_to_left(
-                    (u, v), range(0, G.order()))
+                    (u, v), range(G.order()))
                 sgn = self.domain.perm_sign(G, pp)
                 G1 = copy(G)
                 G1.relabel(pp, inplace=True)
@@ -664,7 +664,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 G1.merge_vertices([0, 1])
                 # if (previous_size - G1.size()) != 1:
                 #     continue
-                G1.relabel(list(range(0, G1.order())), inplace=True)
+                G1.relabel(list(range(G1.order())), inplace=True)
                 if not self.domain.even_edges:
                     # for odd edges compute the sign of the permutation of internal edges
                     p = [j for (a, b, j) in G1.edges() if (
@@ -909,7 +909,7 @@ class UnmarkEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         # the new vertex will be the first among the second color vertices (index n_vertices)
         GG = copy(G)
         GG.add_vertex()
-        GG.relabel(list(range(0, self.domain.n_vertices)) + list(range(self.domain.n_vertices +
+        GG.relabel(list(range(self.domain.n_vertices)) + list(range(self.domain.n_vertices +
                    1, GG.order())) + [self.domain.n_vertices], inplace=True)
         i = 0  # counts the index of the edge to be unmarked for sign purposes
         for (u, v) in G.edges(labels=False):

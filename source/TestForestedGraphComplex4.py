@@ -49,8 +49,8 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -244,5 +244,5 @@ maxl = 2
 maxh = 1
 for l in range(maxl+1):
     PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-        range(0, 2*maxl - 2 + maxh), range(l, l+1), range(0, 2*maxl - 2+maxh-1), range(0, maxl-l+1+maxh))
+        range(2*maxl - 2 + maxh), range(l, l+1), range(2*maxl - 2+maxh-1), range(maxl-l+1+maxh))
     PFGC.build_basis(ignore_existing_files=True)

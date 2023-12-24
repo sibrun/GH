@@ -68,7 +68,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
         super().__init__(
-            [OrdinaryGraphComplex.OrdinaryGVS(v, deg - v, self.even_edges) for v in range(0, deg + 1)], deg)
+            [OrdinaryGraphComplex.OrdinaryGVS(v, deg - v, self.even_edges) for v in range(deg + 1)], deg)
 
     def get_ordered_param_dict(self):
         return Shared.OrderedDict([('deg', self.deg)])

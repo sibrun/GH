@@ -119,7 +119,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        ret = [list(range(0, self.n_vertices))] + [[self.n_vertices]] + [list(range(self.n_vertices+1, self.n_vertices +
+        ret = [list(range(self.n_vertices))] + [[self.n_vertices]] + [list(range(self.n_vertices+1, self.n_vertices +
                                                                                     1+self.n_ws))] + [[j] for j in range(self.n_vertices+1+self.n_ws, self.n_vertices + self.n_hairs+self.n_ws+1)]
         # take out empty lists
         # return [l for l in ret if l != []]
@@ -183,7 +183,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         count = 0
         nedges = nloops + nvertices + nhairs - 1
         max_hairedges = min(nhairs // 2, nedges)
-        for n_hairedges in range(0, max_hairedges+1):
+        for n_hairedges in range(max_hairedges+1):
             # print("hairy0", n_hairedges)
             for G in self.get_hairy_graphs_no_hair_edge(nvertices, nloops+n_hairedges, nhairs-2*n_hairedges):
                 # add n_hairedges hair edges
@@ -225,7 +225,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # print(maxeps)
         for neps in range(mineps, maxeps+1):
             # Produce all permutations of the hairs
-            vlist = list(range(0, nvertices))
+            vlist = list(range(nvertices))
             print("neps",neps, "nws",nws)
             all_perm = [vlist + list(p)
                         for hs in itertools.permutations(range(nvertices+neps+nws, nvertices+nhairs+neps+nws))
@@ -300,14 +300,14 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             else:
                 raise ValueError(
                     '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
-        G.relabel(range(0, G.order()))
+        G.relabel(range(G.order()))
         return G
 
     def get_n(self):
         return self.n_hairs
 
     def vertex_permutation_from_permutation(self, p):
-        return list(range(0, self.n_vertices+2)) + [j+self.n_vertices+1 for j in p]
+        return list(range(self.n_vertices+2)) + [j+self.n_vertices+1 for j in p]
 
     def get_isotypical_projector(self, rep_index):
         return SymmProjector(self, rep_index)
@@ -479,7 +479,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 G1.merge_vertices([v, u])
                 if (previous_size - G1.size()) != 1:
                     continue
-                G1.relabel(range(0, self.domain.n_vertices+self.domain.n_ws +
+                G1.relabel(range(self.domain.n_vertices+self.domain.n_ws +
                            self.domain.n_hairs), inplace=True)
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
@@ -529,7 +529,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                     # in case we have too few edges some double edges have been created => zero
                     if (previous_size - G2.size()) != (2 if new_has_tadpole else 1):
                         continue
-                    G2.relabel(range(0, self.domain.n_vertices +
+                    G2.relabel(range(self.domain.n_vertices +
                                self.domain.n_hairs+self.domain.n_ws), inplace=True)
                     # find edge permutation sign
                     sgn2 *= Shared.shifted_edge_perm_sign2(G2)

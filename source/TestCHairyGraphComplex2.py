@@ -49,8 +49,8 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, pl
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -248,8 +248,8 @@ def getCohomDimPAll(gvs):
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC = CHairyGraphComplex.CHairyGC(range(0, 12), range(
-    0, 5), range(3, 4), True, ['contract'])
+WGC = CHairyGraphComplex.CHairyGC(range(12), range(
+    5), range(3, 4), True, ['contract'])
 
 # WGC.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)
@@ -260,8 +260,8 @@ WGC = CHairyGraphComplex.CHairyGC(range(0, 12), range(
 WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
 
-WGCi = CHairyGraphComplex.CHairyGC(range(0, 12), range(
-    0, 5), range(3, 4), True, ['contract_iso'])
+WGCi = CHairyGraphComplex.CHairyGC(range(12), range(
+    5), range(3, 4), True, ['contract_iso'])
 
 # WGCi.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)

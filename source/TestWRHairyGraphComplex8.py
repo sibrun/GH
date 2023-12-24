@@ -48,8 +48,8 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1, plot_bas
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -263,7 +263,7 @@ def getCohomDimPAll(gvs):
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
+WGC = WRHairyGraphComplex.WRHairyGC(range(14), range(
     1, 2), range(4, 6), range(1, 2), ['contract'])
 
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(

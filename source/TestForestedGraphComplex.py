@@ -9,7 +9,7 @@ import ForestedGraphComplex
 log_file = "FGC_Unittest.log"
 
 v_range = range(1, 5)
-l_range = range(0, 4)
+l_range = range(4)
 m_range = range(1, 4)
 h_range = range(1, 3)
 edges_types = [True, False]

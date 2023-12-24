@@ -76,7 +76,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
         super().__init__(
             [HairyGraphComplex.HairyGraphVS(v, deg - v, self.h_min + v, self.even_edges, self.even_hairs)
-             for v in range(0, deg + 1)], deg)
+             for v in range(deg + 1)], deg)
 
     def get_ordered_param_dict(self):
         return Shared.OrderedDict([('deg', self.deg), ('min_hairs', self.h_min)])

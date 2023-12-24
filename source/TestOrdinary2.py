@@ -32,8 +32,8 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print("Nonzero entry in product: ", i, j, C[i, j])
                     j_to_pick = j
@@ -85,7 +85,7 @@ def DSquareTestSingle(n_vertices, n_loops, even_edges, j_to_pick=-1, plot_basis=
 # DSquareTestSingle(8, 6, False, plot_basis=True)
 
 OGC = OrdinaryGraphComplex.OrdinaryGC(
-    range(0, 17), range(0, 7), True, {'contract'})
+    range(17), range(7), True, {'contract'})
 
 OGC.build_basis(ignore_existing_files=True)
 OGC.build_matrix(ignore_existing_files=True)

@@ -103,7 +103,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     def get_partition(self):
         # All internal vertices are in color 1, the single eps vertex in color 2, the w vertex in color 3
         # and the hair vertices are in colors 4,...,n+3.
-        return [list(range(0, self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
+        return [list(range(self.n_vertices))] + [[j] for j in range(self.n_vertices, self.n_vertices + self.n_hairs+2)]
 
     def plot_graph(self, G):
         GG = Graph(G, loops=True)
@@ -258,7 +258,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                 G, addtadpole=True) for G in hairy]
 
         # Produce all permutations of the hairs
-        all_perm = [list(range(0, self.n_vertices+2)) + list(p)
+        all_perm = [list(range(self.n_vertices+2)) + list(p)
                     for p in itertools.permutations(range(self.n_vertices+2, self.n_vertices+self.n_hairs+2))]
         # return [G.relabel(p, inplace=False) for p in all_perm ]
 
@@ -289,14 +289,14 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
             else:
                 raise ValueError(
                     '%s: Vertices of second colour should have 1 or 2 neighbours' % str(self))
-        G.relabel(range(0, G.order()))
+        G.relabel(range(G.order()))
         return G
 
     def _hairy_to_w_edge(self, G, addtadpole=False):
         # Translates hairy graph into w graph by taking vertices adjaent to edge as extra ones
         # Assumes we have n_vertices + 2 vertices in the graph
-        for i in range(0, self.n_vertices + 2):
-            for j in range(0, self.n_vertices + 2):
+        for i in range(self.n_vertices + 2):
+            for j in range(self.n_vertices + 2):
                 if G.has_edge(i, j) and G.degree(i) == self.n_ws + 1:
                     # found valid combination: make our two vertices the last two int vertices
                     GG = G.relabel(dict_to_list(
@@ -312,8 +312,8 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Translates hairy graph into w graph by taking one vertex adjacent to edge as extra one...
         # with eps a new vertex of valency one
         # Assumes we have n_vertices + 1 vertices in the graph
-        for i in range(0, self.n_vertices + 1):
-            for j in range(0, self.n_vertices + self.n_hairs + 1):
+        for i in range(self.n_vertices + 1):
+            for j in range(self.n_vertices + self.n_hairs + 1):
                 if G.has_edge(i, j) and G.degree(i) == self.n_ws + 1:
                     # found valid combination, relabel
                     GG = G.relabel(dict_to_list(
@@ -334,8 +334,8 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     def _hairy_to_w_edge_1w(self, G, addtadpole=False):
         # Translates hairy graph into w graph by taking one vertex adjacent to edge as extra one...
         # Pendant to _hairy_to_w_edge_1eps
-        for i in range(0, self.n_vertices + 1):
-            for j in range(0, self.n_vertices + self.n_hairs + 1):
+        for i in range(self.n_vertices + 1):
+            for j in range(self.n_vertices + self.n_hairs + 1):
                 if G.has_edge(i, j):
                     # found valid combination, relabel
                     GG = G.relabel(dict_to_list(
@@ -357,8 +357,8 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Assumes we have n_vertices vertices in the graph
         if self.n_ws != 1:
             return
-        for i in range(0, self.n_vertices+self.n_hairs):
-            for j in range(0, self.n_vertices+self.n_hairs):
+        for i in range(self.n_vertices+self.n_hairs):
+            for j in range(self.n_vertices+self.n_hairs):
                 if G.has_edge(i, j):
                     # found valid combination, temporarily put eps and w at the end
                     GG = copy(G)
@@ -376,7 +376,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Translates hairy graph into w graph
         # with eps a new vertex of valency zero
         # Assumes we have n_vertices + 1 vertices in the graph and n_hairs+1 hairs
-        for i in range(0, self.n_vertices + 1):
+        for i in range(self.n_vertices + 1):
             for j in range(self.n_vertices + 1, self.n_vertices+self.n_hairs+2):
                 if G.has_edge(i, j) and G.degree(i) == self.n_ws+1:
                     # found valid combination, relabel such that i becomes w and j becomes eps
@@ -395,7 +395,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # One hair points towards the new omega vertex, the other becomes eps
         # We can only consider graphs where both targets of the hairs are connected by an edge
         # because other graphs are covered by other routines
-        for i in range(0, self.n_vertices + 1):
+        for i in range(self.n_vertices + 1):
             for j in range(self.n_vertices + 1, self.n_vertices+self.n_hairs+3):
                 if G.has_edge(i, j) and G.degree(i) == self.n_ws+1:
                     for k in range(self.n_vertices + 1, self.n_vertices+self.n_hairs+3):
@@ -410,7 +410,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                             newj = k if j == self.n_vertices+1 else j
                             GG.delete_vertex(newj)
                             GG.relabel(
-                                list(range(0, self.n_vertices+self.n_hairs+2)))
+                                list(range(self.n_vertices+self.n_hairs+2)))
                             yield GG
 
     def _hairy_to_w_hairhair_1w2eps(self, G, addtadpole=False):
@@ -419,7 +419,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         # Assumes we have n_vertices + 1 vertices in the graph and n_hairs+2 hairs
         # One hair points towards the new eps vertex, the other becomes w
         # This routine is the same as _hairy_to_w_hairhair_2w, just with eps and w interchanged
-        for i in range(0, self.n_vertices + 1):
+        for i in range(self.n_vertices + 1):
             for j in range(self.n_vertices + 1, self.n_vertices+self.n_hairs+3):
                 if G.has_edge(i, j):
                     for k in range(self.n_vertices + 1, self.n_vertices+self.n_hairs+3):
@@ -434,7 +434,7 @@ class WHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
                             newj = k if j == self.n_vertices+1 else j
                             GG.delete_vertex(newj)
                             GG.relabel(
-                                list(range(0, self.n_vertices+self.n_hairs+2)))
+                                list(range(self.n_vertices+self.n_hairs+2)))
                             GG.relabel(
                                 {self.n_vertices: self.n_vertices+1, self.n_vertices+1: self.n_vertices})
                             yield GG
@@ -637,7 +637,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                 G1.merge_vertices([v, u])
                 if (previous_size - G1.size()) != 1:
                     continue
-                G1.relabel(range(0, self.domain.n_vertices+1 +
+                G1.relabel(range(self.domain.n_vertices+1 +
                            self.domain.n_hairs), inplace=True)
                 # find edge permutation sign
                 sgn *= Shared.shifted_edge_perm_sign2(G1)
@@ -673,7 +673,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                     # in case we have too few edges some double edges have been created => zero
                     if (previous_size - G2.size()) != (2 if new_has_tadpole else 1):
                         continue
-                    G2.relabel(range(0, self.domain.n_vertices+1 +
+                    G2.relabel(range(self.domain.n_vertices+1 +
                                self.domain.n_hairs), inplace=True)
                     # find edge permutation sign
                     sgn2 *= Shared.shifted_edge_perm_sign2(G2)
