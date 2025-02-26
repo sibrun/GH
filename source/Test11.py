@@ -2,7 +2,6 @@
 
 import os
 
-
 def get_g6_files(path):
     for file in os.listdir(path):
         fullfile = os.path.join(path, file)
