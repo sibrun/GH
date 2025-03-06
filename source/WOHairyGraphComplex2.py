@@ -37,6 +37,25 @@ from sage.combinat.shuffle import ShuffleProduct
 graph_type = "wohairy2"
 
 
+# unshuffles_dict = {}
+
+# def unshuffles_old(p,q):
+#     """
+#     Returns all p,q-unshuffles. Thes are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
+#     """
+#     if (p,q) in unshuffles_dict:
+#         return unshuffles_dict[(p,q)]
+#     else:
+#         ret = [[j for j in pp] for pp in itertools.permutations(range(p+q)) 
+#             if all(pp[i] < pp[i+1] for i in range(p-1))
+#             and all(pp[i] < pp[i+1] for i in range(p,p+q-1))]
+#         unshuffles_dict[(p,q)] = ret
+#         return ret
+    
+def unshuffles(p,q):
+    for pp in itertools.combinations(range(p+q), p):
+        yield list(pp) + [j for j in range(p+q) if j not in pp]
+
 def dump_args(func):
     """
     Decorator to print function call details.
@@ -143,11 +162,16 @@ class WOHairyGraphPreVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         l = (3 * self.n_vertices + self.n_ws <=
              2 * self.n_edges + self.n_hairs)
         # Nonnegative number of vertices, non negative number of loops, non-negative number of hairs,
-        l = l and self.n_vertices >= 0 and self.n_loops >= 0 and self.n_hairs >= 0 and self.n_edges >= 0
+        l = l and self.n_vertices >= 0 and self.n_loops >= 0 and self.n_hairs >= 0 and self.n_edges >= 0 and self.n_comp >=1
         # At most a full graph.
         # l = l and self.n_edges <= (
         #     self.n_vertices+2) * (self.n_vertices + 1) / 2
-        l = l and (self.n_comp >=1)
+        
+        l = l and (self.n_ws <= self.n_loops + self.n_comp)
+        # excess must be non-negative
+        l = l and (2*self.n_ws <= 3*self.n_loops+2*self.n_hairs)
+        # each connected component must contribute to the genus, or otherwise have a hair
+        l = l and (self.n_comp <= self.n_hairs + self.n_loops)
         return l
 
     def get_work_estimate(self):
@@ -180,14 +204,12 @@ class WOHairyGraphPreVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                                 ret += [V1, V2]
                                 ret += V1.get_self_prerequisites()
             return list(set(ret))
-    
+
     def get_unshuffles(self, p,q, offset=0):
         """
         Returns all p,q-unshuffles. Thes are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
         """
-        return [[j+offset for j in pp] for pp in itertools.permutations(range(p+q)) 
-                if all(pp[i] < pp[i+1] for i in range(p-1))
-                and all(pp[i] < pp[i+1] for i in range(p,p+q-1))]
+        return [[j+offset for j in pp] for pp in unshuffles(p,q)]
 
     def get_generating_graphs(self):
         """
