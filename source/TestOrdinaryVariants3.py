@@ -107,17 +107,17 @@ def print_differences(r1,r2,r3):
 
    
 
-
+maxl = 9
 
 for even_edges in [True, False]:
     print("Full:")
-    print_dim_and_eulerchar_full(range(15), range(9), even_edges)
-    r1=print_cohomology_dim_full(range(15), range(9), even_edges)
+    print_dim_and_eulerchar_full(range(15), range(maxl+1), even_edges)
+    r1=print_cohomology_dim_full(range(15), range(maxl+1), even_edges)
     print("Bridgeless:")
-    print_dim_and_eulerchar_bridgeless(range(15), range(9), even_edges)
-    r2=print_cohomology_dim_bridgeless(range(15), range(9), even_edges)
+    print_dim_and_eulerchar_bridgeless(range(15), range(maxl+1), even_edges)
+    r2=print_cohomology_dim_bridgeless(range(15), range(maxl+1), even_edges)
     print("Triconnected:")
-    print_dim_and_eulerchar_triconnected(range(15), range(9), even_edges)
-    r3=print_cohomology_dim_triconnected(range(15), range(9), even_edges)
+    print_dim_and_eulerchar_triconnected(range(15), range(maxl+1), even_edges)
+    r3=print_cohomology_dim_triconnected(range(15), range(maxl+1), even_edges)
     print("Differences:")
     print_differences(r1,r2,r3)
