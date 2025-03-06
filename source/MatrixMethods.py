@@ -21,7 +21,7 @@ def matrix_stats(matrix_file):
         ccount[j] += 1
         if previj == (i,j):
             multis += 1
-    
+
     print("evaluating...")
     zerorows = sum( 1 if j==0 else 0 for j in rcount)
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
@@ -29,7 +29,7 @@ def matrix_stats(matrix_file):
     onecols = sum( 1 if j==1 else 0 for j in ccount)
     tworows = sum( 1 if j==2 else 0 for j in rcount)
     twocols = sum( 1 if j==2 else 0 for j in ccount)
-    
+
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
@@ -47,15 +47,15 @@ def get_submatrix(lst: List[Tuple[int,int,int]], keeprow: List[bool], keepcol: L
     print("Submatrix...")
     newm = sum(1 for b in keeprow if b)
     newn = sum(1 for b in keepcol if b)
-    
+
     newrowinds = [i for (i,b) in enumerate(keeprow) if b]
     newcolinds = [j for (j,b) in enumerate(keepcol) if b]
-    
+
     # dict from old index to new
     rowdict = { iold : inew for (inew, iold) in enumerate(newrowinds) }
     coldict = { iold : inew for (inew, iold) in enumerate(newcolinds) }
 
-    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst 
+    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst
                                 if keeprow[i] and keepcol[j] ]
 
     return (newlst, newm, newn)
@@ -73,13 +73,13 @@ def _removerstep(lst: List[Tuple[int,int,int]], m,n, rankbias):
     for (i,j, v) in lst:
         rcount[i] += 1
         ccount[j] += 1
-    
+
     print("evaluating...")
     zerorows = sum( 1 if j==0 else 0 for j in rcount)
     zerocols = sum( 1 if j==0 else 0 for j in ccount)
     onerows = sum( 1 if j==1 else 0 for j in rcount)
     onecols = sum( 1 if j==1 else 0 for j in ccount)
-    
+
     print(f"Matrix:    {m} x {n}")
     print(f"Zero rows: {zerorows}")
     print(f"Zero cols: {zerocols}")
@@ -107,16 +107,16 @@ def _removerstep(lst: List[Tuple[int,int,int]], m,n, rankbias):
 
     newm = m - sum(1 for b in delrow if b)
     newn = n - sum(1 for b in delcol if b)
-    
+
     newrowinds = [i for (i,b) in enumerate(delrow) if not b]
     newcolinds = [j for (j,b) in enumerate(delcol) if not b]
-    
+
     # dict from old index to new
     rowdict = { iold : inew for (inew, iold) in enumerate(newrowinds) }
     coldict = { iold : inew for (inew, iold) in enumerate(newcolinds) }
 
     print("creating new matrix...")
-    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst 
+    newlst = [ (rowdict[i],coldict[j],v) for (i,j,v) in lst
                                 if not delrow[i] and not delcol[j] ]
 
     return (newlst, newm, newn, newrankbias)
@@ -126,12 +126,12 @@ def load_sms_file(fname: str) -> Tuple[List[Tuple[int,int,int]] , Tuple[int, int
     Returns a pair of a matrix (list) and the matrix dimensions.
     """
     if not os.path.isfile(fname):
-            raise StoreLoad.FileNotFoundError(
-                "Cannot load matrix, No matrix file found for %s: " % fname)
+        raise StoreLoad.FileNotFoundError(
+            "Cannot load matrix, No matrix file found for %s: " % fname)
     stringList = StoreLoad.load_string_list(fname)
     (d, t, data_type) = stringList.pop(0).split(" ")
     shape = (d, t) = (int(d), int(t))
-    
+
     tail = map(int, stringList.pop().split(" "))
     if not list(tail) == [0, 0, 0]:
         raise ValueError("%s: End line missing or matrix not correctly read from file"
@@ -161,7 +161,7 @@ def save_sms_file(lst, m, n, fname):
 
 def precondition(mlst, mm, nn, ensure_m_greater_n = False):
     """Computes a preconditioned version of the operatormatrix, saving it to
-    (original_matrix_filename)preconditioned_{rankbias}.txt 
+    (original_matrix_filename)preconditioned_{rankbias}.txt
     rankbias is to be added to the rank to obtain the true rank, and is also returned.
     """
     # print("Loading...: ", str(op))
@@ -182,7 +182,7 @@ def precondition(mlst, mm, nn, ensure_m_greater_n = False):
     return (lst, (m,n), rankbias)
 
 def precondition_file(matrix_file, ensure_m_greater_n = False):
-    """preconditions, and saves matrix to (original_matrix_filename)preconditioned_{rankbias}.txt 
+    """preconditions, and saves matrix to (original_matrix_filename)preconditioned_{rankbias}.txt
     returns new filename and rankbias."""
     lst, (m,n) = load_sms_file(matrix_file)
     lst2, (m2,n2), rankbias = precondition(lst, m, n, ensure_m_greater_n=ensure_m_greater_n)

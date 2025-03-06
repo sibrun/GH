@@ -1,7 +1,7 @@
 import HairyMerkulovComplex
 
 import HairyGraphComplex
-  
+
 
 ignore_ex = False
 HGC = HairyGraphComplex.HairyGC(range(15), range(7), range(1,3), False, False, differentials=['contract'])

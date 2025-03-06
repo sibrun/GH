@@ -25,7 +25,7 @@ logger = Log.logger.getChild('graph_operator')
 
 # defines all rank methods that are considered exact
 exact_rank_methods = ["sage_integer", "exact", "linbox_rational"]
-class OperatorMatrixProperties(object):
+class OperatorMatrixProperties:
     """Properties of an operator matrix.
 
     Attributes:
@@ -69,7 +69,7 @@ class OperatorMatrixProperties(object):
         return [self.valid, self.shape, self.entries, self.rank]
 
 
-class OperatorMatrix(object):
+class OperatorMatrix:
     """Operator matrix class.
 
     Abstract class defining the interface for an operator matrix.
@@ -542,10 +542,10 @@ class OperatorMatrix(object):
 
         if not self.is_valid():
             return
-        # 
+        #
         # if not ignore_existing_files and self.exists_rank_file():
-        is_exact_method = (not (sage is None) and  "integer" in sage) \
-                     or (not (linbox is None) and "rational" in linbox)
+        is_exact_method = (sage is not None and  "integer" in sage) \
+                     or (linbox is not None and "rational" in linbox)
         # compute the rank even if rank file is present, if we improve regarding exactness
         if not ignore_existing_files and self.exists_rank_file():
             if self.exists_exact_rank() or (not is_exact_method):
@@ -621,7 +621,7 @@ class OperatorMatrix(object):
         return rank_dict
 
     def exists_exact_rank(self):
-        """Determines whether there has been a rank computed that is exact, i.e., 
+        """Determines whether there has been a rank computed that is exact, i.e.,
         over rationals."""
         if not self.is_valid():
             return True
@@ -636,7 +636,7 @@ class OperatorMatrix(object):
         try:
             rank_dict = self._load_rank_dict()
         except StoreLoad.FileNotFoundError:
-            rank_dict = dict()
+            rank_dict = {}
         rank_dict.update(update_rank_dict)
         rank_list = [str(rank) + ' ' + mode for (mode, rank)
                      in rank_dict.items()]
@@ -650,7 +650,7 @@ class OperatorMatrix(object):
         except StoreLoad.FileNotFoundError:
             raise StoreLoad.FileNotFoundError(
                 "Cannot load matrix rank, No rank file found for %s: " % str(self))
-        rank_dict = dict()
+        rank_dict = {}
         for line in rank_list:
             (rank, mode) = line.split(" ")
             rank_dict.update({mode: int(rank)})
@@ -728,7 +728,7 @@ class OperatorMatrix(object):
         return self.properties
 
 
-class Operator(object):
+class Operator:
     """Interface for operators."""
     __metaclass__ = ABCMeta
 
@@ -762,7 +762,7 @@ class GraphOperator(Operator, OperatorMatrix):
     __metaclass__ = ABCMeta
 
     def __init__(self, domain, target):
-        super(GraphOperator, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @classmethod
     def generate_op_matrix_list(cls, sum_vector_space):
@@ -799,7 +799,7 @@ class GraphOperator(Operator, OperatorMatrix):
         :return: List of tuples (GG, factor), such that (operator)(graph_sgn_list) = sum(factor * GG)
         :rtype: list(tuple(Graph, factor))
         """
-        image_dict = dict()
+        image_dict = {}
         for (G1, sgn1) in graph_sgn_list:
             G1_image = self.operate_on(G1)
             for (G2, sgn2) in G1_image:
@@ -867,7 +867,7 @@ class GraphOperator(Operator, OperatorMatrix):
     def _generate_matrix_list(self, domain_basis_element, lookup):
         (domain_index, G) = domain_basis_element
         image_list = self.operate_on(G)
-        canon_images = dict()
+        canon_images = {}
         for (GG, prefactor) in image_list:
             (GGcanon6, sgn1) = self.target.graph_to_canon_g6(GG)
             sgn0 = canon_images.get(GGcanon6)
@@ -899,7 +899,7 @@ class BiOperatorMatrix(OperatorMatrix):
         :param operator_cls2: Second operator class to compose the bi operator.
         :type operator_cls2: OperatorMatrix
         """
-        super(BiOperatorMatrix, self).__init__(domain, target)
+        super().__init__(domain, target)
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
 
@@ -984,7 +984,7 @@ class BiOperatorMatrix(OperatorMatrix):
         return matrixList
 
 
-class OperatorMatrixCollection(object):
+class OperatorMatrixCollection:
     """Graph operator on the direct sum of graph vector spaces.
 
     Collection of operator matrices composing an operator on a sum vector space.
@@ -1219,14 +1219,14 @@ class Differential(OperatorMatrixCollection):
     __metaclass__ = ABCMeta
 
     def __init__(self, sum_vector_space, op_matrix_list):
-        """Initialze the underlying sum vector space and the list of operator matrices composing the differential.
+        """Initialize the underlying sum vector space and the list of operator matrices composing the differential.
 
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: GraphVectorSpace.SumVectorSpace
         :param op_matrix_list: List of operator matrices composing the differential
         :type op_matrix_list: list(OperatorMatrix)
         """
-        super(Differential, self).__init__(sum_vector_space, op_matrix_list)
+        super().__init__(sum_vector_space, op_matrix_list)
 
     @abstractmethod
     def get_cohomology_plot_path(self):
@@ -1323,7 +1323,7 @@ class Differential(OperatorMatrixCollection):
         :return: Dictionary (vector space -> cohomology dimension)
         :rtype: dict(GraphVectorSpace.VectorSpace -> int)
         """
-        cohomology_dim_dict = dict()
+        cohomology_dim_dict = {}
         for (opD, opDD) in itertools.permutations(self.op_matrix_list, 2):
             if opD.get_domain() == opDD.get_target():
                 dim = Differential.cohomology_dim(opD, opDD)
@@ -1337,7 +1337,7 @@ class Differential(OperatorMatrixCollection):
         :rtype: dict(tuple(int) -> int)
         """
         cohomology_dim = self._get_cohomology_dim_dict()
-        dim_dict = dict()
+        dim_dict = {}
         for vs in self.sum_vector_space.get_vs_list():
             dim_dict.update(
                 {vs.get_ordered_param_dict().get_value_tuple(): cohomology_dim.get(vs)})
@@ -1358,7 +1358,7 @@ class Differential(OperatorMatrixCollection):
     def square_zero_test(self, eps=Parameters.square_zero_test_eps):
         """Generic test whether the differential squares to zero.
 
-        Searche for matching pairs in the list of underlying operator matrices and test whether they square to zero.
+        Search for matching pairs in the list of underlying operator matrices and test whether they square to zero.
         Report for how many of them the test was trivially successful (because at least two matrices are trivial),
         successful, inconclusive (because matrices are missing) or unsuccessful.
 
@@ -1428,7 +1428,7 @@ class Differential(OperatorMatrixCollection):
 
         Plot the cohomology dimensions as plot and/or table associated with the differential.
 
-        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Dafault: False).
+        :param to_html: Option to generate a html file with a table of the cohomology dimensions (Default: False).
         :type to_html: bool
         :param to_csv: Option to generate a csv file with a table of the cohomology dimensions (default: False).
         :type to_csv: bool

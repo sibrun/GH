@@ -22,11 +22,11 @@ if __name__ == "__main__":
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,4,w)
                             for v in range(18) for l in range(5)]
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,5,w)
-                            for v in range(18) for l in range(4)] 
+                            for v in range(18) for l in range(4)]
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,6,w)
-                            for v in range(18) for l in range(3)] 
+                            for v in range(18) for l in range(3)]
         vs_list = vs_list + [WRHairyGraphComplex.WRHairyGraphVS(v,l,7,w)
-                            for v in range(18) for l in range(2)]         
+                            for v in range(18) for l in range(2)]
 
     sumvs = GraphVectorSpace.SumVectorSpace(vs_list)
 

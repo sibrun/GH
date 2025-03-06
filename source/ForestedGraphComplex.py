@@ -68,7 +68,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.n_unmarked_edges = self.n_edges - n_marked_edges
         self.sub_type = "pre"
-        super(PreForestedGVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -219,7 +219,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
     def is_bridgeless(self, G):
         """Checks whether the graph G is bridgeless."""
         GG = copy(G)
-        # Delte the hairs before checking
+        # Delete the hairs before checking
         GG.delete_vertices(range(self.n_vertices+self.n_unmarked_edges,
                            self.n_vertices+self.n_unmarked_edges+self.n_hairs))
         return len(list(GG.bridges())) == 0
@@ -277,7 +277,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         self.preVS = PreForestedGVS(
             n_vertices, n_loops, n_marked_edges, n_hairs)
 
-        super(ForestedGVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -306,9 +306,11 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                                    ('marked_edges', self.n_marked_edges), ('hairs', self.n_hairs)])
 
     def get_partition(self):
-        # All internal vertices are in color 0
-        # the unmarked-edge-vertices are in color 1
-        # the hair vertices are in colors 2,...,n_hairs+1.
+        """
+        All internal vertices are in color 0
+        the unmarked-edge-vertices are in color 1
+        the hair vertices are in colors 2,...,n_hairs+1.
+        """
         return self.preVS.get_partition()
 
     def is_valid(self):
@@ -322,7 +324,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             print("Invalid")
             return
 
-        # we assume the basis of the intermediate GVS has alread been constructed
+        # we assume the basis of the intermediate GVS has already been constructed
         # We need to add (tp many) tadpoles to graphs and permute hairs
 
         # res = []
@@ -477,7 +479,7 @@ class ForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         vs_list = [ForestedGVS(v, l, m, h, self.even_edges) for (
             v, l, m, h) in itertools.product(self.v_range, self.l_range, self.m_range, self.h_range)]
 
-        super(ForestedGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -524,7 +526,7 @@ class PreForestedGraphSumVS(GraphVectorSpace.SumVectorSpace):
         vs_list = [PreForestedGVS(v, l, m, h) for (
             v, l, m, h) in itertools.product(self.v_range, self.l_range, self.m_range, self.h_range)]
 
-        super(PreForestedGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s pre graphs' % (graph_type)
@@ -543,7 +545,7 @@ class PreForestedGraphSumVS2(GraphVectorSpace.SumVectorSpace):
 
     def __init__(self, vs_list):
         self.sub_type = "pre"
-        super(PreForestedGraphSumVS2, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return f'{graph_type} pre graphs'
@@ -578,7 +580,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -707,7 +709,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -765,7 +767,7 @@ class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
         """
         self.sub_type = domain.sub_type
 
-        super(SymmProjector, self).__init__(domain, rep_index)
+        super().__init__(domain, rep_index)
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -834,7 +836,7 @@ class UnmarkEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             raise ValueError(
                 "Domain and target not consistent for delete edges operator")
         self.sub_type = domain.sub_type
-        super(UnmarkEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -957,7 +959,7 @@ class UnmarkEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: OrdinaryGraphSumVS
         """
-        super(UnmarkEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                            UnmarkEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -1039,7 +1041,7 @@ class ForestedGC(GraphComplex.GraphComplex):
             if 'unmark_iso' in differentials:
                 differential_list.append(
                     RestrictedUnmarkEdgesD(delete_edges_dif))
-        super(ForestedGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
@@ -1075,7 +1077,7 @@ class ContractUnmarkBiOM(SymmetricGraphComplex.SymmetricBiOperatorMatrix):
 
     def __init__(self, domain, target):
         self.sub_type = domain.sub_type
-        super(ContractUnmarkBiOM, self).__init__(domain, target, ContractEdgesGO,
+        super().__init__(domain, target, ContractEdgesGO,
                                                  UnmarkEdgesGO)
 
     @classmethod
@@ -1163,7 +1165,7 @@ class ForestedDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         self.sub_type = sub_types.get(even_edges)
         max_vertices = 2*n_loops-2 + n_hairs
         min_vertices = n_marked_edges+1
-        super(ForestedDegSlice, self).__init__(
+        super().__init__(
             [ForestedGVS(v, n_loops, n_marked_edges, n_hairs, even_edges)
              for v in range(min_vertices, max_vertices + 1)],
             n_marked_edges)
@@ -1206,7 +1208,7 @@ class SymmProjectorDegSlice(SymmetricGraphComplex.SymmetricProjectionOperatorDeg
         """
         self.sub_type = domain.sub_type
 
-        super(SymmProjectorDegSlice, self).__init__(domain, rep_index)
+        super().__init__(domain, rep_index)
 
     def get_ordered_param_dict2(self):
         do = self.domain
@@ -1254,7 +1256,7 @@ class ForestedBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.h_range = h_range
         self.even_edges = even_edges
         self.sub_type = sub_types.get(even_edges)
-        super(ForestedBigradedSumVS, self).__init__([ForestedDegSlice(l, m, h, self.even_edges)
+        super().__init__([ForestedDegSlice(l, m, h, self.even_edges)
                                                      for l in l_range for m in m_range for h in h_range])
 
     def get_type(self):
@@ -1281,7 +1283,7 @@ class ContractUnmarkD(GraphOperator.Differential):
         :param graded_sum_vs: Underlying bi graded vector space.
         :type graded_sum_vs: VertexLoopBigradedSumVS
         """
-        super(ContractUnmarkD, self).__init__(graded_sum_vs,
+        super().__init__(graded_sum_vs,
                                               ContractUnmarkBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
@@ -1347,10 +1349,10 @@ class ForestedContractUnmarkBiGC(GraphComplex.GraphComplex):
             l_range, m_range, h_range, self.even_edges)
         self.contract_unmarkD = ContractUnmarkD(graded_sum_vs)
         if isotypical:
-            super(ForestedContractUnmarkBiGC, self).__init__(
+            super().__init__(
                 graded_sum_vs, [RestrictedContractUnmarkD(self.contract_unmarkD)])
         else:
-            super(ForestedContractUnmarkBiGC, self).__init__(
+            super().__init__(
                 graded_sum_vs, [self.contract_unmarkD])
 
     def __str__(self):
@@ -1426,7 +1428,7 @@ class ForestedTopDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         max_vertices = 2*n_loops-2 + n_hairs
         self.n_vertices = max_vertices
         min_vertices = max_vertices-top_n+1
-        super(ForestedTopDegSlice, self).__init__(
+        super().__init__(
             [ForestedGVS(v, n_loops, n_marked_edges, n_hairs, even_edges)
              for v in range(min_vertices, max_vertices + 1)],
             n_marked_edges)
@@ -1472,7 +1474,7 @@ class ContractUnmarkTopBiOM(SymmetricGraphComplex.SymmetricBiOperatorMatrix):
 
     def __init__(self, domain, target):
         self.sub_type = domain.sub_type
-        super(ContractUnmarkTopBiOM, self).__init__(domain, target, ContractEdgesGO,
+        super().__init__(domain, target, ContractEdgesGO,
                                                     UnmarkEdgesGO)
 
     @classmethod
@@ -1562,7 +1564,7 @@ class ForestedGraphTopSumVS(GraphVectorSpace.SumVectorSpace):
             [ForestedGVS(2*l-2+h-1, l, m, h, self.even_edges) for (
                 l, m, h) in itertools.product(self.l_range, self.m_range, self.h_range)]
 
-        super(ForestedGraphTopSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -1600,7 +1602,7 @@ class ContractUnmarkTopD(GraphOperator.Differential):
                    for m in m_range
                    for h in h_range]
         sum_vs = ForestedGraphTopSumVS(l_range, m_range, h_range, even_edges)
-        super(ContractUnmarkTopD, self).__init__(sum_vs, op_list)
+        super().__init__(sum_vs, op_list)
 
     def get_type(self):
         return 'contract edges and unmark edges top'

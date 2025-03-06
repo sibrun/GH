@@ -21,7 +21,7 @@ class CeEt1hBiOM(GraphOperator.BiOperatorMatrix):
     """
     def __init__(self, domain, target):
         self.sub_type = domain.sub_type
-        super(CeEt1hBiOM, self).__init__(domain, target, HairyGraphComplex.ContractEdgesGO,
+        super().__init__(domain, target, HairyGraphComplex.ContractEdgesGO,
                                          HairyGraphComplex.EdgeToOneHairGO)
 
     @staticmethod
@@ -74,7 +74,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         self.even_edges = even_edges
         self.even_hairs = even_hairs
         self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
-        super(VertexLoopDegSlice, self).__init__(
+        super().__init__(
             [HairyGraphComplex.HairyGraphVS(v, deg - v, self.h_min + v, self.even_edges, self.even_hairs)
              for v in range(0, deg + 1)], deg)
 
@@ -121,7 +121,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.even_hairs = even_hairs
         self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
         max_deg = max(self.deg_range)
-        super(VertexLoopBigradedSumVS, self).__init__(
+        super().__init__(
             [VertexLoopDegSlice(deg, h_min + (max_deg - deg), self.even_edges, self.even_hairs) for (deg, h_min) in
              itertools.product(self.deg_range, self.h_min_range)])
 
@@ -147,7 +147,7 @@ class ContractEdgeToOneHD(GraphOperator.Differential):
         :param graded_sum_vs: Underlying bi graded vector space.
         :type graded_sum_vs: VertexLoopBigradedSumVS
         """
-        super(ContractEdgeToOneHD, self).__init__(graded_sum_vs, CeEt1hBiOM.generate_op_matrix_list(graded_sum_vs))
+        super().__init__(graded_sum_vs, CeEt1hBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
         return 'contract edges and edge to one hair'
@@ -204,7 +204,7 @@ class HairyCeEt1hBiGC(GraphComplex.GraphComplex):
         self.sub_type = HairyGraphComplex.sub_types.get((self.even_edges, self.even_hairs))
 
         graded_sum_vs = VertexLoopBigradedSumVS(self.deg_range, self.h_min_range, self.even_edges, self.even_hairs)
-        super(HairyCeEt1hBiGC, self).__init__(graded_sum_vs, [ContractEdgeToOneHD(graded_sum_vs)])
+        super().__init__(graded_sum_vs, [ContractEdgeToOneHD(graded_sum_vs)])
 
     def __str__(self):
         return '<%s graphs bi-complex with %s>' % (HairyGraphComplex.graph_type, str(self.sub_type))

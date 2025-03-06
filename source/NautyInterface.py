@@ -119,7 +119,7 @@ def list_bipartite_graphs(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, 
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
         run_sys_cmd(nauty_command)
         txt = f.read()
-        if not type(txt) is str:
+        if type(txt) is not str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
         print(
@@ -165,7 +165,7 @@ def list_bipartite_graphs2(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
         run_sys_cmd(nauty_command)
         txt = f.read()
-        if not type(txt) is str:
+        if type(txt) is not str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
         print(
@@ -213,7 +213,7 @@ def list_bipartite_graphs3(n_vertices_1, n_vertices_2, deg_range_1, deg_range_2,
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
         run_sys_cmd(nauty_command)
         txt = f.read()
-        if not type(txt) is str:
+        if type(txt) is not str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
         print(
@@ -263,7 +263,7 @@ def list_bipartite_graphs_disc(n_vertices_1, n_vertices_2, deg_range_1, deg_rang
         #logger.warning('call nauty to generate bipartite graphs: ' + nauty_command)
         run_sys_cmd(nauty_command)
         txt = f.read()
-        if not type(txt) is str:
+        if type(txt) is not str:
             txt = txt.decode("ascii")
         list_g6 = txt.splitlines()
         print(

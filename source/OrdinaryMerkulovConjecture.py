@@ -8,7 +8,7 @@ from tqdm import tqdm
 maskfile_ending = ".34mask"
 
 
-class Valence34Mask():
+class Valence34Mask:
     def __init__(self, vs) -> None:
         """ """
         self.vs : GraphVectorSpace.GraphVectorSpace = vs
@@ -31,7 +31,7 @@ class Valence34Mask():
 
     def _compute_mask(self):
         vsdim = self.vs.get_dimension()
-        return [(1 if self.is_graph_34valent(G) else 0) 
+        return [(1 if self.is_graph_34valent(G) else 0)
             for G in tqdm(self.vs.get_basis(), total=vsdim, desc="Computing mask...")]
 
     def compute_mask(self):
@@ -69,7 +69,7 @@ class Valence34Mask():
                 M[i, j] = 1
                 j=j+1
         return M
-    
+
     def get_P5(self):
         """matrix from full vs to 5-valent subspace"""
         msk = self.load_mask()
@@ -87,7 +87,7 @@ class Valence34Mask():
         """List of indices from 34 space into full space"""
         msk = self.load_mask()
         return [i for (i,v) in enumerate(msk) if v==1]
-    
+
     def get_5index_list(self):
         """List of indices from 5 space into full space"""
         msk = self.load_mask()
@@ -100,7 +100,7 @@ def get_34cohom_dim(v,l, even_e):
     op2 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(v+1,l, even_e)
     fullvs = op1.domain
     fullvs2 = op2.domain
-    
+
     vs34 = Valence34Mask(fullvs)
     vs342 = Valence34Mask(fullvs2)
 
@@ -108,7 +108,7 @@ def get_34cohom_dim(v,l, even_e):
     if op1.is_valid():
         D = op1.get_matrix()
         # P34 = vs34.get_P34()
-        # D34 = D * P34 
+        # D34 = D * P34
         i34 = vs34.get_34index_list()
         D34 = D[:, i34]
         D34rank = D34.rank()
@@ -119,7 +119,7 @@ def get_34cohom_dim(v,l, even_e):
         DD = op2.get_matrix()
         # PP34 = vs342.get_P34()
         ii34 = vs342.get_34index_list()
-        # DD34 = DD * PP34 
+        # DD34 = DD * PP34
         DD34 = DD[:,ii34]
         DD34rank = DD34.rank()
 
@@ -140,7 +140,7 @@ OGC.build_basis()
 OGC.build_matrix()
 
 
-# # build masks 
+# # build masks
 for vs in OGC.sum_vector_space.vs_list:
     Valence34Mask(vs).compute_mask()
 

@@ -37,7 +37,7 @@ gvs66 = OrdinaryGraphComplex.OrdinaryGVS(6,6, False)
 # display and compare ranks
 for nv in range(12):
     for nl in range(9):
-        
+
         gvs = OrdinaryGraphComplex.OrdinaryGVS(nv+1,nl,False)
         if not gvs.is_valid() or gvs.get_dimension() == 0:
             continue

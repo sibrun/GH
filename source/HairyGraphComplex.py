@@ -39,7 +39,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     """Hairy graph vector space.
 
     Sub vector space with specified number of vertices, loops, hairs, even or odd edges, even or odd hair vertices
-    and at least trivalent vertices. No multiple edges and not mor than one hair is attached to a vertex. One hair is
+    and at least trivalent vertices. No multiple edges and not more than one hair is attached to a vertex. One hair is
     composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the parity of the
     hair vertex alone (<- ??? I think not).
 
@@ -76,7 +76,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         self.even_hairs = even_hairs
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get((self.even_edges, self.even_hairs))
-        super(HairyGraphVS, self).__init__()
+        super().__init__()
         self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
             self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
@@ -408,7 +408,7 @@ class HairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 
         vs_list = [HairyGraphVS(v, l, h, self.even_edges, self.even_hairs) for
                    (v, l, h) in itertools.product(self.v_range, self.l_range, self.h_range)]
-        super(HairyGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -440,7 +440,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -547,7 +547,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -584,7 +584,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         :type target: HairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(EdgeToOneHairGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -692,7 +692,7 @@ class EdgeToOneHairD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: HairyGraphSumVS
         """
-        super(EdgeToOneHairD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              EdgeToOneHairGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -760,7 +760,7 @@ class HairyGC(GraphComplex.GraphComplex):
         if 'et1h' in differentials:
             edge_to_one_hair_dif = EdgeToOneHairD(sum_vector_space)
             differential_list.append(edge_to_one_hair_dif)
-        super(HairyGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))

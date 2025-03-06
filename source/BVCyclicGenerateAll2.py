@@ -27,10 +27,10 @@ if __name__ == "__main__":
     op_list += [ BVCyclic.AReconnectDeleteBiOM .generate_operator(v,l) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ]
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
     allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
-    
+
     print("Finished computing matrices.")
     print("computing ranks")
     allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
     # allop.compute_rank(linbox="rational", n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
-    
+
     print("Finished")

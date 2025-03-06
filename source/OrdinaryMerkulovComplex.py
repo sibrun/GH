@@ -46,7 +46,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         :type n_loops: int
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
-        :param valence_type: Can be 34 (only 3 and 4-valent vertices), 
+        :param valence_type: Can be 34 (only 3 and 4-valent vertices),
             3456 (at most one vertex of valence 5 or 6), 56 (exactly one vertex of valence 5 or 6).
         """
         self.n_vertices = n_vertices
@@ -60,7 +60,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         self.ogvs : OrdinaryGraphComplex.OrdinaryGVS = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, even_edges)
         if valence_type != 3456:
             self.gvs3456 = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 3456)
-        super(OrdinaryMerkulovGVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -89,7 +89,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         if self.valence_type == 56 and 2*self.n_edges < 3*self.n_vertices + 2:
             return False
         return (3 * self.n_vertices <= 2 * self.n_edges) and self.n_vertices > 0 and self.n_loops >= 0 \
-            and self.n_edges <= 2*self.n_vertices+1 
+            and self.n_edges <= 2*self.n_vertices+1
 
     def get_work_estimate(self):
         # Returns the number of possible graphs as work estimate.
@@ -156,11 +156,11 @@ class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        vs_list = [OrdinaryMerkulovGVS(v, l, self.even_edges, vt) 
+        vs_list = [OrdinaryMerkulovGVS(v, l, self.even_edges, vt)
                 for v in self.v_range
-                for l in self.l_range 
+                for l in self.l_range
                 for vt in valence_types ]
-        super(OrdinaryMerkulovGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -196,7 +196,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
                 "Domain and target not consistent for contract edges operator")
         self.sub_type = domain.sub_type
         self.oop = OrdinaryGraphComplex.ContractEdgesGO(domain.ogvs, target.ogvs)
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -230,7 +230,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         """
         domain = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 34)
         target = OrdinaryMerkulovGVS(n_vertices - 1, n_loops, even_edges, 3456 if to3456 else 56)
-        
+
         return cls(domain, target)
 
     def get_matrix_file_path(self):
@@ -268,7 +268,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :type sum_vector_space: OrdinaryGraphSumVS
         """
 
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -288,8 +288,8 @@ class ContractEdgesD(GraphOperator.Differential):
         sub_type = self.sum_vector_space.sub_type
         s = "info_contract_edges_D_%s_%s" % (graph_type, sub_type)
         return os.path.join(Parameters.plots_dir, graph_type, sub_type, s)
-    
-    
+
+
 def cohom_formatted_merkulov(D1, D2, Dc2):
     vs = D1.get_domain()
     if not vs.is_valid():
@@ -324,15 +324,15 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
-def get_34cohom_dim(v,l, even_e):
-        """ Compute cohomology dimension ..."""
-        op1 = ContractEdgesGO.generate_operator(v,l, even_e)
-        op2 = ContractEdgesGO.generate_operator(v+1,l, even_e)
-        opc = ContractEdgesGO.generate_operator(v+1,l, even_e, False)
+def get_34cohom_dim(v, l, even_e):
+    """ Compute cohomology dimension ..."""
+    op1 = ContractEdgesGO.generate_operator(v, l, even_e)
+    op2 = ContractEdgesGO.generate_operator(v + 1, l, even_e)
+    opc = ContractEdgesGO.generate_operator(v + 1, l, even_e, False)
 
-        return cohom_formatted_merkulov(op1, op2, opc)
+    return cohom_formatted_merkulov(op1, op2, opc)
 
-        # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
+    # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
 
 
 
@@ -373,13 +373,13 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
             contract_edges_dif = ContractEdgesD(sum_vector_space)
             differential_list.append(contract_edges_dif)
 
-        super(OrdinaryMerkulovGC, self).__init__(sum_vector_space, differential_list)
+        super().__init__(sum_vector_space, differential_list)
 
     def __str__(self):
         return '<%s graph complex with %s>' % (graph_type, str(self.sub_type))
 
     def print_cohom(self):
         for l in self.l_range:
-            print(f"{l}: {list( get_34cohom_dim(v,l,self.even_edges) for v in self.v_range)}")
-            
+            print(f"{l}: {[ get_34cohom_dim(v,l,self.even_edges) for v in self.v_range]}")
+
 

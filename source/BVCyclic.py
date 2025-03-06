@@ -55,7 +55,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         self.n_vertices = n_vertices
         self.n_loops = n_loops
         self.n_edges = self.n_loops + self.n_vertices
-        super(GOneVS, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -161,7 +161,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
                 p = [ (i+j) % (self.n_vertices+1) for i in range(self.n_vertices+1) ]
                 GG = G1.relabel(p, inplace=False)
                 yield GG
-        
+
         # add graphs with uni- or bivalent external vertex using hairy graphs
         hvs1 = HairyGraphComplex.HairyGraphVS(self.n_vertices, self.n_loops, 1, False, True)
         for G in hvs1.get_basis():
@@ -282,7 +282,7 @@ class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
         self.n_loops = n_loops
         self.n_edges = self.n_loops + self.n_vertices
         self.gonevs = GOneVS(n_vertices, n_loops)
-        super(GOneVS3V, self).__init__()
+        super().__init__()
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -324,7 +324,7 @@ class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return []
-    
+
         for G in NautyInterface.list_simple_graphs(self.n_vertices+1, self.n_edges, onlyonevi=False):
             for j in range(self.n_vertices+1):
                 p = [ (i+j) % (self.n_vertices+1) for i in range(self.n_vertices+1) ]
@@ -346,12 +346,12 @@ class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
 class ReconnectEdgesGO(GraphOperator.GraphOperator):
     """Reconnect edges graph operator.
 
-    Operates on an ordinary graph with one marked vertex by 
+    Operates on an ordinary graph with one marked vertex by
     reconnecting an arbitrary subset of the half-edges to the special vertex.
     Afterwards makes the special vertex normal, so that the image is an ordinary graph.
 
     The image is multiplied by (-1)**(degree of vertex 0).
-    Also, the identity matrix is implicitly added. 
+    Also, the identity matrix is implicitly added.
 
     """
 
@@ -366,7 +366,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         if not ReconnectEdgesGO.is_match(domain, target):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
-        super(ReconnectEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -382,7 +382,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices + 1 == target.n_vertices and domain.n_loops == target.n_loops \
-            and target.even_edges == False
+            and target.even_edges is False
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
@@ -445,14 +445,14 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
                 # no reconnect
                 reconnect_rec(GG, e_list[1:], sgn, image)
                 sgn *= -1
-                # reconnect first half-edge 
+                # reconnect first half-edge
                 if u != 0 and v != 0 and GG.degree(u) >= 4 and not GG.has_edge(0,v):
                     G1 = copy(GG)
                     lbl = G1.edge_label(u,v)
                     G1.delete_edge(u,v)
                     G1.add_edge(0,v,label=lbl)
                     reconnect_rec(G1, e_list[1:], sgn, image)
-                # reconnect second half-edge 
+                # reconnect second half-edge
                 if u != 0 and v != 0 and GG.degree(v) >= 4 and not GG.has_edge(0,u):
                     G2 = copy(GG)
                     lbl = G2.edge_label(u,v)
@@ -490,12 +490,12 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
 class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
     """Reconnect edges graph operator.
 
-    Operates on an ordinary graph with one marked vertex by 
+    Operates on an ordinary graph with one marked vertex by
     reconnecting an arbitrary subset of the half-edges to the special vertex.
     Afterwards makes the special vertex normal, so that the image is an ordinary graph.
 
     The image is multiplied by (-1)**(degree of vertex 0).
-    Also, the identity matrix is implicitly added. 
+    Also, the identity matrix is implicitly added.
 
     """
 
@@ -511,7 +511,7 @@ class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
             raise ValueError(
                 "Domain and target not consistent for contract edges operator")
         self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
-        super(ReconnectEdgesGO3V, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -527,7 +527,7 @@ class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices + 1 == target.n_vertices and domain.n_loops == target.n_loops \
-            and target.even_edges == False
+            and target.even_edges is False
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
@@ -579,9 +579,9 @@ class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
 class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
     """Reconnect edges graph operator of Marko Zivkovic.
 
-    Operates on an ordinary graph by adding a vertex and then 
+    Operates on an ordinary graph by adding a vertex and then
     reconnecting an arbitrary subset of the half-edges to the new vertex.
-   
+
     The image is multiplied by (-1)**(degree of vertex 0).
 
     """
@@ -597,9 +597,9 @@ class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
         if not AddVReconnectEdgesGO.is_match(domain, target):
             raise ValueError(
                 "Domain and target not consistent for addvreconnect  edges operator")
-        
+
         self.reconnect_op = ReconnectEdgesGO.generate_operator(domain.n_vertices, domain.n_loops)
-        super(AddVReconnectEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -615,7 +615,7 @@ class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
         :rtype: bool
         """
         return domain.n_vertices + 1 == target.n_vertices and domain.n_loops == target.n_loops+1 \
-            and target.even_edges == False and domain.even_edges == False
+            and target.even_edges is False and domain.even_edges is False
 
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
@@ -699,8 +699,8 @@ class GOneDegSlice(GraphVectorSpace.DegSlice):
             vs_list = [GOneVS(n_vertices-2, n_loops) , OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)]
         else:
             raise ValueError("GOneDegSlice init: top_n must be 0 or 1")
-        
-        super(GOneDegSlice, self).__init__(vs_list, n_vertices)
+
+        super().__init__(vs_list, n_vertices)
 
     def get_ordered_param_dict(self):
         return Shared.OrderedDict([('vertices', self.n_vertices), ('loops', self.n_loops), ('topn', self.top_n)])
@@ -727,9 +727,9 @@ class ContractReconnectBiOM(GraphOperator.BiOperatorMatrix):
         """Bi operator matrix based on contract edges and reconnect edges.
 
         """
-        self.domain = domain 
+        self.domain = domain
         self.target = target
-        super(ContractReconnectBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+        super().__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
                                                 ReconnectEdgesGO)
 
     @staticmethod
@@ -755,7 +755,7 @@ class ContractReconnectBiOM(GraphOperator.BiOperatorMatrix):
     def get_rank_file_path(self):
         s = "bi_D_contract_reconnect_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, s)
-    
+
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
         domain = GOneDegSlice(n_vertices, n_loops,1)
@@ -781,7 +781,7 @@ class GOneSumVS(GraphVectorSpace.SumVectorSpace):
             + \
             [GOneVS(v-2, l) for v in v_range for l in l_range]
 
-        super(GOneSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs' % (graph_type)
@@ -806,7 +806,7 @@ class ContractReconnectTopD(GraphOperator.Differential):
                    for v in v_range
                    for l in l_range]
         sum_vs = GOneSumVS(v_range, l_range)
-        super(ContractReconnectTopD, self).__init__(sum_vs, op_list)
+        super().__init__(sum_vs, op_list)
 
     def get_type(self):
         return 'contract edges and reconnect edges'
@@ -921,7 +921,7 @@ class TriOperatorMatrix(GraphOperator.OperatorMatrix):
         :param operator_cls2: Second operator class to compose the bi operator.
         :type operator_cls2: OperatorMatrix
         """
-        super(TriOperatorMatrix, self).__init__(domain, target)
+        super().__init__(domain, target)
         self.operator_cls1 = operator_cls1
         self.operator_cls2 = operator_cls2
         self.operator_cls3 = operator_cls3
@@ -985,7 +985,7 @@ class TriOperatorMatrix(GraphOperator.OperatorMatrix):
             if self.operator_cls1.is_match(domain, target):
                 op_matrix_list.append(self.operator_cls1(domain, target))
             if self.operator_cls2.is_match(domain, target):
-                op_matrix_list.append(self.operator_cls2(domain, target))            
+                op_matrix_list.append(self.operator_cls2(domain, target))
             if self.operator_cls3.is_match(domain, target):
                 op_matrix_list.append(self.operator_cls3(domain, target))
         return op_matrix_list
@@ -1036,7 +1036,7 @@ class MultiGCDegSlice(GraphVectorSpace.DegSlice):
             vs_list = [OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False), OrdinaryGraphComplex.OrdinaryGVS(n_vertices-1, n_loops+1, False), OrdinaryGraphComplex.OrdinaryGVS(n_vertices-2, n_loops+1, False)]
         else:
             raise ValueError("MultiGCDegSlice init: top_n must be 0 or 1 or 2")
-        
+
         super(GOneDegSlice, self).__init__(vs_list, n_vertices)
 
     def get_ordered_param_dict(self):
@@ -1064,9 +1064,9 @@ class AReconnectDeleteBiOM(GraphOperator.BiOperatorMatrix):
         """Bi operator matrix based on contract edges and reconnect edges.
 
         """
-        self.domain = domain 
+        self.domain = domain
         self.target = target
-        super(AReconnectDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.DeleteEdgesGO,
+        super().__init__(domain, target, OrdinaryGraphComplex.DeleteEdgesGO,
                                                 AddVReconnectEdgesGO)
 
     @staticmethod
@@ -1092,7 +1092,7 @@ class AReconnectDeleteBiOM(GraphOperator.BiOperatorMatrix):
     def get_rank_file_path(self):
         s = "bi_D_areconnect_delete_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, s)
-    
+
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
         domain = MultiGCDegSlice(n_vertices, n_loops,1)
@@ -1106,7 +1106,7 @@ class ContractAReconnectDeleteTriOM(TriOperatorMatrix):
         """Bi operator matrix based on contract edges and reconnect edges.
 
         """
-        self.domain = domain 
+        self.domain = domain
         self.target = target
         super(ContractReconnectBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
                                                     OrdinaryGraphComplex.DeleteEdgesGO,
@@ -1135,7 +1135,7 @@ class ContractAReconnectDeleteTriOM(TriOperatorMatrix):
     def get_rank_file_path(self):
         s = "tri_D_contract_areconnect_delete_%d_%d_%d_rank.txt" % self.domain.get_ordered_param_dict().get_value_tuple()
         return os.path.join(Parameters.data_dir, graph_type, s)
-    
+
     @classmethod
     def generate_operator(cls, n_vertices, n_loops):
         domain = MultiGCDegSlice(n_vertices, n_loops,2)

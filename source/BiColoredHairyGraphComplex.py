@@ -38,7 +38,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
     """Hairy graph vector space with two colours of hairs.
 
     Sub vector space with specified number of vertices, loops, hairs per colour, even or odd edges, even or odd hair vertices
-    per colour and at least trivalent vertices. No multiple edges and not mor than one hair per colour is attached to a vertex.
+    per colour and at least trivalent vertices. No multiple edges and not more than one hair per colour is attached to a vertex.
     One hair is composed of a hair vertex and an edge connecting it to a vertex. The parity of the hair refers to the
     parity of the hair vertex alone.
 
@@ -85,7 +85,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = get_sub_type(
             self.even_edges, self.even_hairs_a, self.even_hairs_b)
-        super(BiColoredHairyGraphVS, self).__init__()
+        super().__init__()
         self.ogvs = OrdinaryGraphComplex.OrdinaryGVS(
             self.n_vertices + self.n_hairs, self.n_loops, self.even_edges)
 
@@ -248,7 +248,7 @@ class BiColoredHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
                 continue  # Symmetry between a and b hairs.
             vs_list.append(BiColoredHairyGraphVS(
                 v, l, h_a, h_b, even_edges, even_hairs_a, even_hairs_b))
-        super(BiColoredHairyGraphSumVS, self).__init__(vs_list)
+        super().__init__(vs_list)
 
     def get_type(self):
         return '%s graphs with %s' % (graph_type, self.sub_type)
@@ -281,7 +281,7 @@ class ContractEdgesGO(HairyGraphComplex.ContractEdgesGO):
         :type target: BiColoredHairyGraphVS
         """
         self.sub_type = domain.sub_type
-        super(ContractEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -345,7 +345,7 @@ class ContractEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: BiColoredHairyGraphVS
         """
-        super(ContractEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -380,7 +380,7 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
         :param target: BiColoredHairyGraphVS: Target vector space of the operator.
         """
         self.sub_type = domain.sub_type
-        super(SplitEdgesGO, self).__init__(domain, target)
+        super().__init__(domain, target)
 
     @staticmethod
     def is_match(domain, target):
@@ -514,7 +514,7 @@ class SplitEdgesD(GraphOperator.Differential):
         :param sum_vector_space: Underlying vector space.
         :type sum_vector_space: BiColoredHairyGraphSumVS
         """
-        super(SplitEdgesD, self).__init__(sum_vector_space,
+        super().__init__(sum_vector_space,
                                           SplitEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
@@ -584,7 +584,7 @@ class BiColoredHairyGC(GraphComplex.GraphComplex):
         if 'split' in differentials:
             split_edges_dif = SplitEdgesD(sum_vector_space)
             differential_list.append(split_edges_dif)
-        super(BiColoredHairyGC, self).__init__(
+        super().__init__(
             sum_vector_space, differential_list)
 
     def __str__(self):

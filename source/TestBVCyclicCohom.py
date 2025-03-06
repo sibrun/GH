@@ -17,7 +17,7 @@ def combirank(op1, op2):
         return B.rank()
     else:
         return 0
-    
+
 
 def cohom_dim(nv, nl):
     opc1 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(nv+1,nl, False)
@@ -46,7 +46,7 @@ def cohom_dim(nv, nl):
 
     cohomdim = d+rc2-r1-r2
 
-    return str(cohomdim) 
+    return str(cohomdim)
 
 def cohom_dim2(nv, nl):
     opc1 = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(nv+1,nl, False)
@@ -54,7 +54,7 @@ def cohom_dim2(nv, nl):
     vs = opc1.target
     opr1 = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(nv,nl+1, False)
     opr2 = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(nv-1,nl+1, False)
-    
+
 
     if not vs.is_valid():
         return "-"
@@ -76,7 +76,7 @@ def cohom_dim2(nv, nl):
 
     cohomdim = d+rc2-r1-r2
 
-    return str(cohomdim) 
+    return str(cohomdim)
 
 
 ooo = OrdinaryGraphComplex.DeleteEdgesGO.generate_operator(7,9,False)

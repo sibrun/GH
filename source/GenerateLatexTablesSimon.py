@@ -118,7 +118,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{ordinary_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{ordinary_ops.tex}
 
@@ -131,7 +131,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{ordinaryme_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{ordinaryme_ops.tex}
 
@@ -144,7 +144,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{hairy_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{hairy_ops.tex}
 
@@ -157,7 +157,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{chairy_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{chairy_ops.tex}
 
@@ -170,7 +170,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{bichairy_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{bichairy_ops.tex}
 
@@ -183,7 +183,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{wrhairy_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{wrhairy_ops.tex}
 
@@ -199,7 +199,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{forested_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{forested_ops.tex}
 
@@ -212,7 +212,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{forested_top_vs.tex}
- 
+
 \subsection{Operator ranks}
 \input{forested_top_ops.tex}
 
@@ -225,7 +225,7 @@ alldata_tex = r"""
 
 \subsection{VS Dimensions}
 \input{forested_top_vs_nobl.tex}
- 
+
 \subsection{Operator ranks}
 \input{forested_top_ops_nobl.tex}
 
@@ -235,8 +235,8 @@ alldata_tex = r"""
 \end{document}
 """
 
-# Refrence Euler characteristics
-# from zivkovic-willwacher
+# Reference Euler characteristics
+# from Zivkovic-Willwacher
 ordinary_ec_evenedges = [0, 0, 0, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 3, 4, 2, 2]
 ordinary_ec_oddedges = [0, 0, 0, 1, 0, 1, -1, 1, 0,
                         0, -2, 1, 0, 0, -2, 0, -4, -3, -1, 8, 12, 27]
@@ -343,7 +343,7 @@ def ops_formatted(op):
 
 
 def cohom_formatted(cohom_dict, tuple):
-    if not tuple in cohom_dict:
+    if tuple not in cohom_dict:
         return "?"
 
     dim = cohom_dict[tuple]
@@ -533,20 +533,20 @@ def create_wrhairy_ops_table(v_range, l_range, h_range, w_range):
             s = s+latex_table(header, data)
     return s
 
-def is_wrhairy_zero(v,l,h,w):
-    if w!=2:
-         return False
+def is_wrhairy_zero(v, l, h, w):
+    if w != 2:
+        return False
     deg = l+v +1
     dim = 6*l - 6 + 2*h
     if l == 0:
-        vcd = h-3 
+        vcd = h-3
         return h < 2 or deg < dim - vcd or deg > dim
     elif h == 0:
         vcd = 4*l-5
         return deg < dim - vcd + 1 or deg > dim
     else:
         vcd = 4*l-4+h
-        return deg < dim - vcd +(1 if l==1 else 0)  or deg > dim 
+        return deg < dim - vcd +(1 if l==1 else 0)  or deg > dim
 
 def create_wrhairy_cohom_table(v_range, l_range, h_range, w_range):
     s = ""

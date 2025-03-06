@@ -52,7 +52,7 @@ def display_html(shtml):
     temp_path = os.path.join(Parameters.temp_folder, s)
     with open(temp_path, "w") as html_file:
         html_file.write(shtml)
-    url = 'file:{}'.format(pathname2url(os.path.abspath(temp_path)))
+    url = f'file:{pathname2url(os.path.abspath(temp_path))}'
     webbrowser.open_new_tab(url)
 
 def display_html_body(s):
@@ -96,7 +96,7 @@ def display_html_body(s):
     display_html(pre+s+post)
 
 
-class InfoTracker(object):
+class InfoTracker:
     """Track information during computations and displays it as table on a html page.
 
     Attributes:
@@ -104,7 +104,7 @@ class InfoTracker(object):
         - parameter_names_list (list(str)): List with the parameter and property names.
         - data_dict (dict(tuple -> tuple/list)): Dictionary (parameters -> properties) containing the data.
         - queue (Queue): Queue to push new data.
-        - p (multiprocessing.Process): Process which runs the information trakcer.
+        - p (multiprocessing.Process): Process which runs the information tracker.
         - f (tempfile.NamedTemporaryFile): Temporary html file.
         - html_path (path): Path to the temporary html file.
         - url (url): Url of the html file to open in the webbrowser.
@@ -122,7 +122,7 @@ class InfoTracker(object):
         self.p = None
         self.f = tempfile.NamedTemporaryFile(delete=False)
         self.html_path = self.f.name + '.html'
-        self.url ='file:{}'.format(pathname2url(self.html_path))
+        self.url =f'file:{pathname2url(self.html_path)}'
 
     def set_header_list(self, header_list):
         """Set the names of parameters and properties.

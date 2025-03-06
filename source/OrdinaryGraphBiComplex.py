@@ -21,7 +21,7 @@ class ContractDeleteBiOM(GraphOperator.BiOperatorMatrix):
     """
     def __init__(self, domain, target):
         self.sub_type = domain.sub_type
-        super(ContractDeleteBiOM, self).__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
+        super().__init__(domain, target, OrdinaryGraphComplex.ContractEdgesGO,
                                                  OrdinaryGraphComplex.DeleteEdgesGO)
 
     @staticmethod
@@ -67,7 +67,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         """
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
-        super(VertexLoopDegSlice, self).__init__(
+        super().__init__(
             [OrdinaryGraphComplex.OrdinaryGVS(v, deg - v, self.even_edges) for v in range(0, deg + 1)], deg)
 
     def get_ordered_param_dict(self):
@@ -103,7 +103,7 @@ class VertexLoopBigradedSumVS(GraphVectorSpace.SumVectorSpace):
         self.deg_range = deg_range
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(even_edges)
-        super(VertexLoopBigradedSumVS, self).__init__([VertexLoopDegSlice(deg, self.even_edges) for deg in self.deg_range])
+        super().__init__([VertexLoopDegSlice(deg, self.even_edges) for deg in self.deg_range])
 
     def get_type(self):
         return '%s graphs with %s' % (OrdinaryGraphComplex.graph_type, self.sub_type)
@@ -127,7 +127,7 @@ class ContractDeleteD(GraphOperator.Differential):
         :param graded_sum_vs: Underlying bi graded vector space.
         :type graded_sum_vs: VertexLoopBigradedSumVS
         """
-        super(ContractDeleteD, self).__init__(graded_sum_vs, ContractDeleteBiOM.generate_op_matrix_list(graded_sum_vs))
+        super().__init__(graded_sum_vs, ContractDeleteBiOM.generate_op_matrix_list(graded_sum_vs))
 
     def get_type(self):
         return 'contract edges and delete edges'
@@ -169,7 +169,7 @@ class OrdinaryContractDeleteBiGC(GraphComplex.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = OrdinaryGraphComplex.sub_types.get(self.even_edges)
         graded_sum_vs = VertexLoopBigradedSumVS(self.deg_range, self.even_edges)
-        super(OrdinaryContractDeleteBiGC, self).__init__(graded_sum_vs, [ContractDeleteD(graded_sum_vs)])
+        super().__init__(graded_sum_vs, [ContractDeleteD(graded_sum_vs)])
 
     def __str__(self):
         return '<%s graphs bi-complex with %s>' % (OrdinaryGraphComplex.graph_type, str(self.sub_type))

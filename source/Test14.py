@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
 
     FGC = ForestedGraphComplex.ContractUnmarkTopD(range(5,6), range(6,16), range(2,3), True)
-    FGC.compute_rank(linbox="rational", n_jobs=nr_jobs) 
-    
+    FGC.compute_rank(linbox="rational", n_jobs=nr_jobs)
+
 
     # for even_e in [True, False]:
     #     for even_h in [True, False]:
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #         vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v,l,4,even_e,even_h)
     #                             for v in range(18) for l in range(6)]
     #         vs_list = vs_list + [HairyGraphComplex.HairyGraphVS(v,l,5,even_e,even_h)
-    #                             for v in range(18) for l in range(6)]    
+    #                             for v in range(18) for l in range(6)]
 
 
 

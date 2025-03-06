@@ -20,7 +20,7 @@ import DisplayInfo
 logger = Log.logger.getChild('graph_vector_space')
 
 
-class VectorSpaceProperties(object):
+class VectorSpaceProperties:
     """Properties of a vector space.
 
     Attributes:
@@ -89,7 +89,7 @@ class GraphVectorSpaceProperties(VectorSpaceProperties):
         return [self.valid, self.dimension]
 
 
-class VectorSpace(object):
+class VectorSpace:
     """Vector space interface.
 
     Abstract class defining the interface for a vector space.
@@ -385,7 +385,7 @@ class GraphVectorSpace(VectorSpace):
 
             canon6 = canonG.graph6_string()
 
-            if not (canon6 in basis_set):
+            if canon6 not in basis_set:
                 if not self._has_odd_automorphisms(G, autom_list):
                     basis_set.add(canon6)
 
@@ -528,7 +528,7 @@ class GraphVectorSpace(VectorSpace):
         return os.path.splitext(self.get_basis_file_path())[0]+'_plots'
 
     def plot_graph(self, G):
-        """ Plots a graph for use in the visuaization routines.
+        """ Plots a graph for use in the visualization routines.
         This method can be overwritten to provide custom visualization.
         :param G: The graph to be drawn. Must belong to this vector space.
         :type G: Graph.
@@ -551,7 +551,7 @@ class GraphVectorSpace(VectorSpace):
         P.save(path)
 
     def plot_all_graphs_to_file(self, skip_existing=False):
-        """ Plots all graphs in the basis of this vector space and stores then into their repsective file paths.
+        """ Plots all graphs in the basis of this vector space and stores then into their respective file paths.
         The respective filename is the index of the graph in the basis (plus .png).
         """
         ba = self.get_basis()
@@ -614,7 +614,7 @@ class SumVectorSpace(VectorSpace):
         """
         self.vs_list = vs_list
         self.info_tracker = None
-        super(SumVectorSpace, self).__init__()
+        super().__init__()
 
     def __eq__(self, other):
         pass
@@ -762,7 +762,7 @@ class SumVectorSpace(VectorSpace):
         info_tracker = False if isinstance(
             self, DegSlice) and not Parameters.second_info else info_tracker
         if n_jobs > 1:
-            # If mor than 1 process progress bar and info tracker are not activated.
+            # If more than 1 process progress bar and info tracker are not activated.
             progress_bar = False
             info_tracker = False
         if info_tracker:
@@ -813,7 +813,7 @@ class SumVectorSpace(VectorSpace):
         self.info_tracker.get_queue().put(message)
 
     def stop_tracker(self):
-        """Stop tracking informations about the sub vector spaces."""
+        """Stop tracking information about the sub vector spaces."""
         self.info_tracker.stop()
 
     def plot_info(self):
@@ -887,7 +887,7 @@ class SumVectorSpace(VectorSpace):
 
     def get_vs_from_basis_index(self, j):
         """
-        Returns the direct summand (in vslist) corresponding to the basis 
+        Returns the direct summand (in vslist) corresponding to the basis
         element of index j in the basis of the sum vector space.
         """
         cur_ind = 0
@@ -924,7 +924,7 @@ class DegSlice(SumVectorSpace):
         :type deg: int
         """
         self.deg = deg
-        super(DegSlice, self).__init__(vs_list)
+        super().__init__(vs_list)
         self.start_idx_dict = None
 
     def __str__(self):
@@ -967,11 +967,11 @@ class DegSlice(SumVectorSpace):
     def build_basis(self, **kwargs):
         """Build the basis of the sub vector spaces of the degree slice.
 
-        :param kwargs: Forward keword arguments to the build basis method of the SumVectorSpace.
+        :param kwargs: Forward keyword arguments to the build basis method of the SumVectorSpace.
         :raise ValueError: If the basis of the degree slice is not completely built, i.e. not for all valid sub vector
                 spaces there exists a basis file.
         """
-        super(DegSlice, self).build_basis(**kwargs)
+        super().build_basis(**kwargs)
         if not self.is_complete():
             raise ValueError(
                 'Degree slice %s should be completely built' % str(self))
@@ -982,7 +982,7 @@ class DegSlice(SumVectorSpace):
         The dictionary contains the coordinate of the first basis vector of each sub vector space as basis vector of the
         degree slice.
         """
-        self.start_idx_dict = dict()
+        self.start_idx_dict = {}
         start_idx = 0
         for vs in self.vs_list:
             self.start_idx_dict.update({vs: start_idx})
