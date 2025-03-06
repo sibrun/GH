@@ -12,7 +12,7 @@ if __name__ == "__main__":
     vs_listf = []
     vs_lista = []
     op_list = []
-    maxl = 9
+    maxl = 10
 
     for even_e in [True, False]:
 
