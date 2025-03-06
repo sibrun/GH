@@ -8,7 +8,7 @@ import GraphOperator
 
 if __name__ == "__main__":
     nr_jobs = 15
-    print(f"Building all computable hairy matrices using {nr_jobs} jobs ...")
+    print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_listf = []
     vs_lista = []
     op_list = []
