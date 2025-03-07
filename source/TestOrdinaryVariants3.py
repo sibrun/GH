@@ -127,7 +127,7 @@ for even_edges in [True, False]:
     print_dim_and_eulerchar_bridgeless(range(15), range(maxl+1), even_edges)
     r2=print_cohomology_dim_bridgeless(range(15), range(maxl+1), even_edges)
     print("Ordinary (biconnected):")
-    print_dim_and_eulerchar_triconnected(range(15), range(maxl+1), even_edges)
+    print_dim_and_eulerchar_ordinary(range(15), range(maxl+1), even_edges)
     print("Triconnected:")
     print_dim_and_eulerchar_triconnected(range(15), range(maxl+1), even_edges)
     r3=print_cohomology_dim_triconnected(range(15), range(maxl+1), even_edges)
