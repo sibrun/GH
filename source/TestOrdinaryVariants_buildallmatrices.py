@@ -45,7 +45,7 @@ if __name__ == "__main__":
     print("Building matrices.")
     #allop.build_matrix(n_jobs=nr_jobs)
 
-    print("Finished computing hairy matrices.")
+    print("Finished computing variant matrices.")
 
     print("computing ranks")
     #allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
