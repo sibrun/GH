@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # sumvs.build_basis(n_jobs=nr_jobs)
     print("Building matrices.")
-    #allop.build_matrix(n_jobs=nr_jobs)
+    allop.build_matrix(n_jobs=nr_jobs)
 
     print("Finished computing variant matrices.")
 
