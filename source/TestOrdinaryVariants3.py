@@ -1,4 +1,5 @@
 import OrdinaryVariants
+import OrdinaryGraphComplex
 
 def print_dim_and_eulerchar_full(v_range, l_range, even_edges):
     for l in l_range:
@@ -94,6 +95,15 @@ def print_cohomology_dim_triconnected(v_range, l_range, even_edges):
         ret[l] = cohomdict
     return ret
 
+def print_dim_and_eulerchar_ordinary(v_range, l_range, even_edges):
+    for l in l_range:
+        ds = [OrdinaryGraphComplex.OrdinaryGVS(v, l, even_edges).get_dimension()
+                for v in v_range]
+        eul = sum([(1 if j % 2 == 0 else -1) *
+                    d for j, d in enumerate(ds)])
+        print("Dimensions ",
+                l, even_edges, ":", ds, "Euler", eul)
+
 def print_differences(r1,r2,r3):
     for l in r1:
         d1 = r1[l]
@@ -116,6 +126,8 @@ for even_edges in [True, False]:
     print("Bridgeless:")
     print_dim_and_eulerchar_bridgeless(range(15), range(maxl+1), even_edges)
     r2=print_cohomology_dim_bridgeless(range(15), range(maxl+1), even_edges)
+    print("Ordinary (biconnected):")
+    print_dim_and_eulerchar_triconnected(range(15), range(maxl+1), even_edges)
     print("Triconnected:")
     print_dim_and_eulerchar_triconnected(range(15), range(maxl+1), even_edges)
     r3=print_cohomology_dim_triconnected(range(15), range(maxl+1), even_edges)
