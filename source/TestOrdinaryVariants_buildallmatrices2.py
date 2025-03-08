@@ -42,6 +42,6 @@ if __name__ == "__main__":
     print("Finished computing variant matrices.")
 
     print("computing ranks")
-    # allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
-    allop.compute_rank(sage="integer", n_jobs=nr_jobs)
+    allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
+    # allop.compute_rank(sage="integer", n_jobs=nr_jobs)
     print("Finished")
