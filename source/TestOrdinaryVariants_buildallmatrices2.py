@@ -7,11 +7,11 @@ import GraphOperator
 
 
 if __name__ == "__main__":
-    nr_jobs = 1
+    nr_jobs = 15
     print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_lista = []
     op_list = []
-    maxl = 8
+    maxl = 9
 
     for even_e in [True, False]:
         for k_conn in range(1,6):
