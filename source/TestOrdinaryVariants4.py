@@ -73,7 +73,7 @@ def print_cohomology_dim_ke(v_range, l_range, k_range, even_edges):
 
 
 maxl = 8
-krange = list(range(1,5))
+krange = list(range(1,6))
 
 for even_edges in [True, False]:
     print("KV:")
