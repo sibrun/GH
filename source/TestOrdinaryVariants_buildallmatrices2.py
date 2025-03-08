@@ -11,10 +11,11 @@ if __name__ == "__main__":
     print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_lista = []
     op_list = []
-    maxl = 9
+    maxl = 8
+    maxk = 5
 
     for even_e in [True, False]:
-        for k_conn in range(1,6):
+        for k_conn in range(1,maxk+1):
 
             vs_lista = vs_lista + [OrdinaryVariants.OrdinaryGVSKVconnected(v, l, k_conn, even_e)
                                     for v in range(20) for l in range(maxl+1)]
