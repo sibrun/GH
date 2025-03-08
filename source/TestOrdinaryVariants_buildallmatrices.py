@@ -7,12 +7,12 @@ import GraphOperator
 
 
 if __name__ == "__main__":
-    nr_jobs = 15
+    nr_jobs = 1
     print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_listf = []
     vs_lista = []
     op_list = []
-    maxl = 10
+    maxl = 8
 
     for even_e in [True, False]:
 
@@ -37,16 +37,21 @@ if __name__ == "__main__":
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 
     print("Building full vector spaces.")
-    sumvsf.build_basis(n_jobs=nr_jobs)
+    # sumvsf.build_basis(n_jobs=nr_jobs)
+    sumvsf.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
     print("Building other vector spaces.")
-    sumvsa.build_basis(n_jobs=nr_jobs)
+    # sumvsa.build_basis(n_jobs=nr_jobs)
+    sumvsa.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
 
     # sumvs.build_basis(n_jobs=nr_jobs)
     print("Building matrices.")
-    allop.build_matrix(n_jobs=nr_jobs)
+    # allop.build_matrix(n_jobs=nr_jobs)
+    allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=True)
 
     print("Finished computing variant matrices.")
 
     print("computing ranks")
-    allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
+    # allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
+    # allop.compute_rank(sage="integer", n_jobs=nr_jobs)
+    allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=True)
     print("Finished")
