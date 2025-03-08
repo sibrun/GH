@@ -74,14 +74,15 @@ def print_cohomology_dim_ke(v_range, l_range, k_range, even_edges):
 
 maxl = 8
 krange = list(range(1,6))
+maxv = 18
 
 for even_edges in [True, False]:
     print("KV:")
-    print_dim_and_eulerchar_kv(range(15), range(maxl+1), krange, even_edges)
-    r1=print_cohomology_dim_kv(range(15), range(maxl+1), krange, even_edges)
+    print_dim_and_eulerchar_kv(range(maxv+1), range(maxl+1), krange, even_edges)
+    r1=print_cohomology_dim_kv(range(maxv+1), range(maxl+1), krange, even_edges)
     print("KE:")
-    print_dim_and_eulerchar_ke(range(15), range(maxl+1), krange, even_edges)
-    r2=print_cohomology_dim_ke(range(15), range(maxl+1), krange, even_edges)
+    print_dim_and_eulerchar_ke(range(maxv+1), range(maxl+1), krange, even_edges)
+    r2=print_cohomology_dim_ke(range(maxv+1), range(maxl+1), krange, even_edges)
     # print("Ordinary (biconnected):")
     # print_dim_and_eulerchar_ordinary(range(20), range(maxl+2), even_edges)
     # print("Triconnected:")
