@@ -72,7 +72,7 @@ def print_cohomology_dim_ke(v_range, l_range, k_range, even_edges):
     return ret
 
 
-maxl = 8
+maxl = 9
 krange = list(range(1,6))
 maxv = 18
 
