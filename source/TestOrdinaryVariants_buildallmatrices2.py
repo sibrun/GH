@@ -11,8 +11,8 @@ if __name__ == "__main__":
     print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_lista = []
     op_list = []
-    maxl = 8
-    maxk = 5
+    maxl = 9
+    maxk = 6
 
     for even_e in [True, False]:
         for k_conn in range(1,maxk+1):
