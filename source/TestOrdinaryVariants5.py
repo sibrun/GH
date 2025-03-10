@@ -1,8 +1,9 @@
 import OrdinaryVariants
 
-for l in range(8,11):
-    print(l, " loops:")
-    V = OrdinaryVariants.OrdinaryGVSFull(8, 6, False)
+l=6
+for v in range(8,11):
+    print(l, " loops, ",v," vertices:")
+    V = OrdinaryVariants.OrdinaryGVSFull(v, l, False)
     print 
     for G in V.get_basis():
         print(G.graph6_string(),  G.edge_connectivity())
