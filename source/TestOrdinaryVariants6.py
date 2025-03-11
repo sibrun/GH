@@ -1,7 +1,7 @@
 import OrdinaryVariants
 import OrdinaryGraphComplex
 
-l = 9
+l = 10
 for v in range(20):
     V = OrdinaryVariants.OrdinaryGVSFull(v,l,False)
     W = OrdinaryVariants.OrdinaryGVSTriconnected(v,l,False)
