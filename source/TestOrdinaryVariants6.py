@@ -9,4 +9,6 @@ for v in range(20):
     vv = V.get_dimension()
     ww=W.get_dimension()
     uu=U.get_dimension()
-    print(l,v,":",vv,ww,uu,100*ww/vv, 100*uu/vv)
+    print(l,v,":",vv,ww,uu)
+    if vv != 0:
+        print("Percentage:",100*ww/vv, 100*uu/vv)
