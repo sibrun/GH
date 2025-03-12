@@ -452,7 +452,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         #   self.domain.get_ordered_param_dict())
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
 
             # ensure u<v (this should be always true anyway actually)

@@ -613,7 +613,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             # only edges not connected to a numbered hair-vertex can be contracted
             if u >= self.domain.n_vertices+2 or v >= self.domain.n_vertices+2:

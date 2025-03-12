@@ -105,7 +105,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         if self.valence_type == 3456:
             for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
                 # check there is at most one vertex of valence >4
-                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) <= 1:
+                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices(sort=True) ) <= 1:
                     yield G
         elif self.valence_type == 34:
             for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,4):
@@ -113,7 +113,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         elif self.valence_type == 56:
             for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
                 # check there is exactly one vertex of valence >4
-                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) == 1:
+                if sum( (1 if len(G[v])>4 else 0) for v in G.vertices(sort=True) ) == 1:
                     yield G
         # else:
         #     fullbasis = self.gvs3456.get_basis()

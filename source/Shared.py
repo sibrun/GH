@@ -88,7 +88,7 @@ def enumerate_edges(graph):
     :param graph: Input graph.
     :type graph: Graph
     """
-    for (j, e) in enumerate(graph.edges(labels=False)):
+    for (j, e) in enumerate(graph.edges(labels=False, sort=True)):
         a, b = e
         graph.set_edge_label(a, b, j)
 
@@ -103,7 +103,7 @@ def edge_perm_sign(graph):
     :return: Sign of the permutation induced by the order of edges of the graph.
     :rtype: int
     """
-    p = [j for (a, b, j) in graph.edges()]
+    p = [j for (a, b, j) in graph.edges(sort=True)]
     return Perm(p).signature()
 
 
@@ -117,7 +117,7 @@ def shifted_edge_perm_sign(graph):
     :return: Sign of the permutation induced by the order of edges of the graph.
     :rtype: int
     """
-    p = [j for (a, b, j) in graph.edges()]
+    p = [j for (a, b, j) in graph.edges(sort=True)]
     # print("Edge perm", p)
     return Perm.shifted(p).signature()
 
@@ -130,7 +130,7 @@ def shifted_edge_perm_sign2(graph):
     :rtype: int
     """
 
-    L = [(j,i) for i, (a, b, j) in enumerate(graph.edges())]
+    L = [(j,i) for i, (a, b, j) in enumerate(graph.edges(sort=True))]
     L.sort()
     p = [i for j,i in L]
     return Perm.shifted(p).signature()

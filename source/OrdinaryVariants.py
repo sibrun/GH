@@ -1031,7 +1031,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by deleting an edge.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             G1 = copy(G)
             G1.delete_edge((u, v))

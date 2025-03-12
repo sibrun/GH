@@ -101,7 +101,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
         if self.even_edges:
             # The sign is (induced sign on vertices) * (induced sign edge orientations)
             sign = Shared.Perm(p).signature()
-            for (u, v) in G.edges(labels=False):
+            for (u, v) in G.edges(labels=False,sort=True):
                 # We assume the edge is always directed from the larger to smaller index
                 if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
                     sign *= -1
@@ -115,7 +115,7 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             Shared.enumerate_edges(G1)
             # We permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
-            return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
+            return Shared.Perm([j for (u, v, j) in G1.edges(sort=True)]).signature()
 
 
 class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
@@ -252,7 +252,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             # print("contract", u, v)
             pp = Shared.permute_to_left(
@@ -396,7 +396,7 @@ class DeleteEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by deleting an edge.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             G1 = copy(G)
             G1.delete_edge((u, v))

@@ -383,7 +383,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
     def label_marked_edges(self, G):
         i = 0
-        for (u, v) in G.edges(labels=False):
+        for (u, v) in G.edges(labels=False,sort=True):
             if (u < self.n_vertices and v < self.n_vertices):
                 G.set_edge_label(u, v, i)
                 i += 1
@@ -401,7 +401,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             sign = Shared.Perm(
                 [j for j in p if (j < self.n_vertices+self.n_unmarked_edges)]).signature()
             # Now  * d
-            for (u, v) in G.edges(labels=False):
+            for (u, v) in G.edges(labels=False,sort=True):
                 if (u < self.n_vertices and v < self.n_vertices):
                     # We assume the edge is always directed from the larger to smaller index
                     if (u < v and p[u] > p[v]) or (u > v and p[u] < p[v]):
@@ -432,7 +432,7 @@ class ForestedGVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
             G1.relabel(p, inplace=True)
             # print("edges after ", [(u, v, j) for (u, v, j) in G1.edges()])
 
-            return Shared.Perm([j for (u, v, j) in G1.edges() if (u < self.n_vertices and v < self.n_vertices)]).signature()
+            return Shared.Perm([j for (u, v, j) in G1.edges(sort=True) if (u < self.n_vertices and v < self.n_vertices)]).signature()
 
     def get_n(self):
         return self.n_hairs
@@ -650,7 +650,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by contracting a marked edge and unifying the adjacent vertices.
         image = []
-        for (u, v) in G.edges(labels=False):
+        for (u, v) in G.edges(labels=False, sort=True):
             # only contract marked edges
             if (u < self.domain.n_vertices and v < self.domain.n_vertices):
                 # move the two vertices to be merged to the first two positions
@@ -667,7 +667,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
                 G1.relabel(list(range(0, G1.order())), inplace=True)
                 if not self.domain.even_edges:
                     # for odd edges compute the sign of the permutation of internal edges
-                    p = [j for (a, b, j) in G1.edges() if (
+                    p = [j for (a, b, j) in G1.edges(sort=True) if (
                         a < self.target.n_vertices and b < self.target.n_vertices)]
                     # If we removed more then one marked edge stop
                     if len(p) < self.domain.n_marked_edges-1:
@@ -912,7 +912,7 @@ class UnmarkEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         GG.relabel(list(range(0, self.domain.n_vertices)) + list(range(self.domain.n_vertices +
                    1, GG.order())) + [self.domain.n_vertices], inplace=True)
         i = 0  # counts the index of the edge to be unmarked for sign purposes
-        for (u, v) in G.edges(labels=False):
+        for (u, v) in G.edges(labels=False,sort=True):
             # only unmark marked edges...
             if (u < self.domain.n_vertices and v < self.domain.n_vertices):
                 G1 = copy(GG)
