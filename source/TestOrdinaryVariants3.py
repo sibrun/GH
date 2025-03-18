@@ -117,7 +117,7 @@ def print_differences(r1,r2,r3):
 
    
 
-maxl = 8
+maxl = 10
 maxv = 20
 
 for even_edges in [True, False]:
