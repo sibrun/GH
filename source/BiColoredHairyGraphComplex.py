@@ -452,7 +452,7 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
         # vertices and a hair of colour b to the other adjacent vertex.
         sgn0 = -1 if G.order() % 2 else 1
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             # Only edges not connected to a hair-vertex can be split.
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:

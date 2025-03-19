@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G6 Graph Renderer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    textarea { width: 80%; height: 100px; margin: 10px 0; }
+    .graph-container { display: flex; flex-wrap: wrap; justify-content: center; }
+    figure.graph { margin: 10px; border: 1px solid #ccc; padding: 10px; text-align: center; }
+    figcaption { font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h2>G6 Graph Renderer</h2>
+  <textarea id="g6Input" placeholder="Enter G6 strings, one per line.
+Example test cases:
+HKaBXpT  (Expected: graph with at least trivalent vertices)
+C?        (Empty graph with 4 vertices)
+C~        (Complete graph with 4 vertices)
+(Optional header >>graph6<< will be stripped)"></textarea><br>
+  <button onclick="renderGraphs()">Render Graphs</button>
+  <div id="graphOutput" class="graph-container"></div>
+
+  <script>
+    // Converts a G6 string into an adjacency list.
+    function g6ToAdjacencyList(g6) {
+      // Remove header if present.
+      if (g6.startsWith(">>graph6<<")) {
+        g6 = g6.slice(10);
+      }
+      
+      let n, index;
+      // Extended encoding for n >= 63.
+      if (g6.charAt(0) === '~') {
+        if (g6.length < 4) throw new Error('G6 string too short for extended n.');
+        n = ((g6.charCodeAt(1) - 63) << 12) |
+            ((g6.charCodeAt(2) - 63) << 6) |
+             (g6.charCodeAt(3) - 63);
+        index = 4;
+      } else {
+        n = g6.charCodeAt(0) - 63;
+        index = 1;
+      }
+      
+      if (n <= 0) throw new Error('Invalid vertex count in G6 string.');
+      
+      const totalEdges = n * (n - 1) / 2;
+      let bitString = "";
+      
+      // Convert each character into a 6-bit binary string.
+      for (let i = index; i < g6.length; i++) {
+        let val = g6.charCodeAt(i) - 63;
+        let bits = val.toString(2).padStart(6, '0');
+        bitString += bits;
+      }
+      
+      if (bitString.length < totalEdges) {
+        throw new Error('G6 string is too short for a graph with ' + n + ' vertices.');
+      }
+      
+      // Use only the first totalEdges bits.
+      bitString = bitString.slice(0, totalEdges);
+      
+      // Build the adjacency list using the ordering:
+      // For k from 1 to n-1, for i from 0 to k-1, assign the bit to edge (i, k).
+      let graph = Array.from({ length: n }, () => []);
+      let bitpos = 0;
+      for (let k = 1; k < n; k++) {
+        for (let i = 0; i < k; i++) {
+          if (bitString[bitpos] === '1') {
+            graph[i].push(k);
+            graph[k].push(i);
+          }
+          bitpos++;
+        }
+      }
+      return graph;
+    }
+    
+    // Converts the adjacency list to DOT format with 0-based node numbering,
+    // and sets nodes as small fixed-size circles.
+    function adjacencyListToDot(graph) {
+      let dot = "graph G {";
+      // Set node style: circle shape, fixed size.
+      dot += " node [shape=circle, fixedsize=true, width=0.3];";
+      // Define vertices (0-based).
+      for (let i = 0; i < graph.length; i++) {
+        dot += ` ${i};`;
+      }
+      // Define edges.
+      for (let i = 0; i < graph.length; i++) {
+        for (let j of graph[i]) {
+          if (i < j) dot += ` ${i} -- ${j};`;
+        }
+      }
+      dot += " }";
+      return dot;
+    }
+    
+    // Renders graphs for each G6 string provided in the input.
+    function renderGraphs() {
+      const input = document.getElementById("g6Input").value.trim();
+      const outputDiv = document.getElementById("graphOutput");
+      outputDiv.innerHTML = "";
+      if (!input) return;
+      
+      const g6Strings = input.split("\n").map(s => s.trim()).filter(s => s);
+      const viz = new Viz();
+      
+      g6Strings.forEach((g6, idx) => {
+        try {
+          const adjList = g6ToAdjacencyList(g6);
+          const dot = adjacencyListToDot(adjList);
+          // Create a figure element for the graph and its caption.
+          const figure = document.createElement("figure");
+          figure.className = "graph";
+          
+          // Add a caption with the graph's index and its G6 string at the top.
+          const caption = document.createElement("figcaption");
+          caption.textContent = `${idx}: ${g6}`;
+          figure.appendChild(caption);
+          
+          viz.renderString(dot, { format: "svg" })
+            .then(svg => {
+              figure.innerHTML += svg; // Append SVG after caption
+              outputDiv.appendChild(figure);
+            })
+            .catch(err => {
+              const errorFigure = document.createElement("figure");
+              errorFigure.className = "graph";
+              errorFigure.style.color = "red";
+              errorFigure.textContent = `Error rendering G6 string "${g6}": ${err.message}`;
+              outputDiv.appendChild(errorFigure);
+            });
+        } catch (error) {
+          const errorFigure = document.createElement("figure");
+          errorFigure.className = "graph";
+          errorFigure.style.color = "red";
+          errorFigure.textContent = `Error processing G6 string "${g6}": ${error.message}`;
+          outputDiv.appendChild(errorFigure);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

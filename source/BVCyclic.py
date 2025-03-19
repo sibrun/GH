@@ -254,7 +254,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
         Shared.enumerate_edges(G1)
         # We permute the graph, and read of the new labels
         G1.relabel(p, inplace=True)
-        return Shared.Perm([j for (u, v, j) in G1.edges()]).signature()
+        return Shared.Perm([j for (u, v, j) in G1.edges(sort=True)]).signature()
 
 
 class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
@@ -462,7 +462,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
 
         Gp = copy(G)
         Shared.enumerate_edges(Gp)
-        reconnect_rec(Gp, Gp.edges(labels=False), (-1) ** (Gp.degree(0)), image)
+        reconnect_rec(Gp, Gp.edges(labels=False,sort=True), (-1) ** (Gp.degree(0)), image)
         # for (i, e) in enumerate(G.edges(labels=False)):
         #     (u, v) = e
         #     # print("contract", u, v)

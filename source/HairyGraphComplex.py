@@ -211,7 +211,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         if self.n_hairs >= 3:
             # delete one vertex
             for G in BufferedGeng.list_simple_graphs_buffered(self.n_vertices+1, self.n_edges+self.n_hairs, False):
-                for v in G.vertices():
+                for v in G.vertices(sort=True):
                     if G.degree(v) == self.n_hairs:
                         GG = copy(G)
                         for vv in G[v]:
@@ -516,7 +516,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
     def operate_on(self, G):
         # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             # only edges not connected to a hair-vertex can be contracted
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
@@ -652,7 +652,7 @@ class EdgeToOneHairGO(GraphOperator.GraphOperator):
         # deleted edge.
         sgn0 = -1 if G.order() % 2 else 1
         image = []
-        for (i, e) in enumerate(G.edges(labels=False)):
+        for (i, e) in enumerate(G.edges(labels=False,sort=True)):
             (u, v) = e
             # Only edges not connected to a hair-vertex can be cut
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:

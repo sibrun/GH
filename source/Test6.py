@@ -114,7 +114,7 @@ def graphcheck(lst, m, n):
     print(f"#connected comp{len(ccgs)}")
     for cc in ccgs:
         # get submatrix
-        verts = cc.vertices()
+        verts = cc.vertices(sort=True)
         if len(verts) < 100:
             break
         iset = set(verts)
