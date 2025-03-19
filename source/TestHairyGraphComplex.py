@@ -9,7 +9,7 @@ import HairyGraphComplex
 log_file = "HGC_Unittest.log"
 
 v_range = range(1, 8)
-l_range = range(0, 7)
+l_range = range(7)
 h_range = range(1, 8)
 edges_types = [True, False]
 hairs_types = [True, False]

@@ -112,7 +112,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
     def get_partition(self):
         # All internal vertices are in color 1, the hairs_a vertices are in color 2, and the hairs_b vertices are in color 3.
-        return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs_a)),
+        return [list(range(self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs_a)),
                 list(range(self.n_vertices + self.n_hairs_a, self.n_vertices + self.n_hairs))]
 
     def is_valid(self):
@@ -192,7 +192,7 @@ class BiColoredHairyGraphVS(GraphVectorSpace.GraphVectorSpace):
         hair_shuffles = ShuffleProduct(list(range(self.n_vertices, self.n_vertices + self.n_hairs_a)),
                                        list(range(self.n_vertices + self.n_hairs_a, self.n_vertices + self.n_hairs)))
         bi_colored_hairy_graphs = []
-        vertices = list(range(0, self.n_vertices))
+        vertices = list(range(self.n_vertices))
         for hairs in hair_shuffles:
             GG = copy(G)
             GG.relabel(vertices + hairs)
@@ -472,7 +472,7 @@ class SplitEdgesGO(GraphOperator.GraphOperator):
             G1.add_edge((v, new_hair_idx_2))
             G2 = copy(G1)
 
-            vertices = list(range(0, self.domain.n_vertices))
+            vertices = list(range(self.domain.n_vertices))
             vertices = [] if vertices is None else vertices
             start_idx_a = self.domain.n_vertices
             start_idx_b = self.domain.n_vertices + self.domain.n_hairs_a + 1

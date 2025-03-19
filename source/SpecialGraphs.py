@@ -3,8 +3,7 @@
 
 import OrdinaryGraphComplex
 import CHairyGraphComplex
-import itertools
-from sage.all import *
+from sage.all import Graph
 
 
 def wheel_graph(nspokes):
@@ -35,6 +34,7 @@ def hedgehog_graph(nvertices):
         G.add_edge(j, (j+1) % nvertices)
     return G
 
+
 def forested_ring_graph(n_marked_edges : int):
     """Generates the ring graphs that span the low degree cohomology
     of the even_e forested graph complex.
@@ -56,6 +56,7 @@ def forested_ring_graph(n_marked_edges : int):
         G.add_edge((2*j+2) % n_vertices, n_vertices + 2*j+1)
 
     return G
+
 
 def forested_morita_graph(k: int, p):
     """Generates the Morita graphs whose linear combinations span the low degree cohomology
@@ -87,6 +88,7 @@ def forested_morita_graph(k: int, p):
 
     return G
 
+
 def forested_morita_tetrahedron(ps):
     """Generates the graphs whose linear combinations conjecturally spans
     the degree 8 cohomology of the 7-loop odd_e forested graph complex.
@@ -117,9 +119,9 @@ def forested_morita_tetrahedron(ps):
 
     # unmarked edges between Lie vertices
     unmarked_ind = n_vertices + 4
-    lie_inds=[0,0,0,0]
+    lie_inds = [0, 0, 0, 0]
     for i in range(4):
-        for j in range(i+1,4):
+        for j in range(i+1, 4):
             G.add_edge(ps[i][lie_inds[i]] + i*3, unmarked_ind)
             G.add_edge(ps[j][lie_inds[j]] + j*3, unmarked_ind)
             unmarked_ind += 1
@@ -127,6 +129,3 @@ def forested_morita_tetrahedron(ps):
             lie_inds[j] = lie_inds[j]+1
 
     return G
-
-
-
