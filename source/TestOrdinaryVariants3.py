@@ -66,7 +66,7 @@ def print_cohomology_dim_bridgeless(v_range, l_range, even_edges):
 
 def print_cohomology_dim_bridgeless_tex(v_range, l_range, even_edges):
     ret = {}
-    print( " & "+ " & ".join(v for v in v_range) , "\\\\ \\hline")
+    print( " & "+ " & ".join(str(v) for v in v_range) , "\\\\ \\hline")
     for l in l_range:
         print(l, end=" ")
         for v in v_range:
