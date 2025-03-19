@@ -87,7 +87,7 @@ def print_cohomology_dim_bridgeless_tex(v_range, l_range, even_edges):
             else:
                 cdim = "-"
             print("& ", cdim, end=" ")
-        print(" \\")
+        print("\\\\")
         print("\\hline")
 
     return ret
