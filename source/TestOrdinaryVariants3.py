@@ -63,6 +63,31 @@ def print_cohomology_dim_bridgeless(v_range, l_range, even_edges):
                 l, even_edges, ":", cohomdict)
         ret[l] = cohomdict
     return ret
+
+def print_cohomology_dim_bridgeless_tex(v_range, l_range, even_edges):
+    ret = {}
+    print( " & "+ " & ".join(v for v in v_range) , "\\\\ \\hline")
+    for l in l_range:
+        print(l, end=" ")
+        for v in v_range:
+            D1 = OrdinaryVariants.ContractEdgesGOBridgeless.generate_operator(
+                v, l, even_edges)
+            D2 = OrdinaryVariants.ContractEdgesGOBridgeless.generate_operator(
+                v+1, l, even_edges)
+
+            VV = OrdinaryVariants.OrdinaryGVSBridgeless(v, l, even_edges)
+            d = VV.get_dimension()
+            if VV.is_valid():
+                r1 = D1.get_matrix_rank()
+                r2 = D2.get_matrix_rank()
+                cdim = d-r1-r2
+            else:
+                cdim = "-"
+            print("& ", cdim, end=" ")
+        print(" \\")
+        print("\\hline")
+
+    return ret
    
 def print_dim_and_eulerchar_triconnected(v_range, l_range, even_edges):
     for l in l_range:
@@ -134,3 +159,6 @@ for even_edges in [True, False]:
     r3=print_cohomology_dim_triconnected(range(maxv+1), range(maxl+1), even_edges)
     print("Differences:")
     print_differences(r1,r2,r3)
+
+print_cohomology_dim_bridgeless_tex(range(4,19), range(3,11), True)
+print_cohomology_dim_bridgeless_tex(range(4,19), range(3,11), False)
