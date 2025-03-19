@@ -78,9 +78,9 @@ def print_cohomology_dim_bridgeless_tex(v_range, l_range, even_edges):
             VV = OrdinaryVariants.OrdinaryGVSBridgeless(v, l, even_edges)
             d = VV.get_dimension()
             if VV.is_valid():
-                r1 = D1.get_matrix_rank()
-                r2 = D2.get_matrix_rank()
-                cdim = d-r1-r2
+                r1 = D1.get_matrix_rank() if D1.source.is_valid() and D1.target.is_valid() else 0
+                r2 = D2.get_matrix_rank() if D2.source.is_valid() and D2.target.is_valid() else 0
+                cdim = str(d-r1-r2)
             else:
                 cdim = "-"
             print("& ", cdim, end=" ")
