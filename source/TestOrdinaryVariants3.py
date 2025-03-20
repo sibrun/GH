@@ -163,5 +163,5 @@ for even_edges in [True, False]:
     print("Differences:")
     print_differences(r1,r2,r3)
 
-print_cohomology_dim_bridgeless_tex(range(4,21), range(3,11), True)
-print_cohomology_dim_bridgeless_tex(range(4,21), range(3,11), False)
+print_cohomology_dim_bridgeless_tex(range(4,20), range(3,11), True)
+print_cohomology_dim_bridgeless_tex(range(4,20), range(3,11), False)
