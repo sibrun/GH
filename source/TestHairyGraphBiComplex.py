@@ -7,7 +7,7 @@ import HairyGraphBiComplex
 
 log_file = "HGBiC_Unittest.log"
 
-d_range = range(0, 13)
+d_range = range(13)
 h_min_range = range(-12, -1)
 even_edges = False
 even_hairs = False

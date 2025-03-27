@@ -9,7 +9,7 @@ import OrdinaryGraphComplex
 log_file = "OGC_Unittest.log"
 
 v_range = range(3, 10)
-l_range = range(0, 10)
+l_range = range(10)
 edges_types = [True, False]
 
 

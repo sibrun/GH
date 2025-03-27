@@ -12,7 +12,7 @@ if __name__ == "__main__":
     ignore_ex = False
 
     # print(f"Building GOneVS bases using {nr_jobs} jobs ...")
-    sumvs = GraphVectorSpace.SumVectorSpace( [ OrdinaryGraphComplex.OrdinaryGVS(v, l) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ] )
+    sumvs = GraphVectorSpace.SumVectorSpace( [ OrdinaryGraphComplex.OrdinaryGVS(v, l) for v in range(max_vert+1) for l in range(max_loops+1) ] )
 
     # sumvs.build_basis(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
 
@@ -23,8 +23,8 @@ if __name__ == "__main__":
 
     # allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 
-    op_list = [ BVCyclic.ContractAReconnectDeleteTriOM.generate_operator(v,l) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ]
-    op_list += [ BVCyclic.AReconnectDeleteBiOM .generate_operator(v,l) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ]
+    op_list = [ BVCyclic.ContractAReconnectDeleteTriOM.generate_operator(v,l) for v in range(max_vert+1) for l in range(max_loops+1) ]
+    op_list += [ BVCyclic.AReconnectDeleteBiOM .generate_operator(v,l) for v in range(max_vert+1) for l in range(max_loops+1) ]
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
     allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
 
