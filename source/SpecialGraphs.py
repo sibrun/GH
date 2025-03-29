@@ -20,6 +20,35 @@ def wheel_graph(nspokes):
         G.add_edge(j+1, (j+2) % nspokes + 1)
     return G
 
+def doubleloop_graphs(k, aut_normalize= False):
+    """Generates the linear combination of trivalent graphs that appear in the bracket of a 4k+1-loop with the 4k+1-wheel.
+
+    :param k: The number of vertices in the graph is 8k+2, with 4k+2 loops.
+    :type k: int
+    :param aut_normalize: _description_, defaults to False
+    :type aut_normalize: bool, optional
+    """
+    G = Graph(8*k+2)
+    m = 4*k+1 # the length of each of the two loops
+    # generate the two outer loops
+    for j in range(m):
+        G.add_edge(j, (j+1) % m)
+        G.add_edge(j+m, ((j+1) % m) +m )
+    # connect one edge in between the last vertices of each loop
+    G.add_edge(m-1, 2*m-1)
+    # and sum over all permutations of adding the other
+    for p in itertools.permutations(range(m-1)):
+        GG = G.copy()
+        for j in range(m-1):
+            GG.add_edge(j, p[j]+m)
+
+        aut_factor = 1
+        if aut_normalize:
+            aut_factor = GG.automorphism_group().cardinality()
+        yield (GG, aut_factor)
+
+
+
 
 def hedgehog_graph(nvertices):
     """Generates the hedgehog graphs, i.e., a ring of nvertices vertices,

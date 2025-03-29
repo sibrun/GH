@@ -498,6 +498,22 @@ class GraphVectorSpace(VectorSpace):
         """
         return {G6: i for (i, G6) in enumerate(self.get_basis_g6())}
 
+    def graph_list_to_vector(self, v):
+        """Converts a list (or iterable) of pairs (G, x) of graphs and coefficients into a vector (list) in the basis of the vector space.
+        Graphs that are not in the vector space are ignored.
+        :param v: A list or iterable of pairs (G,x) consisting of a graph G and a coefficient x.
+        :type v: iterable
+        """
+        # write graphs in our basis (as dense vector)
+        bd = self.get_g6_coordinates_dict()
+        vec = [0]*self.get_dimension()
+        for (G, x) in v:
+            g6, y = self.graph_to_canon_g6(G)
+            if g6 in self.get_g6_coordinates_dict():
+                vec[bd[g6]] += x*y
+        return vec
+        
+
     def delete_basis_file(self):
         """Delete the basis file."""
         if os.path.isfile(self.get_basis_file_path()):
