@@ -12,23 +12,23 @@ if __name__ == "__main__":
     vs_listf = []
     vs_lista = []
     op_list = []
-    maxl = 10
+    maxl = 11
 
     for even_e in [True, False]:
 
-        vs_listf = vs_listf + [OrdinaryVariants.OrdinaryGVSFull(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
-        vs_lista = vs_lista + [OrdinaryVariants.OrdinaryGVSBridgeless(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
+        # vs_listf = vs_listf + [OrdinaryVariants.OrdinaryGVSFull(v, l, even_e)
+        #                         for v in range(21) for l in range(maxl+1)]
+        # vs_lista = vs_lista + [OrdinaryVariants.OrdinaryGVSBridgeless(v, l, even_e)
+        #                         for v in range(21) for l in range(maxl+1)]
         vs_lista = vs_lista + [OrdinaryVariants.OrdinaryGVSTriconnected(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
+                                for v in range(21) for l in range(maxl+1)]
 
-        op_list = op_list + [OrdinaryVariants.ContractEdgesGOFull.generate_operator(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
-        op_list = op_list + [OrdinaryVariants.ContractEdgesGOBridgeless.generate_operator(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
+        # op_list = op_list + [OrdinaryVariants.ContractEdgesGOFull.generate_operator(v, l, even_e)
+        #                         for v in range(21) for l in range(maxl+1)]
+        # op_list = op_list + [OrdinaryVariants.ContractEdgesGOBridgeless.generate_operator(v, l, even_e)
+        #                         for v in range(21) for l in range(maxl+1)]
         op_list = op_list + [OrdinaryVariants.ContractEdgesGOTriconnected.generate_operator(v, l, even_e)
-                                for v in range(20) for l in range(maxl+1)]
+                                for v in range(21) for l in range(maxl+1)]
 
     sumvsf = GraphVectorSpace.SumVectorSpace(vs_listf)
     sumvsa = GraphVectorSpace.SumVectorSpace(vs_lista)

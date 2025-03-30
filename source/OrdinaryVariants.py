@@ -249,7 +249,7 @@ class OrdinaryGVSTriconnected(GraphVectorSpace.GraphVectorSpace):
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return []
-        for G in self.full_ogvs.get_basis():
+        for G in self.ogvs.get_basis():
             # check if sage graph is triconnected
             if G.is_triconnected():
                 yield G

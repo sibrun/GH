@@ -91,10 +91,17 @@ k=2
 # print(v2)
 k=2
 OO = DualRepresentativeCheck_loopwheel(k)
-OO.build_matrix(ignore_existing_files=True)
-OO.compute_rank(sage="integer", ignore_existing_files=True)
-OO.op.compute_rank(sage="integer")
-print("New rank: " ,OO.get_matrix_rank())
+# OO.build_matrix(ignore_existing_files=True)
+# OO.compute_rank(sage="integer", ignore_existing_files=True)
+# OO.op.compute_rank(sage="integer")
+# print("New rank: " ,OO.get_matrix_rank())
 # old rank
-print("Dimension: ", OO.get_domain().get_dimension())
-print("Old Rank: ", OO.op.get_matrix_rank())
+# print("Dimension: ", OO.get_domain().get_dimension())
+# print("Old Rank: ", OO.op.get_matrix_rank())
+
+A = OO.op.get_matrix()
+# KK = A.right_kernel()
+# print(KK)
+print("Computing kernel...")
+KK = A.right_kernel_matrix()
+print(KK)
