@@ -86,7 +86,7 @@ class VertexLoopDegSlice(GraphVectorSpace.DegSlice):
         super().__init__(
             [BiColoredHairyGraphComplex.BiColoredHairyGraphVS(v, deg - v, self.h_a_min + v, self.h_b_min + v,
                                                               even_edges, even_hairs_a, even_hairs_b)
-             for v in range(0, deg + 1)], deg)
+             for v in range(deg + 1)], deg)
 
     def __hash__(self):
         return hash(str(self))
