@@ -9,8 +9,8 @@ import json
 from sage.all import *
 
 
-WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
-    1, 4), range(0, 2), range(1, 2), ['contract'])
+WGC = WRHairyGraphComplex.WRHairyGC(range(14), range(
+    1, 4), range(2), range(1, 2), ['contract'])
 
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
 #     0, 1), range(4, 5), range(1, 2), ['contract'])

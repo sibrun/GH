@@ -1,12 +1,11 @@
 """Ordinary graph complex, with vertices of valence 3 and 4.
 Merkulov complex. """
-
+import os
+import math
 
 __all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinaryGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'DeleteEdgesGO', 'OrdinaryGC']
 
-import itertools
-from sage.all import *
 import GraphVectorSpace
 import GraphOperator
 import GraphComplex
@@ -15,7 +14,6 @@ import NautyInterface
 import Parameters
 import GCDimensions
 import OrdinaryGraphComplex
-import os
 
 
 graph_type = "ordinaryme"
@@ -55,8 +53,8 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         self.n_edges = self.n_loops + self.n_vertices - 1
         self.sub_type = sub_types.get(self.even_edges)
         self.valence_type = valence_type
-        if valence_type not in { 34, 3456, 56 }:
-            raise ValueError(f"OrdinaryMerkulovGVS: valence type must be in 34, 3456, 56")
+        if valence_type not in {34, 3456, 56}:
+            raise ValueError("OrdinaryMerkulovGVS: valence type must be in 34, 3456, 56")
         self.ogvs : OrdinaryGraphComplex.OrdinaryGVS = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, even_edges)
         if valence_type != 3456:
             self.gvs3456 = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 3456)
@@ -126,9 +124,8 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         #             if sum( (1 if len(G[v])>4 else 0) for v in G.vertices() ) == 1:
         #                 yield G
 
-
     def perm_sign(self, G, p):
-        return self.ogvs.perm_sign(G,p)
+        return self.ogvs.perm_sign(G, p)
 
 
 class OrdinaryMerkulovGraphSumVS(GraphVectorSpace.SumVectorSpace):
@@ -213,10 +210,10 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         """
         return domain.n_vertices - 1 == target.n_vertices and domain.n_loops == target.n_loops \
             and domain.even_edges == target.even_edges \
-            and domain.valence_type == 34 and target.valence_type in { 3456, 56 }
+            and domain.valence_type == 34 and target.valence_type in {3456, 56}
 
     @classmethod
-    def generate_operator(cls, n_vertices, n_loops, even_edges, to3456 = True):
+    def generate_operator(cls, n_vertices, n_loops, even_edges, to3456=True):
         """Return a contract edge graph operator.
 
         :param n_vertices: Number of vertices of the domain.
@@ -269,7 +266,7 @@ class ContractEdgesD(GraphOperator.Differential):
         """
 
         super().__init__(sum_vector_space,
-                                             ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
+                         ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
     def get_type(self):
         return 'contract edges'
@@ -324,6 +321,7 @@ def cohom_formatted_merkulov(D1, D2, Dc2):
 
     return str(d+rc2-r1-r2) + r_str
 
+
 def get_34cohom_dim(v, l, even_e):
     """ Compute cohomology dimension ..."""
     op1 = ContractEdgesGO.generate_operator(v, l, even_e)
@@ -333,7 +331,6 @@ def get_34cohom_dim(v, l, even_e):
     return cohom_formatted_merkulov(op1, op2, opc)
 
     # return vs34.get_34dimension() - D34rank -DD34rank + DD5rank
-
 
 
 # ------- Graph Complexes --------
@@ -364,7 +361,7 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
         self.even_edges = even_edges
         self.sub_type = sub_types.get(self.even_edges)
 
-        sum_vector_space = OrdinaryMerkulovGraphSumVS(v_range, l_range, even_edges, [34, 3456, 56] )
+        sum_vector_space = OrdinaryMerkulovGraphSumVS(v_range, l_range, even_edges, [34, 3456, 56])
         differential_list = []
         if not set(differentials) <= {'contract'}:
             raise ValueError(
@@ -381,5 +378,3 @@ class OrdinaryMerkulovGC(GraphComplex.GraphComplex):
     def print_cohom(self):
         for l in self.l_range:
             print(f"{l}: {[ get_34cohom_dim(v,l,self.even_edges) for v in self.v_range]}")
-
-

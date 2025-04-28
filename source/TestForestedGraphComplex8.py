@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import ForestedGraphComplex
-from sage.all import *
+from sage.all import Graph, vector
 
 log_file = "Forested_Unittest.log"
 
@@ -48,8 +47,8 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -86,11 +85,11 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -300,7 +299,7 @@ maxm = maxv+1
 #         range(0, maxv+1), range(l, l+1), range(0, maxm+1), range(0, maxl-l+1+maxh))
 #     PFGC.build_basis(ignore_existing_files=False)
 
-PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(0,maxv+1), range(0,maxl+1), range(0,maxm+1), range(0,maxh+1))
+PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1))
 # PFGC.build_basis(ignore_existing_files=True)
 
 # # PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
@@ -319,7 +318,7 @@ PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(0,maxv+1), range(0,maxl+
 evenedges = True
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
+    range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1), evenedges, {'contract', 'unmark'})
 FGC.build_basis(ignore_existing_files=True)
 FGC.build_matrix(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
@@ -333,7 +332,7 @@ FGC.build_matrix(progress_bar=False, info_tracker=False,
 #             DDTest(v, g, m, 0, False)
 
 FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
-    range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges)
+    range(maxl+1), range(maxm+1), range(maxh+1), evenedges)
 FBGC.build_basis(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
 FBGC.build_matrix(progress_bar=False, info_tracker=False,
@@ -347,8 +346,8 @@ FBGC.compute_rank(ignore_existing_files=False, sage="integer")
 FBGC.print_dim_and_eulerchar()
 FBGC.print_cohomology_dim()
 
-uc1 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4,3,0,evenedges)
-uc2 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4,4,0,evenedges)
+uc1 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 3, 0, evenedges)
+uc2 = ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(4, 4, 0, evenedges)
 
 
 D1 = uc1.get_matrix()
@@ -360,13 +359,12 @@ D2 = uc2.get_matrix()
 
 
 # uc1.domain.display_basis_plots()
-g_ind = 42 #index of graph in basis
-v=vector( [0 for j in range(43)] )
-v[g_ind]=1
+g_ind = 42  # index of graph in basis
+v = vector([0 for j in range(43)])
+v[g_ind] = 1
 print(v)
 
-print(D1*v) # should be 0
-
+print(D1*v)  # should be 0
 
 
 # DDTest(6,4,3,0,evenedges)

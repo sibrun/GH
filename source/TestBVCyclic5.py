@@ -12,9 +12,9 @@ if __name__ == "__main__":
     max_vert = 16
     ignore_ex = False
 
-    sumvs = GraphVectorSpace.SumVectorSpace( [ OrdinaryGraphComplex.OrdinaryGVS(v,l,False) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ] )
+    sumvs = GraphVectorSpace.SumVectorSpace( [ OrdinaryGraphComplex.OrdinaryGVS(v,l,False) for v in range(max_vert+1) for l in range(max_loops+1) ] )
 
-    op_list = [ BVCyclic.AddVReconnectEdgesGO.generate_operator(v,l) for v in range(0,max_vert+1) for l in range(0,max_loops+1) ]
+    op_list = [ BVCyclic.AddVReconnectEdgesGO.generate_operator(v,l) for v in range(max_vert+1) for l in range(max_loops+1) ]
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
     allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=ignore_ex)
 

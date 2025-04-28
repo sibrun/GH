@@ -583,7 +583,7 @@ class GraphVectorSpace(VectorSpace):
         self.plot_all_graphs_to_file(skip_existing=True)
         ba = self.get_basis_g6()
         sarr = ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(j, ba[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j)))
-                for j in range(0, self.get_dimension())]
+                for j in range(self.get_dimension())]
         s = ' '.join(sarr)
         DisplayInfo.display_html_body("<table>"+s+"</table>")
 
@@ -593,7 +593,7 @@ class GraphVectorSpace(VectorSpace):
         """
         self.plot_all_graphs_to_file(skip_existing=True)
         sarr = ["<tr><td>({})</td><td>{}</td><td><img src='{}'></td>".format(j, v[j], os.path.join("..", self.get_plot_path(), '%d.png' % (j)))
-                for j in range(0, self.get_dimension())]
+                for j in range(self.get_dimension())]
         s = ' '.join(sarr)
         DisplayInfo.display_html_body("<table>"+s+"</table>")
 
@@ -654,7 +654,7 @@ class SumVectorSpace(VectorSpace):
         :Example:
 
         Shared.OrderedDict([('vertices', self.v_range), ('loops', self.l_range)])
-         """
+        """
         pass
 
     @abstractmethod
@@ -669,7 +669,7 @@ class SumVectorSpace(VectorSpace):
 
         :Example:
         Shared.OrderedDict([('deg', self.deg)])
-         """
+        """
         pass
 
     def __str__(self):
@@ -866,7 +866,7 @@ class SumVectorSpace(VectorSpace):
         for vs in self.vs_list:
             ba = vs.get_basis_g6()
             sarr += ["<tr><td>{}</td><td>{}</td><td><img src='{}'></td>".format(i+j, ba[j], os.path.join("..", vs.get_plot_path(), '%d.png' % (j)))
-                     for j in range(0, vs.get_dimension())]
+                     for j in range(vs.get_dimension())]
             i += vs.get_dimension()
         s = ' '.join(sarr)
         DisplayInfo.display_html_body("<table>"+s+"</table>")
@@ -977,7 +977,7 @@ class DegSlice(SumVectorSpace):
 
         :Example:
         Shared.OrderedDict([('deg', self.deg)])
-         """
+        """
         pass
 
     def build_basis(self, **kwargs):

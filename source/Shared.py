@@ -3,7 +3,7 @@
 __all__ = ['Perm', 'OrderedDict', 'enumerate_edges', 'edge_perm_sign', 'shifted_edge_perm_sign', 'permute_to_left',
            'matrix_norm', 'power_2']
 
-from sage.all import *
+from sage.all import Permutation, sqrt
 import collections
 
 
@@ -28,7 +28,7 @@ class Perm:
         for i, p in enumerate(self.p):
             inverse[p] = i
         return inverse
-        #return [j-1 for j in Permutation([j+1 for j in self.p]).inverse()]
+        # return [j-1 for j in Permutation([j+1 for j in self.p]).inverse()]
 
     def signature(self):
         """Return the sign of the permutation.
@@ -36,7 +36,7 @@ class Perm:
         :return: Sign of the permutation.
         :rtype: int
         """
-        return Permutation([j+1 for j in self.p]).signature()
+        return Permutation([j + 1 for j in self.p]).signature()
 
     @classmethod
     def shifted(cls, p):
@@ -88,7 +88,7 @@ def enumerate_edges(graph):
     :param graph: Input graph.
     :type graph: Graph
     """
-    for (j, e) in enumerate(graph.edges(labels=False, sort=True)):
+    for j, e in enumerate(graph.edges(labels=False, sort=True)):
         a, b = e
         graph.set_edge_label(a, b, j)
 
@@ -121,6 +121,7 @@ def shifted_edge_perm_sign(graph):
     # print("Edge perm", p)
     return Perm.shifted(p).signature()
 
+
 def shifted_edge_perm_sign2(graph):
     """Return the sign of the permutation induced by the order of edges of the graph,
     that is the sign of the permutation needed to bring the edge labels in ascending order.
@@ -129,11 +130,11 @@ def shifted_edge_perm_sign2(graph):
     :return: Sign of the permutation induced by the order of edges of the graph.
     :rtype: int
     """
-
-    L = [(j,i) for i, (a, b, j) in enumerate(graph.edges(sort=True))]
+    L = [(j, i) for i, (a, b, j) in enumerate(graph.edges(sort=True))]
     L.sort()
-    p = [i for j,i in L]
+    p = [i for j, i in L]
     return Perm.shifted(p).signature()
+
 
 def permute_to_left(pair, vertex_range):
     """Permute pair to the left of the range vertex_range and returns the induced permutation.
@@ -145,7 +146,7 @@ def permute_to_left(pair, vertex_range):
     :return: Permutation which permutes u,v to the left of the range vertex_range.
     :rtype: list(int)
     """
-    (u, v) = pair
+    u, v = pair
     p = list(vertex_range)
     min_index = min(vertex_range)
     p[min_index] = u
@@ -172,4 +173,4 @@ def matrix_norm(M):
 
 
 def power_2(x):
-    return x*x
+    return x * x
