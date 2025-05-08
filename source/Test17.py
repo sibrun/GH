@@ -53,7 +53,7 @@ print(A.nrows(), A.ncols())
 print(At*(A*v))
 
 
-seq = wiedemann(A, 3, theprime)
+seq = wiedemann(A, 10, theprime)
 
 print(seq)
 
