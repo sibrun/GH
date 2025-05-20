@@ -88,11 +88,10 @@ def check_kneissler(k, even_edges):
     tids = get_neighbors(D, bids)
     #tids = get_neighbors2(D, tids)
     #tids = tbarrel_indices(k, even_edges)
-    #tids = get_neighbors2(D, tids)
+    tids = get_neighbors2(D, tids)
     Dt2 = Dt[:,list(tids)]
     not_bids = set(range(Dt2.nrows())) - bids
     B = Dt2[list(not_bids), :]
-
 
     r0 = op.get_matrix_rank()
     r1 = Dt2.rank()
