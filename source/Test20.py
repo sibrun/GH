@@ -85,9 +85,9 @@ def check_kneissler(k, even_edges):
     n = D.ncols() # number of trivalent graphs
     Dt = D.transpose()
     bids = barrel_indices(k, even_edges)
-    tids = get_neighbors(D, bids)
+    # tids = get_neighbors(D, bids)
     #tids = get_neighbors2(D, tids)
-    #tids = tbarrel_indices(k, even_edges)
+    tids = tbarrel_indices(k, even_edges)
     tids = get_neighbors2(D, tids)
     Dt2 = Dt[:,list(tids)]
     not_bids = set(range(Dt2.nrows())) - bids
