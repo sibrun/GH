@@ -56,10 +56,74 @@ def tbarrel_graph(k,p):
     G.relabel(list(range(0, G.order())), inplace=True)
     return G
 
+def handletbarrel_graph(k,p):
+    # handle barrel graph with one 4-valent vertex (total 2k-1 vertices)
+    # p must be permutation of [0,..,k-2]
+    G = Graph(2*k-1)
+    # generate rims of barrel -- first rim is length k, second length k-1 
+    for j in range(k):
+        G.add_edge(j, (j+1) % k)
+    for j in range(0, k-1):
+        G.add_edge(k+j, k+(j+1)%(k-1))
+    # generate spokes
+    G.add_edge(k-1, 2*k-2)
+    for i,j in enumerate(p):
+        if j < k-2:
+            G.add_edge(i, k+j)
+        else: # j = k-2
+            G.add_edge(i, k)
+
+    return G
+
+def xtbarrel_graph(k,p):
+    # handle barrel graph with one 4-valent vertex (total 2k-1 vertices)
+    # p must be permutation of [0,..,k-2]
+    G = Graph(2*k-1)
+    # generate rims of barrel -- first rim is length k-1, second length k-1 
+    for j in range(k-1):
+        G.add_edge(j, (j+1) % (k-1))
+    for j in range(0, k-1):
+        G.add_edge(k+j, k+(j+1)%(k-1))
+    # vertex k-1 is the "central" vertex
+    # generate spokes
+    G.add_edge(k-1, 2*k-2)
+    G.add_edge(k-1, k-2)
+
+    for i,j in enumerate(p):
+        if j < k-2:
+            G.add_edge(i, k+j)
+        else: # j = k-2
+            G.add_edge(i, k-1)
+
+    return G
+
+def all_xtbarrel_graphs(k):
+    # generates all barrel graphs of 2k vertices
+    for p in permutations(range(k-1)):
+        yield xtbarrel_graph(k, p)
+
+def xtbarrel_indices(k, even_edges):
+    # finds the indices of the barrel graphs in the basis of the appropriate vector space
+    V = OrdinaryGraphComplex.OrdinaryGVS(2*k-1, k+1, even_edges)
+    V.build_basis()
+    B = V.get_g6_coordinates_dict()
+    ret = set()
+    for G in all_xtbarrel_graphs(k):
+        g6,_ = V.graph_to_canon_g6(G)
+        if g6 in B:
+            # append B[g6] to ret
+            ret.add(B[g6])
+    return ret
+
 def all_tbarrel_graphs(k):
     # generates all barrel graphs of 2k vertices
     for p in permutations(range(k-1)):
         yield tbarrel_graph(k, p)
+
+def all_handletbarrel_graphs(k):
+    # generates all barrel graphs of 2k vertices
+    for p in permutations(range(k-1)):
+        yield handletbarrel_graph(k, p)
 
 def tbarrel_indices(k, even_edges):
     # finds the indices of the barrel graphs in the basis of the appropriate vector space
@@ -74,10 +138,25 @@ def tbarrel_indices(k, even_edges):
             ret.add(B[g6])
     return ret
 
+def handletbarrel_indices(k, even_edges):
+    # finds the indices of the barrel graphs in the basis of the appropriate vector space
+    V = OrdinaryGraphComplex.OrdinaryGVS(2*k-1, k+1, even_edges)
+    V.build_basis()
+    B = V.get_g6_coordinates_dict()
+    ret = set()
+    for G in all_handletbarrel_graphs(k):
+        g6,_ = V.graph_to_canon_g6(G)
+        if g6 in B:
+            # append B[g6] to ret
+            ret.add(B[g6])
+    return ret
+
+
 def check_kneissler(k, even_edges):
     G = OrdinaryGraphComplex.OrdinaryGVS(2*k, k+1, even_edges)
     G.build_basis()
     op = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(2*k, k+1, even_edges)
+    op.target.build_basis()
     op.build_matrix()
     op.compute_rank(sage="integer")
     D = op.get_matrix()
@@ -88,7 +167,10 @@ def check_kneissler(k, even_edges):
     # tids = get_neighbors(D, bids)
     #tids = get_neighbors2(D, tids)
     tids = tbarrel_indices(k, even_edges)
-    tids = get_neighbors2(D, tids)
+    hids = handletbarrel_indices(k, even_edges)
+    xids = xtbarrel_indices(k, even_edges)
+    tids = tids.union( xids)
+    # tids = get_neighbors2(D, tids)
     Dt2 = Dt[:,list(tids)]
     not_bids = set(range(Dt2.nrows())) - bids
     B = Dt2[list(not_bids), :]
@@ -96,7 +178,7 @@ def check_kneissler(k, even_edges):
     r0 = op.get_matrix_rank()
     r1 = Dt2.rank()
     r2 = B.rank()
-    print("k=", k, "ee=", even_edges, ": Actual cohomdim: ", n-r0, " estimated cohomdim: ", len(bids) - r1 + r2, "(barrels: ", len(bids), " tbarrels:", len(tids), " non-barrels: ", len(not_bids), " non-tbarrels:", m-len(tids),")")
+    print("k=", k, "ee=", even_edges, ": Actual cohomdim: ", n-r0, " estimated cohomdim: ", len(bids) - r1 + r2, "(barrels: ", len(bids), " tbarrels:", len(tids), " non-barrels: ", len(not_bids), " non-tbarrels:", m-len(tids), " hids: ", len(hids), " xids: ", len(xids), ")")
     
 kk = 4
 G = barrel_graph(kk, [0,2,1])
@@ -112,7 +194,7 @@ check_kneissler(5, True)
 check_kneissler(6, True)
 check_kneissler(7, True)
 check_kneissler(8, True)
-check_kneissler(9, True)
+# check_kneissler(9, True)
 
 check_kneissler(3, False)
 check_kneissler(4, False)
