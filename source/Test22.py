@@ -24,9 +24,9 @@ def print_cohom(nloops, even_edges):
     print("nloops=", nloops, "\tee=", even_edges, ": Actual cohomdim: ", dim_ord, " estimated cohomdim: ", n - r_full+ r_compl, "(full: ", r_full, " compl:", r_compl, ")")
 
 
-for i in range(5, 12):
+for i in range(5, 13):
     print_cohom(i, True)
 
 print("")
-for i in range(5, 12):
+for i in range(5, 13):
     print_cohom(i, False)
