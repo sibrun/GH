@@ -1,6 +1,11 @@
 import KneisslerGC
 import GraphVectorSpace
 import GraphOperator
+import Parameters
+
+
+# remove if not needed!!!
+# Parameters.canonical_label_algorithm = "bliss"
 
 
 if __name__ == "__main__":
@@ -9,7 +14,7 @@ if __name__ == "__main__":
     vs_listb = []
     vs_lista = []
     op_list = []
-    maxl = 13
+    maxl = 10
     typesa = [0,1,2]
     typesb = [3]
     types_op = [2,3]
@@ -31,21 +36,23 @@ if __name__ == "__main__":
     allop = GraphOperator.OperatorMatrixCollection(sumvs, op_list)
 
     print("Building a vector spaces.")
-    sumvsa.build_basis(n_jobs=nr_jobs)
-    # sumvsf.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
+    # sumvsa.build_basis(n_jobs=nr_jobs)
+    sumvsa.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
     print("Building b vector spaces.")
-    sumvsb.build_basis(n_jobs=nr_jobs)
-    # sumvsa.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
+    # sumvsb.build_basis(n_jobs=nr_jobs)
+    sumvsb.build_basis(n_jobs=nr_jobs, ignore_existing_files=True)
 
     # sumvs.build_basis(n_jobs=nr_jobs)
     print("Building matrices.")
-    allop.build_matrix(n_jobs=nr_jobs)
-    # allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=True)
+    # allop.build_matrix(n_jobs=nr_jobs)
+    allop.build_matrix(n_jobs=nr_jobs, ignore_existing_files=True)
 
     print("Finished computing variant matrices.")
 
     print("computing ranks")
-    allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
+    # allop.compute_rank(linbox="mod", n_jobs=nr_jobs)
+    allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=True)
+    # allop.compute_rank(linbox="mod", n_jobs=nr_jobs, ignore_existing_files=True)
     # allop.compute_rank(sage="integer", n_jobs=nr_jobs)
     # allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=True)
     print("Finished")
