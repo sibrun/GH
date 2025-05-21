@@ -9,7 +9,7 @@ if __name__ == "__main__":
     vs_listb = []
     vs_lista = []
     op_list = []
-    maxl = 12
+    maxl = 13
     typesa = [0,1,2]
     typesb = [3]
     types_op = [2,3]
