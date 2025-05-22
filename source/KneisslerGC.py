@@ -139,6 +139,120 @@ def all_hgraph_graphs(k):
             yield hgraph(k, p)
 
 
+def inverse_permutation(p):
+    # returns the inverse of a permutation p
+    n = len(p)
+    ip = [0]*n
+    for i in range(n):
+        ip[p[i]] = i
+    return ip
+def cyclic_permutation(n, nsteps):
+    # returns a cyclic permutation of n elements with nsteps steps
+    return [(i+nsteps)%n for i in range(n)]
+
+def compose_permutations(p1, p2):
+    # returns the composition of two permutations p1 and p2
+    return [p1[p2[i]] for i in range(len(p2))]
+    
+
+def kneissler_rel(k,p, even_edges):
+    # produces the terms of one kneissler relation
+    # (a linear combination of barrel graphs)
+    # p must be permutation of [0,..,k-2]
+    last = 2*k-1
+    prelast = 2*k-2
+    ip = inverse_permutation(p)
+    pj = p[k-2]
+    j = p[k-2] + k
+    i = ip[k-2]
+
+    G0 = barrel_graph(k, p)
+
+    # the other graphs are obtained by reattaching edges
+    G1 = G0.copy()
+    G1.remove_edge(k-1, last)
+    G1.remove_edge(k-2, j)
+    G1.remove_edge(i, prelast)
+
+    G2 = G1.copy()
+    G3 = G1.copy()
+    G4 = G1.copy()
+    
+    G1.add_edge(i, prelast)
+    G1.add_edge(k-1, j)
+    G1.add_edge(k-2, last)
+
+    G2.add_edge(k-2, j)
+    G2.add_edge(k-1, prelast)
+    G2.add_edge(i, last)
+
+    G3.add_edge(k-1, j)
+    G3.add_edge(k-2, prelast)
+    G3.add_edge(i, last)
+
+    # make space at position i+1 and j+1 by shifting down the horitontal connecting edges
+    for r in range(k-1):
+        if r<=i and p[r] <= pj:
+            pass # edge stays the same
+        elif r<=i and p[r] > pj:
+            # move one down on the right
+            G4.remove_edge(r, k+p[r])
+            G4.add_edge(r, k+p[r]+1)
+        elif r>i and p[r] <= pj:
+            # move one down on the left
+            G4.remove_edge(r, k+p[r])
+            G4.add_edge(r+1, k+p[r])
+        elif r>i and p[r] > pj:
+            # move one down on both sides
+            G4.remove_edge(r, k+p[r])
+            G4.add_edge(r+1, k+p[r]+1)
+    
+    # now reattach edges as before 
+    G5 = G4.copy()
+    G6 = G4.copy()
+    G7 = G4.copy()
+
+    G4.add_edge(i, j)
+    G4.add_edge(i+1, last)
+    G4.add_edge(k-1, j+1)
+
+    G5.add_edge(i, last)
+    G5.add_edge(i+1, j)
+    G5.add_edge(k-1, j+1)
+
+    G6.add_edge(i, j+1)
+    G6.add_edge(i+1, last)
+    G6.add_edge(k-1, j)
+
+    G7.add_edge(i, last)
+    G7.add_edge(i+1, j+1)
+    G7.add_edge(k-1, j)
+
+    # todo fix the random signs
+    return [(G0, 1), (G1, -1), (G2, 1), (G3, 1), (G4, -1), (G5, 1), (G6, 1), (G7, -1)]
+
+
+def get_kneissler_matrix(k, even_edges):
+    # returns the (sparse) matrix of the kneissler relations
+    tgt = KneisslerGVS(k+1, 0, even_edges)
+    tgt_dim = tgt.get_dimension()
+    tgt_basis_dict = tgt.get_basis_dict()
+    M = matrix(tgt_dim, factorial(k-1), sparse=True)
+    for idx, p in enumerate(permutations(range(k-1))):
+        # todo: remove forbidden permutations
+        v = kneissler_rel(k, p, even_edges)
+        for G, sign in v:
+            g6, sgn = tgt.graph_to_canon_g6(G)
+            if g6 not in tgt_basis_dict:
+                continue
+            else:
+                gidx = tgt_basis_dict[g6]
+                M[gidx, idx] += sign * sgn
+    return M
+
+
+
+
 # ------- Graph Vector Space --------
 class KneisslerGVS(GraphVectorSpace.GraphVectorSpace):
     """Ordinary graph vector space.
