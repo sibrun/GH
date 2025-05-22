@@ -1,9 +1,10 @@
 import OrdinaryGraphComplex
 from sage.all import *
+from sage.matrix.berlekamp_massey import berlekamp_massey
 
-D = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(10, 7, False)
+D = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(10, 6, False)
 
-theprime = 27644437
+theprime = 3323
 p=theprime
 
 At = D.get_matrix()
@@ -41,20 +42,25 @@ def wiedemann(A, Nlen, p):
     # Compute the product of A and v
     res = vector(GF(p), Nlen)
     curv = v
+    res[0] = u * curv
     At = A.transpose()
-    for j in range(Nlen):
+    for j in range(Nlen-1):
         curv = At * (A * curv)
-        res[j] = u * curv
+        res[j+1] = u * curv
 
     return res
     
 
 print(A.nrows(), A.ncols())
+print(A*v)
 print(At*(A*v))
 
 
-seq = wiedemann(A, 10, theprime)
+seq = wiedemann(A, 30, theprime)
 
-print(seq)
+print("Wiedemann sequence: ", seq)
 
-print(At*A*v)
+# print(At*A*v)
+
+bmres = berlekamp_massey([GF(theprime)(s) for s in seq])
+print("Berlekamp-Massey result: ", bmres, " degree: ", bmres.degree())
