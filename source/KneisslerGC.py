@@ -79,7 +79,8 @@ def xtbarrel_graph(k,p):
 def all_xtbarrel_graphs(k):
     # generates all barrel graphs of 2k vertices
     for p in permutations(range(k-1)):
-        yield xtbarrel_graph(k, p)
+        if p[k-2] != k-2:
+            yield xtbarrel_graph(k, p)
 
 
 def triangle_graph(k,p):
