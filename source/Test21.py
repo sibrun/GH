@@ -17,7 +17,7 @@ if __name__ == "__main__":
     maxl = 10
     typesa = [0,1,2]
     typesb = [3]
-    types_op = [2,3]
+    types_op = [0,2,3]
 
     for even_e in [True, False]:
 

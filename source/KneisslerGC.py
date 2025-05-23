@@ -170,9 +170,9 @@ def kneissler_rel(k,p, even_edges):
 
     # the other graphs are obtained by reattaching edges
     G1 = G0.copy()
-    G1.remove_edge(k-1, last)
-    G1.remove_edge(k-2, j)
-    G1.remove_edge(i, prelast)
+    G1.delete_edge(k-1, last)
+    G1.delete_edge(k-2, j)
+    G1.delete_edge(i, prelast)
 
     G2 = G1.copy()
     G3 = G1.copy()
@@ -196,15 +196,15 @@ def kneissler_rel(k,p, even_edges):
             pass # edge stays the same
         elif r<=i and p[r] > pj:
             # move one down on the right
-            G4.remove_edge(r, k+p[r])
+            G4.delete_edge(r, k+p[r])
             G4.add_edge(r, k+p[r]+1)
         elif r>i and p[r] <= pj:
             # move one down on the left
-            G4.remove_edge(r, k+p[r])
+            G4.delete_edge(r, k+p[r])
             G4.add_edge(r+1, k+p[r])
         elif r>i and p[r] > pj:
             # move one down on both sides
-            G4.remove_edge(r, k+p[r])
+            G4.delete_edge(r, k+p[r])
             G4.add_edge(r+1, k+p[r]+1)
     
     # now reattach edges as before 
@@ -236,7 +236,7 @@ def get_kneissler_matrix(k, even_edges):
     # returns the (sparse) matrix of the kneissler relations
     tgt = KneisslerGVS(k+1, 0, even_edges)
     tgt_dim = tgt.get_dimension()
-    tgt_basis_dict = tgt.get_basis_dict()
+    tgt_basis_dict = tgt.get_g6_coordinates_dict()
     M = matrix(tgt_dim, factorial(k-1), sparse=True)
     for idx, p in enumerate(permutations(range(k-1))):
         # todo: remove forbidden permutations
@@ -249,6 +249,7 @@ def get_kneissler_matrix(k, even_edges):
                 gidx = tgt_basis_dict[g6]
                 M[gidx, idx] += sign * sgn
     return M
+
 
 
 
