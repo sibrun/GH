@@ -19,7 +19,7 @@ This is achieved using the following classes:
         to get basis-graphs with any number of connected components.
 
     WOHairyGVS:
-        selects, for some given cohomoligcal degree, the relevant graphs 
+        selects, for some given cohomological degree, the relevant graphs 
         from WOHairyAggregatedGVS and puts them in a single file.
 
     EpsToOmegaGO:

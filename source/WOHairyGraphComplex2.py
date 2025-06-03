@@ -269,6 +269,8 @@ class WOHairyGraphPreVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
                             V1 = WOHairyGraphPreVS(v, l, h, w, self.n_comp-1)
                             V2 = WOHairyGraphPreVS(self.n_vertices-v, self.n_loops-l, self.n_hairs-h, self.n_ws-w, 1)
                             if V1.is_valid() and V2.is_valid():
+                                V1.build_basis()
+                                V2.build_basis()
                                 for G1 in V1.get_basis():
                                     for G2 in V2.get_basis():
                                         GG = G1.disjoint_union(G2)
@@ -424,7 +426,7 @@ class WOHairyGraphVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
         # return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) * (self.n_vertices ** self.n_hairs) / factorial(self.n_vertices)
 
     def get_prerequisites(self):
-        # need to add all graphs with same parameters as myself, or with one edge lessbecause of eps-eps-edge
+        # need to add all graphs with same parameters as myself, or with one edge less because of eps-eps-edge
         maxc = self.n_ws+self.n_loops+self.n_hairs # crude estimate
         ret = [WOHairyGraphPreVS(self.n_vertices,self.n_loops, self.n_hairs, self.n_ws, c) for c in range(maxc+1)] + \
             [WOHairyGraphPreVS(self.n_vertices,self.n_loops-1, self.n_hairs, self.n_ws, c) for c in range(maxc+1)]

@@ -14,7 +14,7 @@ import WOHairyGraphComplex2
 maxc = 4
 maxg = 10
 maxn = 12
-maxv = 3
+maxv = 5
 maxw = 12
 
 max_excess = 5
