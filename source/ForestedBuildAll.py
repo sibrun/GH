@@ -11,7 +11,7 @@ if __name__ == "__main__":
     print(f"Building all computable forested bases and operators using {nr_jobs} jobs ...")
     for even_e in [False, True]:
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(9), range(16), range(1), even_e)
-        FGC.build_basis(n_jobs=nr_jobs_basis)
+        FGC.build_basis(n_jobs=nr_jobs_basis, progress_bar= True)
         FGC.build_matrix(n_jobs=nr_jobs)
 
         FGC = ForestedGraphComplex.ContractUnmarkTopD(range(7), range(16), range(1,2), even_e)
