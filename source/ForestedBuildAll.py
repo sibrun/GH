@@ -7,10 +7,10 @@ import GraphVectorSpace
 
 if __name__ == "__main__":
     nr_jobs = 10
-    nr_jobs_basis = 10 # set to 1 if pregraphs not yet generated
+    nr_jobs_basis = 1 # set to 1 if pregraphs not yet generated
     print(f"Building all computable forested bases and operators using {nr_jobs} jobs ...")
     for even_e in [False, True]:
-        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(8), range(16), range(1), even_e)
+        FGC = ForestedGraphComplex.ContractUnmarkTopD(range(9), range(16), range(1), even_e)
         FGC.build_basis(n_jobs=nr_jobs_basis)
         FGC.build_matrix(n_jobs=nr_jobs)
 

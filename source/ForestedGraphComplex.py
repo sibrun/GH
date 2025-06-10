@@ -145,8 +145,10 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
             and n_edges_bip <= 2*n_vertices_2 and n_edges_bip >= 3 * n_vertices_1
                 and n_edges_bip <= n_vertices_1 * n_vertices_2):
 
+            print("Running genbg...")
             bips = NautyInterface.list_bipartite_graphs3(
                 n_vertices_1, n_vertices_2, deg_range_1, deg_range_2, n_edges_bip, 2)
+            print("Finished genbg...")
             # bips[2].show()
             # print(bips[2].adjacency_matrix())
 
