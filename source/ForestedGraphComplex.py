@@ -182,7 +182,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         # Otherwise, load the list of graphs with one less marked edges, and mark one.
         if not self.is_valid():
             return
-
+        print("get_generating graphs")
         if self.n_marked_edges == 0:
             if use_bridgeless:
                 for G in self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, False):
