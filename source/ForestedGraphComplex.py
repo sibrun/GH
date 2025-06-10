@@ -195,6 +195,7 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
         VS = PreForestedGVS(self.n_vertices, self.n_loops,
                             self.n_marked_edges-1, self.n_hairs)
         graphs_oneless = VS.get_basis()
+        print("Loaded %d graphs" % (len(graphs_oneless)))
         # res = []
         for G in graphs_oneless:
             for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges+1):
