@@ -194,11 +194,14 @@ class PreForestedGVS(GraphVectorSpace.GraphVectorSpace):
 
         VS = PreForestedGVS(self.n_vertices, self.n_loops,
                             self.n_marked_edges-1, self.n_hairs)
-        print("Loading graphs from file")
+        print("Loading graphs from file, basis length %d" % VS.get_dimension())
         graphs_oneless = VS.get_basis()
-        print("Loaded %d graphs" % (len(graphs_oneless)))
+        countg = 0
         # res = []
         for G in graphs_oneless:
+            countg += 1
+            if countg%1000 ==0:
+                print("Processed %d graphs" % countg)
             for i in range(self.n_vertices, self.n_vertices+self.n_unmarked_edges+1):
                 nb = G.neighbors(i)
                 if len(nb) != 2:
