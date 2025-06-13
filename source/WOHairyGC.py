@@ -1,4 +1,6 @@
 """
+Author: Pascal Skipness
+
 We consider Graph complexes based on simple graphs with numbered hairs and hairs of two (omega- and epsilon-)decorations
 as in the graph complex computing weight 11 cohomology. The omega decorations are considered odd.
 For more detailed Information see the following references:
@@ -454,6 +456,9 @@ class WOHairyAggregatedGVS(WOHairyComponentGVS):
                         G.relabel({old: new for new, old in enumerate(G.vertices())}, inplace=True)
                 
                         # permute vertices accordingly to how the partition is made
+                        # i.e. we need to rearrange the vertices according to the partition
+                        # AND we need to permute the numbered hairs between the two components
+                        # this is done by the functions reorder_vertices and get_cross_permutations
                         old_order = G.vertices()
                         new_orders = reorder_vertices(old_order, n_vert_1, n_vert_2, n_1, n_2, n_omega_1, n_omega_2, n_eps_1, n_eps_2)
 
@@ -871,8 +876,34 @@ class WOHairyGVS(WOHairyAggregatedGVS):
 
 
     def get_work_estimate(self):
-        # TODO
         return 0
+
+    @staticmethod
+    def compute_deg_min_max(genus, n, n_omega):
+        """compute degree lower and upper bounds where the vector space is non-trivial."""
+
+        # degree lower-bound
+        # n_vertices = degree - 22 + n_omega - genus + 1 >= 0
+        # -> degree >= 22 - n_omega + genus - 1
+        deg_min = 22 - n_omega + genus - 1
+
+        # degree upper bound: internal vertices have valcence 3
+        # 3 * n_vertices <= 2 * n_edges + (n_hairs - 2*n_double_legs))
+        # n_edges = genus + n_vertices + n + n_double_legs - n_hairs - 1
+        # -> 3 * n_vertices <= 2 * (genus + n_vertices + n + n_double_legs - n_hairs - 1) + (n_hairs - 2*n_double_legs)
+        # -> n_vertices <= 2*genus + 2*n - n_hairs - 2 = 2*genus + n - n_omega - n_epsilon - 2 <= 2*genus + n - n_omega - 2
+        # n_vertices = degree - 22 + n_omega - genus + 1
+        # -> degree = n_vertices + 22 - n_omega + genus - 1
+        # -> degree <= 3*genus + 2*n - n_hairs + 19 - n_omega  
+        # -> degree <= 3*genus + 2*n + 19 - 2*n_omega - n - n_epsilon
+        # -> degree <= 3*genus + n + 19 - 2*n_omega
+        deg_max = 3*genus + n + 19 - 2*n_omega
+
+        excess = 3*(genus - 1) + 2*n - 2*n_omega
+        if excess >= 0:
+            assert deg_max >= deg_min, "deg_min & deg_max cannot be correct!"
+
+        return deg_min, deg_max
 
 
     @staticmethod
@@ -891,24 +922,7 @@ class WOHairyGVS(WOHairyAggregatedGVS):
             print("n_omega:", n_omega)
             print("excess:", excess)
 
-            # degree lower-bound
-            # n_vertices = degree - 22 + n_omega - genus + 1 >= 0
-            # -> degree >= 22 - n_omega + genus - 1
-            deg_min = 22 - n_omega + genus - 1
-
-            # degree upper bound: internal vertices have valcence 3
-            # 3 * n_vertices <= 2 * n_edges + (n_hairs - 2*n_double_legs))
-            # n_edges = genus + n_vertices + n + n_double_legs - n_hairs - 1
-            # -> 3 * n_vertices <= 2 * (genus + n_vertices + n + n_double_legs - n_hairs - 1) + (n_hairs - 2*n_double_legs)
-            # -> n_vertices <= 2*genus + 2*n - n_hairs - 2 = 2*genus + n - n_omega - n_epsilon - 2 <= 2*genus + n - n_omega - 2
-            # n_vertices = degree - 22 + n_omega - genus + 1
-            # -> degree = n_vertices + 22 - n_omega + genus - 1
-            # -> degree <= 3*genus + 2*n - n_hairs + 19 - n_omega  
-            # -> degree <= 3*genus + 2*n + 19 - 2*n_omega - n - n_epsilon
-            # -> degree <= 3*genus + n + 19 - 2*n_omega
-            deg_max = 3*genus + n + 19 - 2*n_omega
-
-            assert deg_max >= deg_min, "deg_max is cannot be correct!"
+            deg_min, deg_max = WOHairyGVS.compute_deg_min_max(genus, n, n_omega)
 
             euler_char_omega = 0
 
@@ -950,12 +964,10 @@ graph_type = "wohairy"
 
 
 class WOHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
-    """Direct sum of graph vector spaces with specified number of omega hairs.
-    """
+    """Direct sum of graph vector spaces."""
 
     def __init__(self, genus_range, n_range, n_omega_range, degree_range):
-        """Initialize the sum vector space.
-        """
+
         self.genus_range = genus_range
         self.n_range = n_range
         self.n_omega_range = n_omega_range
@@ -982,8 +994,7 @@ class WOHairyGraphSumVS(GraphVectorSpace.SumVectorSpace):
 # ------- Operators --------
 
 class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
-    """Operator that makes one eps into an omega hair.
-    """
+    """Operator that makes one eps into an omega hair."""
 
     def __init__(self, domain, target):
         super(EpsToOmegaGO, self).__init__(domain, target)
@@ -1013,7 +1024,6 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return 'eps to omega'
 
 
-    # TODO: check implementation of sign!
     def operate_on(self, G):
         """
         This is the "dual" operator to the delta_omega operator defined in https://arxiv.org/pdf/2407.16372 on page 4 
@@ -1085,11 +1095,8 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
 class EpsToOmegaD(GraphOperator.Differential):
 
     def __init__(self, sum_vector_space):
-        """Initialize the eps to omega differential with the underlying sum vector space.
+        """Initialize the eps to omega differential with the underlying sum vector space."""
 
-        :param sum_vector_space: Underlying vector space.
-        :type sum_vector_space: 
-        """
         super(EpsToOmegaD, self).__init__(sum_vector_space,
                                           EpsToOmegaGO.generate_op_matrix_list(sum_vector_space))
 
@@ -1119,8 +1126,7 @@ class EpsToOmegaD(GraphOperator.Differential):
 
 
 class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
-    """Contract edges graph operator.
-    """
+    """Contract edges graph operator."""
 
     def __init__(self, domain, target):
         super(ContractEdgesGO, self).__init__(domain, target)
@@ -1160,13 +1166,19 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
 
 
     def operate_on(self, G):
+        """
+        This is the "dual" operator to the splitting-vertices operator delta_s defined in https://arxiv.org/pdf/2407.16372 on page 4.
+
+        It Operates on the graph G by going though all edges:
+        For each edge it first checks whether it can be contracted, i.e. whether it connects at least one internal vertex and is not connected to a numbered hair-vertex.
+        Then it contracts the edge and unifies the adjacent vertices.
+        """
         
         n_vertices = self.domain.n_vertices
         n = self.domain.n
         n_omega = self.domain.n_omega
         n_epsilon = self.domain.get_n_epsilon_from_graph(G)
 
-        # Operates on the graph G by contracting an edge and unifying the adjacent vertices.
         image = []
         for (i, e) in enumerate(G.edges(labels=False, sort=True)):
 
@@ -1192,8 +1204,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
             Shared.enumerate_edges(G1)
 
 
-            # contracting the edge (u,v)
-            # we always delete the lower index vertex. This ensures that the extra vertices are never deleted
+            # contracting the edge (u,v) ---
 
             # if both u and v are internal vertices
             if v < n_vertices:
@@ -1316,22 +1327,16 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         return image
     
     
-    
     def get_work_estimate(self):
-        # TODO
         return 0
-
 
 
 class ContractEdgesD(GraphOperator.Differential):
     """Contract edges differential."""
 
     def __init__(self, sum_vector_space):
-        """Initialize the contract edges differential with the underlying sum vector space.
+        """Initialize the contract edges differential with the underlying sum vector space."""
 
-        :param sum_vector_space: Underlying vector space.
-        :type sum_vector_space: HairyGraphSumVS
-        """
         super(ContractEdgesD, self).__init__(sum_vector_space,
                                              ContractEdgesGO.generate_op_matrix_list(sum_vector_space))
 
@@ -1356,57 +1361,12 @@ class ContractEdgesD(GraphOperator.Differential):
 
 
 
-
-
-
-
-class SymmProjector(SymmetricGraphComplex.SymmetricProjectionOperator):
-    """This class encodes the projector to an isotypical component of the symmetric group action
-        by permuting numbered hairs.
-        Warning: The matrix stores not the projector, but projector * n_hairs! / rep_dimension??, to have integral matrices.
-
-    Attributes:
-        - sub_type(str): Graphs sub type of the domain.
-    """
-
-    def __init__(self, domain, rep_index):
-        """Initialize the domain and target vector space of the contract edges graph operator.
-
-        : param domain: Domain vector space of the operator.
-        : type domain: HairyGraphVS
-        : param rep_index: The index of the representation in the list produced by Partitions(h).
-        : type rep_index: int
-        """
-        self.sub_type = domain.sub_type
-
-        super(SymmProjector, self).__init__(domain, rep_index)
-
-    def get_ordered_param_dict2(self):
-        do = self.domain
-        return Shared.OrderedDict([('vertices', do.n_vertices), ('loops', do.n_loops), ('hairs', do.n_hairs), ('ws', do.n_ws), ('rep_index', self.rep_index)])
-
-    def get_matrix_file_path(self):
-        s = "projectionO%d_%d_%d_%d_%d.txt" % self.get_ordered_param_dict2().get_value_tuple()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_rank_file_path(self):
-        s = "projectionO%d_%d_%d_%d_%d_rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
-        return os.path.join(Parameters.data_dir, graph_type, self.sub_type, s)
-
-    def get_ref_matrix_file_path(self):
-        s = "projectionO%d_%d_%d_%d_%d.txt" % self.get_ordered_param_dict2().get_value_tuple()
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-    def get_ref_rank_file_path(self):
-        s = "projectionO%d_%d_%d_%d_%d.txt.rank.txt" % self.get_ordered_param_dict2().get_value_tuple()
-        return os.path.join(Parameters.ref_data_dir, graph_type, self.sub_type, s)
-
-
 # ------- Graph Complex --------
 class WOHairyGC(GraphComplex.GraphComplex):
 
     def __init__(self, genus_range, n_range, omega_range, degree_range, differentials):
         """Initialize the graph complex."""
+        
         self.genus_range = genus_range
         self.n_range = n_range
         self.omega_range = omega_range
@@ -1439,15 +1399,15 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
     @staticmethod
     def DSquareTest_single(operator, genus, n, n_omega=11):
+        """Testing the D^2=0 property of either ContractEdges or EpsToOmega"""
 
         assert operator in ['contract', 'epstoomega']
-
-        deg_min = 22 - n_omega + genus - 1
 
         excess = 3*(genus - 1) + 2*n - 2*n_omega
         assert excess >= 0
         n_omega_max = n_omega + (excess // 2)
-        deg_max = 3*genus + n + 19 - 2*n_omega
+
+        deg_min, deg_max = WOHairyGVS.compute_deg_min_max(genus, n, n_omega)
 
         GC = WOHairyGC(genus_range=[genus], 
                 n_range=[n], 
@@ -1485,13 +1445,13 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
     @staticmethod
     def Anticomm_Test_single(genus, n, n_omega=11, eps=Parameters.square_zero_test_eps):
-
-        deg_min = 22 - n_omega + genus - 1
+        """Testing the anti-commutativity of ContractEdges and EpsToOmega operators"""
 
         excess = 3*(genus - 1) + 2*n - 2*n_omega
         assert excess >= 0
         n_omega_max = n_omega + (excess // 2)
-        deg_max = 3*genus + n + 19 - 2*n_omega
+
+        deg_min, deg_max = WOHairyGVS.compute_deg_min_max(genus, n, n_omega)
 
         GC = WOHairyGC(genus_range=[genus], 
                 n_range=[n], 
@@ -1534,8 +1494,8 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
 
     @staticmethod
-    # compute the cohomology dimension for a given (genus, n) pair
     def compute_cohomology_dim(degree, genus, n, n_omega=11, prev_r2=None):
+        """compute the cohomology dimension for a given (genus, n) pair"""
         
         if prev_r2 != None: 
             assert isinstance(prev_r2, int)
@@ -1605,17 +1565,16 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
 
     @staticmethod
-    # used for training the model in WOHairyGC_get_dimension_predictor.py
-    # which again lets us obtain: max_basis_dimension_estimate()
     def max_basis_dimension(genus, n, n_omega=11):
+        """
+        used for training the model in WOHairyGC_get_dimension_predictor.py
+        which again lets us obtain: max_basis_dimension_estimate()
+        """
  
         excess = 3*(genus - 1) + 2*n - 2*n_omega
         if excess < 0: return 0
 
-        deg_min = 22 - n_omega + genus - 1
-        deg_max = 3*genus + n + 19 - 2*n_omega
-
-        assert deg_max >= deg_min, "deg_max cannot be correct!"
+        deg_min, deg_max = WOHairyGVS.compute_deg_min_max(genus, n, n_omega)
 
         max_dim = 0
 
@@ -1643,9 +1602,11 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
 
     @staticmethod
-    # compute the cohomology dimension for all (genus, n) pairs by work-estimate
-    # saves the results in a csv file
     def compute_cohomology_dim_all(g_max=20, n_max=20, n_omega=11):
+        """
+        computes the cohomology dimensions for all (genus, n) pairs by work-estimate
+        saves the results in a the csv file 'WOHairy_CohomologyDimensions.csv'
+        """
 
         jobs = []
         for genus in range(1, g_max + 1):
@@ -1669,7 +1630,7 @@ class WOHairyGC(GraphComplex.GraphComplex):
         # try to load the table from a file if it already exists
         # this prevents recomputation of ranks
         try:
-            with open("table.csv", "r", newline="") as file:
+            with open("WOHairy_CohomologyDimensions.csv", "r", newline="") as file:
                 reader = csv.reader(file)
                 table = [row for row in reader]
         except FileNotFoundError:
@@ -1699,8 +1660,8 @@ class WOHairyGC(GraphComplex.GraphComplex):
 
             print("max_basis_dim_estimate:", WOHairyGC.max_basis_dimension_estimate(genus, n))
 
-            deg_min = 22 - n_omega + genus - 1
-            deg_max = 3*genus + n + 19 - 2*n_omega
+            deg_min, deg_max = WOHairyGVS.compute_deg_min_max(genus, n, n_omega)
+
             degree_range = range(deg_min, deg_max+3)
 
             non_zero_dim_list = []
@@ -1724,14 +1685,14 @@ class WOHairyGC(GraphComplex.GraphComplex):
                 table[genus][n+1] = "0"
 
             print("max_basis_dim:", WOHairyGC.max_basis_dimension(genus, n), " / ", WOHairyGC.max_basis_dimension_estimate(genus, n), "(estimate)")
-            print("Starting to write 'table.csv'")
+            print("Starting to write 'WOHairy_CohomologyDimensions.csv'")
 
             # Save the table to a CSV file
-            with open("table.csv", "w", newline="") as file:
+            with open("WOHairy_CohomologyDimensions.csv", "w", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerows(table)
 
-            print("Table saved to 'table.csv'")
+            print("Table saved to 'WOHairy_CohomologyDimensions.csv'")
 
 
 

@@ -1,5 +1,11 @@
-# testing of basis-generation functionality using simple elementary examples and euler-characteristic
-# for testing to be fully rigurous, the "data"-folder should be deleted before running the tests
+"""
+Author: Pascal Skipness
+
+testing of basis-generation functionality: simple elementary examples and euler-characteristic
+testing of the differentials EpsToOmega and ContractEdges: D^2=0 and anti-commutativity
+testing of the cohomology dimension computation using previous theoretical results
+for testing to be fully rigurous, the "data"-folder should be deleted before running the tests
+"""
 
 
 import unittest
