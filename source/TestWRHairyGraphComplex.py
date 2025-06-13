@@ -7,7 +7,7 @@ import WRHairyGraphComplex
 log_file = "WRHGC_Unittest.log"
 
 v_range = range(1, 5)
-l_range = range(0, 4)
+l_range = range(4)
 h_range = range(1, 3)
 w_range = range(1, 3)
 

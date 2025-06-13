@@ -102,7 +102,7 @@ class HairyGraphVS(GraphVectorSpace.GraphVectorSpace):
 
     def get_partition(self):
         # All internal vertices are in color 1, the hair vertices are in color 2.
-        return [list(range(0, self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
+        return [list(range(self.n_vertices)), list(range(self.n_vertices, self.n_vertices + self.n_hairs))]
 
     def is_valid(self):
         # At least trivalent internal vertices.
@@ -522,7 +522,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             if u >= self.domain.n_vertices or v >= self.domain.n_vertices:
                 continue
             pp = Shared.permute_to_left((u, v), range(
-                0, self.domain.n_vertices + self.domain.n_hairs))
+                self.domain.n_vertices + self.domain.n_hairs))
             sgn = self.domain.perm_sign(G, pp)
             G1 = copy(G)
             G1.relabel(pp, inplace=True)
@@ -531,7 +531,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
             G1.merge_vertices([0, 1])
             if (previous_size - G1.size()) != 1:
                 continue
-            G1.relabel(list(range(0, G1.order())), inplace=True)
+            G1.relabel(list(range(G1.order())), inplace=True)
             if not self.domain.even_edges:
                 sgn *= Shared.shifted_edge_perm_sign(G1)
             image.append((G1, sgn))

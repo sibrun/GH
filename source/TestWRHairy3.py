@@ -66,7 +66,7 @@ def getCohomDimPAll(gvs):
                         pass
 
 
-WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
+WGC = WRHairyGraphComplex.WRHairyGC(range(14), range(
     3, 4), range(4, 5), range(1, 2), ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False,

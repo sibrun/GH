@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import ForestedGraphComplex
-from sage.all import *
+from sage.all import Graph
 
 
 log_file = "Forested_Unittest.log"
@@ -49,8 +48,8 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -87,11 +86,11 @@ def DSquareTestSingleUnmark(n_vertices, n_loops, n_marked, n_hairs, even_edges, 
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -244,5 +243,5 @@ maxl = 2
 maxh = 1
 for l in range(maxl+1):
     PFGC = ForestedGraphComplex.PreForestedGraphSumVS(
-        range(0, 2*maxl - 2 + maxh), range(l, l+1), range(0, 2*maxl - 2+maxh-1), range(0, maxl-l+1+maxh))
+        range(2*maxl - 2 + maxh), range(l, l+1), range(2*maxl - 2+maxh-1), range(maxl-l+1+maxh))
     PFGC.build_basis(ignore_existing_files=True)

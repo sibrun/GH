@@ -12,21 +12,21 @@ maxh = 0
 maxv = 2*maxl - 2 + maxh
 maxm = maxv+1
 
-PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(0,maxv+1), range(0,maxl+1), range(0,maxm+1), range(0,maxh+1))
+PFGC = ForestedGraphComplex.PreForestedGraphSumVS(range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1))
 PFGC.build_basis(ignore_existing_files=True)
 
 
 evenedges = True
 
 FGC = ForestedGraphComplex.ForestedGC(
-    range(0, maxv+1), range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges, {'contract', 'unmark'})
+    range(maxv+1), range(maxl+1), range(maxm+1), range(maxh+1), evenedges, {'contract', 'unmark'})
 FGC.build_basis(ignore_existing_files=True)
 FGC.build_matrix(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
 # FGC.square_zero_test()
 
 FBGC = ForestedGraphComplex.ForestedContractUnmarkBiGC(
-    range(0, maxl+1), range(0, maxm+1), range(0, maxh+1), evenedges)
+    range(maxl+1), range(maxm+1), range(maxh+1), evenedges)
 FBGC.build_basis(progress_bar=False, info_tracker=False,
                  ignore_existing_files=True)
 FBGC.build_matrix(progress_bar=False, info_tracker=False,
