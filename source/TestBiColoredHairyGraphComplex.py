@@ -8,9 +8,9 @@ import BiColoredHairyGraphComplex
 log_file = "BiCHGC_Unittest.log"
 
 v_range = range(3, 8)
-l_range = range(0, 5)
-h_a_range = range(0, 6)
-h_b_range = range(0, 6)
+l_range = range(5)
+h_a_range = range(6)
+h_b_range = range(6)
 even_edges = False
 even_hairs_a = True
 even_hairs_b = True

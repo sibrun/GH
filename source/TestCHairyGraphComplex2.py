@@ -1,11 +1,10 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import CHairyGraphComplex
 import SymmetricGraphComplex
-from sage.all import *
+from sage.all import Graph, Partitions, symmetrica
 
 log_file = "CHGC_Unittest.log"
 
@@ -14,7 +13,7 @@ def check_graphs_vs_basis(GVS, w):
     # Takes a list of graphs and checks whether they are found in the basis
     ba = GVS.get_basis_g6()
     for HH in w:
-        H = Graph(HH) if type(HH) is str else H
+        H = Graph(HH) if type(HH) is str else HH
         g6, sgn = GVS.graph_to_canon_g6(H)
         autom_list = H.automorphism_group(partition=GVS.get_partition()).gens()
         if GVS._has_odd_automorphisms(H, autom_list):
@@ -49,8 +48,8 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, pl
         tu.target.display_basis_plots()
 
     if (j_to_pick < 0):
-        for i in range(0, C.nrows()):
-            for j in range(0, C.ncols()):
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
                 if C[i, j] != 0:
                     print(i, j, C[i, j])
                     j_to_pick = j
@@ -87,11 +86,11 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, even_edges, j_to_pick=-1, pl
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag = false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag = true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -192,7 +191,7 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, even_edges, rep_ind):
     if cohomdim > 0:
         print("Cohomology found:  ", "even_edges" if even_edges else "odd_edges", ", h=", n_hairs, ", l=", n_loops, ", vertices=", n_vertices,
               " (degree ", n_vertices+n_loops -
-              1, "), partition=", part,  ", invpartition=", part.conjugate(),
+              1, "), partition=", part, ", invpartition=", part.conjugate(),
               ", multiplicity=", cohomdim/rep_dim, ", cohomdim=", cohomdim)
     return isocomp_dim - r1-r2
 
@@ -248,8 +247,8 @@ def getCohomDimPAll(gvs):
 # WGC = WRHairyGraphComplex.WRHairyGC(range(0,10), range(0,2), range(4,7), range(1,2) , ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
-WGC = CHairyGraphComplex.CHairyGC(range(0, 12), range(
-    0, 5), range(3, 4), True, ['contract'])
+WGC = CHairyGraphComplex.CHairyGC(range(12), range(
+    5), range(3, 4), True, ['contract'])
 
 # WGC.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)
@@ -260,8 +259,8 @@ WGC = CHairyGraphComplex.CHairyGC(range(0, 12), range(
 WGC.print_dim_and_eulerchar()
 WGC.print_cohomology_dim()
 
-WGCi = CHairyGraphComplex.CHairyGC(range(0, 12), range(
-    0, 5), range(3, 4), True, ['contract_iso'])
+WGCi = CHairyGraphComplex.CHairyGC(range(12), range(
+    5), range(3, 4), True, ['contract_iso'])
 
 # WGCi.build_basis(progress_bar=False, info_tracker=False,
 #                 ignore_existing_files=True)
@@ -361,7 +360,7 @@ for v in range(4,9):
 
 # print(getCohomDimP(6, 5, 2, 2, 1))
 
-#SumOneTest(4, 2, 3, 1)
+# SumOneTest(4, 2, 3, 1)
 # PSquareTest(4, 2, 3, 1, 0)
 # PSquareTest(4, 2, 3, 1, 1)
 # PSquareTest(4, 2, 3, 1, 2)

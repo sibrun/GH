@@ -1,10 +1,9 @@
 import unittest
-import itertools
 import logging
 import Log
 import TestGraphComplex
 import WHairyGraphComplex
-from sage.all import *
+from sage.all import Graph
 
 log_file = "WHGC_Unittest.log"
 
@@ -13,7 +12,7 @@ def check_graphs_vs_basis(GVS, w):
     # Takes a list of graphs and checks whether they are found in the basis
     ba = GVS.get_basis_g6()
     for HH in w:
-        H = Graph(HH) if type(HH) is str else H
+        H = Graph(HH) if type(HH) is str else HH
         g6, sgn = GVS.graph_to_canon_g6(H)
         autom_list = H.automorphism_group(partition=GVS.get_partition()).gens()
         if GVS._has_odd_automorphisms(H, autom_list):
@@ -32,13 +31,13 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
     D2 = tu.get_matrix()
     C = D2*D1
 
-    if (j_to_pick<0):
-        for i in range(0,C.nrows()):
-            for j in range(0,C.ncols()):
-                if C[i,j] != 0:
-                    print(i,j, C[i,j])
+    if j_to_pick < 0:
+        for i in range(C.nrows()):
+            for j in range(C.ncols()):
+                if C[i, j] != 0:
+                    print(i, j, C[i, j])
                     j_to_pick = j
-        if j_to_pick <0:
+        if j_to_pick < 0:
             print("success, squares to zero")
             return
         else:
@@ -53,7 +52,7 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
     G = Graph(ba0[j_to_pick])
     w = tt.operate_on(G)
 
-    #check whether graphs are in basis
+    # check whether graphs are in basis
     for H, x in w:
         g6, sgn = tu.domain.graph_to_canon_g6(H)
         autom_list = H.automorphism_group(partition=tu.domain.get_partition()).gens()
@@ -66,20 +65,20 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
                 print(g6, " exists at index ", ba1.index(g6), " v=",x)
 
     # compute D^2
-    ww = [ (HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H) ]
+    ww = [(HH, x*xx) for H, x in w for HH, xx in tu.operate_on(H)]
     wwd = {}
-    for H,x in ww:
+    for H, x in ww:
         g6, sgn = tu.target.graph_to_canon_g6(H)
         if g6 in wwd:
             wwd[g6] += x
         else:
             wwd[g6] = x
     print(wwd)
-    nonzeroflag=false
+    nonzeroflag = False
     for g6, x in wwd.items():
         if x != 0:
             print("Nonzero entry: ", g6, x)
-            nonzeroflag=true
+            nonzeroflag = True
     if not nonzeroflag:
         print("all entries zero, i.e., success.")
 
@@ -101,8 +100,9 @@ def DSquareTestSingle(n_vertices, n_loops, n_hairs, n_ws, j_to_pick=-1):
 #tt.plot_all_graphs_to_file()
 #tt.display_basis_plots()
 
+
 # WGC = WHairyGraphComplex.WHairyGC(range(0,11), range(5,7), range(0,4), range(2,3) , ['contract'])
-WGC = WHairyGraphComplex.WHairyGC(range(0,6), range(0,2), range(0,4), range(1,2) , ['contract'])
+WGC = WHairyGraphComplex.WHairyGC(range(6), range(2), range(4), range(1, 2), ['contract'])
 # WGC = WHairyGraphComplex.WHairyGC(range(0,8), range(0,6), range(1,3), range(2,3) , ['contract'])
 
 WGC.build_basis(progress_bar=False, info_tracker=False, ignore_existing_files=True)
@@ -172,7 +172,6 @@ WGC.print_cohomology_dim()
 # tu.domain.display_basis_plots()
 # tu.target.plot_all_graphs_to_file(skip_existing=False)
 # tu.target.display_basis_plots()
-
 
 
 # g = Graph("EZq?")

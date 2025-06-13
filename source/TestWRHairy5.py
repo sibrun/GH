@@ -37,7 +37,7 @@ def getCohomDimP(n_vertices, n_loops, n_hairs, n_ws, rep_ind):
     return isocomp_dim - r1-r2
 
 
-WGC = WRHairyGraphComplex.WRHairyGC(range(0, 14), range(
+WGC = WRHairyGraphComplex.WRHairyGC(range(14), range(
     3, 4), range(4, 5), range(2, 3), ['contract'])
 
 # WGC.build_basis(progress_bar=False, info_tracker=False,
