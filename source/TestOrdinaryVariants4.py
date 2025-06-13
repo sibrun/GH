@@ -36,6 +36,34 @@ def print_cohomology_dim_kv(v_range, l_range, k_range, even_edges):
             ret[(k,l)] = cohomdict
     return ret
 
+def print_dim_and_eulerchar_panzer(v_range, l_range, even_edges):
+    for l in l_range:
+        ds = [OrdinaryVariants.OrdinaryGVSPanzer(v, l, even_edges).get_dimension()
+                for v in v_range]
+        eul = sum([(1 if j % 2 == 0 else -1) *
+                    d for j, d in enumerate(ds)])
+        print("Dimensions ",
+                l, even_edges, ":", ds, "Euler", eul)
+
+def print_cohomology_dim_panzer(v_range, l_range, even_edges):
+    for l in l_range:
+        cohomdict = {}
+        for v in v_range:
+            D1 = OrdinaryVariants.ContractEdgesGOPanzer.generate_operator(
+                v, l, even_edges)
+            D2 = OrdinaryVariants.ContractEdgesGOPanzer.generate_operator(
+                v+1, l, even_edges)
+            try:
+                d = OrdinaryVariants.OrdinaryGVSPanzer(v, l, even_edges).get_dimension()
+                r1 = D1.get_matrix_rank()
+                r2 = D2.get_matrix_rank()
+                cohomdict[v] = d-r1-r2
+            except:
+                pass
+
+        print("Cohomology Dimensions ",
+                l, even_edges, ":", cohomdict)
+
 def print_dim_and_eulerchar_ke(v_range, l_range, k_range, even_edges):
     for k in k_range:
         print(k,"-edge-connected")
@@ -77,12 +105,12 @@ krange = list(range(1,6))
 maxv = 18
 
 for even_edges in [True, False]:
-    print("KV:")
-    print_dim_and_eulerchar_kv(range(maxv+1), range(maxl+1), krange, even_edges)
-    r1=print_cohomology_dim_kv(range(maxv+1), range(maxl+1), krange, even_edges)
-    print("KE:")
-    print_dim_and_eulerchar_ke(range(maxv+1), range(maxl+1), krange, even_edges)
-    r2=print_cohomology_dim_ke(range(maxv+1), range(maxl+1), krange, even_edges)
+    # print("KV:")
+    # print_dim_and_eulerchar_kv(range(maxv+1), range(maxl+1), krange, even_edges)
+    # r1=print_cohomology_dim_kv(range(maxv+1), range(maxl+1), krange, even_edges)
+    # print("KE:")
+    # print_dim_and_eulerchar_ke(range(maxv+1), range(maxl+1), krange, even_edges)
+    # r2=print_cohomology_dim_ke(range(maxv+1), range(maxl+1), krange, even_edges)
     # print("Ordinary (biconnected):")
     # print_dim_and_eulerchar_ordinary(range(20), range(maxl+2), even_edges)
     # print("Triconnected:")
@@ -90,3 +118,6 @@ for even_edges in [True, False]:
     # r3=print_cohomology_dim_triconnected(range(15), range(maxl+1), even_edges)
     # print("Differences:")
     # print_differences(r1,r2,r3)
+    print("Panzer complex:")
+    print_dim_and_eulerchar_panzer(range(maxv+1), range(maxl+1), even_edges)
+    print_cohomology_dim_panzer(range(maxv+1), range(maxl+1), even_edges)
