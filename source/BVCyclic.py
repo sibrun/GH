@@ -260,7 +260,7 @@ class GOneVS(GraphVectorSpace.GraphVectorSpace):
 class GOneVS3V(GraphVectorSpace.GraphVectorSpace):
     """Ordinary graph vector space, with one marked vertex, i.e., Graphs_2(1).
     The marked vertex is the first in the ordering.
-    In comparison to GOneVS we require here that the exernal vertex has valence at least 3
+    In comparison to GOneVS we require here that the external vertex has valence at least 3
 
 
     Attributes:

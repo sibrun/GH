@@ -11,7 +11,7 @@ This file implements the basis-generation and differential operators of these gr
 This is achieved using the following classes:
 
     WOHairyComponentGVS: 
-        generates the connected compontents of such graphs.
+        generates the connected components of such graphs.
         This is achieved as follows:
         1. generate Hairy graphs with numbered hairs using CHairyGraphComplex.py
         2. relable some of the hairs with omega or epsilon
@@ -138,7 +138,7 @@ class WOHairyComponentGVS(CHairyGraphComplex.CHairyGraphVS):
         # produce all hairy graphs
         hairy_graphs = self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, include_novertgraph=True)
 
-        # produce all neccesary permutations of the hairs
+        # produce all necessary permutations of the hairs
         # for more information look at the function "multiset_permutations" below
         all_perm = multiset_permutations(n_vertices=self.n_vertices, n=self.n, n_omega=self.n_omega, n_epsilon=self.n_epsilon)
 
@@ -149,7 +149,7 @@ class WOHairyComponentGVS(CHairyGraphComplex.CHairyGraphVS):
     def perm_sign(self, G, p):
         
         #inputs:
-        #    G: sage-graph with vertices labled [0, ..., n-1] 
+        #    G: sage-graph with vertices labeled [0, ..., n-1] 
         #    p: permutation of the vertices given by a list [p(0), ..., p(n-1)]
         #output: sign of the permutation induced on the edges of the Graph G
         
@@ -334,7 +334,7 @@ class WOHairyAggregatedGVS(WOHairyComponentGVS):
         l = l and (3 * self.n_vertices <= 2 * self.n_edges + (self.n_hairs - 2*self.n_double_legs)) 
         # At most a full graph.
         l = l and self.n_edges <= (self.n_vertices) * (self.n_vertices - 1) / 2
-        # each double-leg contains exactly two hair lables (which are not inner vertices)
+        # each double-leg contains exactly two hair labels (which are not inner vertices)
         l = l and self.n_double_legs <= (self.total_num_vertices - self.n_vertices) / 2
         # each other connected component contains at least one vertex
         l = l and self.n_components - self.n_double_legs <= self.total_num_vertices - 2*self.n_double_legs
@@ -1042,7 +1042,7 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
         - note that the first epsilon vertex becomes an omega vertex since target.n_omega = domain.n_omega + 1
         - hence we simply swap the label of the chosen epsilon vertex with the label of the first epsilon vertex
         - the sign is given by the sign of the edge-permutation induced by the relabelling of the vertices
-        - note that we do not need to additionaly consider the permutation of the omega-labels, since these are left in place by construction!
+        - note that we do not need to additionally consider the permutation of the omega-labels, since these are left in place by construction!
 
         EXAMPLE: "2x omega & 5x epsilon attached to a single vertex"
         notation: "i:0":
