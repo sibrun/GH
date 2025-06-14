@@ -668,6 +668,7 @@ class SumVectorSpace(VectorSpace):
         :rtype: Shared.OrderedDict
 
         :Example:
+
         Shared.OrderedDict([('deg', self.deg)])
         """
         pass
@@ -976,6 +977,7 @@ class DegSlice(SumVectorSpace):
         :rtype: Shared.OrderedDict
 
         :Example:
+
         Shared.OrderedDict([('deg', self.deg)])
         """
         pass

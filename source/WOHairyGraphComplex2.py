@@ -41,7 +41,7 @@ graph_type = "wohairy2"
 
 # def unshuffles_old(p,q):
 #     """
-#     Returns all p,q-unshuffles. Thes are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
+#     Returns all p,q-unshuffles. These are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
 #     """
 #     if (p,q) in unshuffles_dict:
 #         return unshuffles_dict[(p,q)]
@@ -207,7 +207,9 @@ class WOHairyGraphPreVS(SymmetricGraphComplex.SymmetricGraphVectorSpace):
 
     def get_unshuffles(self, p,q, offset=0):
         """
-        Returns all p,q-unshuffles. Thes are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
+        Returns all p,q-unshuffles.
+
+        These are all permutations [i1,...ipq] of 0,..,p+q-1 such that i1<..<ip and ip+1<..<ipq
         """
         return [[j+offset for j in pp] for pp in unshuffles(p,q)]
 

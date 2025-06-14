@@ -619,7 +619,7 @@ class ContractEdgesGO(SymmetricGraphComplex.SymmetricGraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = ForestedGVS(n_vertices, n_loops,
                              n_marked_edges, n_hairs, even_edges)

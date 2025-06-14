@@ -141,9 +141,11 @@ class GraphComplex:
                Only active if different ranks are not computed in parallel.
         :type info_tracker: bool
 
-        .. seealso:: - http://www.linalg.org/
-                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        .. SEEALSO::
+
+            - http://www.linalg.org/
+            - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+            - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         if sage is None and linbox is None and rheinfall is None:
             raise ValueError("compute_rank: At least one rank computation method needs to be specified.")

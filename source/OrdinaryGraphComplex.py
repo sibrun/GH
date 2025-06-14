@@ -215,7 +215,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVS(n_vertices, n_loops, even_edges)
         target = OrdinaryGVS(n_vertices - 1, n_loops, even_edges)
