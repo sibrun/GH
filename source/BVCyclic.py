@@ -395,7 +395,7 @@ class ReconnectEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = GOneVS(n_vertices, n_loops)
         target = OrdinaryGraphComplex.OrdinaryGVS(n_vertices + 1, n_loops, False)
@@ -540,7 +540,7 @@ class ReconnectEdgesGO3V(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = GOneVS3V(n_vertices, n_loops)
         target = OrdinaryGraphComplex.OrdinaryGVS(n_vertices + 1, n_loops, False)
@@ -628,7 +628,7 @@ class AddVReconnectEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGraphComplex.OrdinaryGVS(n_vertices, n_loops, False)
         target = OrdinaryGraphComplex.OrdinaryGVS(n_vertices + 1, n_loops-1, False)

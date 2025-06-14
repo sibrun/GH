@@ -251,7 +251,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = HairyMerkulovGVS(n_vertices, n_loops, n_hairs, even_edges, even_hairs, 34)
         target = HairyMerkulovGVS(n_vertices - 1, n_loops, n_hairs, even_edges, even_hairs, 3456 if to3456 else 56)

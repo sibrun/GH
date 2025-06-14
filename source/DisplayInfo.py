@@ -136,7 +136,7 @@ class InfoTracker:
         """Return a list with the names of parameters and properties.
 
         :return: parameter_list: List with the parameter and property names.
-        :rtype list(str)
+        :rtype: list(str)
         """
         return self.header_list
 

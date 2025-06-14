@@ -223,7 +223,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryMerkulovGVS(n_vertices, n_loops, even_edges, 34)
         target = OrdinaryMerkulovGVS(n_vertices - 1, n_loops, even_edges, 3456 if to3456 else 56)

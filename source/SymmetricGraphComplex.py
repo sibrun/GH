@@ -458,8 +458,10 @@ class SymmetricDifferential(GraphOperator.Differential):
     Then a new SymmetricDifferential is constructed, passing the old differential as constructor parameter.
 
     Attributes:
-    diff - The (old) differential from which this differential (on isotypical components) is built,
-           by splitting the relevant operators into their restrictions on istypical components.
+
+    diff - The (old) differential from which this differential (on
+    isotypical components) is built, by splitting the relevant
+    operators into their restrictions on istypical components.
     """
 
     def __init__(self, diff):
