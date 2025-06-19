@@ -7,7 +7,7 @@ import GraphOperator
 
 
 if __name__ == "__main__":
-    nr_jobs = 10
+    nr_jobs = 30
     print(f"Building all computable variant matrices using {nr_jobs} jobs ...")
     vs_listf = []
     vs_lista = []
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("Finished computing variant matrices.")
 
     print("computing ranks")
-    # allop.compute_rank(linbox="rational", n_jobs=nr_jobs)
+    allop.compute_rank(linbox="rational", n_jobs=nr_jobs, ignore_existing_files=True)
     # allop.compute_rank(sage="integer", n_jobs=nr_jobs)
-    allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=True)
+    # allop.compute_rank(sage="integer", n_jobs=nr_jobs, ignore_existing_files=True)
     print("Finished")
