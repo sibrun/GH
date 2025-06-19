@@ -249,11 +249,16 @@ class OrdinaryGVSPanzer(GraphVectorSpace.GraphVectorSpace):
         if not self.is_valid():
             return []
         for G in self.full_ogvs.get_basis():
-            # check if the graph has a subgraph of negative degre
-            if 2*G.order() - G.size() - 2 < 0:
+            if not G.is_triconnected():
                 continue
+            # check if the graph has a subgraph of negative degre
+            #if 2*G.order() - G.size() - 2 < 0:
+            #    continue
             ok = True
             for H in G.connected_subgraph_iterator():
+                # only consider proper subgraphs
+                if H.order() == G.order():
+                    continue
                 if 2*H.order() - H.size() - 2 < 0:
                     ok = False
                     break
