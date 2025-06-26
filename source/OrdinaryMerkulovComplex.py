@@ -16,7 +16,7 @@ import GCDimensions
 import OrdinaryGraphComplex
 
 
-use_only_5_valent = False # False = we use 5- and 6-valent vertices
+use_only_5_valent = True # False = we use 5- and 6-valent vertices
 graph_type = "ordinaryme" + ("5" if use_only_5_valent else "")
 
 sub_types = {True: "even_edges", False: "odd_edges"}
