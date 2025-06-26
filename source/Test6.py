@@ -11,14 +11,15 @@ import GraphOperator
 import ForestedGraphComplex
 import os
 
-# even_e = True
-# OGC = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(range(20), range(9), even_e, ['contract'])
+even_e = False
+OGC = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(range(20), range(11), even_e, ['contract'])
 # OGC.build_basis()
 # OGC.build_matrix()
 # OGC.compute_rank(sage="mod")
 
-# OGC.print_cohom()
+OGC.print_cohom()
 
+return
 
 def precond_stats(op:GraphOperator.OperatorMatrix):
     print("Loading...: ", str(op))
