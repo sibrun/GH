@@ -16,7 +16,8 @@ import GCDimensions
 import OrdinaryGraphComplex
 
 
-graph_type = "ordinaryme"
+use_only_5_valent = True # otherwise, we use 5- and 6-valent vertices
+graph_type = "ordinaryme" + ("5" if use_only_5_valent else "")
 
 sub_types = {True: "even_edges", False: "odd_edges"}
 
@@ -97,11 +98,12 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
         #return binomial((self.n_vertices * (self.n_vertices - 1)) / 2, self.n_edges) / factorial(self.n_vertices)
 
     def get_generating_graphs(self):
+        mysix = 5 if use_only_5_valent else 6
         # Generates all simple graphs with specified number of vertices and edges and at least trivalent vertices.
         if not self.is_valid():
             return
         if self.valence_type == 3456:
-            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
+            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,mysix):
                 # check there is at most one vertex of valence >4
                 if sum( (1 if len(G[v])>4 else 0) for v in G.vertices(sort=True) ) <= 1:
                     yield G
@@ -109,7 +111,7 @@ class OrdinaryMerkulovGVS(GraphVectorSpace.GraphVectorSpace):
             for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,4):
                 yield G
         elif self.valence_type == 56:
-            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,6):
+            for G in NautyInterface.list_simple_graphs_valence(self.n_vertices, self.n_edges,mysix):
                 # check there is exactly one vertex of valence >4
                 if sum( (1 if len(G[v])>4 else 0) for v in G.vertices(sort=True) ) == 1:
                     yield G
