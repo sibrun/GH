@@ -46,6 +46,6 @@ max_sort_value = sys.maxsize     # Return value if dimension or shape is unknown
 # ---- Data Tracker Parameters ----
 data_tracker_timeout = 0.2
 
-# ---- Secon Layor Info ----
+# ---- Second Layor Info ----
 # Option to plot information about the sub vector spaces of a degree slice in a graded vector space.
 second_info = False

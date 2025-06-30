@@ -206,7 +206,7 @@ class OperatorMatrix:
         :raise StoreLoad.FileNotFoundError: Raised if skip_if_no_basis is True and the domain or target basis file is
             not found.
 
-        .. seealso:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
+        .. SEEALSO:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
         """
         pass
 
@@ -218,8 +218,8 @@ class OperatorMatrix:
         :param domain: Potential domain vector space for an operator matrix.
         :type domain: GraphVectorSpace.VectorSpace
         :param target: Potential target vector space for an operator matrix.
-        :type targetGraphVectorSpace.VectorSpace
-        :return:True if domain and target match to build an operator matrix.
+        :type target: targetGraphVectorSpace.VectorSpace
+        :return: True if domain and target match to build an operator matrix.
         :rtype: bool
         """
         pass
@@ -264,7 +264,7 @@ class OperatorMatrix:
         :param data_type: data_type for the SMS format.
         :type data_type: str
 
-        ..seealso:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
+        .. SEEALSO:: http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
         """
         (d, t) = shape
         stringList = []
@@ -283,10 +283,11 @@ class OperatorMatrix:
         :rtype: tuple(list(tuple(int, int, int)), tuple(int, int))
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found.
         :raise ValueError: Raised in the following cases:
-                The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
-                End line is missing.
-                Non-positive matrix indices.
-                Matrix indices outside matrix shape.
+
+        - The shape of the matrix doesn't correspond to the dimensions of the domain or target vector space.
+        - End line is missing.
+        - Non-positive matrix indices.
+        - Matrix indices outside matrix shape.
         """
         if not self.exists_matrix_file():
             raise StoreLoad.FileNotFoundError(
@@ -512,11 +513,13 @@ class OperatorMatrix:
 
         Compute the rank of the operator matrix and stores it in the rank file. The rank can be determined with
         different modes:
-            - Use sage to determine the rank over the integers or over a finite field, i.e. with all
-              calculations modulo a prime number.
-            - Use linbox to determine the rank over the rational numbers or over a finite field, i.e. with all
-              calculations modulo a prime number.
-            - Use rheinfall to determine the rank over the integers, the rational numbers or modulo 64 bit integers.
+
+        - Use sage to determine the rank over the integers or over a finite field, i.e. with all
+          calculations modulo a prime number.
+        - Use linbox to determine the rank over the rational numbers or over a finite field, i.e. with all
+          calculations modulo a prime number.
+        - Use rheinfall to determine the rank over the integers, the rational numbers or modulo 64 bit integers.
+
         The prime number is set in the module Parameters.
 
         :param sage: Use sage to compute the rank. Options: 'integer' (exact rank over the integers),
@@ -533,9 +536,11 @@ class OperatorMatrix:
         :type ignore_existing_files: bool
         :raise StoreLoad.FileNotFoundError: Raised if the matrix file cannot be found and skip_if_no_matrix = False.
 
-        .. seealso:: - http://www.linalg.org/
-                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        .. SEEALSO::
+
+            - http://www.linalg.org/
+            - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+            - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         if sage is None and linbox is None and rheinfall is None:
             raise ValueError("compute_rank: At least one rank computation method needs to be specified.")
@@ -1016,6 +1021,7 @@ class OperatorMatrixCollection:
         :rtype: str
 
         :Example:
+
         'contract edges'
         """
         pass
@@ -1133,9 +1139,11 @@ class OperatorMatrixCollection:
                Only active if different ranks are not computed in parallel.
         :type info_tracker: bool
 
-        .. seealso:: - http://www.linalg.org/
-                    - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-                    - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        .. SEEALSO::
+
+            - http://www.linalg.org/
+            - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+            - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
         """
         if sage is None and linbox is None and rheinfall is None:
             raise ValueError("compute_rank: At least one rank computation method needs to be specified.")

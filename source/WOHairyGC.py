@@ -11,7 +11,7 @@ This file implements the basis-generation and differential operators of these gr
 This is achieved using the following classes:
 
     WOHairyComponentGVS: 
-        generates the connected compontents of such graphs.
+        generates the connected components of such graphs.
         This is achieved as follows:
         1. generate Hairy graphs with numbered hairs using CHairyGraphComplex.py
         2. relable some of the hairs with omega or epsilon
@@ -138,7 +138,7 @@ class WOHairyComponentGVS(CHairyGraphComplex.CHairyGraphVS):
         # produce all hairy graphs
         hairy_graphs = self.get_hairy_graphs(self.n_vertices, self.n_loops, self.n_hairs, include_novertgraph=True)
 
-        # produce all neccesary permutations of the hairs
+        # produce all necessary permutations of the hairs
         # for more information look at the function "multiset_permutations" below
         all_perm = multiset_permutations(n_vertices=self.n_vertices, n=self.n, n_omega=self.n_omega, n_epsilon=self.n_epsilon)
 
@@ -149,7 +149,7 @@ class WOHairyComponentGVS(CHairyGraphComplex.CHairyGraphVS):
     def perm_sign(self, G, p):
         
         #inputs:
-        #    G: sage-graph with vertices labled [0, ..., n-1] 
+        #    G: sage-graph with vertices labeled [0, ..., n-1] 
         #    p: permutation of the vertices given by a list [p(0), ..., p(n-1)]
         #output: sign of the permutation induced on the edges of the Graph G
         
@@ -194,17 +194,16 @@ def multiset_permutations(n_vertices, n, n_omega, n_epsilon):
     Using this we need only to consider (n + n_omega + n_epsilon)! / (n_omega! * n_epsilon!)
     instead of (n + n_omega + n_epsilon)! permutations
     
-    Example: ---
+    :Example:
+
     - input: [n_vertices=0, n=1, n_omega=2, n_epsilon=0]
     - possible permutations of the hairs: [1, omega, omega], [omega, 1, omega], [omega, omega, 1]
-    - intuetively the output should be: [0, 1, 2], [1, 0, 2], [2, 0, 1]
+    - intuitively the output should be: [0, 1, 2], [1, 0, 2], [2, 0, 1]
     - BUT: the partition is always given by [[0], [1,2]]
       hence the new "1"-vertex needs to get relabled to 0
-    - because of this the output consits of the inverted permutations of the intuitive output:
-        [0, 1, 2], [1, 0, 2], [1, 2, 0]
-
+    - because of this the output consists of the inverted permutations of the intuitive output:
+      [0, 1, 2], [1, 0, 2], [1, 2, 0]
     """
-
     permutations = []
 
     L = n + n_omega + n_epsilon
@@ -335,7 +334,7 @@ class WOHairyAggregatedGVS(WOHairyComponentGVS):
         l = l and (3 * self.n_vertices <= 2 * self.n_edges + (self.n_hairs - 2*self.n_double_legs)) 
         # At most a full graph.
         l = l and self.n_edges <= (self.n_vertices) * (self.n_vertices - 1) / 2
-        # each double-leg contains exactly two hair lables (which are not inner vertices)
+        # each double-leg contains exactly two hair labels (which are not inner vertices)
         l = l and self.n_double_legs <= (self.total_num_vertices - self.n_vertices) / 2
         # each other connected component contains at least one vertex
         l = l and self.n_components - self.n_double_legs <= self.total_num_vertices - 2*self.n_double_legs
@@ -534,8 +533,11 @@ def list_elems_from_range(input_list, num, dist):
 def list_elems_from_double_range(input_list, num1, dist1, num2, dist2):
     """
     input: some list 
-    output: two disjoint slices of the list (starting at num_i and of length dist_i)
-            merged together to a single new list
+
+    output:
+
+    two disjoint slices of the list (starting at num_i and of length dist_i)
+    merged together to a single new list
     """
     assert max(num1 + dist1, num2 + dist2) <= len(input_list)
     assert num1 + dist1 <= num2 or num2 + dist2 <= num1 # disjointness of the slice
@@ -555,14 +557,16 @@ def get_cross_permutations(list_1, list_2):
 
     More operationally we compute the following:
     Generate all permutations of S that satisfy the constraints:
-      - S is partitioned into disjoint subsets A and B.
-      - Each element in A is either fixed or swapped with an element in B (and vice versa).
-      - If two elements i, j in A (i < j) are swapped, their images in B preserve order (σ(i) < σ(j)).
-        Likewise, if two in B are swapped, their images in A preserve order.
+
+    - S is partitioned into disjoint subsets A and B.
+    - Each element in A is either fixed or swapped with an element in B (and vice versa).
+    - If two elements i, j in A (i < j) are swapped, their images in B preserve order (σ(i) < σ(j)).
+
+    Likewise, if two in B are swapped, their images in A preserve order.
+
     Yields each valid permutation as a tuple of length n (in one-line notation).
     """
-    
-    # assert that list_1 and list_2 are disjoint with n combined elements
+        # assert that list_1 and list_2 are disjoint with n combined elements
     assert len(list_1) + len(list_2) == len(set(list_1 + list_2))
 
     permutations = []
@@ -1038,17 +1042,19 @@ class EpsToOmegaGO(SymmetricGraphComplex.SymmetricGraphOperator):
         - note that the first epsilon vertex becomes an omega vertex since target.n_omega = domain.n_omega + 1
         - hence we simply swap the label of the chosen epsilon vertex with the label of the first epsilon vertex
         - the sign is given by the sign of the edge-permutation induced by the relabelling of the vertices
-        - note that we do not need to additionaly consider the permutation of the omega-labels, since these are left in place by construction!
+        - note that we do not need to additionally consider the permutation of the omega-labels, since these are left in place by construction!
 
-        EXAMPLE: "2x omaga & 5x epsilon attached to a single vertex"
+        EXAMPLE: "2x omega & 5x epsilon attached to a single vertex"
         notation: "i:0":
         - "i" denotes the "physical" vertex in the graph
         - "0" denotes the corresponding vertex-label
+
         1.  G1.vertices():  i:0, o1:1, o2:2, e1:3, e2:4, e3:5, e4:6, e5:7
         2.  eps_index = 5 -> eps_vertex e3
-        3.  we now want to swap vertex e3 with e1: 
-            relabeling_perm: [0, 1, 2, 5, 4, 3, 6, 7] 
+        3.  we now want to swap vertex e3 with e1:
+            relabeling_perm: [0, 1, 2, 5, 4, 3, 6, 7]
             G2.vertices():  i:0, o1:1, o2:2, e1:5, e2:4, e3:3, e4:6, e5:7
+
         4.  Now, since each hair-vertex (o1, o2, e1, e2, e3, e4, e5) corresponds to exactly one edge (the hair),
             the induced edge permutation is simply a swap of (i-e3) with (i-e1)
             -> sign = -1

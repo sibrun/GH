@@ -20,8 +20,10 @@ def rank(rheinfall_option, matrix_file):
     :return: Matrix rank calculated by the rheinfall library.
     :rtype: int
 
-    .. seealso:: - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
-                 - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
+    .. SEEALSO::
+
+        - https://github.com/riccardomurri/rheinfall/blob/master/src.c%2B%2B/examples/rank.cpp
+        - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
     """
     if rheinfall_option not in rheinfall_options:
         raise ValueError('Possible options for rheinfall: ' + str(rheinfall_options))
