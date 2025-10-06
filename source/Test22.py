@@ -12,6 +12,8 @@ def print_cohom(nloops, even_edges):
     r_full = op_full.get_matrix_rank()
     r_compl = op_compl.get_matrix_rank()
     n = V.get_dimension()
+    n_compl = op_compl.domain.get_dimension()
+    n1 = op_full.target.get_dimension()
 
     op_ord = OrdinaryGraphComplex.ContractEdgesGO.generate_operator(2*nloops-2, nloops, even_edges)
     if op_ord.exists_rank_file():
@@ -21,8 +23,10 @@ def print_cohom(nloops, even_edges):
     else:
         dim_ord = "?"
 
-    print("nloops=", nloops, "\tee=", even_edges, ": Actual cohomdim: ", dim_ord, " estimated cohomdim: ", n - r_full+ r_compl, "(full: ", r_full, " compl:", r_compl, ")")
-
+    # print("nloops=", nloops, "\tee=", even_edges, ": Actual cohomdim: ", dim_ord, " estimated cohomdim: ", n - r_full+ r_compl, "(full: ", r_full, " compl:", r_compl, ")")
+    print("nloops=", nloops, "\tee=", even_edges, ": Actual cohomdim: ", dim_ord, "Bg dim:", n, " rk d: ", r_full, "rk dperp:", r_compl, " estimated cohomdim: ", n - r_full+ r_compl, "(full: ", r_full, " compl:", r_compl, ")")
+    # print(nloops, " & ", n, " & ", n_compl, " & ", r_full, " & ", r_compl, " & ", n - r_full+ r_compl, " \\\\")
+    print(n1)
 
 for i in range(5, 11):
     print_cohom(i, True)
