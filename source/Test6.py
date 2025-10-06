@@ -11,13 +11,13 @@ import GraphOperator
 import ForestedGraphComplex
 import os
 
-# even_e = True
-# OGC = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(range(20), range(9), even_e, ['contract'])
+even_e = False
+OGC = OrdinaryMerkulovComplex.OrdinaryMerkulovGC(range(20), range(11), even_e, ['contract'])
 # OGC.build_basis()
 # OGC.build_matrix()
 # OGC.compute_rank(sage="mod")
 
-# OGC.print_cohom()
+OGC.print_cohom()
 
 
 def precond_stats(op:GraphOperator.OperatorMatrix):
@@ -251,14 +251,14 @@ def precondition(op:GraphOperator.OperatorMatrix):
 # precondition( ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(7,9,0, False) )
 # precondition( OrdinaryGraphComplex.ContractEdgesGO.generate_operator(12,10, True) )
 
-print("Loading file")
-fff = "gh_data/data/forestedbl/odd_edges/bi_D_contract_unmark_top_7_9_0.txt.preconditioned_978418.txt"
+# print("Loading file")
+# fff = "gh_data/data/forestedbl/odd_edges/bi_D_contract_unmark_top_7_9_0.txt.preconditioned_978418.txt"
 
-lst, (m,n) = load_sms_file(fff)
+# lst, (m,n) = load_sms_file(fff)
 
-lstt = transpose_lst(lst)
+# lstt = transpose_lst(lst)
 
-save_sms_file(lstt, n,m, fff+".transp.txt")
+# save_sms_file(lstt, n,m, fff+".transp.txt")
 
 # print("graphckeck...")
 # graphcheck(lst, m, n)
