@@ -1436,6 +1436,10 @@ class ForestedTopDegSlice(SymmetricGraphComplex.SymmetricDegSlice):
         max_vertices = 2*n_loops-2 + n_hairs
         self.n_vertices = max_vertices
         min_vertices = max_vertices-top_n+1
+
+        self.n_edges = self.n_loops + self.n_vertices - 1
+        self.n_unmarked_edges = self.n_edges - n_marked_edges
+        
         super().__init__(
             [ForestedGVS(v, n_loops, n_marked_edges, n_hairs, even_edges)
              for v in range(min_vertices, max_vertices + 1)],

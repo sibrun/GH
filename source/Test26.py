@@ -15,7 +15,7 @@ opc1.build_matrix()
 opuu = ForestedGraphComplex.UnmarkEdgesGO.generate_operator(nv, g, m, 2, False)
 opuu.build_matrix()
 Dc1 = opc1.get_matrix()
-print(Dc1)
+# print(Dc1)
 
 
 opc2 = ForestedGraphComplex.ContractEdgesGO.generate_operator(nv, g, m+1, 2, False)
@@ -23,7 +23,7 @@ opc2.build_matrix()
 V2 = opc2.domain
 Dc2 = opc2.get_matrix()
 b2 = V2.get_basis()
-print(Dc2)
+# print(Dc2)
 
 def deleteUnmarkedEdges(G, V):
     G = G.copy()
@@ -58,8 +58,90 @@ def filter_cols(M, fil):
     cols = [i for i, ok in enumerate(fil) if ok]
     return M[:, cols]
 
-fil = basis_filter(V1)
-print(fil)
+
+def cohom_formatted_forested_top(D1, D2, Dc2, filterfunc):
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    
+    vs_fil = [filterfunc(g, vs) for g in vs.get_basis()]
+
+    # d = vs.get_dimension()
+    d = sum( 1 for ok in vs_fil if ok)
+    # print("dim", d)
+    # print(vs_fil)
+
+    r1 = 0
+    r2 = 0
+    rc2 = 0
+
+    vs2 = D2.get_domain()
+    vs2_fil = [filterfunc(g, vs2) for g in vs2.get_basis()]
+    d2 = sum( 1 for ok in vs2_fil if ok)
+    
+    if Dc2.is_valid():
+  
+        Ac2 = Dc2.get_matrix()
+        Ac2_fil = filter_cols(Ac2, vs2_fil)
+
+        rc2 = Ac2_fil.rank()
+        # print("Ac2", Ac2.nrows(), Ac2.ncols(), rc2)
+        # print("Ac2_fil", Ac2_fil.nrows(), Ac2_fil.ncols(), rc2)
+        
+
+    if D1.is_valid():
+        A1 = D1.get_matrix()
+        A1_fil = filter_cols(A1, vs_fil)
+        r1 = A1_fil.rank()
+        # print("A1", A1.nrows(), A1.ncols(), r1)
+        # print("A1_fil", A1_fil.nrows(), A1_fil.ncols(), r1)
+
+    if D2.is_valid():
+        A2 = D2.get_matrix()
+        A2_fil = filter_cols(A2, vs2_fil)
+        r2 = A2_fil.rank()
+        # print("A2", A2.nrows(), A2.ncols(), r2)
+        # print("A2_fil", A2_fil.nrows(), A2_fil.ncols(), r2)
+
+    # exact or not?
+    r_str = f"({d}+{rc2}-{r1}-{r2},{d},{d2})"
+
+    # iso string
+    cohomdim = d+rc2-r1-r2
+
+    return str(cohomdim) + r_str 
+
+
+def create_forested_top_cohom_table(l_range, m_range, even_edges, filterfunc):
+    s = ""
+    h=2
+    for l in l_range:
+        print("l =", l)
+        print(  [cohom_formatted_forested_top(
+                    ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                        l, m, h, even_edges),
+                    ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+                        l, m+1, h, even_edges),
+                    ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                        2*l-2+h, l, m+1, h, even_edges),
+                    filterfunc
+                ) for m in m_range])
+
+
+create_forested_top_cohom_table(range(2,5), range(0,5), False, is_admissible)
+
+# xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
+#                         2, 3, 2, False)
+# aaa = xxx.get_matrix()
+# print(aaa)
+# vvv = xxx.domain
+# bbb = vvv.get_basis()
+# print(len(bbb))
+
+# fil = basis_filter(V1)
+# print(fil)
 
 # ggg = V1.get_basis()[2]
 # print(ggg)
@@ -74,8 +156,8 @@ print(fil)
 
 # V1.display_basis_plots()
 
-cols = [i for i, ok in enumerate(fil) if ok]
-A = Dc1[:, cols]
+# cols = [i for i, ok in enumerate(fil) if ok]
+# A = Dc1[:, cols]
 
-print("...")
-print(A)
+# print("...")
+# print(A)
