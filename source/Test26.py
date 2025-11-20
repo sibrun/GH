@@ -69,3 +69,9 @@ print(fil)
 # print(are_hairs_connected(ggg, V1))
 
 # V1.display_basis_plots()
+
+cols = [i for i, ok in enumerate(fil) if ok]
+A = Dc1[:, cols]
+
+print("...")
+print(A)
