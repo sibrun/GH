@@ -488,7 +488,7 @@ class GraphVectorSpace(VectorSpace):
         :return: List of sage graphs representing the basis elements.
         :rtype: list(Graph)
         """
-        return map(Graph, self.get_basis_g6())
+        return [Graph(g6) for g6 in self.get_basis_g6()]
 
     def get_g6_coordinates_dict(self):
         """Return a dictionary to translate from the graph6 string of graphs in the basis to their index in the basis.
