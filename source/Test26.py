@@ -54,6 +54,10 @@ def is_admissible(G,V):
 def basis_filter(V):
     return [is_admissible(g, V) for g in V.get_basis()]
 
+def filter_cols(M, fil):
+    cols = [i for i, ok in enumerate(fil) if ok]
+    return M[:, cols]
+
 fil = basis_filter(V1)
 print(fil)
 
