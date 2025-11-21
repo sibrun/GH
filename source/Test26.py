@@ -69,6 +69,16 @@ def filter_from_sumvs(V, filterfunc):
     return [filterfunc(g, VV) for VV in V.get_vs_list() for g in VV.get_basis() ]
 
 def cohom_formatted_forested_top(D1, D2, Dc2, filterfunc):
+    # D1.get_domain().build_basis()
+    # D2.get_domain().build_basis()
+    # Dc2.get_domain().build_basis()
+    # D1.get_target().build_basis()
+    # D2.get_target().build_basis()
+    # Dc2.get_target().build_basis()
+    # D1.build_matrix()
+    # D2.build_matrix()
+    # Dc2.build_matrix()
+
     vs = D1.get_domain()
     if not vs.is_valid():
         return "-"
@@ -142,7 +152,7 @@ def create_forested_top_cohom_table(l_range, m_range, even_edges, filterfunc):
                 ) for m in m_range])
 
 
-create_forested_top_cohom_table(range(2,6), range(0,10), False, is_admissible)
+create_forested_top_cohom_table(range(2,5), range(0,10), False, is_admissible)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
