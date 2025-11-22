@@ -2,6 +2,7 @@
 
 from sage.all import *
 import ForestedGraphComplex
+import networkx as nx
 
 g = 2
 nv = 2*g
@@ -135,10 +136,11 @@ def cohom_formatted_forested_top(D1, D2, Dc2, filterfunc):
 
     return str(cohomdim) + r_str 
 
+def alwaystrue(G,V):
+    return True
 
-def create_forested_top_cohom_table(l_range, m_range, even_edges, filterfunc):
+def create_forested_top_cohom_table(l_range, m_range, h, even_edges, filterfunc):
     s = ""
-    h=2
     for l in l_range:
         print("l =", l)
         print(  [cohom_formatted_forested_top(
@@ -152,7 +154,76 @@ def create_forested_top_cohom_table(l_range, m_range, even_edges, filterfunc):
                 ) for m in m_range])
 
 
-create_forested_top_cohom_table(range(2,5), range(0,10), False, is_admissible)
+def display_dimensions_forested(l_range, m_range, h, even_edges):
+    s = ""
+    for l in l_range:
+        print("l =", l)
+        for m in m_range:
+            print("max m =",m)
+            maxv = 2*l-2+h
+            print(  [ForestedGraphComplex.ForestedGVS(
+                        maxv-mm, l, m-mm, h, even_edges).get_dimension()
+                    for mm in range(m+1)])
+
+def tadpole_and_paredge_free(G,V):
+    n = V.n_vertices
+    m = V.n_unmarked_edges
+    for i in range(n, n+m):
+        nh = G.neighbors(i)
+        if len(nh) == 2:
+            j = nh[0]
+            k = nh[1]
+            if G.has_edge(j, k):
+                return False
+        elif len(nh) == 1:
+            return False
+    return True
+
+def convert_to_multigraph(G,V):
+    GG = Graph(G, multiedges=True, loops=True)
+    n = V.n_vertices
+    m = V.n_unmarked_edges
+    h = V.n_hairs
+    for i in range(n, n+m):
+        nh = G.neighbors(i)
+        if len(nh) == 2:
+            j = nh[0]
+            k = nh[1]
+            GG.add_edge(j, k)
+            GG.delete_vertex(i)
+        elif len(nh) == 1:
+            j = nh[0]
+            GG.add_edge(j, j)
+            GG.delete_vertex(i)
+        else:
+            print("Unexpected number of neighbors:", len(nh))
+
+    return GG
+        
+def is_3_edge_connected_fast(G):
+    H = G.networkx_graph()
+    return nx.edge_connectivity(H) >= 3
+
+def is_edge_triconnected(G,V):
+    MG = convert_to_multigraph(G,V)
+    res = is_3_edge_connected_fast(MG) 
+    # if not res and V.n_vertices >= 5:
+    #     print("n", V.n_vertices)
+    #     print("Not 3-edge-connected:")
+    #     print(MG)
+    #     print("Adjacency matrix:")
+    #     print(MG.adjacency_matrix()     )
+    #     G.plot().save("temp/graph_forest.png")
+    #     MG.plot().save("temp/graph.png")
+    #     exit(1)
+    return res and tadpole_and_paredge_free(G,V)
+
+# create_forested_top_cohom_table(range(1,4), range(0,10), 0, False, is_admissible)
+# create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
+# create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, tadpole_and_paredge_free)
+create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
+
+# display_dimensions_forested(range(5,6), range(0,10), 0, False)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
