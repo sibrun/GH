@@ -164,6 +164,24 @@ def display_dimensions_forested(l_range, m_range, h, even_edges):
             print(  [ForestedGraphComplex.ForestedGVS(
                         maxv-mm, l, m-mm, h, even_edges).get_dimension()
                     for mm in range(m+1)])
+            
+
+def filtered_dimension(V, filterfunc):
+    return sum(1 for g in V.get_basis() if filterfunc(g, V))
+
+def filtered_dimension_sumvs(Vsum, filterfunc):
+    return sum( filtered_dimension(VV, filterfunc) for VV in Vsum.get_vs_list())
+
+def display_dimensions_forested_filtered(l_range, m_range, h, even_edges, filterfunc):
+    s = ""
+    for l in l_range:
+        print("l =", l)
+        for m in m_range:
+            print("max m =",m)
+            maxv = 2*l-2+h
+            print(  [filtered_dimension(ForestedGraphComplex.ForestedGVS(
+                        maxv-mm, l, m-mm, h, even_edges), filterfunc)
+                    for mm in range(m+1)])
 
 def tadpole_and_paredge_free(G,V):
     n = V.n_vertices
@@ -221,9 +239,10 @@ def is_edge_triconnected(G,V):
 # create_forested_top_cohom_table(range(1,4), range(0,10), 0, False, is_admissible)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, tadpole_and_paredge_free)
-create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
+# create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
 
-# display_dimensions_forested(range(5,6), range(0,10), 0, False)
+display_dimensions_forested(range(5,6), range(0,10), 0, False)
+display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
