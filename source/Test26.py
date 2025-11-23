@@ -68,6 +68,8 @@ def filter_both(M, fil_rows, fil_cols):
 
 def filter_from_sumvs(V, filterfunc):
     return [filterfunc(g, VV) for VV in V.get_vs_list() for g in VV.get_basis() ]
+def filter_from_vs(V, filterfunc):
+    return [filterfunc(g, V) for g in V.get_basis() ]
 
 def cohom_formatted_forested_top(D1, D2, Dc2, filterfunc):
     # D1.get_domain().build_basis()
@@ -136,6 +138,124 @@ def cohom_formatted_forested_top(D1, D2, Dc2, filterfunc):
 
     return str(cohomdim) + r_str 
 
+def cohom_formatted_sumvs(D1, D2, filterfunc):
+    # D1.get_domain().build_basis()
+    # D2.get_domain().build_basis()
+    # Dc2.get_domain().build_basis()
+    # D1.get_target().build_basis()
+    # D2.get_target().build_basis()
+    # Dc2.get_target().build_basis()
+    # D1.build_matrix()
+    # D2.build_matrix()
+    # Dc2.build_matrix()
+
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    
+    vs_fil = filter_from_sumvs(vs, filterfunc)
+    out1_fil = filter_from_sumvs(D1.get_target(), filterfunc)
+
+    # d = vs.get_dimension()
+    d = sum( 1 for ok in vs_fil if ok)
+    # print("dim", d)
+    # print(vs_fil)
+
+    r1 = 0
+    r2 = 0
+
+    vs2 = D2.get_domain()
+    vs2_fil = filter_from_sumvs(vs2, filterfunc)
+    out2_fil = filter_from_sumvs(D2.get_target(), filterfunc)
+    d2 = sum( 1 for ok in vs2_fil if ok)
+
+
+    
+    if D1.is_valid():
+        A1 = D1.get_matrix()
+        A1_fil = filter_both(A1, out1_fil, vs_fil)
+        # A1_fil = filter_cols(A1, vs_fil)
+        r1 = A1_fil.rank()
+        # print("A1", A1.nrows(), A1.ncols(), r1)
+        # print("A1_fil", A1_fil.nrows(), A1_fil.ncols(), r1)
+
+    if D2.is_valid():
+        A2 = D2.get_matrix()
+        A2_fil = filter_both(A2, out2_fil, vs2_fil)
+        # A2_fil = filter_cols(A2, vs2_fil)
+        r2 = A2_fil.rank()
+        # print("A2", A2.nrows(), A2.ncols(), r2)
+        # print("A2_fil", A2_fil.nrows(), A2_fil.ncols(), r2)
+
+    # exact or not?
+    r_str = "" #f"({d}+{rc2}-{r1}-{r2},{d},{d2})"
+
+    # iso string
+    cohomdim = d-r1-r2
+
+    return str(cohomdim) + r_str 
+
+def cohom_formatted(D1, D2, filterfunc):
+    # D1.get_domain().build_basis()
+    # D2.get_domain().build_basis()
+    # Dc2.get_domain().build_basis()
+    # D1.get_target().build_basis()
+    # D2.get_target().build_basis()
+    # Dc2.get_target().build_basis()
+    # D1.build_matrix()
+    # D2.build_matrix()
+    # Dc2.build_matrix()
+
+    vs = D1.get_domain()
+    if not vs.is_valid():
+        return "-"
+    if not vs.exists_basis_file():
+        return "?"
+    
+    vs_fil = filter_from_vs(vs, filterfunc)
+    out1_fil = filter_from_vs(D1.get_target(), filterfunc)
+
+    # d = vs.get_dimension()
+    d = sum( 1 for ok in vs_fil if ok)
+    # print("dim", d)
+    # print(vs_fil)
+
+    r1 = 0
+    r2 = 0
+
+    vs2 = D2.get_domain()
+    vs2_fil = filter_from_vs(vs2, filterfunc)
+    out2_fil = filter_from_vs(D2.get_target(), filterfunc)
+    d2 = sum( 1 for ok in vs2_fil if ok)
+
+
+    
+    if D1.is_valid():
+        A1 = D1.get_matrix()
+        A1_fil = filter_both(A1, out1_fil, vs_fil)
+        # A1_fil = filter_cols(A1, vs_fil)
+        r1 = A1_fil.rank()
+        # print("A1", A1.nrows(), A1.ncols(), r1)
+        # print("A1_fil", A1_fil.nrows(), A1_fil.ncols(), r1)
+
+    if D2.is_valid():
+        A2 = D2.get_matrix()
+        A2_fil = filter_both(A2, out2_fil, vs2_fil)
+        # A2_fil = filter_cols(A2, vs2_fil)
+        r2 = A2_fil.rank()
+        # print("A2", A2.nrows(), A2.ncols(), r2)
+        # print("A2_fil", A2_fil.nrows(), A2_fil.ncols(), r2)
+
+    # exact or not?
+    r_str = "" #f"({d}+{rc2}-{r1}-{r2},{d},{d2})"
+
+    # iso string
+    cohomdim = d-r1-r2
+
+    return str(cohomdim) + r_str 
+
 def alwaystrue(G,V):
     return True
 
@@ -152,6 +272,33 @@ def create_forested_top_cohom_table(l_range, m_range, h, even_edges, filterfunc)
                         2*l-2+h, l, m+1, h, even_edges),
                     filterfunc
                 ) for m in m_range])
+        
+def create_forested_cohom_table(l_range, m_range, h, even_edges, filterfunc):
+    s = ""
+    for l in l_range:
+        print("l =", l)
+        print(  [cohom_formatted_sumvs(
+                    ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+                        l, m, h, even_edges),
+                    ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+                        l, m+1, h, even_edges),
+                    filterfunc
+                ) for m in m_range])
+        
+def create_forested_cohom_table_contract(l_range, m_range, h, even_edges, filterfunc):
+    s = ""
+    for l in l_range:
+        print("l =", l)
+        for m in m_range:
+            print("max m =",m)
+            maxv = 2*l-2+h
+            print(  [cohom_formatted(
+                    ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                        maxv-mm,l, mm, h, even_edges),
+                    ForestedGraphComplex.ContractEdgesGO.generate_operator(
+                        maxv-mm+1,l, mm+1, h, even_edges),
+                    filterfunc
+                ) for mm in range(m+1)])
 
 
 def display_dimensions_forested(l_range, m_range, h, even_edges):
@@ -218,11 +365,48 @@ def convert_to_multigraph(G,V):
 
     return GG
         
-def is_3_edge_connected_fast(G):
+def is_3_edge_connected_fast_old(G):
     H = G.networkx_graph()
     return nx.edge_connectivity(H) >= 3
 
-def is_edge_triconnected(G,V):
+def is_3_edge_connected_fast(G):
+    """
+    Check whether an undirected Sage multigraph (with possible loops)
+    is 3-edge-connected. Parallel edges are collapsed into weights.
+    Loops are ignored because they do not affect cuts.
+    Uses NetworkX Stoer–Wagner global min-cut.
+    """
+
+    # Build weighted simple graph for NetworkX
+    H = nx.Graph()
+
+    # Add all vertices
+    for v in G.vertices():
+        H.add_node(v)
+
+    # Count multiplicities (ignore loops)
+    weights = {}
+    for u, v, _ in G.edges():
+        if u == v:
+            continue      # loops irrelevant
+        if u > v:
+            u, v = v, u
+        weights[(u, v)] = weights.get((u, v), 0) + 1
+
+    # Add weighted edges to NetworkX graph
+    for (u, v), w in weights.items():
+        H.add_edge(u, v, weight=w)
+
+    # Too small → not 3-edge-connected
+    if H.number_of_nodes() < 2:
+        return False
+
+    # Stoer–Wagner global min-cut
+    cut_value, partition = nx.stoer_wagner(H, weight="weight")
+
+    return cut_value >= 3
+
+def is_edge_triconnected_x(G,V):
     MG = convert_to_multigraph(G,V)
     res = is_3_edge_connected_fast(MG) 
     # if not res and V.n_vertices >= 5:
@@ -236,13 +420,150 @@ def is_edge_triconnected(G,V):
     #     exit(1)
     return res and tadpole_and_paredge_free(G,V)
 
+def is_edge_triconnected(G,V):
+    MG = convert_to_multigraph(G,V)
+    res = is_3_edge_connected_fast(MG) 
+    # if not res and V.n_vertices >= 5:
+    #     print("n", V.n_vertices)
+    #     print("Not 3-edge-connected:")
+    #     print(MG)
+    #     print("Adjacency matrix:")
+    #     print(MG.adjacency_matrix()     )
+    #     G.plot().save("temp/graph_forest.png")
+    #     MG.plot().save("temp/graph.png")
+    #     exit(1)
+    return res 
+
+def check_operator_sumvs(D, filterfunc):
+    vs = D.get_domain()
+    vs_fil = filter_from_sumvs(vs, filterfunc)
+    out_fil = filter_from_sumvs(D.get_target(), filterfunc)
+
+    A = D.get_matrix()
+    # iteratre over non-zero entries
+    for (i,j) in A.nonzero_positions():
+        if (not out_fil[i]) and (vs_fil[j]):
+            print("Error: matrix has non-zero entry mapping to filtered out basis element")
+            print("i,j =", i, j)
+            # print relevant graphs
+            g_out = D.get_target().get_basis()[i]
+            g_in = D.get_domain().get_basis()[j]
+            g_out.plot().save("temp/graph_out.png")
+            g_in.plot().save("temp/graph_in.png")
+            
+            mg_in = convert_to_multigraph(g_in, D.get_domain().get_vs_from_basis_index(j))
+            mg_in.plot().save("temp/graph_in_multigraph.png")
+            mg_out = convert_to_multigraph(g_out, D.get_target().get_vs_from_basis_index(i))
+            mg_out.plot().save("temp/graph_out_multigraph.png")
+
+            print(is_3_edge_connected_fast(mg_in), is_3_edge_connected_fast(mg_out))
+            return False
+
+def _weighted_simple_graph(G):
+    """
+    Convert a Sage multigraph G (possibly with loops) into a weighted simple
+    NetworkX graph H. Parallel edges become weights; loops are ignored.
+    """
+    H = nx.Graph()
+    for v in G.vertices():
+        H.add_node(v)
+
+    weights = {}
+    for u, v, _ in G.edges():
+        if u == v:
+            continue
+        if u > v:
+            u, v = v, u
+        weights[(u, v)] = weights.get((u, v), 0) + 1
+
+    for (u, v), w in weights.items():
+        H.add_edge(u, v, weight=w)
+
+    return H
+
+
+def is_essentially_4_edge_connected(G):
+    """
+    Check whether G (a Sage multigraph with possible loops) is
+    essentially 4-edge-connected:
+        - global edge connectivity >= 3
+        - no proper 3-edge cut (one side must have >= 2 vertices).
+    """
+
+    # Convert to weighted simple graph
+    H = _weighted_simple_graph(G)
+
+    # Small graphs cannot be essentially 4-edge-connected
+    if H.number_of_nodes() < 3:
+        return False
+
+    # First check global edge connectivity
+    lambda_global, _ = nx.stoer_wagner(H, weight="weight")
+    if lambda_global < 3:
+        return False
+
+    # Check for proper 3-cuts isolating single vertices
+    nodes = list(H.nodes())
+
+    for v in nodes:
+
+        # Build a contracted graph:
+        # All vertices except v are merged into a single supernode "S"
+        S = "SUPER"
+        Hc = nx.Graph()
+
+        # Add v and S
+        Hc.add_node(v)
+        Hc.add_node(S)
+
+        # Add edges from v to others
+        for u, data in H[v].items():
+            w = data["weight"]
+            if u != v:
+                Hc.add_edge(v, S, weight=(Hc[v][S]["weight"] + w
+                             if Hc.has_edge(v, S) else w))
+
+        # Add edges among non-v vertices → all become loops at S, so irrelevant;
+        # no need to add them.
+
+        # Now the min cut between v and S is the min v-separating cut in H
+        cut_value, partition = nx.stoer_wagner(Hc, weight="weight")
+
+        if cut_value == 3:
+            # Check if the side containing v is exactly {v}
+            side1, side2 = partition
+            if (side1 == {v}) or (side2 == {v}):
+                return False
+
+    return True
+
+def is_edge_fourconnected(G,V):
+    MG = convert_to_multigraph(G,V)
+    res = is_essentially_4_edge_connected(MG) 
+    return res
+
 # create_forested_top_cohom_table(range(1,4), range(0,10), 0, False, is_admissible)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, tadpole_and_paredge_free)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
+# create_forested_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
 
-display_dimensions_forested(range(5,6), range(0,10), 0, False)
-display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+# create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
+# check_operator_sumvs(
+#     ForestedGraphComplex.ContractUnmarkBiOM.generate_operator(
+#         4, 2, 0, False),
+#     is_edge_triconnected
+# )
+
+# create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
+create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
+
+
+# display_dimensions_forested(range(5,6), range(0,10), 0, False)
+# display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+
+# create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
+# create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
