@@ -556,11 +556,12 @@ def is_edge_fourconnected(G,V):
 # )
 
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
-create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
+# create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
 
 
-# display_dimensions_forested(range(5,6), range(0,10), 0, False)
-# display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+display_dimensions_forested(range(5,6), range(0,10), 0, False)
+display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_fourconnected)
 
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
