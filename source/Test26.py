@@ -459,10 +459,10 @@ def check_operator_sumvs(D, filterfunc):
             print(is_3_edge_connected_fast(mg_in), is_3_edge_connected_fast(mg_out))
             return False
 
-def _weighted_simple_graph(G):
+def _to_weighted_simple_networkx(G):
     """
     Convert a Sage multigraph G (possibly with loops) into a weighted simple
-    NetworkX graph H. Parallel edges become weights; loops are ignored.
+    NetworkX Graph H. Parallel edges -> weight (multiplicity). Loops ignored.
     """
     H = nx.Graph()
     for v in G.vertices():
@@ -471,7 +471,8 @@ def _weighted_simple_graph(G):
     weights = {}
     for u, v, _ in G.edges():
         if u == v:
-            continue
+            continue                # ignore loops (they don't affect cuts)
+        # normalize order to treat (u,v) same as (v,u)
         if u > v:
             u, v = v, u
         weights[(u, v)] = weights.get((u, v), 0) + 1
@@ -484,57 +485,46 @@ def _weighted_simple_graph(G):
 
 def is_essentially_4_edge_connected(G):
     """
-    Check whether G (a Sage multigraph with possible loops) is
-    essentially 4-edge-connected:
-        - global edge connectivity >= 3
-        - no proper 3-edge cut (one side must have >= 2 vertices).
+    Return True iff the Sage multigraph G (possibly with loops) is
+    essentially 4-edge-connected, i.e.
+      - global edge-connectivity >= 3, and
+      - there is no proper 3-edge-cut that isolates a single vertex.
     """
+    H = _to_weighted_simple_networkx(G)
 
-    # Convert to weighted simple graph
-    H = _weighted_simple_graph(G)
-
-    # Small graphs cannot be essentially 4-edge-connected
+    # very small graphs cannot be essentially 4-edge-connected
     if H.number_of_nodes() < 3:
         return False
 
-    # First check global edge connectivity
+    # check global edge connectivity (Stoer-Wagner uses the 'weight' attribute)
     lambda_global, _ = nx.stoer_wagner(H, weight="weight")
     if lambda_global < 3:
         return False
 
-    # Check for proper 3-cuts isolating single vertices
+    # Now search for a proper 3-cut that isolates a single vertex v.
+    # For each v, test minimum cut between v and some t != v.
+    # If any mincut has value 3 and the side containing v is exactly {v},
+    # we've found a proper 3-cut.
     nodes = list(H.nodes())
+    for i, v in enumerate(nodes):
+        # early necessary check: if total weighted degree of v < 3 it cannot be essentially 4-edge-connected
+        deg_v = sum(d.get('weight', 1) for _, d in H[v].items())
+        if deg_v < 3:
+            return False
 
-    for v in nodes:
+        # For vertex v, try min-cuts to other vertices t.
+        # We can stop as soon as we find one t that isolates v with cut value 3.
+        for j, t in enumerate(nodes):
+            if t == v:
+                continue
+            # use networkx.minimum_cut with capacity='weight'
+            cut_value, (setA, setB) = nx.minimum_cut(H, v, t, capacity='weight')
+            if cut_value == 3:
+                # check whether the side containing v is the singleton {v}
+                if (setA == {v}) or (setB == {v}):
+                    return False
 
-        # Build a contracted graph:
-        # All vertices except v are merged into a single supernode "S"
-        S = "SUPER"
-        Hc = nx.Graph()
-
-        # Add v and S
-        Hc.add_node(v)
-        Hc.add_node(S)
-
-        # Add edges from v to others
-        for u, data in H[v].items():
-            w = data["weight"]
-            if u != v:
-                Hc.add_edge(v, S, weight=(Hc[v][S]["weight"] + w
-                             if Hc.has_edge(v, S) else w))
-
-        # Add edges among non-v vertices → all become loops at S, so irrelevant;
-        # no need to add them.
-
-        # Now the min cut between v and S is the min v-separating cut in H
-        cut_value, partition = nx.stoer_wagner(Hc, weight="weight")
-
-        if cut_value == 3:
-            # Check if the side containing v is exactly {v}
-            side1, side2 = partition
-            if (side1 == {v}) or (side2 == {v}):
-                return False
-
+    # no proper 3-cut found
     return True
 
 def is_edge_fourconnected(G,V):
@@ -557,14 +547,16 @@ def is_edge_fourconnected(G,V):
 
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
 # create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
+# create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_fourconnected)
 
 
-display_dimensions_forested(range(5,6), range(0,10), 0, False)
-display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
-display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_fourconnected)
+# display_dimensions_forested(range(5,6), range(0,10), 0, False)
+# display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+# display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_fourconnected)
 
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
+create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_fourconnected)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
