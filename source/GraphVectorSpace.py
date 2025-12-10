@@ -911,7 +911,7 @@ class SumVectorSpace(VectorSpace):
             d = vs.get_dimension()
             if j < d+cur_ind:
                 return vs
-            curind += d
+            cur_ind += d
         raise ValueError(
             'Index %d outside range.' % j)
 
