@@ -434,6 +434,35 @@ class GraphVectorSpace(VectorSpace):
         except StoreLoad.FileNotFoundError:
             raise StoreLoad.FileNotFoundError(
                 "Dimension unknown for %s: No basis file" % str(self))
+    
+    def symmetry_factors(self):
+        """Return the list of symmetry factors (number of automorphisms) of the basis graphs.
+
+        :return: List of symmetry factors of the basis graphs.
+        :rtype: list(int)
+
+        :raise StoreLoad.FileNotFoundError: Raised if no basis file found.
+        """
+        if not self.is_valid():
+            return []
+        sym_factors = [GG.automorphism_group(partition=self.get_partition()
+                                        ).cardinality() for GG in self.get_basis()]
+        return sym_factors
+    
+    def symmetry_factor_matrix(self):
+        """Return the diagonal matrix of symmetry factors (number of automorphisms) of the basis graphs.
+
+        :return: Diagonal matrix of symmetry factors of the basis graphs.
+        :rtype: Matrix
+
+        :raise StoreLoad.FileNotFoundError: Raised if no basis file found.
+        """
+        sym_factors = self.symmetry_factors()
+        n = len(sym_factors)
+        M = Matrix(n, sparse=True)
+        for i in range(n):
+            M[i, i] = sym_factors[i]
+        return M
 
     def _store_basis_g6(self, basis_list):
         """Store the basis to the basis file.

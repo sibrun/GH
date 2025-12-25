@@ -117,7 +117,8 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             # We permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
             return Shared.Perm([j for (u, v, j) in G1.edges(sort=True)]).signature()
-        
+
+class LieBracket():
     @staticmethod
     def insertion_product(G1, G2, v, even_edges): 
         """Constructs the linear combination of graphs obtained by inserting G2 into vertex v of G1
