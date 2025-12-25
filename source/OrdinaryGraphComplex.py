@@ -6,6 +6,7 @@ The generators only produce 1-vertex irreducible graphs."""
 __all__ = ['graph_type', 'sub_types', 'OrdinaryGVS', 'OrdinaryGraphSumVS', 'ContractEdgesGO', 'ContractEdgesD',
            'DeleteEdgesGO', 'DeleteEdgesD', 'OrdinaryGC']
 
+import copy
 import itertools
 from sage.all import *
 import GraphVectorSpace
@@ -15,7 +16,7 @@ import Shared
 import NautyInterface
 import Parameters
 import GCDimensions
-
+from itertools import product
 
 graph_type = "ordinary"
 
@@ -116,6 +117,146 @@ class OrdinaryGVS(GraphVectorSpace.GraphVectorSpace):
             # We permute the graph, and read of the new labels
             G1.relabel(p, inplace=True)
             return Shared.Perm([j for (u, v, j) in G1.edges(sort=True)]).signature()
+        
+    @staticmethod
+    def insertion_product(G1, G2, v, even_edges): 
+        """Constructs the linear combination of graphs obtained by inserting G2 into vertex v of G1
+
+        :param G1: The first graph
+        :type G1: graph
+        :param G2: The second graph
+        :type G2: graph
+        :param v: The vertex in G1 where G2 is inserted
+        :type v: int
+        """
+        # sanity checks
+        V1 = OrdinaryGVS(G1.order(), G1.size() - G1.order() + 1, even_edges)
+        
+        # permute the vertices of G1 so that v becomes the last vertex
+        p1 = list(range(G1.order()))
+        p1[v], p1[-1] = p1[-1], p1[v]
+        G1b = copy(G1)
+        G1b.relabel(p1, inplace=True)
+        sgn = V1.perm_sign(G1, p1)
+
+        # prepare G2 by shifting its vertex labels
+        shift = G1.order() - 1
+        p2 = [i + shift for i in range(G2.order())]
+        G2b = copy(G2)
+        G2b.relabel(p2, inplace=True)
+
+        # remember neighbors of v in G1
+        neighbors = list(G1b.neighbors(G1b.order() - 1))
+        # remove v from G1b and take union with G2b
+        G1b.delete_vertex(G1b.order() - 1)
+        G = G1b.union(G2b)
+
+        # now we have to reconnect the edges that were adjacent to v
+        # we have to consider all possible ways to connect these edges to vertices of G2
+
+        images = []
+        for reconnection in itertools.product(range(G2.order()), repeat=len(neighbors)):
+            Gc = copy(G)
+            for i, u in enumerate(neighbors):
+                v2 = reconnection[i] + shift
+                Gc.add_edge(u, v2)
+            
+            images.append((Gc, sgn ))
+        return images
+    
+    @staticmethod
+    def lie_bracket_single(G1, G2, even_edges):
+        """Computes the Lie bracket [G1, G2] where G1 is in V1 and G2 is in V2
+
+        :param V1: The vector space of G1
+        :type V1: OrdinaryGVS
+        :param V2: The vector space of G2
+        :type V2: OrdinaryGVS
+        :param G1: The first graph
+        :type G1: graph
+        :param G2: The second graph
+        :type G2: graph
+        """
+        V1 = OrdinaryGVS(G1.order(), G1.size() - G1.order() + 1, even_edges)
+        V2 = OrdinaryGVS(G2.order(), G2.size() - G2.order() + 1, even_edges)
+        
+         # first term: insert G2 into G1
+        images = []
+        for v in range(G1.order()):
+            images += OrdinaryGVS.insertion_product(G1, G2, v, even_edges)
+        
+        # relative sign of second term
+        gsgn = -1
+        if V1.even_edges:
+            if (G1.size() * G2.size()) % 2 == 1:
+                gsgn = 1
+        else:
+            if ( (G1.order()+1) * (G2.order()+1)) % 2 == 1:
+                gsgn = 1
+        
+
+        for v in range(G2.order()):
+            images_v2 = V2.insertion_product(G2, G1, v)
+            for (G, sgn) in images_v2:
+                images.append((G, gsgn * sgn))  # minus sign for second term in Lie bracket
+        
+        return images
+    
+    @staticmethod
+    def lie_bracket_single_vector(G1, G2, even_edges):
+        """Computes the Lie bracket [G1, G2] where G1 is in V1 and G2 is in V2
+
+        :param V1: The vector space of G1
+        :type V1: OrdinaryGVS
+        :param V2: The vector space of G2
+        :type V2: OrdinaryGVS
+        :param G1: The first graph
+        :type G1: graph
+        :param G2: The second graph
+        :type G2: graph
+        """
+        images = OrdinaryGVS.lie_bracket_single(G1, G2, even_edges)
+        # now express in basis
+        V1 = OrdinaryGVS(G1.order(), G1.size() - G1.order() + 1, even_edges)
+        V2 = OrdinaryGVS(G2.order(), G2.size() - G2.order() + 1, even_edges)
+        V = OrdinaryGVS(G1.order() + G2.order() - 1, G1.size() + G2.size() - (G1.order() + G2.order()) + 1, even_edges)
+        basis_dict = V.get_g6_coordinates_dict()
+        result = [0 for _ in range(len(basis_dict))]
+        for (G, sgn) in images:
+            (g6, sgn2) = V.graph_to_canon_g6(G)
+            sgn_total = sgn * sgn2
+            if g6 in basis_dict:
+                index = basis_dict[g6]
+                result[index] += sgn_total
+        return result
+
+    @staticmethod
+    def lie_bracket_multi_vector(G1_list, G2_list, even_edges):
+        """Computes the Lie bracket 
+        """
+        # first compute all pairwise Lie brackets
+        images = []
+        G1_first , _ = G1_list[0]
+        G2_first , _ = G2_list[0]
+        V1 = OrdinaryGVS(G1_first.order(), G1_first.size() - G1_first.order() + 1, even_edges)
+        V2 = OrdinaryGVS(G2_first.order(), G2_first.size() - G2_first.order() + 1, even_edges)
+        V = OrdinaryGVS(G1_first.order() + G2_first.order() - 1, G1_first.size() + G2_first.size() - (G1_first.order() + G2_first.order()) + 1, even_edges)
+        
+        basis_dict = V.get_g6_coordinates_dict()
+        result = [0 for _ in range(len(basis_dict))]
+        
+        for (G1,x1) in G1_list:
+            for (G2,x2) in G2_list:
+                for G,y in OrdinaryGVS.lie_bracket_single(G1, G2, even_edges):
+                    sgn_total = x1 * x2 * y
+                    (g6, sgn2) = V.graph_to_canon_g6(G)
+                    sgn_total *= sgn2
+                    if g6 in basis_dict:
+                        index = basis_dict[g6]
+                        result[index] += sgn_total
+        return result
+        
+        
 
 
 class OrdinaryGraphSumVS(GraphVectorSpace.SumVectorSpace):
