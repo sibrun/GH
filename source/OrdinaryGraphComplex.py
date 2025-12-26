@@ -184,20 +184,20 @@ class LieBracket():
          # first term: insert G2 into G1
         images = []
         for v in range(G1.order()):
-            images += OrdinaryGVS.insertion_product(G1, G2, v, even_edges)
+            images += LieBracket.insertion_product(G1, G2, v, even_edges)
         
         # relative sign of second term
         gsgn = -1
         if V1.even_edges:
-            if (G1.size() * G2.size()) % 2 == 1:
+            if ( (G1.order()+1) * (G2.order()+1)) % 2 == 1:
                 gsgn = 1
         else:
-            if ( (G1.order()+1) * (G2.order()+1)) % 2 == 1:
+            if (G1.size() * G2.size()) % 2 == 1:
                 gsgn = 1
         
 
         for v in range(G2.order()):
-            images_v2 = V2.insertion_product(G2, G1, v)
+            images_v2 = LieBracket.insertion_product(G2, G1, v, even_edges)
             for (G, sgn) in images_v2:
                 images.append((G, gsgn * sgn))  # minus sign for second term in Lie bracket
         
@@ -216,11 +216,11 @@ class LieBracket():
         :param G2: The second graph
         :type G2: graph
         """
-        images = OrdinaryGVS.lie_bracket_single(G1, G2, even_edges)
+        images = LieBracket.lie_bracket_single(G1, G2, even_edges)
         # now express in basis
         V1 = OrdinaryGVS(G1.order(), G1.size() - G1.order() + 1, even_edges)
         V2 = OrdinaryGVS(G2.order(), G2.size() - G2.order() + 1, even_edges)
-        V = OrdinaryGVS(G1.order() + G2.order() - 1, G1.size() + G2.size() - (G1.order() + G2.order()) + 1, even_edges)
+        V = OrdinaryGVS(G1.order() + G2.order() - 1, G1.size() + G2.size() - (G1.order() + G2.order()) + 2, even_edges)
         basis_dict = V.get_g6_coordinates_dict()
         result = [0 for _ in range(len(basis_dict))]
         for (G, sgn) in images:
@@ -229,6 +229,8 @@ class LieBracket():
             if g6 in basis_dict:
                 index = basis_dict[g6]
                 result[index] += sgn_total
+            # else:
+            #     print("Graph not in basis:", g6)
         return result
 
     @staticmethod
@@ -241,14 +243,14 @@ class LieBracket():
         G2_first , _ = G2_list[0]
         V1 = OrdinaryGVS(G1_first.order(), G1_first.size() - G1_first.order() + 1, even_edges)
         V2 = OrdinaryGVS(G2_first.order(), G2_first.size() - G2_first.order() + 1, even_edges)
-        V = OrdinaryGVS(G1_first.order() + G2_first.order() - 1, G1_first.size() + G2_first.size() - (G1_first.order() + G2_first.order()) + 1, even_edges)
+        V = OrdinaryGVS(G1_first.order() + G2_first.order() - 1, G1_first.size() + G2_first.size() - (G1_first.order() + G2_first.order()) + 2, even_edges)
         
         basis_dict = V.get_g6_coordinates_dict()
         result = [0 for _ in range(len(basis_dict))]
         
         for (G1,x1) in G1_list:
             for (G2,x2) in G2_list:
-                for G,y in OrdinaryGVS.lie_bracket_single(G1, G2, even_edges):
+                for G,y in LieBracket.lie_bracket_single(G1, G2, even_edges):
                     sgn_total = x1 * x2 * y
                     (g6, sgn2) = V.graph_to_canon_g6(G)
                     sgn_total *= sgn2
@@ -257,6 +259,44 @@ class LieBracket():
                         result[index] += sgn_total
         return result
         
+    @staticmethod
+    def lie_bracket_vector_vector(VSpace1, VSpace2, v1, v2):
+        """Computes the Lie bracket [v1, v2] where v1 is in VSpace1 and v2 is in VSpace2
+
+        :param VSpace1: The vector space of v1
+        :type VSpace1: OrdinaryGVS
+        :param VSpace2: The vector space of v2
+        :type VSpace2: OrdinaryGVS
+        :param v1: The first vector
+        :type v1: list(int)
+        :param v2: The second vector
+        :type v2: list(int)
+        """
+        # first extract graphs from vectors
+        B1 = VSpace1.get_basis()
+        B2 = VSpace2.get_basis()
+        V = OrdinaryGVS(VSpace1.n_vertices + VSpace2.n_vertices - 1, VSpace1.n_loops + VSpace2.n_loops, VSpace1.even_edges)
+        basis_dict = V.get_g6_coordinates_dict()
+        result = [0 for _ in range(len(basis_dict))]
+
+        for i1, coeff1 in enumerate(v1):
+            if coeff1 == 0:
+                continue
+            G1 = B1[i1]
+            for i2, coeff2 in enumerate(v2):
+                if coeff2 == 0:
+                    continue
+                G2 = B2[i2]
+                images = LieBracket.lie_bracket_single(G1, G2, VSpace1.even_edges)
+                for (G, sgn) in images:
+                    sgn_total = coeff1 * coeff2 * sgn
+                    (g6, sgn2) = V.graph_to_canon_g6(G)
+                    sgn_total *= sgn2
+                    if g6 in basis_dict:
+                        index = basis_dict[g6]
+                        result[index] += sgn_total
+        
+        return result
         
 
 

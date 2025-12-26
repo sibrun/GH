@@ -158,3 +158,40 @@ def forested_morita_tetrahedron(ps):
             lie_inds[j] = lie_inds[j]+1
 
     return G
+
+def chain_of_diamonds_graph(ndiamonds: int):
+    """Generates a chain of diamond graphs connected at opposite vertices.
+    The graph is trivalent, has 4*ndiamonds vertices and 2*ndiamonds+1 loops.
+    Each diamond consists of two triangles that share one edge. The next diamonds in
+    the chain are connected at opposite vertices.
+
+        :param ndiamonds: The number of diamonds in the chain.
+        :type ndiamonds: int
+    """
+    G = Graph(4*ndiamonds)
+    for j in range(ndiamonds):
+        v0 = 4*j
+        v1 = 4*j+1
+        v2 = 4*j+2
+        v3 = 4*j+3
+        # add edges of the diamond
+        G.add_edge(v0, v1)
+        G.add_edge(v0, v2)
+        G.add_edge(v1, v2)
+        G.add_edge(v1, v3)
+        G.add_edge(v2, v3)
+        # connect to next diamond (cyclically)
+        G.add_edge(v3, 4*((j+1) % ndiamonds))
+
+    return G
+
+def cube3d_graph():
+    """Generates the graph of the 3d cube.
+    The graph is trivalent, has 8 vertices and 12 edges.
+    """
+    G = Graph(8)
+    edges = [(0,1), (1,3), (3,2), (2,0),
+             (4,5), (5,7), (7,6), (6,4),
+             (0,4), (1,5), (2,6), (3,7)]
+    G.add_edges(edges)
+    return G
