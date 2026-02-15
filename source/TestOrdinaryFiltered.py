@@ -4,7 +4,7 @@ from sage.all import *
 
 
 def get_filtered_matrix_rank(A, F1, F2, f):
-    """Computes the rank of the part of matrix A consisting of those rows where list F1 takes value f and those columsn where F2 takes value f
+    """Computes the rank of the part of matrix A consisting of those rows where list F1 takes value f and those columns where F2 takes value f
 
     :param A: _description_
     :type A: _type_

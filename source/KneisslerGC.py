@@ -430,7 +430,7 @@ class ContractEdgesGO(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         if type not in [0, 2, 3]:
             raise ValueError("Type must be 0, 2 or 3")

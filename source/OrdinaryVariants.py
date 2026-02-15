@@ -609,7 +609,7 @@ class ContractEdgesGOFull(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSFull(n_vertices, n_loops, even_edges)
         target = OrdinaryGVSFull(n_vertices - 1, n_loops, even_edges)
@@ -699,7 +699,7 @@ class ContractEdgesGOBridgeless(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSBridgeless(n_vertices, n_loops, even_edges)
         target = OrdinaryGVSBridgeless(n_vertices - 1, n_loops, even_edges)
@@ -789,7 +789,7 @@ class ContractEdgesGOPanzer(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSPanzer(n_vertices, n_loops, even_edges)
         target = OrdinaryGVSPanzer(n_vertices - 1, n_loops, even_edges)
@@ -880,7 +880,7 @@ class ContractEdgesGOTriconnected(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSTriconnected(n_vertices, n_loops, even_edges)
         target = OrdinaryGVSTriconnected(n_vertices - 1, n_loops, even_edges)
@@ -970,7 +970,7 @@ class ContractEdgesGOKV(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSKVconnected(n_vertices, n_loops, k_conn, even_edges)
         target = OrdinaryGVSKVconnected(n_vertices - 1, n_loops, k_conn, even_edges)
@@ -1059,7 +1059,7 @@ class ContractEdgesGOKE(GraphOperator.GraphOperator):
         :param even_edges: True for even edges, False for odd edges.
         :type even_edges: bool
         :return: Contract edges graph operator based on the specified domain vector space.
-        :rtype:ContractEdgesGO
+        :rtype: ContractEdgesGO
         """
         domain = OrdinaryGVSKEconnected(n_vertices, n_loops, k_conn, even_edges)
         target = OrdinaryGVSKEconnected(n_vertices - 1, n_loops, k_conn, even_edges)

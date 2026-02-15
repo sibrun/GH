@@ -24,9 +24,11 @@ def rank(linbox_option, matrix_file, prime=Parameters.prime):
     :return: Matrix rank calculated by the linbox library.
     :rtype: int
 
-    .. seealso:: - http://www.linalg.org/
-                 - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
-                 - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
+    .. SEEALSO::
+
+        - http://www.linalg.org/
+        - https://github.com/linbox-team/linbox/blob/master/examples/rank.C
+        - http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/simc.html
     """
     if linbox_option not in linbox_options:
         raise ValueError('Possible options for linbox: ' + str(linbox_options))

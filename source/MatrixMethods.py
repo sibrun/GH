@@ -122,7 +122,7 @@ def _removerstep(lst: List[Tuple[int,int,int]], m,n, rankbias):
     return (newlst, newm, newn, newrankbias)
 
 def load_sms_file(fname: str) -> Tuple[List[Tuple[int,int,int]] , Tuple[int, int]]:
-    """Loads a matric from an sms file.
+    """Loads a matrix from an sms file.
     Returns a pair of a matrix (list) and the matrix dimensions.
     """
     if not os.path.isfile(fname):
