@@ -50,7 +50,18 @@ def are_hairs_connected(G,V):
 
 def is_admissible(G,V):
     return are_hairs_connected(G, V)
+
+def is_admissible2(G,V):
+    # checks whether the graph is 3-edge-connected after gluing together both hairs
+    # assumes that we have exactly two hairs in the graph
+    if V.n_hairs != 2:
+        raise ValueError("is_admissible2 only works for graphs with exactly 2 hairs")
     
+    GG = convert_to_multigraph_fuse_hairs(G,V)
+    is_3ec = (GG.order() == 1) or is_3_edge_connected_fast(GG)
+
+
+    return are_hairs_connected(G, V) and is_3ec
 
 def basis_filter(V):
     return [is_admissible(g, V) for g in V.get_basis()]
@@ -177,9 +188,25 @@ def cohom_formatted_sumvs(D1, D2, filterfunc):
         A1 = D1.get_matrix()
         A1_fil = filter_both(A1, out1_fil, vs_fil)
         # A1_fil = filter_cols(A1, vs_fil)
+
+        # P0 = vs.get_isotypical_projector(1)
+        # P0.build_matrix()
+        # DDD = P0.get_matrix()
+        # DDD_fil = filter_both(DDD, vs_fil, vs_fil)
+        # print("DDD_fil", DDD_fil.nrows(), DDD_fil.ncols())
+        # A1fil2 = A1_fil.stack(DDD_fil)
+        # rrr = A1fil2.rank()
+        # print("A1fil2", A1fil2.nrows(), A1fil2.ncols(), rrr)
+
         r1 = A1_fil.rank()
         # print("A1", A1.nrows(), A1.ncols(), r1)
         # print("A1_fil", A1_fil.nrows(), A1_fil.ncols(), r1)
+        # print(vs_fil)
+        # print(vs.get_basis_g6()[1])
+        # kker = A1_fil.right_kernel()
+        # print(kker)
+        # print("kkker dim", kker.dimension())
+        # print("kkker basis matrix", kker.basis_matrix())
 
     if D2.is_valid():
         A2 = D2.get_matrix()
@@ -343,6 +370,35 @@ def tadpole_and_paredge_free(G,V):
         elif len(nh) == 1:
             return False
     return True
+
+def convert_to_multigraph_fuse_hairs(G,V):
+    # works only for 2-hair graphs, fuses the two hairs together into a new edge
+    if V.n_hairs != 2:
+        raise ValueError("convert_to_multigraph_fuse_hairs only works for graphs with exactly 2 hairs")
+    GG = Graph(G, multiedges=True, loops=True)
+    n = V.n_vertices
+    m = V.n_unmarked_edges
+    for i in range(n, n+m):
+        nh = G.neighbors(i)
+        if len(nh) == 2:
+            j = nh[0]
+            k = nh[1]
+            GG.add_edge(j, k)
+            GG.delete_vertex(i)
+        elif len(nh) == 1:
+            j = nh[0]
+            GG.add_edge(j, j)
+            GG.delete_vertex(i)
+        else:
+            print("Unexpected number of neighbors:", len(nh))
+    # fuse both hairs
+    nh1 = G.neighbors(n+m)
+    nh2 = G.neighbors(n+m+1)
+    GG.add_edge(nh1[0], nh2[0])
+    GG.delete_vertex(n+m)
+    GG.delete_vertex(n+m+1)
+
+    return GG
 
 def convert_to_multigraph(G,V):
     GG = Graph(G, multiedges=True, loops=True)
@@ -536,7 +592,10 @@ def is_edge_fourconnected(G,V):
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, tadpole_and_paredge_free)
 # create_forested_top_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
-# create_forested_cohom_table(range(1,6), range(0,10), 0, False, alwaystrue)
+# create_forested_cohom_table(range(1,5), range(0,10), 2, False, alwaystrue)
+# create_forested_cohom_table(range(1,4), range(0,10), 2, False, is_admissible)
+# create_forested_cohom_table(range(4,5), range(0,10), 2, False, is_admissible2)
+create_forested_cohom_table(range(4,5), range(7,8), 2, False, is_admissible2)
 
 # create_forested_cohom_table(range(1,6), range(0,10), 0, False, is_edge_triconnected)
 # check_operator_sumvs(
@@ -551,12 +610,12 @@ def is_edge_fourconnected(G,V):
 
 
 # display_dimensions_forested(range(5,6), range(0,10), 0, False)
-# display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_triconnected)
+# display_dimensions_forested_filtered(range(2,5), range(0,10), 0, False, is_edge_triconnected)
 # display_dimensions_forested_filtered(range(5,6), range(0,10), 0, False, is_edge_fourconnected)
 
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
 # create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_triconnected)
-create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_fourconnected)
+# create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_fourconnected)
 
 # xxx = ForestedGraphComplex.ContractUnmarkTopBiOM.generate_operator(
 #                         2, 3, 2, False)
@@ -581,6 +640,29 @@ create_forested_cohom_table_contract(range(1,6), range(0,6), 0, False, is_edge_f
 # print(are_hairs_connected(ggg, V1))
 
 # V1.display_basis_plots()
+
+# filtered_ec1 = 0
+# filtered_ec2 = 0
+# for nv in range(1,6):
+#     for mm in range(0,8):
+#         VV = ForestedGraphComplex.ForestedGVS(nv, 1, mm, 2, False)
+#         if VV.is_valid():
+#             # VV.display_basis_plots()
+#             VV.build_basis()
+            
+#             admissible_mask = [(is_admissible(g, VV), is_admissible2(g, VV)) for g in VV.get_basis()]
+#             filtered_dim1 = sum(1 for ok, _ in admissible_mask if ok)
+#             filtered_dim2 = sum(1 for _, ok in admissible_mask if ok)
+#             print("nv =", nv, "mm =", mm, "dim =", VV.get_dimension())
+#             print("filtered_dim1 =", filtered_dim1, "filtered_dim2 =", filtered_dim2)
+#             print(admissible_mask)
+#             filtered_ec1 += filtered_dim1 * (-1)**mm
+#             filtered_ec2 += filtered_dim2 * (-1)**mm
+
+# print("")
+# print("Filtered Euler characteristic (admissible):", filtered_ec1)
+# print("Filtered Euler characteristic (admissible2):", filtered_ec2)
+
 
 # cols = [i for i, ok in enumerate(fil) if ok]
 # A = Dc1[:, cols]
